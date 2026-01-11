@@ -1,0 +1,84 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+}
+
+enum UserRole {
+  CONTRACTOR
+  CLIENT
+}
+
+enum UserStatus {
+  PENDING
+  ACTIVE
+  ARCHIVED
+}
+
+model User {
+  id             String     @id @default(cuid())
+  email          String     @unique
+  password       String
+  name           String?
+  role           UserRole   @default(CONTRACTOR)
+  status         UserStatus @default(PENDING)
+  emailVerified  DateTime?
+  createdAt      DateTime   @default(now())
+  updatedAt      DateTime   @updatedAt
+
+  // Contractor-specific relations
+  contractor     Contractor?
+  
+  // Client-specific relations
+  client         Client?
+}
+
+model Contractor {
+  id            String   @id @default(cuid())
+  userId        String   @unique
+  user          User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  companyName   String?
+  companyPhone  String?
+  companyEmail  String?
+  companyAddress String?
+  isVerified    Boolean  @default(false)
+  createdAt     DateTime @default(now())
+  updatedAt     DateTime @updatedAt
+
+  // Relations
+  clients       Client[]
+}
+
+model Client {
+  id            String     @id @default(cuid())
+  userId        String     @unique
+  user          User       @relation(fields: [userId], references: [id], onDelete: Cascade)
+  contractorId  String
+  contractor    Contractor @relation(fields: [contractorId], references: [id], onDelete: Cascade)
+  companyName   String
+  companyPhone  String?
+  companyEmail  String?
+  createdAt     DateTime   @default(now())
+  updatedAt     DateTime   @updatedAt
+
+  // Relations
+  branches      Branch[]
+}
+
+model Branch {
+  id          String   @id @default(cuid())
+  clientId    String
+  client      Client   @relation(fields: [clientId], references: [id], onDelete: Cascade)
+  name        String
+  address     String
+  city        String?
+  state       String?
+  zipCode     String?
+  phone       String?
+  notes       String?
+  isActive    Boolean  @default(true)
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+}
