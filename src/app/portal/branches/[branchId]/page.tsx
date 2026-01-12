@@ -9,6 +9,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
 import { ClientBranchRequests } from './client-branch-requests'
 import { ClientBranchQuotations } from './client-branch-quotations'
 import { ClientBranchAppointments } from './client-branch-appointments'
+import { ClientBranchInvoices } from './client-branch-invoices'
 import {
   FileText,
   Receipt,
@@ -195,21 +196,7 @@ export default async function ClientBranchPage({
 
           {/* Payments Tab */}
           <TabsContent value="payments" className="mt-0">
-            <Card>
-              <CardHeader>
-                <CardTitle>Payments & Invoices</CardTitle>
-                <CardDescription>View invoices and payment history</CardDescription>
-              </CardHeader>
-              <CardContent>
-                <div className="flex flex-col items-center justify-center py-12 text-center">
-                  <DollarSign className="h-12 w-12 text-muted-foreground/30 mb-4" />
-                  <h3 className="text-lg font-semibold mb-2">No invoices yet</h3>
-                  <p className="text-muted-foreground max-w-md">
-                    Invoices and payment history for this branch will appear here.
-                  </p>
-                </div>
-              </CardContent>
-            </Card>
+            <ClientBranchInvoices branchId={branch.id} />
           </TabsContent>
 
           {/* Contracts Tab */}

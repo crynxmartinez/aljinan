@@ -7,6 +7,7 @@ import { Button } from '@/components/ui/button'
 import { RequestsList } from '@/components/modules/requests-list'
 import { QuotationsList } from '@/components/modules/quotations-list'
 import { AppointmentsList } from '@/components/modules/appointments-list'
+import { InvoicesList } from '@/components/modules/invoices-list'
 import {
   LayoutDashboard,
   FileText,
@@ -83,12 +84,7 @@ export function BranchWorkspace({ clientId, branchId, branch }: BranchWorkspaceP
         </TabsContent>
 
         <TabsContent value="payments" className="mt-0">
-          <ModulePlaceholder
-            title="Payments"
-            description="Invoices and payment tracking"
-            icon={DollarSign}
-            actionLabel="Create Invoice"
-          />
+          <InvoicesList branchId={branchId} />
         </TabsContent>
 
         <TabsContent value="contracts" className="mt-0">
