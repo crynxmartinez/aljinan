@@ -5,6 +5,7 @@ import { prisma } from '@/lib/prisma'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
 import { MapPin, FileText, Calendar, DollarSign, Receipt, ClipboardCheck } from 'lucide-react'
 import Link from 'next/link'
+import { BranchRequestForm } from './branch-request-form'
 
 async function getClientDashboardData(userId: string) {
   const client = await prisma.client.findUnique({
@@ -106,14 +107,17 @@ export default async function PortalDashboardPage() {
 
       {/* Branches Section */}
       <div className="mt-8">
-        <h2 className="text-xl font-semibold mb-4">Your Branches</h2>
+        <div className="flex items-center justify-between mb-4">
+          <h2 className="text-xl font-semibold">Your Branches</h2>
+          <BranchRequestForm />
+        </div>
         {client.branches.length === 0 ? (
           <Card>
             <CardContent className="flex flex-col items-center justify-center py-12">
               <MapPin className="h-12 w-12 text-muted-foreground/30 mb-4" />
               <h3 className="text-lg font-semibold mb-2">No branches yet</h3>
-              <p className="text-muted-foreground text-center max-w-md">
-                Your contractor will add branch locations for you. Once added, you&apos;ll be able to view requests, quotes, appointments, and more for each branch.
+              <p className="text-muted-foreground text-center max-w-md mb-4">
+                Your contractor will add branch locations for you, or you can request a new branch.
               </p>
             </CardContent>
           </Card>

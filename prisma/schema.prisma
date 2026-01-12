@@ -68,8 +68,9 @@ model Client {
   updatedAt     DateTime   @updatedAt
 
   // Relations
-  branches      Branch[]
-  managers      Manager[]  // Managers created by this client
+  branches        Branch[]
+  managers        Manager[]  // Managers created by this client
+  branchRequests  BranchRequest[]
 }
 
 model Branch {
@@ -356,4 +357,37 @@ model BranchManager {
   createdAt  DateTime @default(now())
 
   @@unique([branchId, managerId])
+}
+
+// Branch Request statuses
+enum BranchRequestStatus {
+  PENDING
+  APPROVED
+  REJECTED
+}
+
+// Branch Request - client requests a new branch for contractor approval
+model BranchRequest {
+  id            String              @id @default(cuid())
+  clientId      String
+  client        Client              @relation(fields: [clientId], references: [id], onDelete: Cascade)
+  name          String
+  address       String
+  city          String?
+  state         String?
+  zipCode       String?
+  country       String?
+  phone         String?
+  notes         String?
+  latitude      Float?
+  longitude     Float?
+  status        BranchRequestStatus @default(PENDING)
+  rejectionNote String?
+  approvedAt    DateTime?
+  approvedById  String?
+  rejectedAt    DateTime?
+  rejectedById  String?
+  createdById   String
+  createdAt     DateTime            @default(now())
+  updatedAt     DateTime            @updatedAt
 }
