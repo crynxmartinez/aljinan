@@ -28,8 +28,8 @@ export const authOptions: NextAuthOptions = {
           throw new Error('User not found')
         }
 
-        if (user.status !== 'ACTIVE') {
-          throw new Error('Account is not active')
+        if (user.status === 'ARCHIVED') {
+          throw new Error('Account has been archived')
         }
 
         const isPasswordValid = await bcrypt.compare(
@@ -39,6 +39,14 @@ export const authOptions: NextAuthOptions = {
 
         if (!isPasswordValid) {
           throw new Error('Invalid password')
+        }
+
+        // Activate user on first login if PENDING
+        if (user.status === 'PENDING') {
+          await prisma.user.update({
+            where: { id: user.id },
+            data: { status: 'ACTIVE' }
+          })
         }
 
         return {
