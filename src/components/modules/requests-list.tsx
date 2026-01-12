@@ -206,10 +206,12 @@ export function RequestsList({ branchId, userRole, projectId }: RequestsListProp
                 : 'View and submit service requests for this branch'}
             </CardDescription>
           </div>
-          <Button onClick={() => setCreateDialogOpen(true)}>
-            <Plus className="mr-2 h-4 w-4" />
-            New Request
-          </Button>
+          {userRole !== 'CONTRACTOR' && (
+            <Button onClick={() => setCreateDialogOpen(true)}>
+              <Plus className="mr-2 h-4 w-4" />
+              New Request
+            </Button>
+          )}
         </CardHeader>
         <CardContent>
           {requests.length === 0 ? (
@@ -218,13 +220,15 @@ export function RequestsList({ branchId, userRole, projectId }: RequestsListProp
               <h3 className="text-lg font-semibold mb-2">No requests yet</h3>
               <p className="text-muted-foreground max-w-md mb-4">
                 {userRole === 'CONTRACTOR'
-                  ? 'Create your first service request for this branch.'
+                  ? 'No service requests from the client yet.'
                   : 'Submit a service request to get started.'}
               </p>
-              <Button onClick={() => setCreateDialogOpen(true)}>
-                <Plus className="mr-2 h-4 w-4" />
-                Create Request
-              </Button>
+              {userRole !== 'CONTRACTOR' && (
+                <Button onClick={() => setCreateDialogOpen(true)}>
+                  <Plus className="mr-2 h-4 w-4" />
+                  Create Request
+                </Button>
+              )}
             </div>
           ) : (
             <div className="space-y-4">
