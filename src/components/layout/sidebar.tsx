@@ -139,7 +139,7 @@ export function Sidebar({ clients = [] }: SidebarProps) {
           {clients.length === 0 ? (
             <div className="px-3 py-4 text-center">
               <p className="text-sm text-sidebar-foreground/50">No clients yet</p>
-              <Link href="/dashboard/clients/new">
+              <Link href="/dashboard/clients">
                 <Button variant="outline" size="sm" className="mt-2">
                   <Users className="mr-2 h-4 w-4" />
                   Add Client
