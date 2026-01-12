@@ -8,6 +8,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/com
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
 import { ClientBranchRequests } from './client-branch-requests'
 import { ClientBranchQuotations } from './client-branch-quotations'
+import { ClientBranchAppointments } from './client-branch-appointments'
 import {
   FileText,
   Receipt,
@@ -189,21 +190,7 @@ export default async function ClientBranchPage({
 
           {/* Appointments Tab */}
           <TabsContent value="appointments" className="mt-0">
-            <Card>
-              <CardHeader>
-                <CardTitle>Appointments</CardTitle>
-                <CardDescription>View and confirm scheduled visits</CardDescription>
-              </CardHeader>
-              <CardContent>
-                <div className="flex flex-col items-center justify-center py-12 text-center">
-                  <Calendar className="h-12 w-12 text-muted-foreground/30 mb-4" />
-                  <h3 className="text-lg font-semibold mb-2">No appointments scheduled</h3>
-                  <p className="text-muted-foreground max-w-md">
-                    Scheduled visits and inspections will appear here. You can confirm appointments or request rescheduling.
-                  </p>
-                </div>
-              </CardContent>
-            </Card>
+            <ClientBranchAppointments branchId={branch.id} />
           </TabsContent>
 
           {/* Payments Tab */}

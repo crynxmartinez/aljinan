@@ -94,8 +94,9 @@ model Branch {
   managerAccess BranchManager[]
   
   // Module relations
-  requests    Request[]
-  quotations  Quotation[]
+  requests     Request[]
+  quotations   Quotation[]
+  appointments Appointment[]
 }
 
 // Request priorities and statuses
@@ -177,6 +178,41 @@ model QuotationItem {
   total       Float
   createdAt   DateTime  @default(now())
   updatedAt   DateTime  @updatedAt
+}
+
+// Appointment statuses
+enum AppointmentStatus {
+  SCHEDULED
+  CONFIRMED
+  IN_PROGRESS
+  COMPLETED
+  CANCELLED
+  RESCHEDULED
+}
+
+// Appointment - scheduled visits/inspections
+model Appointment {
+  id              String            @id @default(cuid())
+  branchId        String
+  branch          Branch            @relation(fields: [branchId], references: [id], onDelete: Cascade)
+  title           String
+  description     String?
+  date            DateTime
+  startTime       String
+  endTime         String?
+  duration        Int?              // Duration in minutes
+  assignedTo      String?
+  status          AppointmentStatus @default(SCHEDULED)
+  confirmedAt     DateTime?
+  confirmedById   String?
+  completedAt     DateTime?
+  cancelledAt     DateTime?
+  cancelledById   String?
+  cancellationNote String?
+  rescheduleNote  String?
+  createdById     String
+  createdAt       DateTime          @default(now())
+  updatedAt       DateTime          @updatedAt
 }
 
 // Manager - created by clients to manage specific branches

@@ -6,6 +6,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/com
 import { Button } from '@/components/ui/button'
 import { RequestsList } from '@/components/modules/requests-list'
 import { QuotationsList } from '@/components/modules/quotations-list'
+import { AppointmentsList } from '@/components/modules/appointments-list'
 import {
   LayoutDashboard,
   FileText,
@@ -78,12 +79,7 @@ export function BranchWorkspace({ clientId, branchId, branch }: BranchWorkspaceP
         </TabsContent>
 
         <TabsContent value="appointments" className="mt-0">
-          <ModulePlaceholder
-            title="Appointments"
-            description="Scheduled visits and inspections"
-            icon={Calendar}
-            actionLabel="Schedule Appointment"
-          />
+          <AppointmentsList branchId={branchId} />
         </TabsContent>
 
         <TabsContent value="payments" className="mt-0">
