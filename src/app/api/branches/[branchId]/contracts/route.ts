@@ -60,7 +60,7 @@ export async function POST(
 
     const { branchId } = await params
     const body = await request.json()
-    const { title, description, fileName, fileUrl, fileSize, startDate, endDate, status } = body
+    const { title, description, fileName, fileUrl, fileSize, startDate, endDate, status, projectId } = body
 
     if (!title || !fileName || !fileUrl) {
       return NextResponse.json({ error: 'Title, file name, and file URL are required' }, { status: 400 })
@@ -74,6 +74,7 @@ export async function POST(
     const contract = await prisma.contract.create({
       data: {
         branchId,
+        projectId: projectId || null,
         title,
         description,
         fileName,

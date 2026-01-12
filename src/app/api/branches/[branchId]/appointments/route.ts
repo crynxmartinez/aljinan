@@ -56,7 +56,7 @@ export async function POST(
 
     const { branchId } = await params
     const body = await request.json()
-    const { title, description, date, startTime, endTime, duration, assignedTo } = body
+    const { title, description, date, startTime, endTime, duration, assignedTo, projectId } = body
 
     if (!title || !date || !startTime) {
       return NextResponse.json(
@@ -73,6 +73,7 @@ export async function POST(
     const appointment = await prisma.appointment.create({
       data: {
         branchId,
+        projectId: projectId || null,
         title,
         description,
         date: new Date(date),

@@ -61,7 +61,7 @@ export async function POST(
 
     const { branchId } = await params
     const body = await request.json()
-    const { title, description, items, taxRate, dueDate, quotationId } = body
+    const { title, description, items, taxRate, dueDate, quotationId, projectId } = body
 
     if (!title) {
       return NextResponse.json({ error: 'Title is required' }, { status: 400 })
@@ -88,6 +88,7 @@ export async function POST(
     const invoice = await prisma.invoice.create({
       data: {
         branchId,
+        projectId: projectId || null,
         quotationId: quotationId || null,
         invoiceNumber,
         title,

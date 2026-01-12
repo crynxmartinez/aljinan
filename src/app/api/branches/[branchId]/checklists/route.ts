@@ -61,7 +61,7 @@ export async function POST(
 
     const { branchId } = await params
     const body = await request.json()
-    const { title, description, items } = body
+    const { title, description, items, projectId } = body
 
     if (!title) {
       return NextResponse.json({ error: 'Title is required' }, { status: 400 })
@@ -75,6 +75,7 @@ export async function POST(
     const checklist = await prisma.checklist.create({
       data: {
         branchId,
+        projectId: projectId || null,
         title,
         description,
         createdById: session.user.id,

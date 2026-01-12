@@ -61,6 +61,15 @@ export async function PATCH(
       return NextResponse.json({ error: 'Access denied' }, { status: 403 })
     }
 
+    // Get current request to check status change
+    const currentRequest = await prisma.request.findUnique({
+      where: { id: requestId }
+    })
+
+    if (!currentRequest) {
+      return NextResponse.json({ error: 'Request not found' }, { status: 404 })
+    }
+
     // Build update data
     const updateData: Record<string, unknown> = {}
     if (title !== undefined) updateData.title = title
@@ -75,12 +84,53 @@ export async function PATCH(
     if (assignedTo !== undefined) updateData.assignedTo = assignedTo
     if (dueDate !== undefined) updateData.dueDate = dueDate ? new Date(dueDate) : null
 
+    // Auto-create project when contractor approves/starts work on request
+    // Only create if: status changing to IN_PROGRESS, request has no project, and user is contractor
+    const shouldCreateProject = 
+      status === 'IN_PROGRESS' && 
+      !currentRequest.projectId && 
+      session.user.role === 'CONTRACTOR'
+
+    let projectId: string | null = null
+
+    if (shouldCreateProject) {
+      // Create a new project from this request
+      const project = await prisma.project.create({
+        data: {
+          branchId,
+          title: currentRequest.title,
+          description: currentRequest.description,
+          priority: currentRequest.priority,
+          status: 'IN_PROGRESS',
+          createdById: session.user.id,
+          createdByRole: 'CONTRACTOR',
+        }
+      })
+      projectId = project.id
+      updateData.projectId = projectId
+
+      // Add activity to the new project
+      await prisma.activity.create({
+        data: {
+          projectId: project.id,
+          type: 'CREATED',
+          content: `Project created from request: ${currentRequest.title}`,
+          createdById: session.user.id,
+          createdByRole: 'CONTRACTOR',
+        }
+      })
+    }
+
     const updatedRequest = await prisma.request.update({
       where: { id: requestId },
       data: updateData
     })
 
-    return NextResponse.json(updatedRequest)
+    return NextResponse.json({ 
+      ...updatedRequest, 
+      projectCreated: shouldCreateProject,
+      projectId: projectId || updatedRequest.projectId 
+    })
   } catch (error) {
     console.error('Error updating request:', error)
     return NextResponse.json(

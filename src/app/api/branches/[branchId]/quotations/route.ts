@@ -64,7 +64,7 @@ export async function POST(
 
     const { branchId } = await params
     const body = await request.json()
-    const { title, description, items, taxRate, validUntil, requestId } = body
+    const { title, description, items, taxRate, validUntil, requestId, projectId } = body
 
     if (!title) {
       return NextResponse.json(
@@ -90,6 +90,7 @@ export async function POST(
     const quotation = await prisma.quotation.create({
       data: {
         branchId,
+        projectId: projectId || null,
         requestId: requestId || null,
         title,
         description,
