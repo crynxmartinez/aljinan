@@ -66,6 +66,8 @@ export function RequestsList({ branchId, userRole, projectId }: RequestsListProp
   const [requests, setRequests] = useState<Request[]>([])
   const [loading, setLoading] = useState(true)
   const [createDialogOpen, setCreateDialogOpen] = useState(false)
+  const [detailDialogOpen, setDetailDialogOpen] = useState(false)
+  const [selectedRequest, setSelectedRequest] = useState<Request | null>(null)
   const [creating, setCreating] = useState(false)
   const [error, setError] = useState('')
 
@@ -235,7 +237,11 @@ export function RequestsList({ branchId, userRole, projectId }: RequestsListProp
               {requests.map((request) => (
                 <div
                   key={request.id}
-                  className="flex items-start justify-between p-4 border rounded-lg hover:bg-muted/50 transition-colors"
+                  className="flex items-start justify-between p-4 border rounded-lg hover:bg-muted/50 transition-colors cursor-pointer"
+                  onClick={() => {
+                    setSelectedRequest(request)
+                    setDetailDialogOpen(true)
+                  }}
                 >
                   <div className="space-y-1 flex-1">
                     <div className="flex items-center gap-2">
@@ -257,7 +263,7 @@ export function RequestsList({ branchId, userRole, projectId }: RequestsListProp
                   </div>
                   <DropdownMenu>
                     <DropdownMenuTrigger asChild>
-                      <Button variant="ghost" size="icon">
+                      <Button variant="ghost" size="icon" onClick={(e) => e.stopPropagation()}>
                         <MoreHorizontal className="h-4 w-4" />
                       </Button>
                     </DropdownMenuTrigger>
@@ -369,6 +375,99 @@ export function RequestsList({ branchId, userRole, projectId }: RequestsListProp
               </Button>
             </DialogFooter>
           </form>
+        </DialogContent>
+      </Dialog>
+
+      {/* Request Detail Dialog */}
+      <Dialog open={detailDialogOpen} onOpenChange={setDetailDialogOpen}>
+        <DialogContent className="max-w-lg">
+          <DialogHeader>
+            <DialogTitle className="flex items-center gap-2">
+              {selectedRequest?.title}
+            </DialogTitle>
+            <DialogDescription>
+              Request Details
+            </DialogDescription>
+          </DialogHeader>
+          {selectedRequest && (
+            <div className="space-y-4">
+              <div className="flex items-center gap-2">
+                {getPriorityBadge(selectedRequest.priority)}
+                {getStatusBadge(selectedRequest.status)}
+              </div>
+              
+              {selectedRequest.description && (
+                <div>
+                  <p className="text-sm font-medium text-muted-foreground mb-1">Description</p>
+                  <p className="text-sm">{selectedRequest.description}</p>
+                </div>
+              )}
+
+              <div className="grid grid-cols-2 gap-4 text-sm">
+                <div>
+                  <p className="font-medium text-muted-foreground">Created</p>
+                  <p>{new Date(selectedRequest.createdAt).toLocaleDateString()}</p>
+                </div>
+                {selectedRequest.dueDate && (
+                  <div>
+                    <p className="font-medium text-muted-foreground">Due Date</p>
+                    <p>{new Date(selectedRequest.dueDate).toLocaleDateString()}</p>
+                  </div>
+                )}
+                <div>
+                  <p className="font-medium text-muted-foreground">Created By</p>
+                  <p className="capitalize">{selectedRequest.createdByRole.toLowerCase()}</p>
+                </div>
+                {selectedRequest.completedAt && (
+                  <div>
+                    <p className="font-medium text-muted-foreground">Completed</p>
+                    <p>{new Date(selectedRequest.completedAt).toLocaleDateString()}</p>
+                  </div>
+                )}
+              </div>
+
+              {userRole === 'CONTRACTOR' && (
+                <div className="flex gap-2 pt-4 border-t">
+                  {selectedRequest.status === 'OPEN' && (
+                    <Button 
+                      onClick={() => {
+                        handleUpdateStatus(selectedRequest.id, 'IN_PROGRESS')
+                        setDetailDialogOpen(false)
+                      }}
+                      className="flex-1"
+                    >
+                      <CheckCircle className="mr-2 h-4 w-4" />
+                      Start Work
+                    </Button>
+                  )}
+                  {selectedRequest.status === 'IN_PROGRESS' && (
+                    <Button 
+                      onClick={() => {
+                        handleUpdateStatus(selectedRequest.id, 'COMPLETED')
+                        setDetailDialogOpen(false)
+                      }}
+                      className="flex-1"
+                    >
+                      <CheckCircle className="mr-2 h-4 w-4" />
+                      Mark Complete
+                    </Button>
+                  )}
+                  {selectedRequest.status !== 'CANCELLED' && selectedRequest.status !== 'COMPLETED' && (
+                    <Button 
+                      variant="outline"
+                      onClick={() => {
+                        handleUpdateStatus(selectedRequest.id, 'CANCELLED')
+                        setDetailDialogOpen(false)
+                      }}
+                    >
+                      <XCircle className="mr-2 h-4 w-4" />
+                      Cancel
+                    </Button>
+                  )}
+                </div>
+              )}
+            </div>
+          )}
         </DialogContent>
       </Dialog>
     </>

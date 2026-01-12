@@ -65,6 +65,8 @@ export function ContractsList({ branchId, projectId }: ContractsListProps) {
   const [contracts, setContracts] = useState<Contract[]>([])
   const [loading, setLoading] = useState(true)
   const [createDialogOpen, setCreateDialogOpen] = useState(false)
+  const [detailDialogOpen, setDetailDialogOpen] = useState(false)
+  const [selectedContract, setSelectedContract] = useState<Contract | null>(null)
   const [creating, setCreating] = useState(false)
   const [error, setError] = useState('')
 
@@ -236,7 +238,11 @@ export function ContractsList({ branchId, projectId }: ContractsListProps) {
               {contracts.map((contract) => (
                 <div
                   key={contract.id}
-                  className="flex items-start justify-between p-4 border rounded-lg hover:bg-muted/50 transition-colors"
+                  className="flex items-start justify-between p-4 border rounded-lg hover:bg-muted/50 transition-colors cursor-pointer"
+                  onClick={() => {
+                    setSelectedContract(contract)
+                    setDetailDialogOpen(true)
+                  }}
                 >
                   <div className="space-y-1 flex-1">
                     <div className="flex items-center gap-2">
@@ -263,14 +269,17 @@ export function ContractsList({ branchId, projectId }: ContractsListProps) {
                     <Button
                       variant="outline"
                       size="sm"
-                      onClick={() => window.open(contract.fileUrl, '_blank')}
+                      onClick={(e) => {
+                        e.stopPropagation()
+                        window.open(contract.fileUrl, '_blank')
+                      }}
                     >
                       <ExternalLink className="mr-2 h-4 w-4" />
                       View
                     </Button>
                     <DropdownMenu>
                       <DropdownMenuTrigger asChild>
-                        <Button variant="ghost" size="icon">
+                        <Button variant="ghost" size="icon" onClick={(e) => e.stopPropagation()}>
                           <MoreHorizontal className="h-4 w-4" />
                         </Button>
                       </DropdownMenuTrigger>
@@ -405,6 +414,76 @@ export function ContractsList({ branchId, projectId }: ContractsListProps) {
               </Button>
             </DialogFooter>
           </form>
+        </DialogContent>
+      </Dialog>
+
+      {/* Contract Detail Dialog */}
+      <Dialog open={detailDialogOpen} onOpenChange={setDetailDialogOpen}>
+        <DialogContent className="max-w-lg">
+          <DialogHeader>
+            <DialogTitle>{selectedContract?.title}</DialogTitle>
+            <DialogDescription>Contract Details</DialogDescription>
+          </DialogHeader>
+          {selectedContract && (
+            <div className="space-y-4">
+              <div className="flex items-center gap-2">
+                {getStatusBadge(selectedContract.status)}
+              </div>
+
+              {selectedContract.description && (
+                <div>
+                  <p className="text-sm font-medium text-muted-foreground mb-1">Description</p>
+                  <p className="text-sm">{selectedContract.description}</p>
+                </div>
+              )}
+
+              <div className="grid grid-cols-2 gap-4 text-sm">
+                <div>
+                  <p className="font-medium text-muted-foreground">File</p>
+                  <p>{selectedContract.fileName}</p>
+                  <p className="text-xs text-muted-foreground">{formatFileSize(selectedContract.fileSize)}</p>
+                </div>
+                <div>
+                  <p className="font-medium text-muted-foreground">Created</p>
+                  <p>{new Date(selectedContract.createdAt).toLocaleDateString()}</p>
+                </div>
+                {selectedContract.startDate && (
+                  <div>
+                    <p className="font-medium text-muted-foreground">Start Date</p>
+                    <p>{new Date(selectedContract.startDate).toLocaleDateString()}</p>
+                  </div>
+                )}
+                {selectedContract.endDate && (
+                  <div>
+                    <p className="font-medium text-muted-foreground">End Date</p>
+                    <p>{new Date(selectedContract.endDate).toLocaleDateString()}</p>
+                  </div>
+                )}
+              </div>
+
+              <div className="flex gap-2 pt-4 border-t">
+                <Button 
+                  onClick={() => window.open(selectedContract.fileUrl, '_blank')}
+                  className="flex-1"
+                >
+                  <ExternalLink className="mr-2 h-4 w-4" />
+                  View Document
+                </Button>
+                {selectedContract.status === 'DRAFT' && (
+                  <Button 
+                    variant="outline"
+                    onClick={() => {
+                      handleUpdateStatus(selectedContract.id, 'ACTIVE')
+                      setDetailDialogOpen(false)
+                    }}
+                  >
+                    <CheckCircle className="mr-2 h-4 w-4" />
+                    Activate
+                  </Button>
+                )}
+              </div>
+            </div>
+          )}
         </DialogContent>
       </Dialog>
     </>

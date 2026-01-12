@@ -265,7 +265,11 @@ export function ChecklistsList({ branchId, projectId }: ChecklistsListProps) {
               {checklists.map((checklist) => (
                 <div
                   key={checklist.id}
-                  className="flex items-start justify-between p-4 border rounded-lg hover:bg-muted/50 transition-colors"
+                  className="flex items-start justify-between p-4 border rounded-lg hover:bg-muted/50 transition-colors cursor-pointer"
+                  onClick={() => {
+                    setSelectedChecklist(checklist)
+                    setRunDialogOpen(true)
+                  }}
                 >
                   <div className="space-y-1 flex-1">
                     <div className="flex items-center gap-2">
@@ -292,7 +296,10 @@ export function ChecklistsList({ branchId, projectId }: ChecklistsListProps) {
                       <Button
                         variant="outline"
                         size="sm"
-                        onClick={() => handleStartChecklist(checklist)}
+                        onClick={(e) => {
+                          e.stopPropagation()
+                          handleStartChecklist(checklist)
+                        }}
                       >
                         <Play className="mr-2 h-4 w-4" />
                         {checklist.status === 'IN_PROGRESS' ? 'Continue' : 'Start'}
@@ -300,7 +307,7 @@ export function ChecklistsList({ branchId, projectId }: ChecklistsListProps) {
                     )}
                     <DropdownMenu>
                       <DropdownMenuTrigger asChild>
-                        <Button variant="ghost" size="icon">
+                        <Button variant="ghost" size="icon" onClick={(e) => e.stopPropagation()}>
                           <MoreHorizontal className="h-4 w-4" />
                         </Button>
                       </DropdownMenuTrigger>

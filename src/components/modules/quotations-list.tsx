@@ -71,6 +71,8 @@ export function QuotationsList({ branchId, projectId }: QuotationsListProps) {
   const [quotations, setQuotations] = useState<Quotation[]>([])
   const [loading, setLoading] = useState(true)
   const [createDialogOpen, setCreateDialogOpen] = useState(false)
+  const [detailDialogOpen, setDetailDialogOpen] = useState(false)
+  const [selectedQuotation, setSelectedQuotation] = useState<Quotation | null>(null)
   const [creating, setCreating] = useState(false)
   const [error, setError] = useState('')
 
@@ -271,7 +273,11 @@ export function QuotationsList({ branchId, projectId }: QuotationsListProps) {
               {quotations.map((quotation) => (
                 <div
                   key={quotation.id}
-                  className="flex items-start justify-between p-4 border rounded-lg hover:bg-muted/50 transition-colors"
+                  className="flex items-start justify-between p-4 border rounded-lg hover:bg-muted/50 transition-colors cursor-pointer"
+                  onClick={() => {
+                    setSelectedQuotation(quotation)
+                    setDetailDialogOpen(true)
+                  }}
                 >
                   <div className="space-y-1 flex-1">
                     <div className="flex items-center gap-2">
@@ -300,7 +306,7 @@ export function QuotationsList({ branchId, projectId }: QuotationsListProps) {
                   </div>
                   <DropdownMenu>
                     <DropdownMenuTrigger asChild>
-                      <Button variant="ghost" size="icon">
+                      <Button variant="ghost" size="icon" onClick={(e) => e.stopPropagation()}>
                         <MoreHorizontal className="h-4 w-4" />
                       </Button>
                     </DropdownMenuTrigger>
@@ -473,6 +479,118 @@ export function QuotationsList({ branchId, projectId }: QuotationsListProps) {
               </Button>
             </DialogFooter>
           </form>
+        </DialogContent>
+      </Dialog>
+
+      {/* Quotation Detail Dialog */}
+      <Dialog open={detailDialogOpen} onOpenChange={setDetailDialogOpen}>
+        <DialogContent className="max-w-2xl max-h-[80vh] overflow-y-auto">
+          <DialogHeader>
+            <DialogTitle>{selectedQuotation?.title}</DialogTitle>
+            <DialogDescription>Quotation Details</DialogDescription>
+          </DialogHeader>
+          {selectedQuotation && (
+            <div className="space-y-4">
+              <div className="flex items-center gap-2">
+                {getStatusBadge(selectedQuotation.status)}
+                <span className="text-lg font-semibold">{formatCurrency(selectedQuotation.total)}</span>
+              </div>
+
+              {selectedQuotation.description && (
+                <div>
+                  <p className="text-sm font-medium text-muted-foreground mb-1">Description</p>
+                  <p className="text-sm">{selectedQuotation.description}</p>
+                </div>
+              )}
+
+              <div>
+                <p className="text-sm font-medium text-muted-foreground mb-2">Line Items</p>
+                <div className="border rounded-lg overflow-hidden">
+                  <table className="w-full text-sm">
+                    <thead className="bg-muted">
+                      <tr>
+                        <th className="text-left p-2">Description</th>
+                        <th className="text-right p-2">Qty</th>
+                        <th className="text-right p-2">Unit Price</th>
+                        <th className="text-right p-2">Total</th>
+                      </tr>
+                    </thead>
+                    <tbody>
+                      {selectedQuotation.items.map((item, idx) => (
+                        <tr key={idx} className="border-t">
+                          <td className="p-2">{item.description}</td>
+                          <td className="text-right p-2">{item.quantity}</td>
+                          <td className="text-right p-2">{formatCurrency(item.unitPrice)}</td>
+                          <td className="text-right p-2">{formatCurrency(item.total)}</td>
+                        </tr>
+                      ))}
+                    </tbody>
+                    <tfoot className="bg-muted/50">
+                      <tr className="border-t">
+                        <td colSpan={3} className="text-right p-2 font-medium">Subtotal</td>
+                        <td className="text-right p-2">{formatCurrency(selectedQuotation.subtotal)}</td>
+                      </tr>
+                      <tr>
+                        <td colSpan={3} className="text-right p-2 font-medium">Tax ({selectedQuotation.taxRate}%)</td>
+                        <td className="text-right p-2">{formatCurrency(selectedQuotation.taxAmount)}</td>
+                      </tr>
+                      <tr className="font-bold">
+                        <td colSpan={3} className="text-right p-2">Total</td>
+                        <td className="text-right p-2">{formatCurrency(selectedQuotation.total)}</td>
+                      </tr>
+                    </tfoot>
+                  </table>
+                </div>
+              </div>
+
+              <div className="grid grid-cols-2 gap-4 text-sm">
+                <div>
+                  <p className="font-medium text-muted-foreground">Created</p>
+                  <p>{new Date(selectedQuotation.createdAt).toLocaleDateString()}</p>
+                </div>
+                {selectedQuotation.validUntil && (
+                  <div>
+                    <p className="font-medium text-muted-foreground">Valid Until</p>
+                    <p>{new Date(selectedQuotation.validUntil).toLocaleDateString()}</p>
+                  </div>
+                )}
+                {selectedQuotation.sentAt && (
+                  <div>
+                    <p className="font-medium text-muted-foreground">Sent</p>
+                    <p>{new Date(selectedQuotation.sentAt).toLocaleDateString()}</p>
+                  </div>
+                )}
+                {selectedQuotation.approvedAt && (
+                  <div>
+                    <p className="font-medium text-muted-foreground">Approved</p>
+                    <p>{new Date(selectedQuotation.approvedAt).toLocaleDateString()}</p>
+                  </div>
+                )}
+              </div>
+
+              {selectedQuotation.rejectionNote && (
+                <div className="p-3 bg-red-50 border border-red-200 rounded-lg">
+                  <p className="text-sm font-medium text-red-700">Rejection Note</p>
+                  <p className="text-sm text-red-600">{selectedQuotation.rejectionNote}</p>
+                </div>
+              )}
+
+              {selectedQuotation.status === 'DRAFT' && (
+                <div className="flex gap-2 pt-4 border-t">
+                  <Button 
+                    onClick={() => {
+                      handleSendQuotation(selectedQuotation.id)
+                      setDetailDialogOpen(false)
+                    }}
+                    className="flex-1"
+                  >
+                    <Send className="mr-2 h-4 w-4" />
+                    Send to Client
+                  </Button>
+                </div>
+              )}
+            </div>
+          )}
         </DialogContent>
       </Dialog>
     </>

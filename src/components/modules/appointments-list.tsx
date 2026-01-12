@@ -63,6 +63,8 @@ export function AppointmentsList({ branchId, projectId }: AppointmentsListProps)
   const [appointments, setAppointments] = useState<Appointment[]>([])
   const [loading, setLoading] = useState(true)
   const [createDialogOpen, setCreateDialogOpen] = useState(false)
+  const [detailDialogOpen, setDetailDialogOpen] = useState(false)
+  const [selectedAppointment, setSelectedAppointment] = useState<Appointment | null>(null)
   const [creating, setCreating] = useState(false)
   const [error, setError] = useState('')
 
@@ -261,7 +263,11 @@ export function AppointmentsList({ branchId, projectId }: AppointmentsListProps)
                       {dayAppointments.map((appointment) => (
                         <div
                           key={appointment.id}
-                          className="flex items-start justify-between p-4 border rounded-lg hover:bg-muted/50 transition-colors"
+                          className="flex items-start justify-between p-4 border rounded-lg hover:bg-muted/50 transition-colors cursor-pointer"
+                          onClick={() => {
+                            setSelectedAppointment(appointment)
+                            setDetailDialogOpen(true)
+                          }}
                         >
                           <div className="space-y-1 flex-1">
                             <div className="flex items-center gap-2">
@@ -290,7 +296,7 @@ export function AppointmentsList({ branchId, projectId }: AppointmentsListProps)
                           </div>
                           <DropdownMenu>
                             <DropdownMenuTrigger asChild>
-                              <Button variant="ghost" size="icon">
+                              <Button variant="ghost" size="icon" onClick={(e) => e.stopPropagation()}>
                                 <MoreHorizontal className="h-4 w-4" />
                               </Button>
                             </DropdownMenuTrigger>
@@ -416,6 +422,102 @@ export function AppointmentsList({ branchId, projectId }: AppointmentsListProps)
               </Button>
             </DialogFooter>
           </form>
+        </DialogContent>
+      </Dialog>
+
+      {/* Appointment Detail Dialog */}
+      <Dialog open={detailDialogOpen} onOpenChange={setDetailDialogOpen}>
+        <DialogContent className="max-w-lg">
+          <DialogHeader>
+            <DialogTitle>{selectedAppointment?.title}</DialogTitle>
+            <DialogDescription>Appointment Details</DialogDescription>
+          </DialogHeader>
+          {selectedAppointment && (
+            <div className="space-y-4">
+              <div className="flex items-center gap-2">
+                {getStatusBadge(selectedAppointment.status)}
+              </div>
+
+              <div className="grid grid-cols-2 gap-4 text-sm">
+                <div>
+                  <p className="font-medium text-muted-foreground">Date</p>
+                  <p>{formatDate(selectedAppointment.date.split('T')[0])}</p>
+                </div>
+                <div>
+                  <p className="font-medium text-muted-foreground">Time</p>
+                  <p>
+                    {formatTime(selectedAppointment.startTime)}
+                    {selectedAppointment.endTime && ` - ${formatTime(selectedAppointment.endTime)}`}
+                  </p>
+                </div>
+                {selectedAppointment.assignedTo && (
+                  <div>
+                    <p className="font-medium text-muted-foreground">Assigned To</p>
+                    <p>{selectedAppointment.assignedTo}</p>
+                  </div>
+                )}
+              </div>
+
+              {selectedAppointment.description && (
+                <div>
+                  <p className="text-sm font-medium text-muted-foreground mb-1">Description</p>
+                  <p className="text-sm">{selectedAppointment.description}</p>
+                </div>
+              )}
+
+              {selectedAppointment.rescheduleNote && (
+                <div className="p-3 bg-orange-50 border border-orange-200 rounded-lg">
+                  <p className="text-sm font-medium text-orange-700">Reschedule Requested</p>
+                  <p className="text-sm text-orange-600">{selectedAppointment.rescheduleNote}</p>
+                </div>
+              )}
+
+              {selectedAppointment.cancellationNote && (
+                <div className="p-3 bg-red-50 border border-red-200 rounded-lg">
+                  <p className="text-sm font-medium text-red-700">Cancellation Note</p>
+                  <p className="text-sm text-red-600">{selectedAppointment.cancellationNote}</p>
+                </div>
+              )}
+
+              <div className="flex gap-2 pt-4 border-t">
+                {selectedAppointment.status === 'CONFIRMED' && (
+                  <Button 
+                    onClick={() => {
+                      handleUpdateStatus(selectedAppointment.id, 'IN_PROGRESS')
+                      setDetailDialogOpen(false)
+                    }}
+                    className="flex-1"
+                  >
+                    Start Appointment
+                  </Button>
+                )}
+                {selectedAppointment.status === 'IN_PROGRESS' && (
+                  <Button 
+                    onClick={() => {
+                      handleUpdateStatus(selectedAppointment.id, 'COMPLETED')
+                      setDetailDialogOpen(false)
+                    }}
+                    className="flex-1"
+                  >
+                    <CheckCircle className="mr-2 h-4 w-4" />
+                    Mark Complete
+                  </Button>
+                )}
+                {(selectedAppointment.status === 'SCHEDULED' || selectedAppointment.status === 'RESCHEDULED') && (
+                  <Button 
+                    variant="outline"
+                    onClick={() => {
+                      handleUpdateStatus(selectedAppointment.id, 'CANCELLED')
+                      setDetailDialogOpen(false)
+                    }}
+                  >
+                    <XCircle className="mr-2 h-4 w-4" />
+                    Cancel
+                  </Button>
+                )}
+              </div>
+            </div>
+          )}
         </DialogContent>
       </Dialog>
     </>

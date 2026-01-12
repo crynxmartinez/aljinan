@@ -72,6 +72,8 @@ export function InvoicesList({ branchId, projectId }: InvoicesListProps) {
   const [invoices, setInvoices] = useState<Invoice[]>([])
   const [loading, setLoading] = useState(true)
   const [createDialogOpen, setCreateDialogOpen] = useState(false)
+  const [detailDialogOpen, setDetailDialogOpen] = useState(false)
+  const [selectedInvoice, setSelectedInvoice] = useState<Invoice | null>(null)
   const [creating, setCreating] = useState(false)
   const [error, setError] = useState('')
 
@@ -281,7 +283,11 @@ export function InvoicesList({ branchId, projectId }: InvoicesListProps) {
               {invoices.map((invoice) => (
                 <div
                   key={invoice.id}
-                  className="flex items-start justify-between p-4 border rounded-lg hover:bg-muted/50 transition-colors"
+                  className="flex items-start justify-between p-4 border rounded-lg hover:bg-muted/50 transition-colors cursor-pointer"
+                  onClick={() => {
+                    setSelectedInvoice(invoice)
+                    setDetailDialogOpen(true)
+                  }}
                 >
                   <div className="space-y-1 flex-1">
                     <div className="flex items-center gap-2">
@@ -305,7 +311,7 @@ export function InvoicesList({ branchId, projectId }: InvoicesListProps) {
                   </div>
                   <DropdownMenu>
                     <DropdownMenuTrigger asChild>
-                      <Button variant="ghost" size="icon">
+                      <Button variant="ghost" size="icon" onClick={(e) => e.stopPropagation()}>
                         <MoreHorizontal className="h-4 w-4" />
                       </Button>
                     </DropdownMenuTrigger>
@@ -479,6 +485,125 @@ export function InvoicesList({ branchId, projectId }: InvoicesListProps) {
               </Button>
             </DialogFooter>
           </form>
+        </DialogContent>
+      </Dialog>
+
+      {/* Invoice Detail Dialog */}
+      <Dialog open={detailDialogOpen} onOpenChange={setDetailDialogOpen}>
+        <DialogContent className="max-w-2xl max-h-[80vh] overflow-y-auto">
+          <DialogHeader>
+            <DialogTitle className="flex items-center gap-2">
+              <span className="font-mono text-muted-foreground">{selectedInvoice?.invoiceNumber}</span>
+              {selectedInvoice?.title}
+            </DialogTitle>
+            <DialogDescription>Invoice Details</DialogDescription>
+          </DialogHeader>
+          {selectedInvoice && (
+            <div className="space-y-4">
+              <div className="flex items-center gap-2">
+                {getStatusBadge(selectedInvoice.status)}
+                <span className="text-lg font-semibold">{formatCurrency(selectedInvoice.total)}</span>
+              </div>
+
+              <div>
+                <p className="text-sm font-medium text-muted-foreground mb-2">Line Items</p>
+                <div className="border rounded-lg overflow-hidden">
+                  <table className="w-full text-sm">
+                    <thead className="bg-muted">
+                      <tr>
+                        <th className="text-left p-2">Description</th>
+                        <th className="text-right p-2">Qty</th>
+                        <th className="text-right p-2">Unit Price</th>
+                        <th className="text-right p-2">Total</th>
+                      </tr>
+                    </thead>
+                    <tbody>
+                      {selectedInvoice.items.map((item, idx) => (
+                        <tr key={idx} className="border-t">
+                          <td className="p-2">{item.description}</td>
+                          <td className="text-right p-2">{item.quantity}</td>
+                          <td className="text-right p-2">{formatCurrency(item.unitPrice)}</td>
+                          <td className="text-right p-2">{formatCurrency(item.total)}</td>
+                        </tr>
+                      ))}
+                    </tbody>
+                    <tfoot className="bg-muted/50">
+                      <tr className="border-t">
+                        <td colSpan={3} className="text-right p-2 font-medium">Subtotal</td>
+                        <td className="text-right p-2">{formatCurrency(selectedInvoice.subtotal)}</td>
+                      </tr>
+                      <tr>
+                        <td colSpan={3} className="text-right p-2 font-medium">Tax ({selectedInvoice.taxRate}%)</td>
+                        <td className="text-right p-2">{formatCurrency(selectedInvoice.taxAmount)}</td>
+                      </tr>
+                      <tr className="font-bold">
+                        <td colSpan={3} className="text-right p-2">Total</td>
+                        <td className="text-right p-2">{formatCurrency(selectedInvoice.total)}</td>
+                      </tr>
+                      {selectedInvoice.amountPaid > 0 && (
+                        <tr>
+                          <td colSpan={3} className="text-right p-2 font-medium text-green-600">Amount Paid</td>
+                          <td className="text-right p-2 text-green-600">{formatCurrency(selectedInvoice.amountPaid)}</td>
+                        </tr>
+                      )}
+                    </tfoot>
+                  </table>
+                </div>
+              </div>
+
+              <div className="grid grid-cols-2 gap-4 text-sm">
+                <div>
+                  <p className="font-medium text-muted-foreground">Created</p>
+                  <p>{new Date(selectedInvoice.createdAt).toLocaleDateString()}</p>
+                </div>
+                {selectedInvoice.dueDate && (
+                  <div>
+                    <p className="font-medium text-muted-foreground">Due Date</p>
+                    <p>{new Date(selectedInvoice.dueDate).toLocaleDateString()}</p>
+                  </div>
+                )}
+                {selectedInvoice.sentAt && (
+                  <div>
+                    <p className="font-medium text-muted-foreground">Sent</p>
+                    <p>{new Date(selectedInvoice.sentAt).toLocaleDateString()}</p>
+                  </div>
+                )}
+                {selectedInvoice.paidAt && (
+                  <div>
+                    <p className="font-medium text-muted-foreground">Paid</p>
+                    <p>{new Date(selectedInvoice.paidAt).toLocaleDateString()}</p>
+                  </div>
+                )}
+              </div>
+
+              <div className="flex gap-2 pt-4 border-t">
+                {selectedInvoice.status === 'DRAFT' && (
+                  <Button 
+                    onClick={() => {
+                      handleSendInvoice(selectedInvoice.id)
+                      setDetailDialogOpen(false)
+                    }}
+                    className="flex-1"
+                  >
+                    <Send className="mr-2 h-4 w-4" />
+                    Send to Client
+                  </Button>
+                )}
+                {(selectedInvoice.status === 'SENT' || selectedInvoice.status === 'PARTIAL') && (
+                  <Button 
+                    onClick={() => {
+                      handleMarkPaid(selectedInvoice.id)
+                      setDetailDialogOpen(false)
+                    }}
+                    className="flex-1"
+                  >
+                    <CheckCircle className="mr-2 h-4 w-4" />
+                    Mark as Paid
+                  </Button>
+                )}
+              </div>
+            </div>
+          )}
         </DialogContent>
       </Dialog>
     </>
