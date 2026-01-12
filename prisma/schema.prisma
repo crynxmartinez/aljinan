@@ -95,12 +95,51 @@ model Branch {
   managerAccess BranchManager[]
   
   // Module relations
+  projects     Project[]
   requests     Request[]
   quotations   Quotation[]
   appointments Appointment[]
   invoices     Invoice[]
   contracts    Contract[]
   checklists   Checklist[]
+}
+
+// Project statuses
+enum ProjectStatus {
+  INQUIRY
+  QUOTED
+  APPROVED
+  SCHEDULED
+  IN_PROGRESS
+  COMPLETED
+  INVOICED
+  PAID
+  CANCELLED
+}
+
+// Project - groups related requests, quotations, appointments, etc.
+model Project {
+  id            String        @id @default(cuid())
+  branchId      String
+  branch        Branch        @relation(fields: [branchId], references: [id], onDelete: Cascade)
+  title         String
+  description   String?
+  status        ProjectStatus @default(INQUIRY)
+  priority      RequestPriority @default(MEDIUM)
+  createdById   String
+  createdByRole UserRole
+  completedAt   DateTime?
+  createdAt     DateTime      @default(now())
+  updatedAt     DateTime      @updatedAt
+
+  // Related modules
+  requests     Request[]
+  quotations   Quotation[]
+  appointments Appointment[]
+  invoices     Invoice[]
+  contracts    Contract[]
+  checklists   Checklist[]
+  activities   Activity[]
 }
 
 // Request priorities and statuses
@@ -120,20 +159,22 @@ enum RequestStatus {
 
 // Service Request - created by contractor or client for a branch
 model Request {
-  id          String          @id @default(cuid())
-  branchId    String
-  branch      Branch          @relation(fields: [branchId], references: [id], onDelete: Cascade)
-  title       String
-  description String?
-  priority    RequestPriority @default(MEDIUM)
-  status      RequestStatus   @default(OPEN)
-  createdById String
+  id            String          @id @default(cuid())
+  branchId      String
+  branch        Branch          @relation(fields: [branchId], references: [id], onDelete: Cascade)
+  projectId     String?
+  project       Project?        @relation(fields: [projectId], references: [id], onDelete: SetNull)
+  title         String
+  description   String?
+  priority      RequestPriority @default(MEDIUM)
+  status        RequestStatus   @default(OPEN)
+  createdById   String
   createdByRole UserRole
-  assignedTo  String?
-  dueDate     DateTime?
-  completedAt DateTime?
-  createdAt   DateTime        @default(now())
-  updatedAt   DateTime        @updatedAt
+  assignedTo    String?
+  dueDate       DateTime?
+  completedAt   DateTime?
+  createdAt     DateTime        @default(now())
+  updatedAt     DateTime        @updatedAt
 }
 
 // Quotation statuses
@@ -150,6 +191,8 @@ model Quotation {
   id            String          @id @default(cuid())
   branchId      String
   branch        Branch          @relation(fields: [branchId], references: [id], onDelete: Cascade)
+  projectId     String?
+  project       Project?        @relation(fields: [projectId], references: [id], onDelete: SetNull)
   requestId     String?
   title         String
   description   String?
@@ -199,6 +242,8 @@ model Appointment {
   id              String            @id @default(cuid())
   branchId        String
   branch          Branch            @relation(fields: [branchId], references: [id], onDelete: Cascade)
+  projectId       String?
+  project         Project?          @relation(fields: [projectId], references: [id], onDelete: SetNull)
   title           String
   description     String?
   date            DateTime
@@ -234,6 +279,8 @@ model Invoice {
   id            String        @id @default(cuid())
   branchId      String
   branch        Branch        @relation(fields: [branchId], references: [id], onDelete: Cascade)
+  projectId     String?
+  project       Project?      @relation(fields: [projectId], references: [id], onDelete: SetNull)
   quotationId   String?
   invoiceNumber String
   title         String
@@ -279,6 +326,8 @@ model Contract {
   id            String         @id @default(cuid())
   branchId      String
   branch        Branch         @relation(fields: [branchId], references: [id], onDelete: Cascade)
+  projectId     String?
+  project       Project?       @relation(fields: [projectId], references: [id], onDelete: SetNull)
   title         String
   description   String?
   fileName      String
@@ -304,6 +353,8 @@ model Checklist {
   id            String          @id @default(cuid())
   branchId      String
   branch        Branch          @relation(fields: [branchId], references: [id], onDelete: Cascade)
+  projectId     String?
+  project       Project?        @relation(fields: [projectId], references: [id], onDelete: SetNull)
   title         String
   description   String?
   items         ChecklistItem[]
@@ -327,6 +378,30 @@ model ChecklistItem {
   order       Int       @default(0)
   createdAt   DateTime  @default(now())
   updatedAt   DateTime  @updatedAt
+}
+
+// Activity types for tracking
+enum ActivityType {
+  COMMENT
+  STATUS_CHANGE
+  CREATED
+  UPDATED
+  APPROVED
+  REJECTED
+  COMPLETED
+}
+
+// Activity - comments and activity log for projects
+model Activity {
+  id          String       @id @default(cuid())
+  projectId   String
+  project     Project      @relation(fields: [projectId], references: [id], onDelete: Cascade)
+  type        ActivityType
+  content     String?
+  metadata    String?      // JSON string for additional data
+  createdById String
+  createdByRole UserRole
+  createdAt   DateTime     @default(now())
 }
 
 // Manager - created by clients to manage specific branches
