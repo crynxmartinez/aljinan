@@ -1,0 +1,56 @@
+import { getServerSession } from 'next-auth'
+import { redirect } from 'next/navigation'
+import { authOptions } from '@/lib/auth'
+import { prisma } from '@/lib/prisma'
+import { ClientSidebar } from '@/components/layout/client-sidebar'
+
+async function getClientData(userId: string) {
+  const client = await prisma.client.findUnique({
+    where: { userId },
+    include: {
+      contractor: {
+        select: {
+          companyName: true,
+        }
+      },
+      branches: {
+        where: { isActive: true },
+        orderBy: { createdAt: 'asc' }
+      }
+    }
+  })
+
+  return client
+}
+
+export default async function PortalLayout({
+  children,
+}: {
+  children: React.ReactNode
+}) {
+  const session = await getServerSession(authOptions)
+
+  if (!session) {
+    redirect('/login')
+  }
+
+  // Only clients can access the portal
+  if (session.user.role !== 'CLIENT') {
+    redirect('/dashboard')
+  }
+
+  const client = await getClientData(session.user.id)
+
+  if (!client) {
+    redirect('/login')
+  }
+
+  return (
+    <div className="flex h-screen overflow-hidden">
+      <ClientSidebar client={client} />
+      <main className="flex-1 overflow-auto bg-background">
+        {children}
+      </main>
+    </div>
+  )
+}

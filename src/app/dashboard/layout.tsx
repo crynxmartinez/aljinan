@@ -47,6 +47,11 @@ export default async function DashboardLayout({
     redirect('/login')
   }
 
+  // Redirect clients to their own portal
+  if (session.user.role === 'CLIENT') {
+    redirect('/portal')
+  }
+
   const clients = await getClients(session.user.id)
 
   return (
