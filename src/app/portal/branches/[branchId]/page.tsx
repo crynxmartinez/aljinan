@@ -11,6 +11,7 @@ import { ClientBranchQuotations } from './client-branch-quotations'
 import { ClientBranchAppointments } from './client-branch-appointments'
 import { ClientBranchInvoices } from './client-branch-invoices'
 import { ClientBranchContracts } from './client-branch-contracts'
+import { ClientBranchReports } from './client-branch-reports'
 import {
   FileText,
   Receipt,
@@ -207,21 +208,7 @@ export default async function ClientBranchPage({
 
           {/* Reports Tab */}
           <TabsContent value="reports" className="mt-0">
-            <Card>
-              <CardHeader>
-                <CardTitle>Inspection Reports</CardTitle>
-                <CardDescription>View completed inspection reports and checklists</CardDescription>
-              </CardHeader>
-              <CardContent>
-                <div className="flex flex-col items-center justify-center py-12 text-center">
-                  <ClipboardList className="h-12 w-12 text-muted-foreground/30 mb-4" />
-                  <h3 className="text-lg font-semibold mb-2">No reports yet</h3>
-                  <p className="text-muted-foreground max-w-md">
-                    Completed inspection reports and checklists will appear here.
-                  </p>
-                </div>
-              </CardContent>
-            </Card>
+            <ClientBranchReports branchId={branch.id} />
           </TabsContent>
         </div>
       </Tabs>

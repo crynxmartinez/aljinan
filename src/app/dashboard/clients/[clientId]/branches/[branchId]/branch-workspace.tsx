@@ -9,6 +9,7 @@ import { QuotationsList } from '@/components/modules/quotations-list'
 import { AppointmentsList } from '@/components/modules/appointments-list'
 import { InvoicesList } from '@/components/modules/invoices-list'
 import { ContractsList } from '@/components/modules/contracts-list'
+import { ChecklistsList } from '@/components/modules/checklists-list'
 import {
   LayoutDashboard,
   FileText,
@@ -93,12 +94,7 @@ export function BranchWorkspace({ clientId, branchId, branch }: BranchWorkspaceP
         </TabsContent>
 
         <TabsContent value="checklists" className="mt-0">
-          <ModulePlaceholder
-            title="Checklists"
-            description="Inspection checklists and reports"
-            icon={ClipboardList}
-            actionLabel="New Checklist"
-          />
+          <ChecklistsList branchId={branchId} />
         </TabsContent>
 
         <TabsContent value="messages" className="mt-0">

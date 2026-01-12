@@ -99,6 +99,7 @@ model Branch {
   appointments Appointment[]
   invoices     Invoice[]
   contracts    Contract[]
+  checklists   Checklist[]
 }
 
 // Request priorities and statuses
@@ -288,6 +289,43 @@ model Contract {
   uploadedById  String
   createdAt     DateTime       @default(now())
   updatedAt     DateTime       @updatedAt
+}
+
+// Checklist statuses
+enum ChecklistStatus {
+  DRAFT
+  IN_PROGRESS
+  COMPLETED
+}
+
+// Checklist - inspection checklists created by contractor
+model Checklist {
+  id            String          @id @default(cuid())
+  branchId      String
+  branch        Branch          @relation(fields: [branchId], references: [id], onDelete: Cascade)
+  title         String
+  description   String?
+  items         ChecklistItem[]
+  status        ChecklistStatus @default(DRAFT)
+  completedAt   DateTime?
+  completedById String?
+  notes         String?
+  createdById   String
+  createdAt     DateTime        @default(now())
+  updatedAt     DateTime        @updatedAt
+}
+
+// Checklist items
+model ChecklistItem {
+  id          String    @id @default(cuid())
+  checklistId String
+  checklist   Checklist @relation(fields: [checklistId], references: [id], onDelete: Cascade)
+  description String
+  isCompleted Boolean   @default(false)
+  notes       String?
+  order       Int       @default(0)
+  createdAt   DateTime  @default(now())
+  updatedAt   DateTime  @updatedAt
 }
 
 // Manager - created by clients to manage specific branches
