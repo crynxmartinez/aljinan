@@ -115,10 +115,11 @@ export async function POST(request: Request) {
     })
 
     // TODO: Send invitation email using Resend
-    // For now, we'll just log the temp password (remove in production)
-    console.log(`Client created: ${companyEmail}, temp password: ${tempPassword}`)
-
-    return NextResponse.json(client, { status: 201 })
+    // For now, return the temp password so it can be shown in UI (remove in production)
+    return NextResponse.json({ 
+      ...client, 
+      tempPassword // Include temp password in response for display
+    }, { status: 201 })
   } catch (error) {
     console.error('Error creating client:', error)
     return NextResponse.json(
