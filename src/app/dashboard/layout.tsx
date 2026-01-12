@@ -47,6 +47,16 @@ export default async function DashboardLayout({
     redirect('/login')
   }
 
+  // Redirect CLIENT role to portal
+  if (session.user.role === 'CLIENT') {
+    redirect('/portal')
+  }
+
+  // Redirect MANAGER role to portal (future)
+  if (session.user.role === 'MANAGER') {
+    redirect('/portal')
+  }
+
   const clients = await getClients(session.user.id)
 
   return (
