@@ -138,12 +138,13 @@ export function QuotationsList({ branchId, projectId }: QuotationsListProps) {
     }
   }
 
-  const handleCreateQuotation = async (e: React.FormEvent) => {
+  const handleCreateQuotation = async (e: React.FormEvent, sendImmediately: boolean = false) => {
     e.preventDefault()
     setCreating(true)
     setError('')
 
     try {
+      // Step 1: Create the quotation
       const response = await fetch(`/api/branches/${branchId}/quotations`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
@@ -160,6 +161,16 @@ export function QuotationsList({ branchId, projectId }: QuotationsListProps) {
       if (!response.ok) {
         const data = await response.json()
         throw new Error(data.error || 'Failed to create quotation')
+      }
+
+      // Step 2: If sendImmediately, update status to SENT
+      if (sendImmediately) {
+        const createdQuotation = await response.json()
+        await fetch(`/api/branches/${branchId}/quotations/${createdQuotation.id}`, {
+          method: 'PATCH',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ status: 'SENT' }),
+        })
       }
 
       setCreateDialogOpen(false)
@@ -473,9 +484,26 @@ export function QuotationsList({ branchId, projectId }: QuotationsListProps) {
               <Button type="button" variant="outline" onClick={() => setCreateDialogOpen(false)}>
                 Cancel
               </Button>
-              <Button type="submit" disabled={creating}>
+              <Button 
+                type="button" 
+                variant="outline"
+                disabled={creating}
+                onClick={(e) => handleCreateQuotation(e, false)}
+              >
                 {creating && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
                 Save as Draft
+              </Button>
+              <Button 
+                type="submit" 
+                disabled={creating}
+                onClick={(e) => {
+                  e.preventDefault()
+                  handleCreateQuotation(e, true)
+                }}
+              >
+                {creating && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
+                <Send className="mr-2 h-4 w-4" />
+                Create & Send
               </Button>
             </DialogFooter>
           </form>

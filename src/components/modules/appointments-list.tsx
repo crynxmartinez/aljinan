@@ -98,12 +98,13 @@ export function AppointmentsList({ branchId, projectId }: AppointmentsListProps)
     fetchAppointments()
   }, [branchId, projectId])
 
-  const handleCreateAppointment = async (e: React.FormEvent) => {
+  const handleCreateAppointment = async (e: React.FormEvent, confirmImmediately: boolean = false) => {
     e.preventDefault()
     setCreating(true)
     setError('')
 
     try {
+      // Step 1: Create the appointment
       const response = await fetch(`/api/branches/${branchId}/appointments`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
@@ -121,6 +122,16 @@ export function AppointmentsList({ branchId, projectId }: AppointmentsListProps)
       if (!response.ok) {
         const data = await response.json()
         throw new Error(data.error || 'Failed to create appointment')
+      }
+
+      // Step 2: If confirmImmediately, update status to CONFIRMED
+      if (confirmImmediately) {
+        const createdAppointment = await response.json()
+        await fetch(`/api/branches/${branchId}/appointments/${createdAppointment.id}`, {
+          method: 'PATCH',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ status: 'CONFIRMED' }),
+        })
       }
 
       setCreateDialogOpen(false)
@@ -416,9 +427,26 @@ export function AppointmentsList({ branchId, projectId }: AppointmentsListProps)
               <Button type="button" variant="outline" onClick={() => setCreateDialogOpen(false)}>
                 Cancel
               </Button>
-              <Button type="submit" disabled={creating}>
+              <Button 
+                type="button" 
+                variant="outline"
+                disabled={creating}
+                onClick={(e) => handleCreateAppointment(e, false)}
+              >
                 {creating && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
-                Schedule
+                Schedule (Pending)
+              </Button>
+              <Button 
+                type="submit" 
+                disabled={creating}
+                onClick={(e) => {
+                  e.preventDefault()
+                  handleCreateAppointment(e, true)
+                }}
+              >
+                {creating && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
+                <CalendarCheck className="mr-2 h-4 w-4" />
+                Schedule & Confirm
               </Button>
             </DialogFooter>
           </form>

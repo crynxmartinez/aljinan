@@ -135,12 +135,13 @@ export function InvoicesList({ branchId, projectId }: InvoicesListProps) {
     }
   }
 
-  const handleCreateInvoice = async (e: React.FormEvent) => {
+  const handleCreateInvoice = async (e: React.FormEvent, sendImmediately: boolean = false) => {
     e.preventDefault()
     setCreating(true)
     setError('')
 
     try {
+      // Step 1: Create the invoice
       const response = await fetch(`/api/branches/${branchId}/invoices`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
@@ -157,6 +158,16 @@ export function InvoicesList({ branchId, projectId }: InvoicesListProps) {
       if (!response.ok) {
         const data = await response.json()
         throw new Error(data.error || 'Failed to create invoice')
+      }
+
+      // Step 2: If sendImmediately, update status to SENT
+      if (sendImmediately) {
+        const createdInvoice = await response.json()
+        await fetch(`/api/branches/${branchId}/invoices/${createdInvoice.id}`, {
+          method: 'PATCH',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ status: 'SENT' }),
+        })
       }
 
       setCreateDialogOpen(false)
@@ -479,9 +490,26 @@ export function InvoicesList({ branchId, projectId }: InvoicesListProps) {
               <Button type="button" variant="outline" onClick={() => setCreateDialogOpen(false)}>
                 Cancel
               </Button>
-              <Button type="submit" disabled={creating}>
+              <Button 
+                type="button" 
+                variant="outline"
+                disabled={creating}
+                onClick={(e) => handleCreateInvoice(e, false)}
+              >
                 {creating && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
                 Save as Draft
+              </Button>
+              <Button 
+                type="submit" 
+                disabled={creating}
+                onClick={(e) => {
+                  e.preventDefault()
+                  handleCreateInvoice(e, true)
+                }}
+              >
+                {creating && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
+                <Send className="mr-2 h-4 w-4" />
+                Create & Send
               </Button>
             </DialogFooter>
           </form>

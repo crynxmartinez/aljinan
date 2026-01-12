@@ -101,12 +101,13 @@ export function ContractsList({ branchId, projectId }: ContractsListProps) {
     fetchContracts()
   }, [branchId, projectId])
 
-  const handleCreateContract = async (e: React.FormEvent) => {
+  const handleCreateContract = async (e: React.FormEvent, activateImmediately: boolean = false) => {
     e.preventDefault()
     setCreating(true)
     setError('')
 
     try {
+      // Step 1: Create the contract
       const response = await fetch(`/api/branches/${branchId}/contracts`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
@@ -117,7 +118,7 @@ export function ContractsList({ branchId, projectId }: ContractsListProps) {
           fileUrl: newContract.fileUrl,
           startDate: newContract.startDate || null,
           endDate: newContract.endDate || null,
-          status: newContract.status,
+          status: activateImmediately ? 'ACTIVE' : 'DRAFT',
           projectId: projectId || null,
         }),
       })
@@ -408,9 +409,26 @@ export function ContractsList({ branchId, projectId }: ContractsListProps) {
               <Button type="button" variant="outline" onClick={() => setCreateDialogOpen(false)}>
                 Cancel
               </Button>
-              <Button type="submit" disabled={creating}>
+              <Button 
+                type="button" 
+                variant="outline"
+                disabled={creating}
+                onClick={(e) => handleCreateContract(e, false)}
+              >
                 {creating && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
-                Add Contract
+                Save as Draft
+              </Button>
+              <Button 
+                type="submit" 
+                disabled={creating}
+                onClick={(e) => {
+                  e.preventDefault()
+                  handleCreateContract(e, true)
+                }}
+              >
+                {creating && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
+                <CheckCircle className="mr-2 h-4 w-4" />
+                Create & Activate
               </Button>
             </DialogFooter>
           </form>
