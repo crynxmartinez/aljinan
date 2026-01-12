@@ -111,7 +111,13 @@ export function PendingBranchRequests() {
   }
 
   if (loading) {
-    return null
+    return (
+      <Card className="border-dashed">
+        <CardContent className="flex items-center justify-center py-6">
+          <Loader2 className="h-6 w-6 animate-spin text-muted-foreground" />
+        </CardContent>
+      </Card>
+    )
   }
 
   if (requests.length === 0) {
