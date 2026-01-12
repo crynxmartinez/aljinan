@@ -58,9 +58,10 @@ interface Request {
 interface RequestsListProps {
   branchId: string
   userRole: 'CONTRACTOR' | 'CLIENT' | 'MANAGER'
+  projectId?: string | null
 }
 
-export function RequestsList({ branchId, userRole }: RequestsListProps) {
+export function RequestsList({ branchId, userRole, projectId }: RequestsListProps) {
   const router = useRouter()
   const [requests, setRequests] = useState<Request[]>([])
   const [loading, setLoading] = useState(true)

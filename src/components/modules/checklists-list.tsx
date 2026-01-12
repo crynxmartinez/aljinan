@@ -56,9 +56,10 @@ interface Checklist {
 
 interface ChecklistsListProps {
   branchId: string
+  projectId?: string | null
 }
 
-export function ChecklistsList({ branchId }: ChecklistsListProps) {
+export function ChecklistsList({ branchId, projectId }: ChecklistsListProps) {
   const router = useRouter()
   const [checklists, setChecklists] = useState<Checklist[]>([])
   const [loading, setLoading] = useState(true)
@@ -122,6 +123,7 @@ export function ChecklistsList({ branchId }: ChecklistsListProps) {
           title: newChecklist.title,
           description: newChecklist.description || null,
           items: newChecklist.items.filter(item => item.description),
+          projectId: projectId || null,
         }),
       })
 

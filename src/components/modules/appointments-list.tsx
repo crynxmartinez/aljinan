@@ -55,9 +55,10 @@ interface Appointment {
 
 interface AppointmentsListProps {
   branchId: string
+  projectId?: string | null
 }
 
-export function AppointmentsList({ branchId }: AppointmentsListProps) {
+export function AppointmentsList({ branchId, projectId }: AppointmentsListProps) {
   const router = useRouter()
   const [appointments, setAppointments] = useState<Appointment[]>([])
   const [loading, setLoading] = useState(true)
@@ -108,6 +109,7 @@ export function AppointmentsList({ branchId }: AppointmentsListProps) {
           startTime: newAppointment.startTime,
           endTime: newAppointment.endTime || null,
           assignedTo: newAppointment.assignedTo || null,
+          projectId: projectId || null,
         }),
       })
 

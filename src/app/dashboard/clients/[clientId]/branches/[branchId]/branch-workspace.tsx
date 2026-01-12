@@ -96,27 +96,27 @@ export function BranchWorkspace({ clientId, branchId, branch }: BranchWorkspaceP
         </TabsContent>
 
         <TabsContent value="requests" className="mt-0">
-          <RequestsList branchId={branchId} userRole="CONTRACTOR" />
+          <RequestsList branchId={branchId} userRole="CONTRACTOR" projectId={selectedProjectId} />
         </TabsContent>
 
         <TabsContent value="quotations" className="mt-0">
-          <QuotationsList branchId={branchId} />
+          <QuotationsList branchId={branchId} projectId={selectedProjectId} />
         </TabsContent>
 
         <TabsContent value="appointments" className="mt-0">
-          <AppointmentsList branchId={branchId} />
+          <AppointmentsList branchId={branchId} projectId={selectedProjectId} />
         </TabsContent>
 
         <TabsContent value="payments" className="mt-0">
-          <InvoicesList branchId={branchId} />
+          <InvoicesList branchId={branchId} projectId={selectedProjectId} />
         </TabsContent>
 
         <TabsContent value="contracts" className="mt-0">
-          <ContractsList branchId={branchId} />
+          <ContractsList branchId={branchId} projectId={selectedProjectId} />
         </TabsContent>
 
         <TabsContent value="checklists" className="mt-0">
-          <ChecklistsList branchId={branchId} />
+          <ChecklistsList branchId={branchId} projectId={selectedProjectId} />
         </TabsContent>
 
         <TabsContent value="messages" className="mt-0">

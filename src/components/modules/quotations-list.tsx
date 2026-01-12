@@ -63,9 +63,10 @@ interface Quotation {
 
 interface QuotationsListProps {
   branchId: string
+  projectId?: string | null
 }
 
-export function QuotationsList({ branchId }: QuotationsListProps) {
+export function QuotationsList({ branchId, projectId }: QuotationsListProps) {
   const router = useRouter()
   const [quotations, setQuotations] = useState<Quotation[]>([])
   const [loading, setLoading] = useState(true)
@@ -146,6 +147,7 @@ export function QuotationsList({ branchId }: QuotationsListProps) {
           taxRate: newQuotation.taxRate,
           validUntil: newQuotation.validUntil || null,
           items: newQuotation.items.filter(item => item.description),
+          projectId: projectId || null,
         }),
       })
 

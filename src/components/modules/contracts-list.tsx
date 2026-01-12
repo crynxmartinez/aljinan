@@ -57,9 +57,10 @@ interface Contract {
 
 interface ContractsListProps {
   branchId: string
+  projectId?: string | null
 }
 
-export function ContractsList({ branchId }: ContractsListProps) {
+export function ContractsList({ branchId, projectId }: ContractsListProps) {
   const router = useRouter()
   const [contracts, setContracts] = useState<Contract[]>([])
   const [loading, setLoading] = useState(true)
@@ -112,6 +113,7 @@ export function ContractsList({ branchId }: ContractsListProps) {
           startDate: newContract.startDate || null,
           endDate: newContract.endDate || null,
           status: newContract.status,
+          projectId: projectId || null,
         }),
       })
 

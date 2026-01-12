@@ -64,9 +64,10 @@ interface Invoice {
 
 interface InvoicesListProps {
   branchId: string
+  projectId?: string | null
 }
 
-export function InvoicesList({ branchId }: InvoicesListProps) {
+export function InvoicesList({ branchId, projectId }: InvoicesListProps) {
   const router = useRouter()
   const [invoices, setInvoices] = useState<Invoice[]>([])
   const [loading, setLoading] = useState(true)
@@ -144,6 +145,7 @@ export function InvoicesList({ branchId }: InvoicesListProps) {
           taxRate: newInvoice.taxRate,
           dueDate: newInvoice.dueDate || null,
           items: newInvoice.items.filter(item => item.description),
+          projectId: projectId || null,
         }),
       })
 
