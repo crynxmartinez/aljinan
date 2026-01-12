@@ -23,7 +23,21 @@ export async function GET(
       take: 100
     })
 
-    return NextResponse.json(activities)
+    // Fetch user names for each activity
+    const activitiesWithUsers = await Promise.all(
+      activities.map(async (activity) => {
+        const user = await prisma.user.findUnique({
+          where: { id: activity.createdById },
+          select: { name: true, email: true }
+        })
+        return {
+          ...activity,
+          createdByName: user?.name || user?.email || 'Unknown User'
+        }
+      })
+    )
+
+    return NextResponse.json(activitiesWithUsers)
   } catch (error) {
     console.error('Error fetching activities:', error)
     return NextResponse.json(

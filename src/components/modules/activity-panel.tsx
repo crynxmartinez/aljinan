@@ -22,6 +22,7 @@ interface Activity {
   content: string | null
   createdById: string
   createdByRole: string
+  createdByName?: string
   createdAt: string
 }
 
@@ -155,8 +156,14 @@ export function ActivityPanel({ branchId, projectId, isOpen, onClose }: Activity
                     <div className="flex-1 min-w-0">
                       <div className="flex items-center gap-2 text-xs text-muted-foreground">
                         <span className="font-medium text-foreground">
-                          {activity.createdByRole}
+                          {activity.createdByName || activity.createdByRole}
                         </span>
+                        {activity.createdByName && (
+                          <>
+                            <span>•</span>
+                            <span className="capitalize">{activity.createdByRole.toLowerCase()}</span>
+                          </>
+                        )}
                         <span>•</span>
                         <span>{formatTime(activity.createdAt)}</span>
                       </div>
