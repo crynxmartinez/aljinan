@@ -77,7 +77,6 @@ export function ClientsList({ clients }: ClientsListProps) {
     companyName: '',
     companyEmail: '',
     companyPhone: '',
-    branchAddress: '',
   })
 
   const toggleClient = (clientId: string) => {
@@ -113,7 +112,6 @@ export function ClientsList({ clients }: ClientsListProps) {
         companyName: '',
         companyEmail: '',
         companyPhone: '',
-        branchAddress: '',
       })
       router.refresh()
     } catch (err) {
@@ -373,7 +371,7 @@ export function ClientsList({ clients }: ClientsListProps) {
           <DialogHeader>
             <DialogTitle>Add New Client</DialogTitle>
             <DialogDescription>
-              Create a new client account. They will receive an email invitation to activate their account.
+              Create a new client account. After creating, you can add branches with the map.
             </DialogDescription>
           </DialogHeader>
           <form onSubmit={handleCreateClient}>
@@ -415,19 +413,6 @@ export function ClientsList({ clients }: ClientsListProps) {
                   onChange={(e) => setNewClient({ ...newClient, companyPhone: e.target.value })}
                   placeholder="Enter phone number"
                 />
-              </div>
-              <div className="space-y-2">
-                <Label htmlFor="branchAddress">First Branch Address *</Label>
-                <Input
-                  id="branchAddress"
-                  value={newClient.branchAddress}
-                  onChange={(e) => setNewClient({ ...newClient, branchAddress: e.target.value })}
-                  placeholder="123 Main Street, City"
-                  required
-                />
-                <p className="text-xs text-muted-foreground">
-                  You can add more branches later
-                </p>
               </div>
             </div>
             <DialogFooter className="mt-6">

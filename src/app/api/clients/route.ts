@@ -51,11 +51,11 @@ export async function POST(request: Request) {
     }
 
     const body = await request.json()
-    const { companyName, companyEmail, companyPhone, branchAddress } = body
+    const { companyName, companyEmail, companyPhone } = body
 
-    if (!companyName || !companyEmail || !branchAddress) {
+    if (!companyName || !companyEmail) {
       return NextResponse.json(
-        { error: 'Company name, email, and branch address are required' },
+        { error: 'Company name and email are required' },
         { status: 400 }
       )
     }
@@ -102,12 +102,6 @@ export async function POST(request: Request) {
             status: 'PENDING',
           }
         },
-        branches: {
-          create: {
-            name: companyName,
-            address: branchAddress,
-          }
-        }
       },
       include: {
         user: {
