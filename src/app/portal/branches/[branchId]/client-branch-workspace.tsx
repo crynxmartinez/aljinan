@@ -155,32 +155,32 @@ export function ClientBranchWorkspace({ branchId, branch }: ClientBranchWorkspac
 
           {/* Requests Tab */}
           <TabsContent value="requests" className="mt-0">
-            <ClientBranchRequests branchId={branchId} />
+            <ClientBranchRequests branchId={branchId} projectId={selectedProjectId} />
           </TabsContent>
 
           {/* Quotes Tab */}
           <TabsContent value="quotes" className="mt-0">
-            <ClientBranchQuotations branchId={branchId} />
+            <ClientBranchQuotations branchId={branchId} projectId={selectedProjectId} />
           </TabsContent>
 
           {/* Appointments Tab */}
           <TabsContent value="appointments" className="mt-0">
-            <ClientBranchAppointments branchId={branchId} />
+            <ClientBranchAppointments branchId={branchId} projectId={selectedProjectId} />
           </TabsContent>
 
           {/* Payments Tab */}
           <TabsContent value="payments" className="mt-0">
-            <ClientBranchInvoices branchId={branchId} />
+            <ClientBranchInvoices branchId={branchId} projectId={selectedProjectId} />
           </TabsContent>
 
           {/* Contracts Tab */}
           <TabsContent value="contracts" className="mt-0">
-            <ClientBranchContracts branchId={branchId} />
+            <ClientBranchContracts branchId={branchId} projectId={selectedProjectId} />
           </TabsContent>
 
           {/* Reports Tab */}
           <TabsContent value="reports" className="mt-0">
-            <ClientBranchReports branchId={branchId} />
+            <ClientBranchReports branchId={branchId} projectId={selectedProjectId} />
           </TabsContent>
         </div>
       </Tabs>

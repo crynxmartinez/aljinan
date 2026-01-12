@@ -86,7 +86,10 @@ export function RequestsList({ branchId, userRole, projectId }: RequestsListProp
       const response = await fetch(`/api/branches/${branchId}/requests`)
       if (response.ok) {
         const data = await response.json()
-        setRequests(data)
+        const filtered = projectId 
+          ? data.filter((r: Request & { projectId?: string }) => r.projectId === projectId)
+          : data
+        setRequests(filtered)
       }
     } catch (err) {
       console.error('Failed to fetch requests:', err)
@@ -97,7 +100,7 @@ export function RequestsList({ branchId, userRole, projectId }: RequestsListProp
 
   useEffect(() => {
     fetchRequests()
-  }, [branchId])
+  }, [branchId, projectId])
 
   const handleCreateRequest = async (e: React.FormEvent) => {
     e.preventDefault()

@@ -54,9 +54,10 @@ interface Quotation {
 
 interface ClientBranchQuotationsProps {
   branchId: string
+  projectId?: string | null
 }
 
-export function ClientBranchQuotations({ branchId }: ClientBranchQuotationsProps) {
+export function ClientBranchQuotations({ branchId, projectId }: ClientBranchQuotationsProps) {
   const router = useRouter()
   const [quotations, setQuotations] = useState<Quotation[]>([])
   const [loading, setLoading] = useState(true)
@@ -71,7 +72,10 @@ export function ClientBranchQuotations({ branchId }: ClientBranchQuotationsProps
       const response = await fetch(`/api/branches/${branchId}/quotations`)
       if (response.ok) {
         const data = await response.json()
-        setQuotations(data)
+        const filtered = projectId 
+          ? data.filter((q: Quotation & { projectId?: string }) => q.projectId === projectId)
+          : data
+        setQuotations(filtered)
       }
     } catch (err) {
       console.error('Failed to fetch quotations:', err)
@@ -82,7 +86,7 @@ export function ClientBranchQuotations({ branchId }: ClientBranchQuotationsProps
 
   useEffect(() => {
     fetchQuotations()
-  }, [branchId])
+  }, [branchId, projectId])
 
   const handleAction = async () => {
     if (!selectedQuotation || !actionType) return

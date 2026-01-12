@@ -88,7 +88,10 @@ export function InvoicesList({ branchId, projectId }: InvoicesListProps) {
       const response = await fetch(`/api/branches/${branchId}/invoices`)
       if (response.ok) {
         const data = await response.json()
-        setInvoices(data)
+        const filtered = projectId 
+          ? data.filter((i: Invoice & { projectId?: string }) => i.projectId === projectId)
+          : data
+        setInvoices(filtered)
       }
     } catch (err) {
       console.error('Failed to fetch invoices:', err)
@@ -99,7 +102,7 @@ export function InvoicesList({ branchId, projectId }: InvoicesListProps) {
 
   useEffect(() => {
     fetchInvoices()
-  }, [branchId])
+  }, [branchId, projectId])
 
   const calculateTotals = (items: InvoiceItem[], taxRate: number) => {
     const subtotal = items.reduce((sum, item) => sum + (item.quantity * item.unitPrice), 0)

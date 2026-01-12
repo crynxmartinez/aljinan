@@ -30,9 +30,10 @@ interface Contract {
 
 interface ClientBranchContractsProps {
   branchId: string
+  projectId?: string | null
 }
 
-export function ClientBranchContracts({ branchId }: ClientBranchContractsProps) {
+export function ClientBranchContracts({ branchId, projectId }: ClientBranchContractsProps) {
   const [contracts, setContracts] = useState<Contract[]>([])
   const [loading, setLoading] = useState(true)
 
@@ -41,7 +42,10 @@ export function ClientBranchContracts({ branchId }: ClientBranchContractsProps) 
       const response = await fetch(`/api/branches/${branchId}/contracts`)
       if (response.ok) {
         const data = await response.json()
-        setContracts(data)
+        const filtered = projectId 
+          ? data.filter((c: Contract & { projectId?: string }) => c.projectId === projectId)
+          : data
+        setContracts(filtered)
       }
     } catch (err) {
       console.error('Failed to fetch contracts:', err)
@@ -52,7 +56,7 @@ export function ClientBranchContracts({ branchId }: ClientBranchContractsProps) 
 
   useEffect(() => {
     fetchContracts()
-  }, [branchId])
+  }, [branchId, projectId])
 
   const getStatusBadge = (status: Contract['status']) => {
     const config = {

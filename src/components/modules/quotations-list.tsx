@@ -87,7 +87,11 @@ export function QuotationsList({ branchId, projectId }: QuotationsListProps) {
       const response = await fetch(`/api/branches/${branchId}/quotations`)
       if (response.ok) {
         const data = await response.json()
-        setQuotations(data)
+        // Filter by projectId if one is selected
+        const filtered = projectId 
+          ? data.filter((q: Quotation & { projectId?: string }) => q.projectId === projectId)
+          : data
+        setQuotations(filtered)
       }
     } catch (err) {
       console.error('Failed to fetch quotations:', err)
@@ -98,7 +102,7 @@ export function QuotationsList({ branchId, projectId }: QuotationsListProps) {
 
   useEffect(() => {
     fetchQuotations()
-  }, [branchId])
+  }, [branchId, projectId])
 
   const calculateTotals = (items: QuotationItem[], taxRate: number) => {
     const subtotal = items.reduce((sum, item) => sum + (item.quantity * item.unitPrice), 0)

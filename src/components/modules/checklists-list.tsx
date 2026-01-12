@@ -81,7 +81,10 @@ export function ChecklistsList({ branchId, projectId }: ChecklistsListProps) {
       const response = await fetch(`/api/branches/${branchId}/checklists`)
       if (response.ok) {
         const data = await response.json()
-        setChecklists(data)
+        const filtered = projectId 
+          ? data.filter((c: Checklist & { projectId?: string }) => c.projectId === projectId)
+          : data
+        setChecklists(filtered)
       }
     } catch (err) {
       console.error('Failed to fetch checklists:', err)
@@ -92,7 +95,7 @@ export function ChecklistsList({ branchId, projectId }: ChecklistsListProps) {
 
   useEffect(() => {
     fetchChecklists()
-  }, [branchId])
+  }, [branchId, projectId])
 
   const handleAddItem = () => {
     setNewChecklist({

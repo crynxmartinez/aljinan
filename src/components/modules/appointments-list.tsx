@@ -80,7 +80,10 @@ export function AppointmentsList({ branchId, projectId }: AppointmentsListProps)
       const response = await fetch(`/api/branches/${branchId}/appointments`)
       if (response.ok) {
         const data = await response.json()
-        setAppointments(data)
+        const filtered = projectId 
+          ? data.filter((a: Appointment & { projectId?: string }) => a.projectId === projectId)
+          : data
+        setAppointments(filtered)
       }
     } catch (err) {
       console.error('Failed to fetch appointments:', err)
@@ -91,7 +94,7 @@ export function AppointmentsList({ branchId, projectId }: AppointmentsListProps)
 
   useEffect(() => {
     fetchAppointments()
-  }, [branchId])
+  }, [branchId, projectId])
 
   const handleCreateAppointment = async (e: React.FormEvent) => {
     e.preventDefault()

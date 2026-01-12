@@ -30,7 +30,8 @@ export async function GET(
     const quotations = await prisma.quotation.findMany({
       where: whereClause,
       include: {
-        items: true
+        items: true,
+        project: { select: { id: true, title: true, status: true } }
       },
       orderBy: { createdAt: 'desc' }
     })

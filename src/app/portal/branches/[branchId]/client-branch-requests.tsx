@@ -50,9 +50,10 @@ interface Request {
 
 interface ClientBranchRequestsProps {
   branchId: string
+  projectId?: string | null
 }
 
-export function ClientBranchRequests({ branchId }: ClientBranchRequestsProps) {
+export function ClientBranchRequests({ branchId, projectId }: ClientBranchRequestsProps) {
   const router = useRouter()
   const [requests, setRequests] = useState<Request[]>([])
   const [loading, setLoading] = useState(true)
@@ -75,7 +76,10 @@ export function ClientBranchRequests({ branchId }: ClientBranchRequestsProps) {
       const response = await fetch(`/api/branches/${branchId}/requests`)
       if (response.ok) {
         const data = await response.json()
-        setRequests(data)
+        const filtered = projectId 
+          ? data.filter((r: Request & { projectId?: string }) => r.projectId === projectId)
+          : data
+        setRequests(filtered)
       }
     } catch (err) {
       console.error('Failed to fetch requests:', err)
@@ -86,7 +90,7 @@ export function ClientBranchRequests({ branchId }: ClientBranchRequestsProps) {
 
   useEffect(() => {
     fetchRequests()
-  }, [branchId])
+  }, [branchId, projectId])
 
   const handleCreateRequest = async (e: React.FormEvent) => {
     e.preventDefault()

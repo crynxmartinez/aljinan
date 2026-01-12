@@ -47,9 +47,10 @@ interface Appointment {
 
 interface ClientBranchAppointmentsProps {
   branchId: string
+  projectId?: string | null
 }
 
-export function ClientBranchAppointments({ branchId }: ClientBranchAppointmentsProps) {
+export function ClientBranchAppointments({ branchId, projectId }: ClientBranchAppointmentsProps) {
   const router = useRouter()
   const [appointments, setAppointments] = useState<Appointment[]>([])
   const [loading, setLoading] = useState(true)
@@ -64,7 +65,10 @@ export function ClientBranchAppointments({ branchId }: ClientBranchAppointmentsP
       const response = await fetch(`/api/branches/${branchId}/appointments`)
       if (response.ok) {
         const data = await response.json()
-        setAppointments(data)
+        const filtered = projectId 
+          ? data.filter((a: Appointment & { projectId?: string }) => a.projectId === projectId)
+          : data
+        setAppointments(filtered)
       }
     } catch (err) {
       console.error('Failed to fetch appointments:', err)
@@ -75,7 +79,7 @@ export function ClientBranchAppointments({ branchId }: ClientBranchAppointmentsP
 
   useEffect(() => {
     fetchAppointments()
-  }, [branchId])
+  }, [branchId, projectId])
 
   const handleAction = async () => {
     if (!selectedAppointment || !actionType) return

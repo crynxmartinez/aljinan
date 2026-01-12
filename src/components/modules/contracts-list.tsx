@@ -83,7 +83,10 @@ export function ContractsList({ branchId, projectId }: ContractsListProps) {
       const response = await fetch(`/api/branches/${branchId}/contracts`)
       if (response.ok) {
         const data = await response.json()
-        setContracts(data)
+        const filtered = projectId 
+          ? data.filter((c: Contract & { projectId?: string }) => c.projectId === projectId)
+          : data
+        setContracts(filtered)
       }
     } catch (err) {
       console.error('Failed to fetch contracts:', err)
@@ -94,7 +97,7 @@ export function ContractsList({ branchId, projectId }: ContractsListProps) {
 
   useEffect(() => {
     fetchContracts()
-  }, [branchId])
+  }, [branchId, projectId])
 
   const handleCreateContract = async (e: React.FormEvent) => {
     e.preventDefault()

@@ -91,6 +91,27 @@ export async function PATCH(
       if (status === 'PAID') {
         updateData.paidAt = new Date()
         updateData.amountPaid = currentInvoice.total
+        
+        // Auto-update project status to PAID if invoice is linked to a project
+        if (currentInvoice.projectId) {
+          await prisma.project.update({
+            where: { id: currentInvoice.projectId },
+            data: { 
+              status: 'PAID',
+              completedAt: new Date()
+            }
+          })
+          // Add activity
+          await prisma.activity.create({
+            data: {
+              projectId: currentInvoice.projectId,
+              type: 'STATUS_CHANGE',
+              content: 'Project marked as PAID - invoice payment received',
+              createdById: session.user.id,
+              createdByRole: session.user.role as 'CONTRACTOR' | 'CLIENT' | 'MANAGER',
+            }
+          })
+        }
       }
     }
 

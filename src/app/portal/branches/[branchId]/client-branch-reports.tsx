@@ -40,9 +40,10 @@ interface Checklist {
 
 interface ClientBranchReportsProps {
   branchId: string
+  projectId?: string | null
 }
 
-export function ClientBranchReports({ branchId }: ClientBranchReportsProps) {
+export function ClientBranchReports({ branchId, projectId }: ClientBranchReportsProps) {
   const [reports, setReports] = useState<Checklist[]>([])
   const [loading, setLoading] = useState(true)
   const [selectedReport, setSelectedReport] = useState<Checklist | null>(null)
@@ -54,7 +55,12 @@ export function ClientBranchReports({ branchId }: ClientBranchReportsProps) {
       if (response.ok) {
         const data = await response.json()
         // Client only sees completed checklists (reports)
-        setReports(data.filter((c: Checklist) => c.status === 'COMPLETED'))
+        let filtered = data.filter((c: Checklist) => c.status === 'COMPLETED')
+        // Also filter by projectId if selected
+        if (projectId) {
+          filtered = filtered.filter((c: Checklist & { projectId?: string }) => c.projectId === projectId)
+        }
+        setReports(filtered)
       }
     } catch (err) {
       console.error('Failed to fetch reports:', err)
@@ -65,7 +71,7 @@ export function ClientBranchReports({ branchId }: ClientBranchReportsProps) {
 
   useEffect(() => {
     fetchReports()
-  }, [branchId])
+  }, [branchId, projectId])
 
   const handleViewReport = (report: Checklist) => {
     setSelectedReport(report)
