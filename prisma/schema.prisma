@@ -98,6 +98,7 @@ model Branch {
   quotations   Quotation[]
   appointments Appointment[]
   invoices     Invoice[]
+  contracts    Contract[]
 }
 
 // Request priorities and statuses
@@ -261,6 +262,32 @@ model InvoiceItem {
   total       Float
   createdAt   DateTime @default(now())
   updatedAt   DateTime @updatedAt
+}
+
+// Contract statuses
+enum ContractStatus {
+  DRAFT
+  ACTIVE
+  EXPIRED
+  TERMINATED
+}
+
+// Contract - service agreements uploaded by contractor
+model Contract {
+  id            String         @id @default(cuid())
+  branchId      String
+  branch        Branch         @relation(fields: [branchId], references: [id], onDelete: Cascade)
+  title         String
+  description   String?
+  fileName      String
+  fileUrl       String
+  fileSize      Int?
+  startDate     DateTime?
+  endDate       DateTime?
+  status        ContractStatus @default(DRAFT)
+  uploadedById  String
+  createdAt     DateTime       @default(now())
+  updatedAt     DateTime       @updatedAt
 }
 
 // Manager - created by clients to manage specific branches

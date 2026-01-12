@@ -8,6 +8,7 @@ import { RequestsList } from '@/components/modules/requests-list'
 import { QuotationsList } from '@/components/modules/quotations-list'
 import { AppointmentsList } from '@/components/modules/appointments-list'
 import { InvoicesList } from '@/components/modules/invoices-list'
+import { ContractsList } from '@/components/modules/contracts-list'
 import {
   LayoutDashboard,
   FileText,
@@ -88,12 +89,7 @@ export function BranchWorkspace({ clientId, branchId, branch }: BranchWorkspaceP
         </TabsContent>
 
         <TabsContent value="contracts" className="mt-0">
-          <ModulePlaceholder
-            title="Contracts"
-            description="Service contracts and agreements"
-            icon={FileCheck}
-            actionLabel="New Contract"
-          />
+          <ContractsList branchId={branchId} />
         </TabsContent>
 
         <TabsContent value="checklists" className="mt-0">

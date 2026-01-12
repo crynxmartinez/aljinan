@@ -10,6 +10,7 @@ import { ClientBranchRequests } from './client-branch-requests'
 import { ClientBranchQuotations } from './client-branch-quotations'
 import { ClientBranchAppointments } from './client-branch-appointments'
 import { ClientBranchInvoices } from './client-branch-invoices'
+import { ClientBranchContracts } from './client-branch-contracts'
 import {
   FileText,
   Receipt,
@@ -201,21 +202,7 @@ export default async function ClientBranchPage({
 
           {/* Contracts Tab */}
           <TabsContent value="contracts" className="mt-0">
-            <Card>
-              <CardHeader>
-                <CardTitle>Contracts</CardTitle>
-                <CardDescription>View and download service contracts</CardDescription>
-              </CardHeader>
-              <CardContent>
-                <div className="flex flex-col items-center justify-center py-12 text-center">
-                  <FileCheck className="h-12 w-12 text-muted-foreground/30 mb-4" />
-                  <h3 className="text-lg font-semibold mb-2">No contracts yet</h3>
-                  <p className="text-muted-foreground max-w-md">
-                    Service contracts for this branch will appear here. You can view and download signed agreements.
-                  </p>
-                </div>
-              </CardContent>
-            </Card>
+            <ClientBranchContracts branchId={branch.id} />
           </TabsContent>
 
           {/* Reports Tab */}
