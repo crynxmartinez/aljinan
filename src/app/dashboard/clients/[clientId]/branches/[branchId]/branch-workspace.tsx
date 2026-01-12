@@ -5,6 +5,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
 import { RequestsList } from '@/components/modules/requests-list'
+import { QuotationsList } from '@/components/modules/quotations-list'
 import {
   LayoutDashboard,
   FileText,
@@ -73,12 +74,7 @@ export function BranchWorkspace({ clientId, branchId, branch }: BranchWorkspaceP
         </TabsContent>
 
         <TabsContent value="quotations" className="mt-0">
-          <ModulePlaceholder
-            title="Quotations"
-            description="Quotes and estimates awaiting approval"
-            icon={Receipt}
-            actionLabel="New Quote"
-          />
+          <QuotationsList branchId={branchId} />
         </TabsContent>
 
         <TabsContent value="appointments" className="mt-0">

@@ -95,6 +95,7 @@ model Branch {
   
   // Module relations
   requests    Request[]
+  quotations  Quotation[]
 }
 
 // Request priorities and statuses
@@ -128,6 +129,54 @@ model Request {
   completedAt DateTime?
   createdAt   DateTime        @default(now())
   updatedAt   DateTime        @updatedAt
+}
+
+// Quotation statuses
+enum QuotationStatus {
+  DRAFT
+  SENT
+  APPROVED
+  REJECTED
+  EXPIRED
+}
+
+// Quotation - created by contractor for client approval
+model Quotation {
+  id            String          @id @default(cuid())
+  branchId      String
+  branch        Branch          @relation(fields: [branchId], references: [id], onDelete: Cascade)
+  requestId     String?
+  title         String
+  description   String?
+  items         QuotationItem[]
+  subtotal      Float           @default(0)
+  taxRate       Float           @default(0)
+  taxAmount     Float           @default(0)
+  total         Float           @default(0)
+  status        QuotationStatus @default(DRAFT)
+  validUntil    DateTime?
+  sentAt        DateTime?
+  approvedAt    DateTime?
+  approvedById  String?
+  rejectedAt    DateTime?
+  rejectedById  String?
+  rejectionNote String?
+  createdById   String
+  createdAt     DateTime        @default(now())
+  updatedAt     DateTime        @updatedAt
+}
+
+// Quotation line items
+model QuotationItem {
+  id          String    @id @default(cuid())
+  quotationId String
+  quotation   Quotation @relation(fields: [quotationId], references: [id], onDelete: Cascade)
+  description String
+  quantity    Float     @default(1)
+  unitPrice   Float
+  total       Float
+  createdAt   DateTime  @default(now())
+  updatedAt   DateTime  @updatedAt
 }
 
 // Manager - created by clients to manage specific branches

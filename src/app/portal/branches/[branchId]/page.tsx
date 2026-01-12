@@ -7,6 +7,7 @@ import { ArrowLeft, MapPin } from 'lucide-react'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
 import { ClientBranchRequests } from './client-branch-requests'
+import { ClientBranchQuotations } from './client-branch-quotations'
 import {
   FileText,
   Receipt,
@@ -183,21 +184,7 @@ export default async function ClientBranchPage({
 
           {/* Quotes Tab */}
           <TabsContent value="quotes" className="mt-0">
-            <Card>
-              <CardHeader>
-                <CardTitle>Quotations</CardTitle>
-                <CardDescription>Review and approve quotes from your contractor</CardDescription>
-              </CardHeader>
-              <CardContent>
-                <div className="flex flex-col items-center justify-center py-12 text-center">
-                  <Receipt className="h-12 w-12 text-muted-foreground/30 mb-4" />
-                  <h3 className="text-lg font-semibold mb-2">No quotes yet</h3>
-                  <p className="text-muted-foreground max-w-md">
-                    Quotations awaiting your approval will appear here. You can approve, reject, or request changes.
-                  </p>
-                </div>
-              </CardContent>
-            </Card>
+            <ClientBranchQuotations branchId={branch.id} />
           </TabsContent>
 
           {/* Appointments Tab */}
