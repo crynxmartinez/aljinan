@@ -92,6 +92,42 @@ model Branch {
 
   // Manager access - which managers can access this branch
   managerAccess BranchManager[]
+  
+  // Module relations
+  requests    Request[]
+}
+
+// Request priorities and statuses
+enum RequestPriority {
+  LOW
+  MEDIUM
+  HIGH
+  URGENT
+}
+
+enum RequestStatus {
+  OPEN
+  IN_PROGRESS
+  COMPLETED
+  CANCELLED
+}
+
+// Service Request - created by contractor or client for a branch
+model Request {
+  id          String          @id @default(cuid())
+  branchId    String
+  branch      Branch          @relation(fields: [branchId], references: [id], onDelete: Cascade)
+  title       String
+  description String?
+  priority    RequestPriority @default(MEDIUM)
+  status      RequestStatus   @default(OPEN)
+  createdById String
+  createdByRole UserRole
+  assignedTo  String?
+  dueDate     DateTime?
+  completedAt DateTime?
+  createdAt   DateTime        @default(now())
+  updatedAt   DateTime        @updatedAt
 }
 
 // Manager - created by clients to manage specific branches

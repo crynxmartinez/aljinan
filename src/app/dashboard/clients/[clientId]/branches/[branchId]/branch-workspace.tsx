@@ -4,6 +4,7 @@ import { useState } from 'react'
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
+import { RequestsList } from '@/components/modules/requests-list'
 import {
   LayoutDashboard,
   FileText,
@@ -68,12 +69,7 @@ export function BranchWorkspace({ clientId, branchId, branch }: BranchWorkspaceP
         </TabsContent>
 
         <TabsContent value="requests" className="mt-0">
-          <ModulePlaceholder
-            title="Requests"
-            description="Work orders and service requests for this branch"
-            icon={FileText}
-            actionLabel="New Request"
-          />
+          <RequestsList branchId={branchId} userRole="CONTRACTOR" />
         </TabsContent>
 
         <TabsContent value="quotations" className="mt-0">

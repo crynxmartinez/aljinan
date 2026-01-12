@@ -6,6 +6,7 @@ import Link from 'next/link'
 import { ArrowLeft, MapPin } from 'lucide-react'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
+import { ClientBranchRequests } from './client-branch-requests'
 import {
   FileText,
   Receipt,
@@ -177,21 +178,7 @@ export default async function ClientBranchPage({
 
           {/* Requests Tab */}
           <TabsContent value="requests" className="mt-0">
-            <Card>
-              <CardHeader>
-                <CardTitle>Service Requests</CardTitle>
-                <CardDescription>View and submit service requests for this branch</CardDescription>
-              </CardHeader>
-              <CardContent>
-                <div className="flex flex-col items-center justify-center py-12 text-center">
-                  <FileText className="h-12 w-12 text-muted-foreground/30 mb-4" />
-                  <h3 className="text-lg font-semibold mb-2">No requests yet</h3>
-                  <p className="text-muted-foreground max-w-md">
-                    Service requests for this branch will appear here. You&apos;ll be able to view status updates and submit new requests.
-                  </p>
-                </div>
-              </CardContent>
-            </Card>
+            <ClientBranchRequests branchId={branch.id} />
           </TabsContent>
 
           {/* Quotes Tab */}
