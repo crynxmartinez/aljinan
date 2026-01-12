@@ -63,7 +63,7 @@ export async function POST(
 
     const { clientId } = await params
     const body = await request.json()
-    const { address, city, state, zipCode, phone, notes } = body
+    const { address, city, state, zipCode, country, phone, notes, latitude, longitude } = body
 
     if (!address) {
       return NextResponse.json(
@@ -99,8 +99,11 @@ export async function POST(
         city,
         state,
         zipCode,
+        country,
         phone,
         notes,
+        latitude,
+        longitude,
       }
     })
 
