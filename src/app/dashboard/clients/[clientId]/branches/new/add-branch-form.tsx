@@ -28,12 +28,18 @@ export function AddBranchForm({ clientId }: AddBranchFormProps) {
     longitude: null,
   })
 
+  const [name, setName] = useState('')
   const [phone, setPhone] = useState('')
   const [notes, setNotes] = useState('')
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
     
+    if (!name) {
+      setError('Please enter a branch name')
+      return
+    }
+
     if (!addressData.address) {
       setError('Please enter or select an address')
       return
@@ -47,6 +53,7 @@ export function AddBranchForm({ clientId }: AddBranchFormProps) {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
+          name,
           address: addressData.address,
           city: addressData.city,
           state: addressData.state,
@@ -89,6 +96,17 @@ export function AddBranchForm({ clientId }: AddBranchFormProps) {
             </div>
           )}
 
+          <div className="space-y-2">
+            <Label htmlFor="name">Branch Name *</Label>
+            <Input
+              id="name"
+              value={name}
+              onChange={(e) => setName(e.target.value)}
+              placeholder="e.g., Main Office, Warehouse A, Downtown Location"
+              required
+            />
+          </div>
+
           <AddressPicker
             value={addressData}
             onChange={setAddressData}
@@ -117,7 +135,7 @@ export function AddBranchForm({ clientId }: AddBranchFormProps) {
           </div>
 
           <div className="flex gap-3 pt-4">
-            <Button type="submit" disabled={loading || !addressData.address}>
+            <Button type="submit" disabled={loading || !addressData.address || !name}>
               {loading && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
               Add Branch
             </Button>

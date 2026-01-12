@@ -63,7 +63,14 @@ export async function POST(
 
     const { clientId } = await params
     const body = await request.json()
-    const { address, city, state, zipCode, country, phone, notes, latitude, longitude } = body
+    const { name, address, city, state, zipCode, country, phone, notes, latitude, longitude } = body
+
+    if (!name) {
+      return NextResponse.json(
+        { error: 'Branch name is required' },
+        { status: 400 }
+      )
+    }
 
     if (!address) {
       return NextResponse.json(
@@ -94,7 +101,7 @@ export async function POST(
     const branch = await prisma.branch.create({
       data: {
         clientId: client.id,
-        name: client.companyName,
+        name,
         address,
         city,
         state,
