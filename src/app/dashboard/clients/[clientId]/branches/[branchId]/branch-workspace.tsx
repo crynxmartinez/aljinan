@@ -1,8 +1,27 @@
 'use client'
 
 import { useState } from 'react'
+import { useRouter } from 'next/navigation'
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
 import { Button } from '@/components/ui/button'
+import { Input } from '@/components/ui/input'
+import { Label } from '@/components/ui/label'
+import { Textarea } from '@/components/ui/textarea'
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogFooter,
+  DialogHeader,
+  DialogTitle,
+} from '@/components/ui/dialog'
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from '@/components/ui/select'
 import { RequestsList } from '@/components/modules/requests-list'
 import { QuotationsList } from '@/components/modules/quotations-list'
 import { AppointmentsList } from '@/components/modules/appointments-list'
@@ -131,14 +150,172 @@ export function BranchWorkspace({ clientId, branchId, branch }: BranchWorkspaceP
 }
 
 function BranchDashboard({ branch, branchId }: { branch: Branch; branchId: string }) {
+  const router = useRouter()
+  const [createDialogOpen, setCreateDialogOpen] = useState(false)
+  const [loading, setLoading] = useState(false)
+  const [error, setError] = useState('')
+  const [newProject, setNewProject] = useState({
+    title: '',
+    description: '',
+    priority: 'MEDIUM',
+    startDate: '',
+    endDate: '',
+    autoRenew: false,
+  })
+
   const handleCreateProject = () => {
-    // TODO: Open create project modal
-    console.log('Create project clicked')
+    setCreateDialogOpen(true)
+  }
+
+  const handleSubmitProject = async (e: React.FormEvent) => {
+    e.preventDefault()
+    setLoading(true)
+    setError('')
+
+    try {
+      const response = await fetch(`/api/branches/${branchId}/projects`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          title: newProject.title,
+          description: newProject.description || null,
+          priority: newProject.priority,
+          startDate: newProject.startDate || null,
+          endDate: newProject.endDate || null,
+          autoRenew: newProject.autoRenew,
+        }),
+      })
+
+      const data = await response.json()
+
+      if (!response.ok) {
+        throw new Error(data.error || 'Failed to create project')
+      }
+
+      setCreateDialogOpen(false)
+      setNewProject({
+        title: '',
+        description: '',
+        priority: 'MEDIUM',
+        startDate: '',
+        endDate: '',
+        autoRenew: false,
+      })
+      router.refresh()
+      // Trigger a re-fetch of projects
+      window.location.reload()
+    } catch (err) {
+      setError(err instanceof Error ? err.message : 'An error occurred')
+    } finally {
+      setLoading(false)
+    }
   }
 
   return (
     <div className="space-y-6">
       <ProjectsTable branchId={branchId} onCreateProject={handleCreateProject} />
+
+      <Dialog open={createDialogOpen} onOpenChange={setCreateDialogOpen}>
+        <DialogContent className="sm:max-w-[500px]">
+          <DialogHeader>
+            <DialogTitle>Create New Project</DialogTitle>
+            <DialogDescription>
+              Create a new project for this branch. A request will be auto-generated for client review.
+            </DialogDescription>
+          </DialogHeader>
+          <form onSubmit={handleSubmitProject}>
+            {error && (
+              <div className="bg-destructive/10 text-destructive p-3 rounded-lg text-sm mb-4">
+                {error}
+              </div>
+            )}
+            <div className="space-y-4">
+              <div className="space-y-2">
+                <Label htmlFor="title">Project Title *</Label>
+                <Input
+                  id="title"
+                  value={newProject.title}
+                  onChange={(e) => setNewProject({ ...newProject, title: e.target.value })}
+                  placeholder="e.g., Annual Maintenance Contract 2026"
+                  required
+                />
+              </div>
+              <div className="space-y-2">
+                <Label htmlFor="description">Description</Label>
+                <Textarea
+                  id="description"
+                  value={newProject.description}
+                  onChange={(e) => setNewProject({ ...newProject, description: e.target.value })}
+                  placeholder="Describe the project scope..."
+                  rows={3}
+                />
+              </div>
+              <div className="grid grid-cols-2 gap-4">
+                <div className="space-y-2">
+                  <Label htmlFor="priority">Priority</Label>
+                  <Select
+                    value={newProject.priority}
+                    onValueChange={(value) => setNewProject({ ...newProject, priority: value })}
+                  >
+                    <SelectTrigger>
+                      <SelectValue />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="LOW">Low</SelectItem>
+                      <SelectItem value="MEDIUM">Medium</SelectItem>
+                      <SelectItem value="HIGH">High</SelectItem>
+                      <SelectItem value="URGENT">Urgent</SelectItem>
+                    </SelectContent>
+                  </Select>
+                </div>
+                <div className="space-y-2">
+                  <Label htmlFor="autoRenew">Auto-Renew</Label>
+                  <Select
+                    value={newProject.autoRenew ? 'yes' : 'no'}
+                    onValueChange={(value) => setNewProject({ ...newProject, autoRenew: value === 'yes' })}
+                  >
+                    <SelectTrigger>
+                      <SelectValue />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="no">No</SelectItem>
+                      <SelectItem value="yes">Yes</SelectItem>
+                    </SelectContent>
+                  </Select>
+                </div>
+              </div>
+              <div className="grid grid-cols-2 gap-4">
+                <div className="space-y-2">
+                  <Label htmlFor="startDate">Start Date</Label>
+                  <Input
+                    id="startDate"
+                    type="date"
+                    value={newProject.startDate}
+                    onChange={(e) => setNewProject({ ...newProject, startDate: e.target.value })}
+                  />
+                </div>
+                <div className="space-y-2">
+                  <Label htmlFor="endDate">End Date</Label>
+                  <Input
+                    id="endDate"
+                    type="date"
+                    value={newProject.endDate}
+                    onChange={(e) => setNewProject({ ...newProject, endDate: e.target.value })}
+                  />
+                </div>
+              </div>
+            </div>
+            <DialogFooter className="mt-6">
+              <Button type="button" variant="outline" onClick={() => setCreateDialogOpen(false)}>
+                Cancel
+              </Button>
+              <Button type="submit" disabled={loading}>
+                {loading ? 'Creating...' : 'Create Project'}
+              </Button>
+            </DialogFooter>
+          </form>
+        </DialogContent>
+      </Dialog>
     </div>
   )
 }
