@@ -86,7 +86,7 @@ export async function PATCH(
     
     if (status !== undefined) {
       updateData.status = status
-      if (status === 'COMPLETED' || status === 'PAID') {
+      if (status === 'DONE' || status === 'CLOSED') {
         updateData.completedAt = new Date()
       }
 
