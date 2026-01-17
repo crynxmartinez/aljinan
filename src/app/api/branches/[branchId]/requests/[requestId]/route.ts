@@ -101,7 +101,7 @@ export async function PATCH(
           title: currentRequest.title,
           description: currentRequest.description,
           priority: currentRequest.priority,
-          status: 'IN_PROGRESS',
+          status: 'PENDING',
           createdById: session.user.id,
           createdByRole: 'CONTRACTOR',
         }
