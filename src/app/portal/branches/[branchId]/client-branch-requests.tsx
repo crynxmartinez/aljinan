@@ -569,39 +569,51 @@ export function ClientBranchRequests({ branchId, projectId }: ClientBranchReques
               </div>
 
               {/* Action Buttons for Pending Projects */}
-              {selectedProject.status === 'PENDING' && (
-                <div className="space-y-4 pt-4 border-t">
-                  <div className="p-4 bg-amber-50 border border-amber-200 rounded-lg">
-                    <p className="text-sm text-amber-800">
-                      <strong>Ready to proceed?</strong> By accepting this project, a contract will be created and work can begin. 
-                      You can also request additional work orders above - your contractor will add pricing for any new items.
-                    </p>
+              {selectedProject.status === 'PENDING' && (() => {
+                const hasPendingPrices = selectedProject.workOrders?.some(wo => wo.price === null) || false
+                return (
+                  <div className="space-y-4 pt-4 border-t">
+                    {hasPendingPrices ? (
+                      <div className="p-4 bg-orange-50 border border-orange-200 rounded-lg">
+                        <p className="text-sm text-orange-800">
+                          <strong>Waiting for pricing.</strong> Some work orders are pending price from your contractor. 
+                          You cannot accept the project until all work orders have been priced.
+                        </p>
+                      </div>
+                    ) : (
+                      <div className="p-4 bg-amber-50 border border-amber-200 rounded-lg">
+                        <p className="text-sm text-amber-800">
+                          <strong>Ready to proceed?</strong> By accepting this project, a contract will be created and work can begin. 
+                          You can also request additional work orders above - your contractor will add pricing for any new items.
+                        </p>
+                      </div>
+                    )}
+                    
+                    <div className="flex gap-3 justify-end">
+                      <Button variant="outline" onClick={() => { setSelectedProject(null); setSelectedRequest(null); }}>
+                        Review Later
+                      </Button>
+                      <Button 
+                        onClick={() => handleApproveProject(selectedProject.id)}
+                        disabled={approving || hasPendingPrices}
+                        className={hasPendingPrices ? "bg-gray-400 cursor-not-allowed" : "bg-green-600 hover:bg-green-700"}
+                      >
+                        {approving ? (
+                          <>
+                            <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                            Approving...
+                          </>
+                        ) : (
+                          <>
+                            <CheckCircle className="mr-2 h-4 w-4" />
+                            Accept Project
+                          </>
+                        )}
+                      </Button>
+                    </div>
                   </div>
-                  
-                  <div className="flex gap-3 justify-end">
-                    <Button variant="outline" onClick={() => { setSelectedProject(null); setSelectedRequest(null); }}>
-                      Review Later
-                    </Button>
-                    <Button 
-                      onClick={() => handleApproveProject(selectedProject.id)}
-                      disabled={approving}
-                      className="bg-green-600 hover:bg-green-700"
-                    >
-                      {approving ? (
-                        <>
-                          <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                          Approving...
-                        </>
-                      ) : (
-                        <>
-                          <CheckCircle className="mr-2 h-4 w-4" />
-                          Accept Project
-                        </>
-                      )}
-                    </Button>
-                  </div>
-                </div>
-              )}
+                )
+              })()}
 
               {/* Info for Active Projects */}
               {selectedProject.status === 'ACTIVE' && (

@@ -17,6 +17,14 @@ import {
   DialogTitle,
 } from '@/components/ui/dialog'
 import {
+  Table,
+  TableBody,
+  TableCell,
+  TableHead,
+  TableHeader,
+  TableRow,
+} from '@/components/ui/table'
+import {
   Select,
   SelectContent,
   SelectItem,
@@ -38,7 +46,31 @@ import {
   CheckCircle,
   XCircle,
   AlertCircle,
+  Calendar,
+  DollarSign,
+  Pencil,
+  Save,
 } from 'lucide-react'
+
+interface WorkOrder {
+  id: string
+  title: string
+  description: string | null
+  scheduledDate: string | null
+  price: number | null
+  stage: string
+  type: string
+}
+
+interface Project {
+  id: string
+  title: string
+  status: string
+  totalValue: number
+  startDate: string | null
+  endDate: string | null
+  workOrders: WorkOrder[]
+}
 
 interface Request {
   id: string
@@ -53,6 +85,7 @@ interface Request {
   completedAt: string | null
   createdAt: string
   updatedAt: string
+  projectId?: string
 }
 
 interface RequestsListProps {
@@ -64,12 +97,23 @@ interface RequestsListProps {
 export function RequestsList({ branchId, userRole, projectId }: RequestsListProps) {
   const router = useRouter()
   const [requests, setRequests] = useState<Request[]>([])
+  const [projects, setProjects] = useState<Project[]>([])
   const [loading, setLoading] = useState(true)
   const [createDialogOpen, setCreateDialogOpen] = useState(false)
   const [detailDialogOpen, setDetailDialogOpen] = useState(false)
+  const [projectDialogOpen, setProjectDialogOpen] = useState(false)
   const [selectedRequest, setSelectedRequest] = useState<Request | null>(null)
+  const [selectedProject, setSelectedProject] = useState<Project | null>(null)
   const [creating, setCreating] = useState(false)
+  const [saving, setSaving] = useState(false)
   const [error, setError] = useState('')
+  
+  // Work order editing state
+  const [editingWorkOrderId, setEditingWorkOrderId] = useState<string | null>(null)
+  const [editWorkOrder, setEditWorkOrder] = useState<{
+    price: string
+    scheduledDate: string
+  }>({ price: '', scheduledDate: '' })
 
   const [newRequest, setNewRequest] = useState<{
     title: string
@@ -100,9 +144,70 @@ export function RequestsList({ branchId, userRole, projectId }: RequestsListProp
     }
   }
 
+  const fetchProjects = async () => {
+    try {
+      const response = await fetch(`/api/branches/${branchId}/projects`)
+      if (response.ok) {
+        const data = await response.json()
+        setProjects(data)
+      }
+    } catch (err) {
+      console.error('Failed to fetch projects:', err)
+    }
+  }
+
   useEffect(() => {
     fetchRequests()
+    fetchProjects()
   }, [branchId, projectId])
+
+  // Get project for a request
+  const getProjectForRequest = (request: Request): Project | undefined => {
+    if (request.projectId) {
+      return projects.find(p => p.id === request.projectId)
+    }
+    return undefined
+  }
+
+  // Start editing a work order
+  const startEditWorkOrder = (wo: WorkOrder) => {
+    setEditingWorkOrderId(wo.id)
+    setEditWorkOrder({
+      price: wo.price?.toString() || '',
+      scheduledDate: wo.scheduledDate ? wo.scheduledDate.split('T')[0] : '',
+    })
+  }
+
+  // Save work order changes
+  const handleSaveWorkOrder = async (workOrderId: string) => {
+    if (!selectedProject) return
+    setSaving(true)
+    setError('')
+    try {
+      const response = await fetch(`/api/projects/${selectedProject.id}/work-orders/${workOrderId}`, {
+        method: 'PATCH',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          price: editWorkOrder.price ? parseFloat(editWorkOrder.price) : null,
+          scheduledDate: editWorkOrder.scheduledDate || null,
+        }),
+      })
+      if (!response.ok) {
+        const data = await response.json()
+        throw new Error(data.error || 'Failed to update work order')
+      }
+      setEditingWorkOrderId(null)
+      // Refresh projects and update selected project
+      await fetchProjects()
+      const updatedProjects = await fetch(`/api/branches/${branchId}/projects`).then(r => r.json())
+      const updated = updatedProjects.find((p: Project) => p.id === selectedProject.id)
+      if (updated) setSelectedProject(updated)
+    } catch (err) {
+      setError(err instanceof Error ? err.message : 'An error occurred')
+    } finally {
+      setSaving(false)
+    }
+  }
 
   const handleCreateRequest = async (e: React.FormEvent) => {
     e.preventDefault()
@@ -239,8 +344,14 @@ export function RequestsList({ branchId, userRole, projectId }: RequestsListProp
                   key={request.id}
                   className="flex items-start justify-between p-4 border rounded-lg hover:bg-muted/50 transition-colors cursor-pointer"
                   onClick={() => {
-                    setSelectedRequest(request)
-                    setDetailDialogOpen(true)
+                    const project = getProjectForRequest(request)
+                    if (project && request.createdByRole === 'CONTRACTOR') {
+                      setSelectedProject(project)
+                      setProjectDialogOpen(true)
+                    } else {
+                      setSelectedRequest(request)
+                      setDetailDialogOpen(true)
+                    }
                   }}
                 >
                   <div className="space-y-1 flex-1">
@@ -468,6 +579,204 @@ export function RequestsList({ branchId, userRole, projectId }: RequestsListProp
               )}
             </div>
           )}
+        </DialogContent>
+      </Dialog>
+
+      {/* Project Proposal Dialog - For contractors to view/edit work orders */}
+      <Dialog open={projectDialogOpen} onOpenChange={(open) => { if (!open) { setProjectDialogOpen(false); setSelectedProject(null); setEditingWorkOrderId(null); } }}>
+        <DialogContent className="sm:max-w-[900px] max-h-[90vh] overflow-y-auto">
+          <DialogHeader>
+            <DialogTitle className="text-xl">{selectedProject?.title}</DialogTitle>
+            <DialogDescription>
+              Project proposal - Review and manage work orders
+            </DialogDescription>
+          </DialogHeader>
+          
+          {error && (
+            <div className="bg-destructive/10 text-destructive p-3 rounded-lg text-sm">
+              {error}
+            </div>
+          )}
+
+          {selectedProject && (
+            <div className="space-y-6">
+              {/* Project Info */}
+              <div className="grid grid-cols-2 md:grid-cols-4 gap-4 p-4 bg-muted/30 rounded-lg">
+                <div>
+                  <p className="text-xs text-muted-foreground">Status</p>
+                  <Badge className={selectedProject.status === 'PENDING' ? 'bg-amber-100 text-amber-700' : 'bg-green-100 text-green-700'}>
+                    {selectedProject.status === 'PENDING' ? 'Pending Client Approval' : selectedProject.status}
+                  </Badge>
+                </div>
+                {selectedProject.startDate && (
+                  <div>
+                    <p className="text-xs text-muted-foreground">Start Date</p>
+                    <p className="font-medium text-sm">{new Date(selectedProject.startDate).toLocaleDateString()}</p>
+                  </div>
+                )}
+                {selectedProject.endDate && (
+                  <div>
+                    <p className="text-xs text-muted-foreground">End Date</p>
+                    <p className="font-medium text-sm">{new Date(selectedProject.endDate).toLocaleDateString()}</p>
+                  </div>
+                )}
+                <div>
+                  <p className="text-xs text-muted-foreground">Total Value</p>
+                  <p className="font-bold text-lg text-primary">
+                    ${selectedProject.totalValue.toLocaleString('en-US', { minimumFractionDigits: 2 })}
+                  </p>
+                </div>
+              </div>
+
+              {/* Work Orders Table */}
+              <div>
+                <div className="flex items-center justify-between mb-3">
+                  <h3 className="font-semibold">Work Orders</h3>
+                  {selectedProject.workOrders?.some(wo => wo.price === null) && (
+                    <Badge variant="outline" className="text-orange-600 border-orange-300">
+                      <AlertCircle className="h-3 w-3 mr-1" />
+                      Some items need pricing
+                    </Badge>
+                  )}
+                </div>
+                
+                {selectedProject.workOrders && selectedProject.workOrders.length > 0 ? (
+                  <div className="border rounded-lg overflow-hidden">
+                    <Table>
+                      <TableHeader>
+                        <TableRow>
+                          <TableHead>Work Order</TableHead>
+                          <TableHead>Type</TableHead>
+                          <TableHead>Scheduled Date</TableHead>
+                          <TableHead className="text-right">Price</TableHead>
+                          <TableHead className="w-[100px]">Actions</TableHead>
+                        </TableRow>
+                      </TableHeader>
+                      <TableBody>
+                        {selectedProject.workOrders.map((wo) => (
+                          <TableRow key={wo.id}>
+                            <TableCell>
+                              <div>
+                                <p className="font-medium">{wo.title}</p>
+                                {wo.description && (
+                                  <p className="text-xs text-muted-foreground">{wo.description}</p>
+                                )}
+                              </div>
+                            </TableCell>
+                            <TableCell>
+                              <Badge variant="outline" className={wo.type === 'ADHOC' ? 'text-purple-600' : ''}>
+                                {wo.type === 'ADHOC' ? 'Client Added' : 'Scheduled'}
+                              </Badge>
+                            </TableCell>
+                            <TableCell>
+                              {editingWorkOrderId === wo.id ? (
+                                <Input
+                                  type="date"
+                                  value={editWorkOrder.scheduledDate}
+                                  onChange={(e) => setEditWorkOrder({ ...editWorkOrder, scheduledDate: e.target.value })}
+                                  className="w-[140px]"
+                                />
+                              ) : wo.scheduledDate ? (
+                                <div className="flex items-center gap-1 text-sm">
+                                  <Calendar className="h-3 w-3" />
+                                  {new Date(wo.scheduledDate).toLocaleDateString()}
+                                </div>
+                              ) : (
+                                <span className="text-muted-foreground">-</span>
+                              )}
+                            </TableCell>
+                            <TableCell className="text-right">
+                              {editingWorkOrderId === wo.id ? (
+                                <Input
+                                  type="number"
+                                  step="0.01"
+                                  value={editWorkOrder.price}
+                                  onChange={(e) => setEditWorkOrder({ ...editWorkOrder, price: e.target.value })}
+                                  placeholder="0.00"
+                                  className="w-[100px] text-right"
+                                />
+                              ) : wo.price !== null ? (
+                                <span className="font-medium">${wo.price.toLocaleString('en-US', { minimumFractionDigits: 2 })}</span>
+                              ) : (
+                                <Badge variant="outline" className="text-orange-600 border-orange-300">
+                                  Needs Price
+                                </Badge>
+                              )}
+                            </TableCell>
+                            <TableCell>
+                              {editingWorkOrderId === wo.id ? (
+                                <div className="flex gap-1">
+                                  <Button
+                                    size="sm"
+                                    onClick={() => handleSaveWorkOrder(wo.id)}
+                                    disabled={saving}
+                                  >
+                                    {saving ? <Loader2 className="h-3 w-3 animate-spin" /> : <Save className="h-3 w-3" />}
+                                  </Button>
+                                  <Button
+                                    size="sm"
+                                    variant="outline"
+                                    onClick={() => setEditingWorkOrderId(null)}
+                                  >
+                                    <XCircle className="h-3 w-3" />
+                                  </Button>
+                                </div>
+                              ) : (
+                                <Button
+                                  size="sm"
+                                  variant="ghost"
+                                  onClick={() => startEditWorkOrder(wo)}
+                                >
+                                  <Pencil className="h-3 w-3 mr-1" />
+                                  Edit
+                                </Button>
+                              )}
+                            </TableCell>
+                          </TableRow>
+                        ))}
+                      </TableBody>
+                    </Table>
+                    
+                    {/* Total Row */}
+                    <div className="flex items-center justify-between p-4 bg-primary/5 border-t">
+                      <span className="font-semibold">Total</span>
+                      <span className="text-xl font-bold">
+                        ${selectedProject.totalValue.toLocaleString('en-US', { minimumFractionDigits: 2 })}
+                      </span>
+                    </div>
+                  </div>
+                ) : (
+                  <div className="text-center py-8 text-muted-foreground border rounded-lg">
+                    No work orders defined yet
+                  </div>
+                )}
+              </div>
+
+              {/* Status Info */}
+              {selectedProject.status === 'PENDING' && (
+                <div className="p-4 bg-amber-50 border border-amber-200 rounded-lg">
+                  <p className="text-sm text-amber-800">
+                    <strong>Waiting for client approval.</strong> Make sure all work orders have prices set. 
+                    The client cannot accept the project until all items are priced.
+                  </p>
+                </div>
+              )}
+
+              {selectedProject.status === 'ACTIVE' && (
+                <div className="p-4 bg-green-50 border border-green-200 rounded-lg">
+                  <p className="text-sm text-green-800">
+                    <strong>Project is active.</strong> Work is in progress. Manage work orders in the Checklist tab.
+                  </p>
+                </div>
+              )}
+            </div>
+          )}
+
+          <DialogFooter>
+            <Button variant="outline" onClick={() => { setProjectDialogOpen(false); setSelectedProject(null); }}>
+              Close
+            </Button>
+          </DialogFooter>
         </DialogContent>
       </Dialog>
     </>
