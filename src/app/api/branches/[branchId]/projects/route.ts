@@ -47,27 +47,30 @@ export async function GET(
 
     // Transform projects to include work orders from checklists
     const transformedProjects = projects.map(project => {
-      // Calculate total value from checklist items (work orders)
+      // Get work orders from checklist items
       const workOrders = project.checklists.flatMap(checklist => 
         checklist.items.map(item => ({
           id: item.id,
           title: item.description,
           description: item.notes,
-          scheduledDate: null, // Will be updated when we add scheduling
-          status: item.isCompleted ? 'COMPLETED' : 'SCHEDULED',
-          type: 'scheduled' as const,
-          price: null // Will be updated when we add pricing
+          scheduledDate: item.scheduledDate,
+          status: item.stage,
+          type: item.type === 'ADHOC' ? 'adhoc' as const : 'scheduled' as const,
+          price: item.price
         }))
       )
+
+      // Calculate total from work order prices
+      const calculatedTotal = workOrders.reduce((sum, wo) => sum + (wo.price || 0), 0)
 
       return {
         id: project.id,
         title: project.title,
         description: project.description,
         status: project.status,
-        startDate: project.createdAt,
-        endDate: project.completedAt,
-        totalValue: 0, // Will be calculated from quotations
+        startDate: project.startDate || project.createdAt,
+        endDate: project.endDate || project.completedAt,
+        totalValue: project.totalValue || calculatedTotal,
         workOrders,
         _count: project._count
       }
@@ -83,7 +86,7 @@ export async function GET(
   }
 }
 
-// POST - Create a new project
+// POST - Create a new project with work orders
 export async function POST(
   request: Request,
   { params }: { params: Promise<{ branchId: string }> }
@@ -97,7 +100,7 @@ export async function POST(
 
     const { branchId } = await params
     const body = await request.json()
-    const { title, description, priority, requestId, startDate, endDate, autoRenew } = body
+    const { title, description, requestId, startDate, endDate, autoRenew, workOrders } = body
 
     if (!title) {
       return NextResponse.json({ error: 'Title is required' }, { status: 400 })
@@ -123,13 +126,19 @@ export async function POST(
       )
     }
 
+    // Calculate total value from work orders
+    const totalValue = workOrders?.reduce((sum: number, wo: { price?: number | null }) => {
+      return sum + (wo.price || 0)
+    }, 0) || 0
+
     // Create the project
     const project = await prisma.project.create({
       data: {
         branchId,
         title,
         description,
-        priority: priority || 'MEDIUM',
+        priority: 'MEDIUM',
+        totalValue,
         startDate: startDate ? new Date(startDate) : null,
         endDate: endDate ? new Date(endDate) : null,
         autoRenew: autoRenew || false,
@@ -150,6 +159,34 @@ export async function POST(
       }
     })
 
+    // Create checklist with work orders if provided
+    if (workOrders && workOrders.length > 0) {
+      const checklist = await prisma.checklist.create({
+        data: {
+          branchId,
+          projectId: project.id,
+          title: `${title} - Work Orders`,
+          description: 'Work orders for this project',
+          status: 'DRAFT',
+          createdById: session.user.id,
+        }
+      })
+
+      // Create checklist items (work orders)
+      await prisma.checklistItem.createMany({
+        data: workOrders.map((wo: { name: string; description?: string; scheduledDate?: string; price?: number }, index: number) => ({
+          checklistId: checklist.id,
+          description: wo.name,
+          notes: wo.description || null,
+          scheduledDate: wo.scheduledDate ? new Date(wo.scheduledDate) : null,
+          price: wo.price || null,
+          stage: 'SCHEDULED',
+          type: 'SCHEDULED',
+          order: index,
+        }))
+      })
+    }
+
     // If created from a request, link the request to this project
     if (requestId) {
       await prisma.request.update({
@@ -169,13 +206,19 @@ export async function POST(
       })
     } else {
       // Auto-generate a Request for client review (Project Proposal)
+      const workOrderSummary = workOrders && workOrders.length > 0
+        ? `\n\nWork Orders:\n${workOrders.map((wo: { name: string; price?: number }, i: number) => 
+            `${i + 1}. ${wo.name}${wo.price ? ` - $${wo.price.toFixed(2)}` : ''}`
+          ).join('\n')}\n\nTotal: $${totalValue.toFixed(2)}`
+        : ''
+
       await prisma.request.create({
         data: {
           branchId,
           projectId: project.id,
           title: `Project Proposal: ${title}`,
-          description: description || `New project proposal for review. Please review the work orders and pricing, then proceed to quotation when ready.`,
-          priority: priority || 'MEDIUM',
+          description: (description || `New project proposal for review.`) + workOrderSummary,
+          priority: 'MEDIUM',
           status: 'OPEN',
           createdById: session.user.id,
           createdByRole: session.user.role as 'CONTRACTOR' | 'CLIENT' | 'MANAGER',
@@ -187,7 +230,7 @@ export async function POST(
         data: {
           projectId: project.id,
           type: 'CREATED',
-          content: `Project created with proposal request for client review`,
+          content: `Project created with ${workOrders?.length || 0} work orders. Total value: $${totalValue.toFixed(2)}`,
           createdById: session.user.id,
           createdByRole: session.user.role as 'CONTRACTOR' | 'CLIENT' | 'MANAGER',
         }

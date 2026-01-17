@@ -40,6 +40,8 @@ import {
   FileCheck,
   ClipboardList,
   MessageSquare,
+  Plus,
+  Trash2,
 } from 'lucide-react'
 
 interface Branch {
@@ -149,6 +151,14 @@ export function BranchWorkspace({ clientId, branchId, branch }: BranchWorkspaceP
   )
 }
 
+interface WorkOrder {
+  id: string
+  name: string
+  description: string
+  scheduledDate: string
+  price: string
+}
+
 function BranchDashboard({ branch, branchId }: { branch: Branch; branchId: string }) {
   const router = useRouter()
   const [createDialogOpen, setCreateDialogOpen] = useState(false)
@@ -157,20 +167,56 @@ function BranchDashboard({ branch, branchId }: { branch: Branch; branchId: strin
   const [newProject, setNewProject] = useState({
     title: '',
     description: '',
-    priority: 'MEDIUM',
     startDate: '',
     endDate: '',
     autoRenew: false,
   })
+  const [workOrders, setWorkOrders] = useState<WorkOrder[]>([
+    { id: crypto.randomUUID(), name: '', description: '', scheduledDate: '', price: '' }
+  ])
 
   const handleCreateProject = () => {
     setCreateDialogOpen(true)
+  }
+
+  const addWorkOrder = () => {
+    setWorkOrders([
+      ...workOrders,
+      { id: crypto.randomUUID(), name: '', description: '', scheduledDate: '', price: '' }
+    ])
+  }
+
+  const removeWorkOrder = (id: string) => {
+    if (workOrders.length > 1) {
+      setWorkOrders(workOrders.filter(wo => wo.id !== id))
+    }
+  }
+
+  const updateWorkOrder = (id: string, field: keyof WorkOrder, value: string) => {
+    setWorkOrders(workOrders.map(wo => 
+      wo.id === id ? { ...wo, [field]: value } : wo
+    ))
+  }
+
+  const calculateTotal = () => {
+    return workOrders.reduce((sum, wo) => {
+      const price = parseFloat(wo.price) || 0
+      return sum + price
+    }, 0)
   }
 
   const handleSubmitProject = async (e: React.FormEvent) => {
     e.preventDefault()
     setLoading(true)
     setError('')
+
+    // Validate at least one work order has a name
+    const validWorkOrders = workOrders.filter(wo => wo.name.trim())
+    if (validWorkOrders.length === 0) {
+      setError('Please add at least one work order with a name')
+      setLoading(false)
+      return
+    }
 
     try {
       const response = await fetch(`/api/branches/${branchId}/projects`, {
@@ -179,10 +225,15 @@ function BranchDashboard({ branch, branchId }: { branch: Branch; branchId: strin
         body: JSON.stringify({
           title: newProject.title,
           description: newProject.description || null,
-          priority: newProject.priority,
           startDate: newProject.startDate || null,
           endDate: newProject.endDate || null,
           autoRenew: newProject.autoRenew,
+          workOrders: validWorkOrders.map(wo => ({
+            name: wo.name,
+            description: wo.description || null,
+            scheduledDate: wo.scheduledDate || null,
+            price: wo.price ? parseFloat(wo.price) : null,
+          })),
         }),
       })
 
@@ -196,13 +247,14 @@ function BranchDashboard({ branch, branchId }: { branch: Branch; branchId: strin
       setNewProject({
         title: '',
         description: '',
-        priority: 'MEDIUM',
         startDate: '',
         endDate: '',
         autoRenew: false,
       })
+      setWorkOrders([
+        { id: crypto.randomUUID(), name: '', description: '', scheduledDate: '', price: '' }
+      ])
       router.refresh()
-      // Trigger a re-fetch of projects
       window.location.reload()
     } catch (err) {
       setError(err instanceof Error ? err.message : 'An error occurred')
@@ -216,11 +268,11 @@ function BranchDashboard({ branch, branchId }: { branch: Branch; branchId: strin
       <ProjectsTable branchId={branchId} onCreateProject={handleCreateProject} />
 
       <Dialog open={createDialogOpen} onOpenChange={setCreateDialogOpen}>
-        <DialogContent className="sm:max-w-[500px]">
+        <DialogContent className="sm:max-w-[700px] max-h-[90vh] overflow-y-auto">
           <DialogHeader>
             <DialogTitle>Create New Project</DialogTitle>
             <DialogDescription>
-              Create a new project for this branch. A request will be auto-generated for client review.
+              Create a new project with work orders. A request will be sent to the client for review.
             </DialogDescription>
           </DialogHeader>
           <form onSubmit={handleSubmitProject}>
@@ -230,6 +282,7 @@ function BranchDashboard({ branch, branchId }: { branch: Branch; branchId: strin
               </div>
             )}
             <div className="space-y-4">
+              {/* Project Details */}
               <div className="space-y-2">
                 <Label htmlFor="title">Project Title *</Label>
                 <Input
@@ -247,44 +300,10 @@ function BranchDashboard({ branch, branchId }: { branch: Branch; branchId: strin
                   value={newProject.description}
                   onChange={(e) => setNewProject({ ...newProject, description: e.target.value })}
                   placeholder="Describe the project scope..."
-                  rows={3}
+                  rows={2}
                 />
               </div>
-              <div className="grid grid-cols-2 gap-4">
-                <div className="space-y-2">
-                  <Label htmlFor="priority">Priority</Label>
-                  <Select
-                    value={newProject.priority}
-                    onValueChange={(value) => setNewProject({ ...newProject, priority: value })}
-                  >
-                    <SelectTrigger>
-                      <SelectValue />
-                    </SelectTrigger>
-                    <SelectContent>
-                      <SelectItem value="LOW">Low</SelectItem>
-                      <SelectItem value="MEDIUM">Medium</SelectItem>
-                      <SelectItem value="HIGH">High</SelectItem>
-                      <SelectItem value="URGENT">Urgent</SelectItem>
-                    </SelectContent>
-                  </Select>
-                </div>
-                <div className="space-y-2">
-                  <Label htmlFor="autoRenew">Auto-Renew</Label>
-                  <Select
-                    value={newProject.autoRenew ? 'yes' : 'no'}
-                    onValueChange={(value) => setNewProject({ ...newProject, autoRenew: value === 'yes' })}
-                  >
-                    <SelectTrigger>
-                      <SelectValue />
-                    </SelectTrigger>
-                    <SelectContent>
-                      <SelectItem value="no">No</SelectItem>
-                      <SelectItem value="yes">Yes</SelectItem>
-                    </SelectContent>
-                  </Select>
-                </div>
-              </div>
-              <div className="grid grid-cols-2 gap-4">
+              <div className="grid grid-cols-3 gap-4">
                 <div className="space-y-2">
                   <Label htmlFor="startDate">Start Date</Label>
                   <Input
@@ -302,6 +321,88 @@ function BranchDashboard({ branch, branchId }: { branch: Branch; branchId: strin
                     value={newProject.endDate}
                     onChange={(e) => setNewProject({ ...newProject, endDate: e.target.value })}
                   />
+                </div>
+                <div className="space-y-2">
+                  <Label htmlFor="autoRenew">Auto-Renew</Label>
+                  <Select
+                    value={newProject.autoRenew ? 'yes' : 'no'}
+                    onValueChange={(value) => setNewProject({ ...newProject, autoRenew: value === 'yes' })}
+                  >
+                    <SelectTrigger>
+                      <SelectValue />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="no">No</SelectItem>
+                      <SelectItem value="yes">Yes</SelectItem>
+                    </SelectContent>
+                  </Select>
+                </div>
+              </div>
+
+              {/* Work Orders Section */}
+              <div className="border-t pt-4 mt-4">
+                <div className="flex items-center justify-between mb-3">
+                  <Label className="text-base font-semibold">Work Orders *</Label>
+                  <Button type="button" variant="outline" size="sm" onClick={addWorkOrder}>
+                    <Plus className="h-4 w-4 mr-1" />
+                    Add Work Order
+                  </Button>
+                </div>
+                <div className="space-y-3">
+                  {workOrders.map((wo, index) => (
+                    <div key={wo.id} className="p-3 border rounded-lg bg-muted/30">
+                      <div className="flex items-start justify-between gap-2 mb-2">
+                        <span className="text-sm font-medium text-muted-foreground">#{index + 1}</span>
+                        {workOrders.length > 1 && (
+                          <Button
+                            type="button"
+                            variant="ghost"
+                            size="sm"
+                            className="h-6 w-6 p-0 text-destructive hover:text-destructive"
+                            onClick={() => removeWorkOrder(wo.id)}
+                          >
+                            <Trash2 className="h-4 w-4" />
+                          </Button>
+                        )}
+                      </div>
+                      <div className="grid grid-cols-2 gap-2 mb-2">
+                        <Input
+                          placeholder="Work order name *"
+                          value={wo.name}
+                          onChange={(e) => updateWorkOrder(wo.id, 'name', e.target.value)}
+                        />
+                        <Input
+                          placeholder="Description"
+                          value={wo.description}
+                          onChange={(e) => updateWorkOrder(wo.id, 'description', e.target.value)}
+                        />
+                      </div>
+                      <div className="grid grid-cols-2 gap-2">
+                        <Input
+                          type="date"
+                          placeholder="Scheduled date"
+                          value={wo.scheduledDate}
+                          onChange={(e) => updateWorkOrder(wo.id, 'scheduledDate', e.target.value)}
+                        />
+                        <Input
+                          type="number"
+                          step="0.01"
+                          min="0"
+                          placeholder="Price"
+                          value={wo.price}
+                          onChange={(e) => updateWorkOrder(wo.id, 'price', e.target.value)}
+                        />
+                      </div>
+                    </div>
+                  ))}
+                </div>
+
+                {/* Total */}
+                <div className="flex items-center justify-between mt-4 p-3 bg-primary/5 rounded-lg border">
+                  <span className="font-semibold">Total</span>
+                  <span className="text-xl font-bold">
+                    ${calculateTotal().toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
+                  </span>
                 </div>
               </div>
             </div>
