@@ -96,7 +96,8 @@ export async function POST(
         await tx.invoice.update({
           where: { id: invoice.id },
           data: {
-            totalAmount: (invoice.totalAmount || 0) + (workOrder.price || 0)
+            total: (invoice.total || 0) + (workOrder.price || 0),
+            subtotal: (invoice.subtotal || 0) + (workOrder.price || 0)
           }
         })
 
@@ -107,7 +108,7 @@ export async function POST(
             description: `Ad-hoc: ${workOrder.description}`,
             quantity: 1,
             unitPrice: workOrder.price || 0,
-            amount: workOrder.price || 0
+            total: workOrder.price || 0
           }
         })
       }

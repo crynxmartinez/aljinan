@@ -97,7 +97,8 @@ export async function POST(
           title: `Invoice: ${project.title}`,
           description: `Invoice for project ${project.title}`,
           status: 'SENT',
-          totalAmount: totalValue,
+          total: totalValue,
+          subtotal: totalValue,
           dueDate: project.endDate || new Date(Date.now() + 30 * 24 * 60 * 60 * 1000), // 30 days from now if no end date
           createdById: session.user.id,
         }

@@ -282,7 +282,7 @@ model Invoice {
   projectId     String?
   project       Project?      @relation(fields: [projectId], references: [id], onDelete: SetNull)
   quotationId   String?
-  invoiceNumber String
+  invoiceNumber String?
   title         String
   description   String?
   items         InvoiceItem[]
@@ -316,12 +316,13 @@ model InvoiceItem {
 // Contract statuses
 enum ContractStatus {
   DRAFT
+  SIGNED
   ACTIVE
   EXPIRED
   TERMINATED
 }
 
-// Contract - service agreements uploaded by contractor
+// Contract - service agreements for projects
 model Contract {
   id            String         @id @default(cuid())
   branchId      String
@@ -330,13 +331,15 @@ model Contract {
   project       Project?       @relation(fields: [projectId], references: [id], onDelete: SetNull)
   title         String
   description   String?
-  fileName      String
-  fileUrl       String
+  fileName      String?
+  fileUrl       String?
   fileSize      Int?
+  totalValue    Float          @default(0)
   startDate     DateTime?
   endDate       DateTime?
+  signedAt      DateTime?
   status        ContractStatus @default(DRAFT)
-  uploadedById  String
+  createdById   String
   createdAt     DateTime       @default(now())
   updatedAt     DateTime       @updatedAt
 }
