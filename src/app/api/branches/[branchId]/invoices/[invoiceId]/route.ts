@@ -92,25 +92,31 @@ export async function PATCH(
         updateData.paidAt = new Date()
         updateData.amountPaid = currentInvoice.total
         
-        // Auto-update project status to PAID if invoice is linked to a project
+        // Auto-update project status to CLOSED if invoice is linked to a project and project is DONE
         if (currentInvoice.projectId) {
-          await prisma.project.update({
-            where: { id: currentInvoice.projectId },
-            data: { 
-              status: 'PAID',
-              completedAt: new Date()
-            }
+          const project = await prisma.project.findUnique({
+            where: { id: currentInvoice.projectId }
           })
-          // Add activity
-          await prisma.activity.create({
-            data: {
-              projectId: currentInvoice.projectId,
-              type: 'STATUS_CHANGE',
-              content: 'Project marked as PAID - invoice payment received',
-              createdById: session.user.id,
-              createdByRole: session.user.role as 'CONTRACTOR' | 'CLIENT' | 'MANAGER',
-            }
-          })
+          
+          if (project && project.status === 'DONE') {
+            await prisma.project.update({
+              where: { id: currentInvoice.projectId },
+              data: { 
+                status: 'CLOSED',
+                completedAt: new Date()
+              }
+            })
+            // Add activity
+            await prisma.activity.create({
+              data: {
+                projectId: currentInvoice.projectId,
+                type: 'STATUS_CHANGE',
+                content: 'Project closed - invoice payment received',
+                createdById: session.user.id,
+                createdByRole: session.user.role as 'CONTRACTOR' | 'CLIENT' | 'MANAGER',
+              }
+            })
+          }
         }
       }
     }
