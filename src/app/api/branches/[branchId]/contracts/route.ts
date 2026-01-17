@@ -86,7 +86,7 @@ export async function POST(
         startDate: startDate ? new Date(startDate) : null,
         endDate: endDate ? new Date(endDate) : null,
         status: status || 'DRAFT',
-        uploadedById: session.user.id,
+        createdById: session.user.id,
       }
     })
 
