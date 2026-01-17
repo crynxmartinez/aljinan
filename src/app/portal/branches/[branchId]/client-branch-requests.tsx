@@ -70,6 +70,7 @@ export function ClientBranchRequests({ branchId, projectId }: ClientBranchReques
     description: '',
     priority: 'MEDIUM',
   })
+  const [selectedRequest, setSelectedRequest] = useState<Request | null>(null)
 
   const fetchRequests = async () => {
     try {
@@ -189,7 +190,8 @@ export function ClientBranchRequests({ branchId, projectId }: ClientBranchReques
               {requests.map((request) => (
                 <div
                   key={request.id}
-                  className="p-4 border rounded-lg"
+                  className="p-4 border rounded-lg hover:bg-muted/50 cursor-pointer transition-colors"
+                  onClick={() => setSelectedRequest(request)}
                 >
                   <div className="space-y-2">
                     <div className="flex items-center gap-2 flex-wrap">
@@ -201,7 +203,7 @@ export function ClientBranchRequests({ branchId, projectId }: ClientBranchReques
                       )}
                     </div>
                     {request.description && (
-                      <p className="text-sm text-muted-foreground">
+                      <p className="text-sm text-muted-foreground line-clamp-2">
                         {request.description}
                       </p>
                     )}
@@ -286,6 +288,60 @@ export function ClientBranchRequests({ branchId, projectId }: ClientBranchReques
               </Button>
             </DialogFooter>
           </form>
+        </DialogContent>
+      </Dialog>
+
+      {/* View Request Dialog */}
+      <Dialog open={!!selectedRequest} onOpenChange={(open) => !open && setSelectedRequest(null)}>
+        <DialogContent className="sm:max-w-[600px]">
+          <DialogHeader>
+            <DialogTitle className="flex items-center gap-2">
+              {selectedRequest?.title}
+            </DialogTitle>
+            <DialogDescription>
+              {selectedRequest?.createdByRole === 'CONTRACTOR' ? 'Project proposal from contractor' : 'Your service request'}
+            </DialogDescription>
+          </DialogHeader>
+          {selectedRequest && (
+            <div className="space-y-4">
+              <div className="flex items-center gap-2 flex-wrap">
+                {getPriorityBadge(selectedRequest.priority)}
+                {getStatusBadge(selectedRequest.status)}
+              </div>
+              
+              {selectedRequest.description && (
+                <div className="p-4 bg-muted/50 rounded-lg">
+                  <p className="text-sm whitespace-pre-wrap">{selectedRequest.description}</p>
+                </div>
+              )}
+
+              <div className="grid grid-cols-2 gap-4 text-sm">
+                <div>
+                  <p className="text-muted-foreground">Created</p>
+                  <p className="font-medium">{new Date(selectedRequest.createdAt).toLocaleDateString()}</p>
+                </div>
+                {selectedRequest.dueDate && (
+                  <div>
+                    <p className="text-muted-foreground">Due Date</p>
+                    <p className="font-medium">{new Date(selectedRequest.dueDate).toLocaleDateString()}</p>
+                  </div>
+                )}
+              </div>
+
+              {selectedRequest.status === 'OPEN' && selectedRequest.createdByRole === 'CONTRACTOR' && (
+                <div className="p-4 bg-amber-50 border border-amber-200 rounded-lg">
+                  <p className="text-sm text-amber-800">
+                    This is a project proposal from your contractor. Review the details above and contact them if you have questions or want to make changes.
+                  </p>
+                </div>
+              )}
+            </div>
+          )}
+          <DialogFooter>
+            <Button variant="outline" onClick={() => setSelectedRequest(null)}>
+              Close
+            </Button>
+          </DialogFooter>
         </DialogContent>
       </Dialog>
     </>

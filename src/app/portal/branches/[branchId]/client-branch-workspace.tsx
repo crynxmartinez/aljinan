@@ -1,9 +1,10 @@
 'use client'
 
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
+import { Badge } from '@/components/ui/badge'
 import { ProjectFilter } from '@/components/modules/project-filter'
 import { ActivityPanel } from '@/components/modules/activity-panel'
 import { ClientBranchRequests } from './client-branch-requests'
@@ -42,6 +43,23 @@ interface ClientBranchWorkspaceProps {
 export function ClientBranchWorkspace({ branchId, branch }: ClientBranchWorkspaceProps) {
   const [selectedProjectId, setSelectedProjectId] = useState<string | null>(null)
   const [activityPanelOpen, setActivityPanelOpen] = useState(false)
+  const [openRequestsCount, setOpenRequestsCount] = useState(0)
+
+  useEffect(() => {
+    const fetchRequestsCount = async () => {
+      try {
+        const response = await fetch(`/api/branches/${branchId}/requests`)
+        if (response.ok) {
+          const data = await response.json()
+          const openCount = data.filter((r: { status: string }) => r.status === 'OPEN').length
+          setOpenRequestsCount(openCount)
+        }
+      } catch (err) {
+        console.error('Failed to fetch requests count:', err)
+      }
+    }
+    fetchRequestsCount()
+  }, [branchId])
 
   return (
     <>
@@ -71,6 +89,11 @@ export function ClientBranchWorkspace({ branchId, branch }: ClientBranchWorkspac
           <TabsTrigger value="requests" className="flex items-center gap-2">
             <FileText className="h-4 w-4" />
             Requests
+            {openRequestsCount > 0 && (
+              <Badge variant="destructive" className="ml-1 h-5 w-5 p-0 flex items-center justify-center text-xs">
+                {openRequestsCount}
+              </Badge>
+            )}
           </TabsTrigger>
           <TabsTrigger value="quotes" className="flex items-center gap-2">
             <Receipt className="h-4 w-4" />
