@@ -104,28 +104,28 @@ model Branch {
   checklists   Checklist[]
 }
 
-// Project statuses
+// Project statuses - simplified for contract lifecycle
 enum ProjectStatus {
-  INQUIRY
-  QUOTED
-  APPROVED
-  SCHEDULED
-  IN_PROGRESS
-  COMPLETED
-  INVOICED
-  PAID
-  CANCELLED
+  PENDING    // Created, awaiting client approval
+  ACTIVE     // Client accepted, work in progress
+  DONE       // End date reached, awaiting invoice payment
+  CLOSED     // Invoice paid, project complete
+  CANCELLED  // Cancelled
 }
 
-// Project - groups related requests, quotations, appointments, etc.
+// Project - represents a contract for a branch
 model Project {
   id            String        @id @default(cuid())
   branchId      String
   branch        Branch        @relation(fields: [branchId], references: [id], onDelete: Cascade)
   title         String
   description   String?
-  status        ProjectStatus @default(INQUIRY)
+  status        ProjectStatus @default(PENDING)
   priority      RequestPriority @default(MEDIUM)
+  startDate     DateTime?     // Contract start date
+  endDate       DateTime?     // Contract end date
+  autoRenew     Boolean       @default(false)
+  totalValue    Float         @default(0)
   createdById   String
   createdByRole UserRole
   completedAt   DateTime?
@@ -348,6 +348,21 @@ enum ChecklistStatus {
   COMPLETED
 }
 
+// Checklist item stages (for Kanban board)
+enum ChecklistItemStage {
+  REQUESTED      // Client submitted ad-hoc request
+  SCHEDULED      // Task confirmed with date
+  IN_PROGRESS    // Technician working on it
+  FOR_REVIEW     // Work done, awaiting client confirmation
+  COMPLETED      // Task closed
+}
+
+// Checklist item types
+enum ChecklistItemType {
+  SCHEDULED      // Part of original contract
+  ADHOC          // Added during contract period
+}
+
 // Checklist - inspection checklists created by contractor
 model Checklist {
   id            String          @id @default(cuid())
@@ -367,17 +382,21 @@ model Checklist {
   updatedAt     DateTime        @updatedAt
 }
 
-// Checklist items
+// Checklist items (Work Orders)
 model ChecklistItem {
-  id          String    @id @default(cuid())
-  checklistId String
-  checklist   Checklist @relation(fields: [checklistId], references: [id], onDelete: Cascade)
-  description String
-  isCompleted Boolean   @default(false)
-  notes       String?
-  order       Int       @default(0)
-  createdAt   DateTime  @default(now())
-  updatedAt   DateTime  @updatedAt
+  id            String             @id @default(cuid())
+  checklistId   String
+  checklist     Checklist          @relation(fields: [checklistId], references: [id], onDelete: Cascade)
+  description   String
+  notes         String?
+  stage         ChecklistItemStage @default(SCHEDULED)
+  type          ChecklistItemType  @default(SCHEDULED)
+  scheduledDate DateTime?
+  price         Float?
+  isCompleted   Boolean            @default(false)
+  order         Int                @default(0)
+  createdAt     DateTime           @default(now())
+  updatedAt     DateTime           @updatedAt
 }
 
 // Activity types for tracking

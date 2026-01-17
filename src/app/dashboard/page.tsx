@@ -37,7 +37,7 @@ async function getDashboardStats(userId: string) {
     pendingRequests: 0,
     pendingQuotes: 0,
     upcomingAppointments: 0,
-    overduePayments: 0,
+    overdueInvoices: 0,
   }
 }
 
@@ -92,8 +92,8 @@ export default async function DashboardPage() {
       bgColor: 'bg-cyan-100',
     },
     {
-      title: 'Overdue Payments',
-      value: stats.overduePayments,
+      title: 'Overdue Invoices',
+      value: stats.overdueInvoices,
       description: 'Requires follow-up',
       icon: DollarSign,
       color: 'text-red-600',

@@ -2,7 +2,6 @@
 
 import { useState } from 'react'
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
 import { RequestsList } from '@/components/modules/requests-list'
 import { QuotationsList } from '@/components/modules/quotations-list'
@@ -12,6 +11,7 @@ import { ContractsList } from '@/components/modules/contracts-list'
 import { ChecklistsList } from '@/components/modules/checklists-list'
 import { ProjectFilter } from '@/components/modules/project-filter'
 import { ActivityPanel } from '@/components/modules/activity-panel'
+import { ProjectsTable } from '@/components/modules/projects-table'
 import {
   LayoutDashboard,
   FileText,
@@ -21,7 +21,6 @@ import {
   FileCheck,
   ClipboardList,
   MessageSquare,
-  Plus,
 } from 'lucide-react'
 
 interface Branch {
@@ -48,13 +47,12 @@ export function BranchWorkspace({ clientId, branchId, branch }: BranchWorkspaceP
 
   const modules = [
     { id: 'dashboard', label: 'Dashboard', icon: LayoutDashboard },
+    { id: 'checklists', label: 'Checklist', icon: ClipboardList },
     { id: 'requests', label: 'Requests', icon: FileText },
+    { id: 'calendar', label: 'Calendar', icon: Calendar },
     { id: 'quotations', label: 'Quotations', icon: Receipt },
-    { id: 'appointments', label: 'Appointments', icon: Calendar },
-    { id: 'payments', label: 'Payments', icon: DollarSign },
+    { id: 'invoices', label: 'Invoices', icon: DollarSign },
     { id: 'contracts', label: 'Contracts', icon: FileCheck },
-    { id: 'checklists', label: 'Checklists', icon: ClipboardList },
-    { id: 'messages', label: 'Messages', icon: MessageSquare },
   ]
 
   return (
@@ -92,40 +90,31 @@ export function BranchWorkspace({ clientId, branchId, branch }: BranchWorkspaceP
 
         <div className="mt-6">
         <TabsContent value="dashboard" className="mt-0">
-          <BranchDashboard branch={branch} />
-        </TabsContent>
-
-        <TabsContent value="requests" className="mt-0">
-          <RequestsList branchId={branchId} userRole="CONTRACTOR" projectId={selectedProjectId} />
-        </TabsContent>
-
-        <TabsContent value="quotations" className="mt-0">
-          <QuotationsList branchId={branchId} projectId={selectedProjectId} />
-        </TabsContent>
-
-        <TabsContent value="appointments" className="mt-0">
-          <AppointmentsList branchId={branchId} projectId={selectedProjectId} />
-        </TabsContent>
-
-        <TabsContent value="payments" className="mt-0">
-          <InvoicesList branchId={branchId} projectId={selectedProjectId} />
-        </TabsContent>
-
-        <TabsContent value="contracts" className="mt-0">
-          <ContractsList branchId={branchId} projectId={selectedProjectId} />
+          <BranchDashboard branch={branch} branchId={branchId} />
         </TabsContent>
 
         <TabsContent value="checklists" className="mt-0">
           <ChecklistsList branchId={branchId} projectId={selectedProjectId} />
         </TabsContent>
 
-        <TabsContent value="messages" className="mt-0">
-          <ModulePlaceholder
-            title="Messages"
-            description="Communication with client"
-            icon={MessageSquare}
-            actionLabel="New Message"
-          />
+        <TabsContent value="requests" className="mt-0">
+          <RequestsList branchId={branchId} userRole="CONTRACTOR" projectId={selectedProjectId} />
+        </TabsContent>
+
+        <TabsContent value="calendar" className="mt-0">
+          <AppointmentsList branchId={branchId} projectId={selectedProjectId} />
+        </TabsContent>
+
+        <TabsContent value="quotations" className="mt-0">
+          <QuotationsList branchId={branchId} projectId={selectedProjectId} />
+        </TabsContent>
+
+        <TabsContent value="invoices" className="mt-0">
+          <InvoicesList branchId={branchId} projectId={selectedProjectId} />
+        </TabsContent>
+
+        <TabsContent value="contracts" className="mt-0">
+          <ContractsList branchId={branchId} projectId={selectedProjectId} />
         </TabsContent>
       </div>
     </Tabs>
@@ -141,97 +130,16 @@ export function BranchWorkspace({ clientId, branchId, branch }: BranchWorkspaceP
   )
 }
 
-function BranchDashboard({ branch }: { branch: Branch }) {
-  const stats = [
-    { label: 'Open Requests', value: 0 },
-    { label: 'Pending Quotes', value: 0 },
-    { label: 'Upcoming Appointments', value: 0 },
-    { label: 'Unpaid Invoices', value: 0 },
-  ]
+function BranchDashboard({ branch, branchId }: { branch: Branch; branchId: string }) {
+  const handleCreateProject = () => {
+    // TODO: Open create project modal
+    console.log('Create project clicked')
+  }
 
   return (
     <div className="space-y-6">
-      <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
-        {stats.map((stat) => (
-          <Card key={stat.label}>
-            <CardHeader className="pb-2">
-              <CardDescription>{stat.label}</CardDescription>
-            </CardHeader>
-            <CardContent>
-              <div className="text-3xl font-bold">{stat.value}</div>
-            </CardContent>
-          </Card>
-        ))}
-      </div>
-
-      <div className="grid gap-6 lg:grid-cols-2">
-        <Card>
-          <CardHeader>
-            <CardTitle>Recent Activity</CardTitle>
-            <CardDescription>Latest updates for this branch</CardDescription>
-          </CardHeader>
-          <CardContent>
-            <div className="text-center py-8 text-muted-foreground">
-              No recent activity
-            </div>
-          </CardContent>
-        </Card>
-
-        <Card>
-          <CardHeader>
-            <CardTitle>Branch Details</CardTitle>
-          </CardHeader>
-          <CardContent className="space-y-3">
-            <div>
-              <p className="text-sm text-muted-foreground">Address</p>
-              <p className="font-medium">{branch.address}</p>
-            </div>
-            {branch.city && (
-              <div>
-                <p className="text-sm text-muted-foreground">City</p>
-                <p className="font-medium">{branch.city}{branch.state ? `, ${branch.state}` : ''}</p>
-              </div>
-            )}
-            {branch.phone && (
-              <div>
-                <p className="text-sm text-muted-foreground">Phone</p>
-                <p className="font-medium">{branch.phone}</p>
-              </div>
-            )}
-            {branch.notes && (
-              <div>
-                <p className="text-sm text-muted-foreground">Notes</p>
-                <p className="font-medium">{branch.notes}</p>
-              </div>
-            )}
-          </CardContent>
-        </Card>
-      </div>
+      <ProjectsTable branchId={branchId} onCreateProject={handleCreateProject} />
     </div>
   )
 }
 
-interface ModulePlaceholderProps {
-  title: string
-  description: string
-  icon: React.ComponentType<{ className?: string }>
-  actionLabel: string
-}
-
-function ModulePlaceholder({ title, description, icon: Icon, actionLabel }: ModulePlaceholderProps) {
-  return (
-    <Card>
-      <CardContent className="flex flex-col items-center justify-center py-12">
-        <Icon className="h-12 w-12 text-muted-foreground/50 mb-4" />
-        <h3 className="text-lg font-semibold mb-2">{title}</h3>
-        <p className="text-muted-foreground text-center mb-4 max-w-md">
-          {description}. This module will be available soon.
-        </p>
-        <Button disabled>
-          <Plus className="mr-2 h-4 w-4" />
-          {actionLabel}
-        </Button>
-      </CardContent>
-    </Card>
-  )
-}

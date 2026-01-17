@@ -24,6 +24,12 @@ import {
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu'
 import {
+  Tabs,
+  TabsContent,
+  TabsList,
+  TabsTrigger,
+} from '@/components/ui/tabs'
+import {
   ClipboardList,
   Plus,
   Loader2,
@@ -33,7 +39,10 @@ import {
   Clock,
   FileEdit,
   Play,
+  LayoutGrid,
+  List,
 } from 'lucide-react'
+import { ChecklistKanban } from './checklist-kanban'
 
 interface ChecklistItem {
   id?: string
@@ -69,6 +78,7 @@ export function ChecklistsList({ branchId, projectId }: ChecklistsListProps) {
   const [creating, setCreating] = useState(false)
   const [saving, setSaving] = useState(false)
   const [error, setError] = useState('')
+  const [viewMode, setViewMode] = useState<'kanban' | 'list'>('kanban')
 
   const [newChecklist, setNewChecklist] = useState({
     title: '',
@@ -236,16 +246,47 @@ export function ChecklistsList({ branchId, projectId }: ChecklistsListProps) {
 
   return (
     <>
+      <div className="space-y-4">
+        <div className="flex items-center justify-between">
+          <div>
+            <h2 className="text-xl font-semibold">Work Orders</h2>
+            <p className="text-sm text-muted-foreground">Manage and track all work orders</p>
+          </div>
+          <div className="flex items-center gap-2">
+            <div className="flex items-center border rounded-lg p-1">
+              <Button
+                variant={viewMode === 'kanban' ? 'secondary' : 'ghost'}
+                size="sm"
+                onClick={() => setViewMode('kanban')}
+              >
+                <LayoutGrid className="h-4 w-4 mr-1" />
+                Kanban
+              </Button>
+              <Button
+                variant={viewMode === 'list' ? 'secondary' : 'ghost'}
+                size="sm"
+                onClick={() => setViewMode('list')}
+              >
+                <List className="h-4 w-4 mr-1" />
+                List
+              </Button>
+            </div>
+            <Button onClick={() => setCreateDialogOpen(true)}>
+              <Plus className="mr-2 h-4 w-4" />
+              New Checklist
+            </Button>
+          </div>
+        </div>
+
+        {viewMode === 'kanban' ? (
+          <ChecklistKanban branchId={branchId} projectId={projectId} />
+        ) : (
       <Card>
         <CardHeader className="flex flex-row items-center justify-between">
           <div>
             <CardTitle>Checklists & Reports</CardTitle>
             <CardDescription>Create and run inspection checklists</CardDescription>
           </div>
-          <Button onClick={() => setCreateDialogOpen(true)}>
-            <Plus className="mr-2 h-4 w-4" />
-            New Checklist
-          </Button>
         </CardHeader>
         <CardContent>
           {checklists.length === 0 ? (
@@ -333,6 +374,8 @@ export function ChecklistsList({ branchId, projectId }: ChecklistsListProps) {
           )}
         </CardContent>
       </Card>
+        )}
+      </div>
 
       {/* Create Checklist Dialog */}
       <Dialog open={createDialogOpen} onOpenChange={setCreateDialogOpen}>

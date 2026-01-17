@@ -80,9 +80,9 @@ export function ClientBranchWorkspace({ branchId, branch }: ClientBranchWorkspac
             <Calendar className="h-4 w-4" />
             Appointments
           </TabsTrigger>
-          <TabsTrigger value="payments" className="flex items-center gap-2">
+          <TabsTrigger value="invoices" className="flex items-center gap-2">
             <DollarSign className="h-4 w-4" />
-            Payments
+            Invoices
           </TabsTrigger>
           <TabsTrigger value="contracts" className="flex items-center gap-2">
             <FileCheck className="h-4 w-4" />
@@ -168,8 +168,8 @@ export function ClientBranchWorkspace({ branchId, branch }: ClientBranchWorkspac
             <ClientBranchAppointments branchId={branchId} projectId={selectedProjectId} />
           </TabsContent>
 
-          {/* Payments Tab */}
-          <TabsContent value="payments" className="mt-0">
+          {/* Invoices Tab */}
+          <TabsContent value="invoices" className="mt-0">
             <ClientBranchInvoices branchId={branchId} projectId={selectedProjectId} />
           </TabsContent>
 

@@ -13,6 +13,7 @@ import {
   ChevronDown,
   ChevronRight,
   MapPin,
+  Bell,
 } from 'lucide-react'
 import { cn } from '@/lib/utils'
 import { Button } from '@/components/ui/button'
@@ -41,6 +42,11 @@ interface SidebarProps {
 }
 
 const mainNavItems = [
+  {
+    title: 'Notifications',
+    href: '/dashboard/notifications',
+    icon: Bell,
+  },
   {
     title: 'Dashboard',
     href: '/dashboard',
@@ -153,15 +159,27 @@ export function Sidebar({ clients = [] }: SidebarProps) {
                 open={expandedClients.includes(client.id)}
                 onOpenChange={() => toggleClient(client.id)}
               >
-                <CollapsibleTrigger className="flex w-full items-center gap-2 rounded-lg px-3 py-2 text-sm text-sidebar-foreground/70 hover:bg-sidebar-accent hover:text-sidebar-accent-foreground">
-                  {expandedClients.includes(client.id) ? (
-                    <ChevronDown className="h-4 w-4" />
-                  ) : (
-                    <ChevronRight className="h-4 w-4" />
-                  )}
-                  <Users className="h-4 w-4" />
-                  <span className="truncate">{client.companyName}</span>
-                </CollapsibleTrigger>
+                <div className="flex items-center">
+                  <CollapsibleTrigger className="flex items-center justify-center rounded-lg p-2 text-sidebar-foreground/70 hover:bg-sidebar-accent hover:text-sidebar-accent-foreground">
+                    {expandedClients.includes(client.id) ? (
+                      <ChevronDown className="h-4 w-4" />
+                    ) : (
+                      <ChevronRight className="h-4 w-4" />
+                    )}
+                  </CollapsibleTrigger>
+                  <Link
+                    href={`/dashboard/clients/${client.id}`}
+                    className={cn(
+                      'flex flex-1 items-center gap-2 rounded-lg px-2 py-2 text-sm transition-colors',
+                      pathname === `/dashboard/clients/${client.id}` || pathname.startsWith(`/dashboard/clients/${client.id}/`)
+                        ? 'bg-sidebar-accent text-sidebar-accent-foreground'
+                        : 'text-sidebar-foreground/70 hover:bg-sidebar-accent hover:text-sidebar-accent-foreground'
+                    )}
+                  >
+                    <Users className="h-4 w-4" />
+                    <span className="truncate">{client.companyName}</span>
+                  </Link>
+                </div>
                 <CollapsibleContent className="pl-6">
                   {client.branches.map((branch) => (
                     <Link

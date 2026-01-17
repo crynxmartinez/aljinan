@@ -33,7 +33,10 @@ import {
   AlertCircle,
   CalendarCheck,
   Trash2,
+  LayoutGrid,
+  List,
 } from 'lucide-react'
+import { CalendarView } from './calendar-view'
 
 interface Appointment {
   id: string
@@ -67,6 +70,7 @@ export function AppointmentsList({ branchId, projectId }: AppointmentsListProps)
   const [selectedAppointment, setSelectedAppointment] = useState<Appointment | null>(null)
   const [creating, setCreating] = useState(false)
   const [error, setError] = useState('')
+  const [viewMode, setViewMode] = useState<'calendar' | 'list'>('calendar')
 
   const [newAppointment, setNewAppointment] = useState({
     title: '',
@@ -235,6 +239,41 @@ export function AppointmentsList({ branchId, projectId }: AppointmentsListProps)
 
   return (
     <>
+      <div className="space-y-4">
+        <div className="flex items-center justify-between">
+          <div>
+            <h2 className="text-xl font-semibold">Calendar</h2>
+            <p className="text-sm text-muted-foreground">View and manage scheduled tasks</p>
+          </div>
+          <div className="flex items-center gap-2">
+            <div className="flex items-center border rounded-lg p-1">
+              <Button
+                variant={viewMode === 'calendar' ? 'secondary' : 'ghost'}
+                size="sm"
+                onClick={() => setViewMode('calendar')}
+              >
+                <LayoutGrid className="h-4 w-4 mr-1" />
+                Calendar
+              </Button>
+              <Button
+                variant={viewMode === 'list' ? 'secondary' : 'ghost'}
+                size="sm"
+                onClick={() => setViewMode('list')}
+              >
+                <List className="h-4 w-4 mr-1" />
+                List
+              </Button>
+            </div>
+            <Button onClick={() => setCreateDialogOpen(true)}>
+              <Plus className="mr-2 h-4 w-4" />
+              Schedule
+            </Button>
+          </div>
+        </div>
+
+        {viewMode === 'calendar' ? (
+          <CalendarView branchId={branchId} projectId={projectId} />
+        ) : (
       <Card>
         <CardHeader className="flex flex-row items-center justify-between">
           <div>
@@ -243,10 +282,6 @@ export function AppointmentsList({ branchId, projectId }: AppointmentsListProps)
               Schedule and manage visits for this branch
             </CardDescription>
           </div>
-          <Button onClick={() => setCreateDialogOpen(true)}>
-            <Plus className="mr-2 h-4 w-4" />
-            Schedule Appointment
-          </Button>
         </CardHeader>
         <CardContent>
           {appointments.length === 0 ? (
@@ -345,6 +380,8 @@ export function AppointmentsList({ branchId, projectId }: AppointmentsListProps)
           )}
         </CardContent>
       </Card>
+        )}
+      </div>
 
       {/* Create Appointment Dialog */}
       <Dialog open={createDialogOpen} onOpenChange={setCreateDialogOpen}>
