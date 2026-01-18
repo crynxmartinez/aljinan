@@ -614,7 +614,10 @@ export function RequestsList({ branchId, userRole, projectId }: RequestsListProp
             </div>
           )}
 
-          {selectedProject && (
+          {selectedProject && (() => {
+            // Calculate total from work orders directly
+            const calculatedTotal = selectedProject.workOrders?.reduce((sum, wo) => sum + (wo.price || 0), 0) || 0
+            return (
             <div className="space-y-6">
               {/* Project Info */}
               <div className="grid grid-cols-2 md:grid-cols-4 gap-4 p-4 bg-muted/30 rounded-lg">
@@ -639,7 +642,7 @@ export function RequestsList({ branchId, userRole, projectId }: RequestsListProp
                 <div>
                   <p className="text-xs text-muted-foreground">Total Value</p>
                   <p className="font-bold text-lg text-primary">
-                    ${selectedProject.totalValue.toLocaleString('en-US', { minimumFractionDigits: 2 })}
+                    ${calculatedTotal.toLocaleString('en-US', { minimumFractionDigits: 2 })}
                   </p>
                 </div>
               </div>
@@ -757,7 +760,7 @@ export function RequestsList({ branchId, userRole, projectId }: RequestsListProp
                     <div className="flex items-center justify-between p-4 bg-primary/5 border-t">
                       <span className="font-semibold">Total</span>
                       <span className="text-xl font-bold">
-                        ${selectedProject.totalValue.toLocaleString('en-US', { minimumFractionDigits: 2 })}
+                        ${calculatedTotal.toLocaleString('en-US', { minimumFractionDigits: 2 })}
                       </span>
                     </div>
                   </div>
@@ -786,7 +789,7 @@ export function RequestsList({ branchId, userRole, projectId }: RequestsListProp
                 </div>
               )}
             </div>
-          )}
+          )})()}
 
           <DialogFooter className="flex gap-2">
             <Button variant="outline" onClick={() => { setProjectDialogOpen(false); setSelectedProject(null); }}>
