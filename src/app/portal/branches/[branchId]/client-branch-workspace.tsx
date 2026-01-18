@@ -76,21 +76,27 @@ export function ClientBranchWorkspace({ branchId, branch }: ClientBranchWorkspac
     setActiveTab('requests')
   }
 
-  useEffect(() => {
-    const fetchRequestsCount = async () => {
-      try {
-        const response = await fetch(`/api/branches/${branchId}/requests`)
-        if (response.ok) {
-          const data = await response.json()
-          const openCount = data.filter((r: { status: string }) => r.status === 'OPEN').length
-          setOpenRequestsCount(openCount)
-        }
-      } catch (err) {
-        console.error('Failed to fetch requests count:', err)
+  const fetchRequestsCount = async () => {
+    try {
+      const response = await fetch(`/api/branches/${branchId}/requests`)
+      if (response.ok) {
+        const data = await response.json()
+        const openCount = data.filter((r: { status: string }) => r.status === 'OPEN').length
+        setOpenRequestsCount(openCount)
       }
+    } catch (err) {
+      console.error('Failed to fetch requests count:', err)
     }
+  }
+
+  useEffect(() => {
     fetchRequestsCount()
   }, [branchId])
+
+  // Callback when child components change data
+  const handleDataChange = () => {
+    fetchRequestsCount()
+  }
 
   return (
     <>
@@ -328,7 +334,7 @@ export function ClientBranchWorkspace({ branchId, branch }: ClientBranchWorkspac
 
           {/* Proposals/Requests Tab */}
           <TabsContent value="requests" className="mt-0">
-            <ClientBranchRequests branchId={branchId} projectId={selectedProjectId} />
+            <ClientBranchRequests branchId={branchId} projectId={selectedProjectId} onDataChange={handleDataChange} />
           </TabsContent>
 
           {/* Calendar Tab - Only when active project */}

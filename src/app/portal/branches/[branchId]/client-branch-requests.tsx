@@ -84,9 +84,10 @@ interface Request {
 interface ClientBranchRequestsProps {
   branchId: string
   projectId?: string | null
+  onDataChange?: () => void
 }
 
-export function ClientBranchRequests({ branchId, projectId }: ClientBranchRequestsProps) {
+export function ClientBranchRequests({ branchId, projectId, onDataChange }: ClientBranchRequestsProps) {
   const router = useRouter()
   const [requests, setRequests] = useState<Request[]>([])
   const [projects, setProjects] = useState<Project[]>([])
@@ -161,6 +162,7 @@ export function ClientBranchRequests({ branchId, projectId }: ClientBranchReques
       setSelectedRequest(null)
       fetchRequests()
       fetchProjects()
+      onDataChange?.()
       router.refresh()
     } catch (err) {
       setError(err instanceof Error ? err.message : 'An error occurred')
