@@ -191,7 +191,6 @@ export function ClientBranchWorkspace({ branchId, branch }: ClientBranchWorkspac
                             <Badge className="bg-amber-100 text-amber-700">Pending Review</Badge>
                           </div>
                           <div className="text-sm text-muted-foreground">
-                            {project.workOrders?.length || 0} work orders · 
                             Total: ${(project.totalValue || 0).toLocaleString('en-US', { minimumFractionDigits: 2 })}
                           </div>
                         </div>
