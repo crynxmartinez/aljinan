@@ -1,6 +1,7 @@
 'use client'
 
 import { useState, useEffect } from 'react'
+import { useRouter } from 'next/navigation'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
 import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
@@ -11,6 +12,7 @@ import {
   DialogDescription,
   DialogHeader,
   DialogTitle,
+  DialogFooter,
 } from '@/components/ui/dialog'
 import {
   ClipboardList,
@@ -21,6 +23,8 @@ import {
   FileText,
   User,
   MapPin,
+  Send,
+  Loader2,
 } from 'lucide-react'
 import { cn } from '@/lib/utils'
 
@@ -44,6 +48,7 @@ interface ChecklistItem {
 interface ChecklistKanbanProps {
   branchId: string
   projectId?: string | null
+  readOnly?: boolean // For client view
 }
 
 const STAGES: { id: ChecklistItemStage; label: string; color: string; bgColor: string; icon: typeof Clock }[] = [
@@ -69,11 +74,13 @@ function formatCurrency(amount: number) {
   }).format(amount)
 }
 
-export function ChecklistKanban({ branchId, projectId }: ChecklistKanbanProps) {
+export function ChecklistKanban({ branchId, projectId, readOnly = false }: ChecklistKanbanProps) {
+  const router = useRouter()
   const [items, setItems] = useState<ChecklistItem[]>([])
   const [loading, setLoading] = useState(true)
   const [selectedItem, setSelectedItem] = useState<ChecklistItem | null>(null)
   const [detailsOpen, setDetailsOpen] = useState(false)
+  const [updating, setUpdating] = useState(false)
 
   useEffect(() => {
     fetchItems()
@@ -103,6 +110,38 @@ export function ChecklistKanban({ branchId, projectId }: ChecklistKanbanProps) {
   const handleItemClick = (item: ChecklistItem) => {
     setSelectedItem(item)
     setDetailsOpen(true)
+  }
+
+  const handleSendToReview = async (itemId: string) => {
+    if (readOnly) return
+    setUpdating(true)
+    try {
+      // Get the checklist to find the project
+      const item = items.find(i => i.id === itemId)
+      if (!item) return
+
+      // Find the project ID from the checklist
+      const checklistResponse = await fetch(`/api/branches/${branchId}/checklists/${item.checklistId}`)
+      if (!checklistResponse.ok) return
+      const checklist = await checklistResponse.json()
+      
+      // Update the work order stage
+      const response = await fetch(`/api/projects/${checklist.projectId}/work-orders/${itemId}`, {
+        method: 'PATCH',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ stage: 'FOR_REVIEW' })
+      })
+
+      if (response.ok) {
+        fetchItems()
+        setDetailsOpen(false)
+        router.refresh()
+      }
+    } catch (error) {
+      console.error('Failed to send to review:', error)
+    } finally {
+      setUpdating(false)
+    }
   }
 
   if (loading) {
@@ -307,6 +346,24 @@ export function ChecklistKanban({ branchId, projectId }: ChecklistKanbanProps) {
                   <h4 className="text-sm font-medium text-muted-foreground mb-1">Project</h4>
                   <p className="text-sm">{selectedItem.projectTitle}</p>
                 </div>
+              )}
+
+              {/* Send to Review button for IN_PROGRESS items (contractor only) */}
+              {!readOnly && selectedItem.stage === 'IN_PROGRESS' && (
+                <DialogFooter className="mt-4 pt-4 border-t">
+                  <Button
+                    onClick={() => handleSendToReview(selectedItem.id)}
+                    disabled={updating}
+                    className="w-full bg-purple-600 hover:bg-purple-700"
+                  >
+                    {updating ? (
+                      <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                    ) : (
+                      <Send className="mr-2 h-4 w-4" />
+                    )}
+                    Send to Review
+                  </Button>
+                </DialogFooter>
               )}
             </div>
           )}

@@ -5,6 +5,8 @@ import { prisma } from '@/lib/prisma'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
 import { Badge } from '@/components/ui/badge'
 import { ScrollArea } from '@/components/ui/scroll-area'
+import { Button } from '@/components/ui/button'
+import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
 import { 
   Bell, 
   FileText, 
@@ -15,9 +17,12 @@ import {
   AlertCircle,
   MessageSquare,
   Users,
-  MapPin
+  MapPin,
+  ClipboardList,
+  Eye
 } from 'lucide-react'
 import Link from 'next/link'
+import { NotificationsList } from './notifications-list'
 
 interface ActivityItem {
   id: string
@@ -273,8 +278,8 @@ export default async function NotificationsPage() {
           <Bell className="h-6 w-6 text-primary" />
         </div>
         <div>
-          <h1 className="text-2xl font-bold">Activity Feed</h1>
-          <p className="text-muted-foreground">Recent updates across all your clients</p>
+          <h1 className="text-2xl font-bold">Notifications & Activity</h1>
+          <p className="text-muted-foreground">Stay updated on work orders and client activity</p>
         </div>
       </div>
 
@@ -294,55 +299,74 @@ export default async function NotificationsPage() {
         ))}
       </div>
 
-      <Card>
-        <CardHeader>
-          <CardTitle>Recent Activity</CardTitle>
-          <CardDescription>Latest updates from all clients and branches</CardDescription>
-        </CardHeader>
-        <CardContent>
-          {activities.length === 0 ? (
-            <div className="text-center py-12">
-              <Bell className="h-12 w-12 text-muted-foreground/50 mx-auto mb-4" />
-              <p className="text-muted-foreground">No recent activity</p>
-              <p className="text-sm text-muted-foreground mt-1">
-                Activity from your clients will appear here
-              </p>
-            </div>
-          ) : (
-            <ScrollArea className="h-[500px]">
-              <div className="space-y-4">
-                {activities.map((activity) => (
-                  <Link
-                    key={activity.id}
-                    href={activity.link || '#'}
-                    className="flex items-start gap-4 p-4 rounded-lg border hover:bg-muted/50 transition-colors"
-                  >
-                    <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-muted">
-                      {getActivityIcon(activity.type)}
-                    </div>
-                    <div className="flex-1 min-w-0">
-                      <div className="flex items-center gap-2 mb-1">
-                        <p className="font-medium truncate">{activity.title}</p>
-                        {activity.status && getStatusBadge(activity.status)}
-                      </div>
-                      <p className="text-sm text-muted-foreground">{activity.description}</p>
-                      {activity.branchAddress && (
-                        <p className="text-xs text-muted-foreground mt-1 flex items-center gap-1">
-                          <MapPin className="h-3 w-3" />
-                          {activity.branchAddress}
-                        </p>
-                      )}
-                    </div>
-                    <div className="text-xs text-muted-foreground whitespace-nowrap">
-                      {formatTimeAgo(activity.timestamp)}
-                    </div>
-                  </Link>
-                ))}
-              </div>
-            </ScrollArea>
-          )}
-        </CardContent>
-      </Card>
+      <Tabs defaultValue="notifications" className="space-y-4">
+        <TabsList>
+          <TabsTrigger value="notifications" className="flex items-center gap-2">
+            <Bell className="h-4 w-4" />
+            Notifications
+          </TabsTrigger>
+          <TabsTrigger value="activity" className="flex items-center gap-2">
+            <ClipboardList className="h-4 w-4" />
+            Activity Feed
+          </TabsTrigger>
+        </TabsList>
+
+        <TabsContent value="notifications">
+          <NotificationsList />
+        </TabsContent>
+
+        <TabsContent value="activity">
+          <Card>
+            <CardHeader>
+              <CardTitle>Recent Activity</CardTitle>
+              <CardDescription>Latest updates from all clients and branches</CardDescription>
+            </CardHeader>
+            <CardContent>
+              {activities.length === 0 ? (
+                <div className="text-center py-12">
+                  <Bell className="h-12 w-12 text-muted-foreground/50 mx-auto mb-4" />
+                  <p className="text-muted-foreground">No recent activity</p>
+                  <p className="text-sm text-muted-foreground mt-1">
+                    Activity from your clients will appear here
+                  </p>
+                </div>
+              ) : (
+                <ScrollArea className="h-[500px]">
+                  <div className="space-y-4">
+                    {activities.map((activity) => (
+                      <Link
+                        key={activity.id}
+                        href={activity.link || '#'}
+                        className="flex items-start gap-4 p-4 rounded-lg border hover:bg-muted/50 transition-colors"
+                      >
+                        <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-muted">
+                          {getActivityIcon(activity.type)}
+                        </div>
+                        <div className="flex-1 min-w-0">
+                          <div className="flex items-center gap-2 mb-1">
+                            <p className="font-medium truncate">{activity.title}</p>
+                            {activity.status && getStatusBadge(activity.status)}
+                          </div>
+                          <p className="text-sm text-muted-foreground">{activity.description}</p>
+                          {activity.branchAddress && (
+                            <p className="text-xs text-muted-foreground mt-1 flex items-center gap-1">
+                              <MapPin className="h-3 w-3" />
+                              {activity.branchAddress}
+                            </p>
+                          )}
+                        </div>
+                        <div className="text-xs text-muted-foreground whitespace-nowrap">
+                          {formatTimeAgo(activity.timestamp)}
+                        </div>
+                      </Link>
+                    ))}
+                  </div>
+                </ScrollArea>
+              )}
+            </CardContent>
+          </Card>
+        </TabsContent>
+      </Tabs>
     </div>
   )
 }

@@ -490,3 +490,32 @@ model BranchRequest {
   createdAt     DateTime            @default(now())
   updatedAt     DateTime            @updatedAt
 }
+
+// Notification types
+enum NotificationType {
+  WORK_ORDER_REMINDER    // Upcoming work order reminder
+  WORK_ORDER_STARTED     // Work order moved to IN_PROGRESS
+  WORK_ORDER_FOR_REVIEW  // Work order sent for review
+  WORK_ORDER_COMPLETED   // Work order completed
+  CONTRACT_SIGNED        // Client signed contract
+  PROJECT_APPROVED       // Client approved project
+  REQUEST_RECEIVED       // New request from client
+  GENERAL                // General notification
+}
+
+// Notification model for scheduled and triggered notifications
+model Notification {
+  id            String           @id @default(cuid())
+  userId        String           // User to notify
+  type          NotificationType
+  title         String
+  message       String
+  link          String?          // Optional link to navigate to
+  isRead        Boolean          @default(false)
+  relatedId     String?          // Related entity ID (work order, contract, etc.)
+  relatedType   String?          // Type of related entity
+  createdAt     DateTime         @default(now())
+  
+  @@index([userId, isRead])
+  @@index([userId, createdAt])
+}

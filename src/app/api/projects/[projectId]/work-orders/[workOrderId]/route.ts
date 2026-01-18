@@ -145,6 +145,36 @@ export async function PATCH(
           createdByRole: session.user.role as 'CONTRACTOR' | 'CLIENT' | 'MANAGER',
         }
       })
+
+      // Create notification for client when work order is sent for review
+      if (stage === 'FOR_REVIEW') {
+        const project = await prisma.project.findUnique({
+          where: { id: projectId },
+          include: {
+            branch: {
+              include: {
+                client: {
+                  include: { user: true }
+                }
+              }
+            }
+          }
+        })
+
+        if (project?.branch?.client?.user) {
+          await prisma.notification.create({
+            data: {
+              userId: project.branch.client.user.id,
+              type: 'WORK_ORDER_FOR_REVIEW',
+              title: 'Work Order Ready for Review',
+              message: `"${workOrder.description}" has been completed and is ready for your review`,
+              link: `/portal/branches/${project.branchId}?tab=checklist`,
+              relatedId: workOrder.id,
+              relatedType: 'ChecklistItem'
+            }
+          })
+        }
+      }
     }
 
     return NextResponse.json({
