@@ -105,8 +105,24 @@ export async function PATCH(
       }
     })
 
-    // Add activity for price update
+    // Add activity for price update and recalculate project total
     if (price !== undefined) {
+      // Recalculate project total from all work orders
+      const allWorkOrders = await prisma.checklistItem.findMany({
+        where: {
+          checklist: {
+            projectId: projectId
+          }
+        }
+      })
+      const newTotal = allWorkOrders.reduce((sum, wo) => sum + (wo.price ? Number(wo.price) : 0), 0)
+      
+      // Update project totalValue
+      await prisma.project.update({
+        where: { id: projectId },
+        data: { totalValue: newTotal }
+      })
+
       await prisma.activity.create({
         data: {
           projectId,
