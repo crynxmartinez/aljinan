@@ -1,6 +1,6 @@
 'use client'
 
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import { useRouter } from 'next/navigation'
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
 import { Button } from '@/components/ui/button'
@@ -31,6 +31,7 @@ import { ChecklistsList } from '@/components/modules/checklists-list'
 import { ProjectFilter } from '@/components/modules/project-filter'
 import { ActivityPanel } from '@/components/modules/activity-panel'
 import { ProjectsTable } from '@/components/modules/projects-table'
+import { Badge } from '@/components/ui/badge'
 import {
   LayoutDashboard,
   FileText,
@@ -65,6 +66,23 @@ export function BranchWorkspace({ clientId, branchId, branch }: BranchWorkspaceP
   const [activeTab, setActiveTab] = useState('dashboard')
   const [selectedProjectId, setSelectedProjectId] = useState<string | null>(null)
   const [activityPanelOpen, setActivityPanelOpen] = useState(false)
+  const [pendingRequestsCount, setPendingRequestsCount] = useState(0)
+
+  // Fetch count of pending client requests (ADHOC work orders with REQUESTED stage)
+  useEffect(() => {
+    const fetchPendingRequests = async () => {
+      try {
+        const response = await fetch(`/api/branches/${branchId}/checklist-items?stage=REQUESTED`)
+        if (response.ok) {
+          const data = await response.json()
+          setPendingRequestsCount(data.length)
+        }
+      } catch (err) {
+        console.error('Failed to fetch pending requests:', err)
+      }
+    }
+    fetchPendingRequests()
+  }, [branchId])
 
   const modules = [
     { id: 'dashboard', label: 'Dashboard', icon: LayoutDashboard },
@@ -105,6 +123,11 @@ export function BranchWorkspace({ clientId, branchId, branch }: BranchWorkspaceP
             >
               <module.icon className="h-4 w-4" />
               {module.label}
+              {module.id === 'requests' && pendingRequestsCount > 0 && (
+                <Badge variant="destructive" className="ml-1 h-5 w-5 p-0 flex items-center justify-center text-xs">
+                  {pendingRequestsCount}
+                </Badge>
+              )}
             </TabsTrigger>
           ))}
         </TabsList>

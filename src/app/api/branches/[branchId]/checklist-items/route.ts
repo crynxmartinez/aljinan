@@ -18,6 +18,7 @@ export async function GET(
     const { branchId } = await params
     const { searchParams } = new URL(request.url)
     const projectId = searchParams.get('projectId')
+    const stage = searchParams.get('stage')
 
     const hasAccess = await verifyBranchAccess(branchId, session.user.id, session.user.role)
     if (!hasAccess) {
@@ -25,19 +26,18 @@ export async function GET(
     }
 
     // Build the where clause
-    const whereClause: {
-      checklist: {
-        branchId: string
-        projectId?: string
-      }
-    } = {
+    const whereClause: Record<string, unknown> = {
       checklist: {
         branchId,
       }
     }
 
     if (projectId) {
-      whereClause.checklist.projectId = projectId
+      (whereClause.checklist as Record<string, string>).projectId = projectId
+    }
+
+    if (stage) {
+      whereClause.stage = stage
     }
 
     const items = await prisma.checklistItem.findMany({
