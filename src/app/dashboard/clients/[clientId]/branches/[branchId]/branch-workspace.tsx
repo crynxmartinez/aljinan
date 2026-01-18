@@ -35,7 +35,6 @@ import { Badge } from '@/components/ui/badge'
 import {
   LayoutDashboard,
   FileText,
-  Receipt,
   Calendar,
   DollarSign,
   FileCheck,
@@ -89,8 +88,7 @@ export function BranchWorkspace({ clientId, branchId, branch }: BranchWorkspaceP
     { id: 'checklists', label: 'Checklist', icon: ClipboardList },
     { id: 'requests', label: 'Requests', icon: FileText },
     { id: 'calendar', label: 'Calendar', icon: Calendar },
-    { id: 'quotations', label: 'Quotations', icon: Receipt },
-    { id: 'invoices', label: 'Invoices', icon: DollarSign },
+    { id: 'billing', label: 'Billing', icon: DollarSign },
     { id: 'contracts', label: 'Contracts', icon: FileCheck },
   ]
 
@@ -149,12 +147,8 @@ export function BranchWorkspace({ clientId, branchId, branch }: BranchWorkspaceP
           <AppointmentsList branchId={branchId} projectId={selectedProjectId} />
         </TabsContent>
 
-        <TabsContent value="quotations" className="mt-0">
-          <QuotationsList branchId={branchId} projectId={selectedProjectId} />
-        </TabsContent>
-
-        <TabsContent value="invoices" className="mt-0">
-          <InvoicesList branchId={branchId} projectId={selectedProjectId} />
+        <TabsContent value="billing" className="mt-0">
+          <BillingTab branchId={branchId} projectId={selectedProjectId} />
         </TabsContent>
 
         <TabsContent value="contracts" className="mt-0">
@@ -171,6 +165,16 @@ export function BranchWorkspace({ clientId, branchId, branch }: BranchWorkspaceP
       onClose={() => setActivityPanelOpen(false)}
     />
     </>
+  )
+}
+
+// Billing Tab - Combined Quotations and Invoices
+function BillingTab({ branchId, projectId }: { branchId: string; projectId: string | null }) {
+  return (
+    <div className="space-y-6">
+      <QuotationsList branchId={branchId} projectId={projectId} />
+      <InvoicesList branchId={branchId} projectId={projectId} />
+    </div>
   )
 }
 
