@@ -126,12 +126,68 @@ export async function POST(
       )
     }
 
-    // Calculate total value from work orders
-    const totalValue = workOrders?.reduce((sum: number, wo: { price?: number | null }) => {
-      return sum + (wo.price || 0)
-    }, 0) || 0
+    // Build work order items first to calculate correct total (including recurring)
+    type WorkOrderItem = {
+      name: string
+      notes: string | null
+      scheduledDate: Date | null
+      price: number | null
+      recurringType: 'ONCE' | 'MONTHLY' | 'QUARTERLY'
+      occurrenceIndex: number | null
+      order: number
+    }
+    const generatedWorkOrders: WorkOrderItem[] = []
 
-    // Create the project
+    if (workOrders && workOrders.length > 0) {
+      let orderIndex = 0
+      for (const wo of workOrders as Array<{ name: string; description?: string; scheduledDate?: string; price?: number; recurringType?: 'ONCE' | 'MONTHLY' | 'QUARTERLY' }>) {
+        const recurringType = wo.recurringType || 'ONCE'
+        const baseDate = wo.scheduledDate ? new Date(wo.scheduledDate) : (startDate ? new Date(startDate) : new Date())
+        const projectEndDate = endDate ? new Date(endDate) : new Date(baseDate.getTime() + 365 * 24 * 60 * 60 * 1000) // Default 1 year
+
+        if (recurringType === 'ONCE') {
+          // Single work order
+          generatedWorkOrders.push({
+            name: wo.name,
+            notes: wo.description || null,
+            scheduledDate: wo.scheduledDate ? new Date(wo.scheduledDate) : null,
+            price: wo.price || null,
+            recurringType: 'ONCE',
+            occurrenceIndex: null,
+            order: orderIndex++,
+          })
+        } else {
+          // Calculate number of occurrences based on contract duration
+          const monthsBetween = Math.max(1, Math.ceil((projectEndDate.getTime() - baseDate.getTime()) / (30 * 24 * 60 * 60 * 1000)))
+          const interval = recurringType === 'MONTHLY' ? 1 : 3
+          const occurrences = Math.ceil(monthsBetween / interval)
+
+          // Create recurring work orders
+          for (let i = 0; i < occurrences; i++) {
+            const occurrenceDate = new Date(baseDate)
+            occurrenceDate.setMonth(occurrenceDate.getMonth() + (i * interval))
+            
+            // Don't create if past end date
+            if (occurrenceDate > projectEndDate) break
+
+            generatedWorkOrders.push({
+              name: `${wo.name} (${recurringType === 'MONTHLY' ? 'Month' : 'Q'}${i + 1})`,
+              notes: wo.description || null,
+              scheduledDate: occurrenceDate,
+              price: wo.price || null,
+              recurringType,
+              occurrenceIndex: i + 1,
+              order: orderIndex++,
+            })
+          }
+        }
+      }
+    }
+
+    // Calculate total value from ALL generated work orders (including recurring)
+    const totalValue = generatedWorkOrders.reduce((sum, wo) => sum + (wo.price || 0), 0)
+
+    // Create the project with correct total
     const project = await prisma.project.create({
       data: {
         branchId,
@@ -159,8 +215,8 @@ export async function POST(
       }
     })
 
-    // Create checklist with work orders if provided
-    if (workOrders && workOrders.length > 0) {
+    // Create checklist with work orders if we have any
+    if (generatedWorkOrders.length > 0) {
       const checklist = await prisma.checklist.create({
         data: {
           branchId,
@@ -172,72 +228,20 @@ export async function POST(
         }
       })
 
-      // Create checklist items (work orders) with recurring support
-      const checklistItems: Array<{
-        checklistId: string
-        description: string
-        notes: string | null
-        scheduledDate: Date | null
-        price: number | null
-        stage: 'SCHEDULED'
-        type: 'SCHEDULED'
-        recurringType: 'ONCE' | 'MONTHLY' | 'QUARTERLY'
-        parentItemId: string | null
-        occurrenceIndex: number | null
-        order: number
-      }> = []
-
-      let orderIndex = 0
-      for (const wo of workOrders as Array<{ name: string; description?: string; scheduledDate?: string; price?: number; recurringType?: 'ONCE' | 'MONTHLY' | 'QUARTERLY' }>) {
-        const recurringType = wo.recurringType || 'ONCE'
-        const baseDate = wo.scheduledDate ? new Date(wo.scheduledDate) : (startDate ? new Date(startDate) : new Date())
-        const projectEndDate = endDate ? new Date(endDate) : new Date(baseDate.getTime() + 365 * 24 * 60 * 60 * 1000) // Default 1 year
-
-        if (recurringType === 'ONCE') {
-          // Single work order
-          checklistItems.push({
-            checklistId: checklist.id,
-            description: wo.name,
-            notes: wo.description || null,
-            scheduledDate: wo.scheduledDate ? new Date(wo.scheduledDate) : null,
-            price: wo.price || null,
-            stage: 'SCHEDULED',
-            type: 'SCHEDULED',
-            recurringType: 'ONCE',
-            parentItemId: null,
-            occurrenceIndex: null,
-            order: orderIndex++,
-          })
-        } else {
-          // Calculate number of occurrences based on contract duration
-          const monthsBetween = Math.max(1, Math.ceil((projectEndDate.getTime() - baseDate.getTime()) / (30 * 24 * 60 * 60 * 1000)))
-          const interval = recurringType === 'MONTHLY' ? 1 : 3
-          const occurrences = Math.ceil(monthsBetween / interval)
-
-          // Create recurring work orders
-          for (let i = 0; i < occurrences; i++) {
-            const occurrenceDate = new Date(baseDate)
-            occurrenceDate.setMonth(occurrenceDate.getMonth() + (i * interval))
-            
-            // Don't create if past end date
-            if (occurrenceDate > projectEndDate) break
-
-            checklistItems.push({
-              checklistId: checklist.id,
-              description: `${wo.name} (${recurringType === 'MONTHLY' ? 'Month' : 'Q'}${i + 1})`,
-              notes: wo.description || null,
-              scheduledDate: occurrenceDate,
-              price: wo.price || null,
-              stage: 'SCHEDULED',
-              type: 'SCHEDULED',
-              recurringType,
-              parentItemId: null, // First one is parent, rest link to it (handled after creation)
-              occurrenceIndex: i + 1,
-              order: orderIndex++,
-            })
-          }
-        }
-      }
+      // Create checklist items from generated work orders
+      const checklistItems = generatedWorkOrders.map(wo => ({
+        checklistId: checklist.id,
+        description: wo.name,
+        notes: wo.notes,
+        scheduledDate: wo.scheduledDate,
+        price: wo.price,
+        stage: 'SCHEDULED' as const,
+        type: 'SCHEDULED' as const,
+        recurringType: wo.recurringType,
+        parentItemId: null,
+        occurrenceIndex: wo.occurrenceIndex,
+        order: wo.order,
+      }))
 
       await prisma.checklistItem.createMany({
         data: checklistItems
@@ -281,7 +285,7 @@ export async function POST(
         data: {
           projectId: project.id,
           type: 'CREATED',
-          content: `Project created with ${workOrders?.length || 0} work orders. Total value: $${totalValue.toFixed(2)}`,
+          content: `Project created with ${generatedWorkOrders.length} work orders. Total value: $${totalValue.toFixed(2)}`,
           createdById: session.user.id,
           createdByRole: session.user.role as 'CONTRACTOR' | 'CLIENT' | 'MANAGER',
         }
