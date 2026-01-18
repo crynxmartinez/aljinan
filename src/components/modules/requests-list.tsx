@@ -184,25 +184,33 @@ export function RequestsList({ branchId, userRole, projectId }: RequestsListProp
     setSaving(true)
     setError('')
     try {
+      const payload = {
+        price: editWorkOrder.price || null,
+        scheduledDate: editWorkOrder.scheduledDate || null,
+      }
+      console.log('Saving work order:', workOrderId, payload)
+      
       const response = await fetch(`/api/projects/${selectedProject.id}/work-orders/${workOrderId}`, {
         method: 'PATCH',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          price: editWorkOrder.price ? parseFloat(editWorkOrder.price) : null,
-          scheduledDate: editWorkOrder.scheduledDate || null,
-        }),
+        body: JSON.stringify(payload),
       })
+      
+      const data = await response.json()
+      console.log('Response:', response.status, data)
+      
       if (!response.ok) {
-        const data = await response.json()
         throw new Error(data.error || 'Failed to update work order')
       }
+      
       setEditingWorkOrderId(null)
       // Refresh projects and update selected project
-      await fetchProjects()
       const updatedProjects = await fetch(`/api/branches/${branchId}/projects`).then(r => r.json())
+      setProjects(updatedProjects)
       const updated = updatedProjects.find((p: Project) => p.id === selectedProject.id)
       if (updated) setSelectedProject(updated)
     } catch (err) {
+      console.error('Save error:', err)
       setError(err instanceof Error ? err.message : 'An error occurred')
     } finally {
       setSaving(false)
@@ -664,8 +672,8 @@ export function RequestsList({ branchId, userRole, projectId }: RequestsListProp
                               </div>
                             </TableCell>
                             <TableCell>
-                              <Badge variant="outline" className={wo.type === 'ADHOC' ? 'text-purple-600' : ''}>
-                                {wo.type === 'ADHOC' ? 'Client Added' : 'Scheduled'}
+                              <Badge variant="outline" className={wo.type === 'adhoc' || wo.type === 'ADHOC' ? 'text-purple-600' : ''}>
+                                {wo.type === 'adhoc' || wo.type === 'ADHOC' ? 'Client Added' : 'Scheduled'}
                               </Badge>
                             </TableCell>
                             <TableCell>
@@ -772,10 +780,25 @@ export function RequestsList({ branchId, userRole, projectId }: RequestsListProp
             </div>
           )}
 
-          <DialogFooter>
+          <DialogFooter className="flex gap-2">
             <Button variant="outline" onClick={() => { setProjectDialogOpen(false); setSelectedProject(null); }}>
               Close
             </Button>
+            {selectedProject?.status === 'PENDING' && (
+              <Button 
+                onClick={() => {
+                  // TODO: Send notification to client
+                  alert('Proposal updated! Client will see the changes when they view the proposal.')
+                  setProjectDialogOpen(false)
+                  setSelectedProject(null)
+                }}
+                disabled={selectedProject?.workOrders?.some(wo => wo.price === null)}
+                className="bg-primary"
+              >
+                <CheckCircle className="mr-2 h-4 w-4" />
+                Send to Client
+              </Button>
+            )}
           </DialogFooter>
         </DialogContent>
       </Dialog>
