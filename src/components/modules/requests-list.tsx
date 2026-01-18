@@ -107,6 +107,7 @@ export function RequestsList({ branchId, userRole, projectId }: RequestsListProp
   const [creating, setCreating] = useState(false)
   const [saving, setSaving] = useState(false)
   const [error, setError] = useState('')
+  const [successMessage, setSuccessMessage] = useState('')
   
   // Work order editing state
   const [editingWorkOrderId, setEditingWorkOrderId] = useState<string | null>(null)
@@ -606,6 +607,13 @@ export function RequestsList({ branchId, userRole, projectId }: RequestsListProp
             </div>
           )}
 
+          {successMessage && (
+            <div className="bg-green-100 text-green-800 p-3 rounded-lg text-sm flex items-center gap-2">
+              <CheckCircle className="h-4 w-4" />
+              {successMessage}
+            </div>
+          )}
+
           {selectedProject && (
             <div className="space-y-6">
               {/* Project Info */}
@@ -787,10 +795,12 @@ export function RequestsList({ branchId, userRole, projectId }: RequestsListProp
             {selectedProject?.status === 'PENDING' && (
               <Button 
                 onClick={() => {
-                  // TODO: Send notification to client
-                  alert('Proposal updated! Client will see the changes when they view the proposal.')
-                  setProjectDialogOpen(false)
-                  setSelectedProject(null)
+                  setSuccessMessage('Proposal updated! Client will see the changes when they view the proposal.')
+                  setTimeout(() => {
+                    setSuccessMessage('')
+                    setProjectDialogOpen(false)
+                    setSelectedProject(null)
+                  }, 2000)
                 }}
                 disabled={selectedProject?.workOrders?.some(wo => wo.price === null)}
                 className="bg-primary"
