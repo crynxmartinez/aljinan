@@ -263,18 +263,12 @@ export async function POST(
       })
     } else {
       // Auto-generate a Request for client review (Project Proposal)
-      const workOrderSummary = workOrders && workOrders.length > 0
-        ? `\n\nWork Orders:\n${workOrders.map((wo: { name: string; price?: number }, i: number) => 
-            `${i + 1}. ${wo.name}${wo.price ? ` - $${wo.price.toFixed(2)}` : ''}`
-          ).join('\n')}\n\nTotal: $${totalValue.toFixed(2)}`
-        : ''
-
       await prisma.request.create({
         data: {
           branchId,
           projectId: project.id,
           title: `Project Proposal: ${title}`,
-          description: (description || `New project proposal for review.`) + workOrderSummary,
+          description: description || `New project proposal for review.`,
           priority: 'MEDIUM',
           status: 'OPEN',
           createdById: session.user.id,
