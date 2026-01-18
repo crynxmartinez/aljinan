@@ -70,7 +70,7 @@ export async function GET(
         status: project.status,
         startDate: project.startDate || project.createdAt,
         endDate: project.endDate || project.completedAt,
-        totalValue: project.totalValue || calculatedTotal,
+        totalValue: calculatedTotal,
         workOrders,
         _count: project._count
       }
