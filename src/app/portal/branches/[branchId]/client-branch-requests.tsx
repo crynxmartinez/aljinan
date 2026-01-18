@@ -159,7 +159,7 @@ function WorkOrdersGroupedView({ workOrders }: { workOrders: WorkOrder[] }) {
                     </Badge>
                   )}
                 </div>
-                {items[0].description && (
+                {items[0].description && items[0].description.toLowerCase() !== groupName.toLowerCase() && (
                   <p className="text-sm text-muted-foreground mt-1 ml-6">
                     {items[0].description}
                   </p>
