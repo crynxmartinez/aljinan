@@ -11,18 +11,20 @@ import { ClientBranchRequests } from './client-branch-requests'
 import { ClientBranchAppointments } from './client-branch-appointments'
 import { ClientBranchInvoices } from './client-branch-invoices'
 import { ClientBranchContracts } from './client-branch-contracts'
+import { ClientBranchQuotations } from './client-branch-quotations'
 import {
-  MapPin,
+  LayoutDashboard,
   FileText,
   Calendar,
   DollarSign,
-  ClipboardList,
+  Receipt,
   FileCheck,
   MessageSquare,
   ArrowRight,
   Clock,
   CheckCircle,
   AlertCircle,
+  ClipboardList,
 } from 'lucide-react'
 
 interface Branch {
@@ -60,7 +62,7 @@ export function ClientBranchWorkspace({ branchId, branch }: ClientBranchWorkspac
   const [activityPanelOpen, setActivityPanelOpen] = useState(false)
   const [openRequestsCount, setOpenRequestsCount] = useState(0)
   const [projects, setProjects] = useState<Project[]>([])
-  const [activeTab, setActiveTab] = useState('overview')
+  const [activeTab, setActiveTab] = useState('dashboard')
 
   // Get the selected project or find pending projects
   const selectedProject = projects.find(p => p.id === selectedProjectId)
@@ -112,13 +114,13 @@ export function ClientBranchWorkspace({ branchId, branch }: ClientBranchWorkspac
         </div>
 
         <TabsList className="w-full justify-start h-auto flex-wrap gap-1 bg-muted/50 p-1">
-          <TabsTrigger value="overview" className="flex items-center gap-2">
-            <MapPin className="h-4 w-4" />
-            Overview
+          <TabsTrigger value="dashboard" className="flex items-center gap-2">
+            <LayoutDashboard className="h-4 w-4" />
+            Dashboard
           </TabsTrigger>
           <TabsTrigger value="requests" className="flex items-center gap-2">
             <FileText className="h-4 w-4" />
-            Proposals
+            Requests
             {openRequestsCount > 0 && (
               <Badge variant="destructive" className="ml-1 h-5 w-5 p-0 flex items-center justify-center text-xs">
                 {openRequestsCount}
@@ -128,9 +130,13 @@ export function ClientBranchWorkspace({ branchId, branch }: ClientBranchWorkspac
           {/* Only show these tabs when there's an active project */}
           {hasActiveProject && (
             <>
-              <TabsTrigger value="appointments" className="flex items-center gap-2">
+              <TabsTrigger value="calendar" className="flex items-center gap-2">
                 <Calendar className="h-4 w-4" />
-                Appointments
+                Calendar
+              </TabsTrigger>
+              <TabsTrigger value="quotations" className="flex items-center gap-2">
+                <Receipt className="h-4 w-4" />
+                Quotations
               </TabsTrigger>
               <TabsTrigger value="invoices" className="flex items-center gap-2">
                 <DollarSign className="h-4 w-4" />
@@ -145,8 +151,8 @@ export function ClientBranchWorkspace({ branchId, branch }: ClientBranchWorkspac
         </TabsList>
 
         <div className="mt-6">
-          {/* Overview Tab */}
-          <TabsContent value="overview" className="mt-0">
+          {/* Dashboard Tab */}
+          <TabsContent value="dashboard" className="mt-0">
             <div className="space-y-6">
               {/* Pending Proposals Alert */}
               {pendingProjects.length > 0 && (
@@ -207,7 +213,7 @@ export function ClientBranchWorkspace({ branchId, branch }: ClientBranchWorkspac
                         className="flex items-center justify-between p-4 border rounded-lg hover:bg-muted/50 transition-colors cursor-pointer"
                         onClick={() => {
                           setSelectedProjectId(project.id)
-                          setActiveTab('appointments')
+                          setActiveTab('calendar')
                         }}
                       >
                         <div className="space-y-1">
@@ -285,10 +291,10 @@ export function ClientBranchWorkspace({ branchId, branch }: ClientBranchWorkspac
                         <Button 
                           variant="outline" 
                           className="w-full justify-start gap-2"
-                          onClick={() => setActiveTab('appointments')}
+                          onClick={() => setActiveTab('calendar')}
                         >
                           <Calendar className="h-4 w-4" />
-                          View Appointments
+                          View Calendar
                         </Button>
                         <Button 
                           variant="outline" 
@@ -325,10 +331,17 @@ export function ClientBranchWorkspace({ branchId, branch }: ClientBranchWorkspac
             <ClientBranchRequests branchId={branchId} projectId={selectedProjectId} />
           </TabsContent>
 
-          {/* Appointments Tab - Only when active project */}
+          {/* Calendar Tab - Only when active project */}
           {hasActiveProject && (
-            <TabsContent value="appointments" className="mt-0">
+            <TabsContent value="calendar" className="mt-0">
               <ClientBranchAppointments branchId={branchId} projectId={selectedProjectId} />
+            </TabsContent>
+          )}
+
+          {/* Quotations Tab - Only when active project */}
+          {hasActiveProject && (
+            <TabsContent value="quotations" className="mt-0">
+              <ClientBranchQuotations branchId={branchId} projectId={selectedProjectId} />
             </TabsContent>
           )}
 
