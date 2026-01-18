@@ -240,7 +240,7 @@ export function ClientBranchRequests({ branchId, projectId, onDataChange }: Clie
   const [approving, setApproving] = useState(false)
   const [error, setError] = useState('')
   const [addWorkOrderOpen, setAddWorkOrderOpen] = useState(false)
-  const [newWorkOrder, setNewWorkOrder] = useState({ name: '', description: '' })
+  const [newWorkOrder, setNewWorkOrder] = useState({ name: '', description: '', recurringType: 'ONCE' as 'ONCE' | 'MONTHLY' | 'QUARTERLY' })
   const [addingWorkOrder, setAddingWorkOrder] = useState(false)
 
   const [newRequest, setNewRequest] = useState<{
@@ -333,13 +333,14 @@ export function ClientBranchRequests({ branchId, projectId, onDataChange }: Clie
           description: newWorkOrder.description || null,
           price: null, // Client cannot set price
           type: 'ADHOC',
+          recurringType: newWorkOrder.recurringType,
         }),
       })
       if (!response.ok) {
         const data = await response.json()
         throw new Error(data.error || 'Failed to add work order')
       }
-      setNewWorkOrder({ name: '', description: '' })
+      setNewWorkOrder({ name: '', description: '', recurringType: 'ONCE' })
       setAddWorkOrderOpen(false)
       fetchProjects()
       // Refresh selected project
@@ -777,6 +778,22 @@ export function ClientBranchRequests({ branchId, projectId, onDataChange }: Clie
                 placeholder="Describe what you need..."
                 rows={3}
               />
+            </div>
+            <div className="space-y-2">
+              <Label htmlFor="wo-recurring">Recurring</Label>
+              <Select
+                value={newWorkOrder.recurringType}
+                onValueChange={(value) => setNewWorkOrder({ ...newWorkOrder, recurringType: value as 'ONCE' | 'MONTHLY' | 'QUARTERLY' })}
+              >
+                <SelectTrigger>
+                  <SelectValue placeholder="Select frequency" />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="ONCE">One-time</SelectItem>
+                  <SelectItem value="MONTHLY">Monthly</SelectItem>
+                  <SelectItem value="QUARTERLY">Quarterly</SelectItem>
+                </SelectContent>
+              </Select>
             </div>
           </div>
           <DialogFooter>

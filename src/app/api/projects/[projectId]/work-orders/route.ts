@@ -78,10 +78,12 @@ export async function POST(
 
     const { projectId } = await params
     const body = await request.json()
-    const { description, notes, scheduledDate, price, type } = body
+    const { description, notes, scheduledDate, price, type, recurringType, name } = body
 
-    if (!description) {
-      return NextResponse.json({ error: 'Description is required' }, { status: 400 })
+    // Support both 'description' and 'name' for work order title
+    const workOrderName = description || name
+    if (!workOrderName) {
+      return NextResponse.json({ error: 'Description/name is required' }, { status: 400 })
     }
 
     // Get the project
@@ -117,46 +119,104 @@ export async function POST(
       where: { checklistId: checklist.id },
       _max: { order: true }
     })
+    let orderIndex = (maxOrder._max.order || 0) + 1
 
-    // Create the work order (checklist item)
-    const workOrder = await prisma.checklistItem.create({
-      data: {
-        checklistId: checklist.id,
-        description,
-        notes: notes || null,
-        stage: 'REQUESTED',
-        type: type || (session.user.role === 'CLIENT' ? 'ADHOC' : 'SCHEDULED'),
-        scheduledDate: scheduledDate ? new Date(scheduledDate) : null,
-        price: price ? parseFloat(price) : null,
-        order: (maxOrder._max.order || 0) + 1,
+    const createdWorkOrders: Array<{
+      id: string
+      checklistId: string
+      description: string
+      notes: string | null
+      stage: string
+      type: string
+      scheduledDate: Date | null
+      price: number | null
+      isCompleted: boolean
+      order: number
+      createdAt: Date
+      updatedAt: Date
+    }> = []
+
+    // Handle recurring work orders
+    const recType = recurringType || 'ONCE'
+    
+    if (recType === 'ONCE') {
+      // Single work order
+      const workOrder = await prisma.checklistItem.create({
+        data: {
+          checklistId: checklist.id,
+          description: workOrderName,
+          notes: notes || null,
+          stage: 'REQUESTED',
+          type: type || (session.user.role === 'CLIENT' ? 'ADHOC' : 'SCHEDULED'),
+          scheduledDate: scheduledDate ? new Date(scheduledDate) : null,
+          price: price ? parseFloat(price) : null,
+          recurringType: 'ONCE',
+          order: orderIndex,
+        }
+      })
+      createdWorkOrders.push(workOrder)
+    } else {
+      // Recurring work orders - calculate occurrences based on project dates
+      const baseDate = scheduledDate ? new Date(scheduledDate) : (project.startDate || new Date())
+      const projectEndDate = project.endDate || new Date(baseDate.getTime() + 365 * 24 * 60 * 60 * 1000)
+      
+      const monthsBetween = Math.max(1, Math.ceil((projectEndDate.getTime() - baseDate.getTime()) / (30 * 24 * 60 * 60 * 1000)))
+      const interval = recType === 'MONTHLY' ? 1 : 3
+      const occurrences = Math.ceil(monthsBetween / interval)
+
+      for (let i = 0; i < occurrences; i++) {
+        const occurrenceDate = new Date(baseDate)
+        occurrenceDate.setMonth(occurrenceDate.getMonth() + (i * interval))
+        
+        // Don't create if past end date
+        if (occurrenceDate > projectEndDate) break
+
+        const workOrder = await prisma.checklistItem.create({
+          data: {
+            checklistId: checklist.id,
+            description: `${workOrderName} (${recType === 'MONTHLY' ? 'Month' : 'Q'}${i + 1})`,
+            notes: notes || null,
+            stage: 'REQUESTED',
+            type: type || (session.user.role === 'CLIENT' ? 'ADHOC' : 'SCHEDULED'),
+            scheduledDate: occurrenceDate,
+            price: price ? parseFloat(price) : null,
+            recurringType: recType,
+            occurrenceIndex: i + 1,
+            order: orderIndex++,
+          }
+        })
+        createdWorkOrders.push(workOrder)
       }
-    })
+    }
 
     // Add activity
     await prisma.activity.create({
       data: {
         projectId,
         type: 'CREATED',
-        content: `Work order added: ${description}`,
+        content: `Work order${createdWorkOrders.length > 1 ? 's' : ''} added: ${workOrderName}${createdWorkOrders.length > 1 ? ` (${createdWorkOrders.length} occurrences)` : ''}`,
         createdById: session.user.id,
         createdByRole: session.user.role as 'CONTRACTOR' | 'CLIENT' | 'MANAGER',
       }
     })
 
+    // Return first work order for backwards compatibility, but include count
+    const firstWorkOrder = createdWorkOrders[0]
     return NextResponse.json({
-      id: workOrder.id,
-      checklistId: workOrder.checklistId,
+      id: firstWorkOrder.id,
+      checklistId: firstWorkOrder.checklistId,
       checklistTitle: checklist.title,
-      description: workOrder.description,
-      notes: workOrder.notes,
-      stage: workOrder.stage,
-      type: workOrder.type,
-      scheduledDate: workOrder.scheduledDate,
-      price: workOrder.price,
-      isCompleted: workOrder.isCompleted,
-      order: workOrder.order,
-      createdAt: workOrder.createdAt,
-      updatedAt: workOrder.updatedAt
+      description: firstWorkOrder.description,
+      notes: firstWorkOrder.notes,
+      stage: firstWorkOrder.stage,
+      type: firstWorkOrder.type,
+      scheduledDate: firstWorkOrder.scheduledDate,
+      price: firstWorkOrder.price,
+      isCompleted: firstWorkOrder.isCompleted,
+      order: firstWorkOrder.order,
+      createdAt: firstWorkOrder.createdAt,
+      updatedAt: firstWorkOrder.updatedAt,
+      totalCreated: createdWorkOrders.length,
     }, { status: 201 })
   } catch (error) {
     console.error('Error creating work order:', error)
