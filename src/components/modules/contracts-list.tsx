@@ -46,12 +46,15 @@ interface Contract {
   id: string
   title: string
   description: string | null
-  fileName: string
-  fileUrl: string
+  fileName: string | null
+  fileUrl: string | null
   fileSize: number | null
   startDate: string | null
   endDate: string | null
-  status: 'DRAFT' | 'ACTIVE' | 'EXPIRED' | 'TERMINATED'
+  signedAt: string | null
+  signatureUrl: string | null
+  totalValue: number | null
+  status: 'DRAFT' | 'SIGNED' | 'ACTIVE' | 'EXPIRED' | 'TERMINATED'
   createdAt: string
 }
 
@@ -176,13 +179,14 @@ export function ContractsList({ branchId, projectId }: ContractsListProps) {
   }
 
   const getStatusBadge = (status: Contract['status']) => {
-    const config = {
+    const config: Record<string, { style: string; icon: typeof FileText; label: string }> = {
       DRAFT: { style: 'bg-gray-100 text-gray-700', icon: FileText, label: 'Draft' },
+      SIGNED: { style: 'bg-blue-100 text-blue-700', icon: CheckCircle, label: 'Signed' },
       ACTIVE: { style: 'bg-green-100 text-green-700', icon: CheckCircle, label: 'Active' },
       EXPIRED: { style: 'bg-orange-100 text-orange-700', icon: Clock, label: 'Expired' },
       TERMINATED: { style: 'bg-red-100 text-red-700', icon: XCircle, label: 'Terminated' },
     }
-    const { style, icon: Icon, label } = config[status]
+    const { style, icon: Icon, label } = config[status] || config.DRAFT
     return (
       <Badge className={`${style} flex items-center gap-1`}>
         <Icon className="h-3 w-3" />
@@ -267,17 +271,19 @@ export function ContractsList({ branchId, projectId }: ContractsListProps) {
                     </div>
                   </div>
                   <div className="flex items-center gap-2">
-                    <Button
-                      variant="outline"
-                      size="sm"
-                      onClick={(e) => {
-                        e.stopPropagation()
-                        window.open(contract.fileUrl, '_blank')
-                      }}
-                    >
-                      <ExternalLink className="mr-2 h-4 w-4" />
-                      View
-                    </Button>
+                    {contract.fileUrl && (
+                      <Button
+                        variant="outline"
+                        size="sm"
+                        onClick={(e) => {
+                          e.stopPropagation()
+                          window.open(contract.fileUrl!, '_blank')
+                        }}
+                      >
+                        <ExternalLink className="mr-2 h-4 w-4" />
+                        View
+                      </Button>
+                    )}
                     <DropdownMenu>
                       <DropdownMenuTrigger asChild>
                         <Button variant="ghost" size="icon" onClick={(e) => e.stopPropagation()}>
@@ -480,13 +486,15 @@ export function ContractsList({ branchId, projectId }: ContractsListProps) {
               </div>
 
               <div className="flex gap-2 pt-4 border-t">
-                <Button 
-                  onClick={() => window.open(selectedContract.fileUrl, '_blank')}
-                  className="flex-1"
-                >
-                  <ExternalLink className="mr-2 h-4 w-4" />
-                  View Document
-                </Button>
+                {selectedContract.fileUrl && (
+                  <Button 
+                    onClick={() => window.open(selectedContract.fileUrl!, '_blank')}
+                    className="flex-1"
+                  >
+                    <ExternalLink className="mr-2 h-4 w-4" />
+                    View Document
+                  </Button>
+                )}
                 {selectedContract.status === 'DRAFT' && (
                   <Button 
                     variant="outline"
