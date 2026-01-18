@@ -143,22 +143,29 @@ function WorkOrdersGroupedView({ workOrders }: { workOrders: WorkOrder[] }) {
               onClick={() => !isSingleItem && toggleGroup(groupName)}
               className={`w-full flex items-center justify-between p-4 text-left hover:bg-muted/50 transition-colors ${isSingleItem ? 'cursor-default' : 'cursor-pointer'}`}
             >
-              <div className="flex items-center gap-2">
-                {!isSingleItem && (
-                  isExpanded ? (
-                    <ChevronDown className="h-4 w-4 text-muted-foreground" />
-                  ) : (
-                    <ChevronRight className="h-4 w-4 text-muted-foreground" />
-                  )
-                )}
-                <span className="font-medium">{groupName}</span>
-                {!isSingleItem && (
-                  <Badge variant="secondary" className="text-xs">
-                    {items.length} occurrences
-                  </Badge>
+              <div className="flex-1">
+                <div className="flex items-center gap-2">
+                  {!isSingleItem && (
+                    isExpanded ? (
+                      <ChevronDown className="h-4 w-4 text-muted-foreground" />
+                    ) : (
+                      <ChevronRight className="h-4 w-4 text-muted-foreground" />
+                    )
+                  )}
+                  <span className="font-medium">{groupName}</span>
+                  {!isSingleItem && (
+                    <Badge variant="secondary" className="text-xs">
+                      {items.length} occurrences
+                    </Badge>
+                  )}
+                </div>
+                {items[0].description && (
+                  <p className="text-sm text-muted-foreground mt-1 ml-6">
+                    {items[0].description}
+                  </p>
                 )}
               </div>
-              <div className="text-right">
+              <div className="text-right flex-shrink-0">
                 {hasPendingPrice ? (
                   <Badge variant="outline" className="text-xs">Pending Price</Badge>
                 ) : (
