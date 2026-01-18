@@ -8,9 +8,8 @@ import { Badge } from '@/components/ui/badge'
 import { ClientProjectFilter } from '@/components/modules/client-project-filter'
 import { ActivityPanel } from '@/components/modules/activity-panel'
 import { ClientBranchRequests } from './client-branch-requests'
-import { ClientBranchInvoices } from './client-branch-invoices'
 import { ClientBranchContracts } from './client-branch-contracts'
-import { ClientBranchQuotations } from './client-branch-quotations'
+import { BillingView } from '@/components/modules/billing-view'
 import { CalendarView } from '@/components/modules/calendar-view'
 import { ChecklistKanban } from '@/components/modules/checklist-kanban'
 import {
@@ -355,13 +354,10 @@ export function ClientBranchWorkspace({ branchId, branch }: ClientBranchWorkspac
             </TabsContent>
           )}
 
-          {/* Billing Tab - Combined Quotations + Invoices */}
+          {/* Billing Tab - Using unified BillingView */}
           {hasActiveProject && (
             <TabsContent value="billing" className="mt-0">
-              <div className="space-y-6">
-                <ClientBranchQuotations branchId={branchId} projectId={selectedProjectId} />
-                <ClientBranchInvoices branchId={branchId} projectId={selectedProjectId} />
-              </div>
+              <BillingView branchId={branchId} projectId={selectedProjectId} userRole="CLIENT" />
             </TabsContent>
           )}
 

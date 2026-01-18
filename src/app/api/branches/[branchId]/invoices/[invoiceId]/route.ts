@@ -69,12 +69,139 @@ export async function PATCH(
       return NextResponse.json({ error: 'Invoice not found' }, { status: 404 })
     }
 
-    // Only contractors can update invoices
+    const { action, title, description, items, taxRate, dueDate, status, amountPaid, paymentProofUrl, paymentProofType, paymentProofFileName } = body
+
+    // Handle client submitting payment proof
+    if (action === 'submit_payment_proof') {
+      if (session.user.role !== 'CLIENT') {
+        return NextResponse.json({ error: 'Only clients can submit payment proof' }, { status: 403 })
+      }
+
+      if (!paymentProofUrl) {
+        return NextResponse.json({ error: 'Payment proof is required' }, { status: 400 })
+      }
+
+      const updated = await prisma.invoice.update({
+        where: { id: invoiceId },
+        data: {
+          paymentProofUrl,
+          paymentProofType: paymentProofType || 'file',
+          paymentProofFileName: paymentProofFileName || null,
+          paymentSubmittedAt: new Date(),
+          paymentSubmittedById: session.user.id,
+          status: 'PAYMENT_PENDING',
+        },
+        include: { items: true }
+      })
+
+      // Create notification for contractor
+      const branch = await prisma.branch.findUnique({
+        where: { id: branchId },
+        include: {
+          client: {
+            include: {
+              contractor: {
+                include: { user: true }
+              }
+            }
+          }
+        }
+      })
+
+      if (branch?.client?.contractor?.user) {
+        await prisma.notification.create({
+          data: {
+            userId: branch.client.contractor.user.id,
+            type: 'GENERAL',
+            title: 'Payment Proof Submitted',
+            message: `Client submitted payment proof for invoice ${updated.invoiceNumber || updated.title}`,
+            link: `/dashboard/clients/${branch.client.id}/branches/${branchId}?tab=billing`,
+            relatedId: invoiceId,
+            relatedType: 'Invoice'
+          }
+        })
+      }
+
+      return NextResponse.json(updated)
+    }
+
+    // Handle contractor confirming payment
+    if (action === 'confirm_payment') {
+      if (session.user.role !== 'CONTRACTOR') {
+        return NextResponse.json({ error: 'Only contractors can confirm payment' }, { status: 403 })
+      }
+
+      if (currentInvoice.status !== 'PAYMENT_PENDING') {
+        return NextResponse.json({ error: 'Invoice is not pending payment confirmation' }, { status: 400 })
+      }
+
+      const updated = await prisma.invoice.update({
+        where: { id: invoiceId },
+        data: {
+          status: 'PAID',
+          paidAt: new Date(),
+          amountPaid: currentInvoice.total,
+        },
+        include: { items: true }
+      })
+
+      // Auto-update project status to CLOSED if invoice is linked to a project and project is DONE
+      if (currentInvoice.projectId) {
+        const project = await prisma.project.findUnique({
+          where: { id: currentInvoice.projectId }
+        })
+        
+        if (project && project.status === 'DONE') {
+          await prisma.project.update({
+            where: { id: currentInvoice.projectId },
+            data: { 
+              status: 'CLOSED',
+              completedAt: new Date()
+            }
+          })
+          await prisma.activity.create({
+            data: {
+              projectId: currentInvoice.projectId,
+              type: 'STATUS_CHANGE',
+              content: 'Project closed - invoice payment confirmed',
+              createdById: session.user.id,
+              createdByRole: session.user.role as 'CONTRACTOR' | 'CLIENT' | 'MANAGER',
+            }
+          })
+        }
+      }
+
+      // Create notification for client
+      const branch = await prisma.branch.findUnique({
+        where: { id: branchId },
+        include: {
+          client: {
+            include: { user: true }
+          }
+        }
+      })
+
+      if (branch?.client?.user) {
+        await prisma.notification.create({
+          data: {
+            userId: branch.client.user.id,
+            type: 'GENERAL',
+            title: 'Payment Confirmed',
+            message: `Your payment for invoice ${updated.invoiceNumber || updated.title} has been confirmed`,
+            link: `/portal/branches/${branchId}?tab=billing`,
+            relatedId: invoiceId,
+            relatedType: 'Invoice'
+          }
+        })
+      }
+
+      return NextResponse.json(updated)
+    }
+
+    // Regular updates - contractors only
     if (session.user.role !== 'CONTRACTOR') {
       return NextResponse.json({ error: 'Only contractors can update invoices' }, { status: 403 })
     }
-
-    const { title, description, items, taxRate, dueDate, status, amountPaid } = body
 
     const updateData: Record<string, unknown> = {}
     

@@ -23,9 +23,8 @@ import {
   SelectValue,
 } from '@/components/ui/select'
 import { RequestsList } from '@/components/modules/requests-list'
-import { QuotationsList } from '@/components/modules/quotations-list'
 import { AppointmentsList } from '@/components/modules/appointments-list'
-import { InvoicesList } from '@/components/modules/invoices-list'
+import { BillingView } from '@/components/modules/billing-view'
 import { ContractsList } from '@/components/modules/contracts-list'
 import { ChecklistsList } from '@/components/modules/checklists-list'
 import { ProjectFilter } from '@/components/modules/project-filter'
@@ -168,13 +167,10 @@ export function BranchWorkspace({ clientId, branchId, branch }: BranchWorkspaceP
   )
 }
 
-// Billing Tab - Combined Quotations and Invoices
+// Billing Tab - Using unified BillingView component
 function BillingTab({ branchId, projectId }: { branchId: string; projectId: string | null }) {
   return (
-    <div className="space-y-6">
-      <QuotationsList branchId={branchId} projectId={projectId} />
-      <InvoicesList branchId={branchId} projectId={projectId} />
-    </div>
+    <BillingView branchId={branchId} projectId={projectId} userRole="CONTRACTOR" />
   )
 }
 
