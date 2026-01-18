@@ -117,9 +117,11 @@ export function ClientBranchRequests({ branchId, projectId, onDataChange }: Clie
       const response = await fetch(`/api/branches/${branchId}/requests`)
       if (response.ok) {
         const data = await response.json()
-        const filtered = projectId 
-          ? data.filter((r: Request & { projectId?: string }) => r.projectId === projectId)
-          : data
+        // Filter out COMPLETED requests - they should appear in Quotations/Contracts instead
+        let filtered = data.filter((r: Request) => r.status !== 'COMPLETED')
+        if (projectId) {
+          filtered = filtered.filter((r: Request & { projectId?: string }) => r.projectId === projectId)
+        }
         setRequests(filtered)
       }
     } catch (err) {
@@ -134,7 +136,10 @@ export function ClientBranchRequests({ branchId, projectId, onDataChange }: Clie
       const response = await fetch(`/api/branches/${branchId}/projects`)
       if (response.ok) {
         const data = await response.json()
-        setProjects(data)
+        // Only show PENDING projects in Requests tab (for approval)
+        // ACTIVE projects should be viewed in Calendar/Quotations/Contracts
+        const pendingProjects = data.filter((p: Project) => p.status === 'PENDING')
+        setProjects(pendingProjects)
       }
     } catch (err) {
       console.error('Failed to fetch projects:', err)
