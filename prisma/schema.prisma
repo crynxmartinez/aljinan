@@ -323,6 +323,7 @@ model InvoiceItem {
 // Contract statuses
 enum ContractStatus {
   DRAFT
+  PENDING_SIGNATURE  // Awaiting client signature
   SIGNED
   ACTIVE
   EXPIRED

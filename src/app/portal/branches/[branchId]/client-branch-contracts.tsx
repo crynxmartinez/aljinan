@@ -72,7 +72,7 @@ interface Contract {
   startDate: string | null
   endDate: string | null
   signedAt: string | null
-  status: 'DRAFT' | 'SIGNED' | 'ACTIVE' | 'EXPIRED' | 'TERMINATED'
+  status: 'DRAFT' | 'PENDING_SIGNATURE' | 'SIGNED' | 'ACTIVE' | 'EXPIRED' | 'TERMINATED'
   createdAt: string
   project: Project | null
 }
@@ -119,6 +119,7 @@ export function ClientBranchContracts({ branchId, projectId }: ClientBranchContr
   const getStatusBadge = (status: Contract['status']) => {
     const config: Record<string, { style: string; icon: typeof FileText; label: string }> = {
       DRAFT: { style: 'bg-gray-100 text-gray-700', icon: FileText, label: 'Draft' },
+      PENDING_SIGNATURE: { style: 'bg-amber-100 text-amber-700', icon: PenTool, label: 'Awaiting Signature' },
       SIGNED: { style: 'bg-blue-100 text-blue-700', icon: CheckCircle, label: 'Signed' },
       ACTIVE: { style: 'bg-green-100 text-green-700', icon: CheckCircle, label: 'Active' },
       EXPIRED: { style: 'bg-orange-100 text-orange-700', icon: Clock, label: 'Expired' },
@@ -238,8 +239,8 @@ export function ClientBranchContracts({ branchId, projectId }: ClientBranchContr
   }
 
   const activeContracts = contracts.filter(c => c.status === 'ACTIVE' || c.status === 'SIGNED')
-  const pendingSignature = contracts.filter(c => !c.signedAt && c.status !== 'DRAFT')
-  const otherContracts = contracts.filter(c => c.status !== 'ACTIVE' && c.status !== 'SIGNED')
+  const pendingSignature = contracts.filter(c => c.status === 'PENDING_SIGNATURE')
+  const otherContracts = contracts.filter(c => c.status !== 'ACTIVE' && c.status !== 'SIGNED' && c.status !== 'PENDING_SIGNATURE')
 
   return (
     <div className="space-y-6">

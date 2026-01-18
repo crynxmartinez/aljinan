@@ -40,6 +40,8 @@ import {
   Clock,
   XCircle,
   ExternalLink,
+  Upload,
+  Link as LinkIcon,
 } from 'lucide-react'
 
 interface Contract {
@@ -54,7 +56,7 @@ interface Contract {
   signedAt: string | null
   signatureUrl: string | null
   totalValue: number | null
-  status: 'DRAFT' | 'SIGNED' | 'ACTIVE' | 'EXPIRED' | 'TERMINATED'
+  status: 'DRAFT' | 'PENDING_SIGNATURE' | 'SIGNED' | 'ACTIVE' | 'EXPIRED' | 'TERMINATED'
   createdAt: string
 }
 
@@ -69,9 +71,13 @@ export function ContractsList({ branchId, projectId }: ContractsListProps) {
   const [loading, setLoading] = useState(true)
   const [createDialogOpen, setCreateDialogOpen] = useState(false)
   const [detailDialogOpen, setDetailDialogOpen] = useState(false)
+  const [attachPdfDialogOpen, setAttachPdfDialogOpen] = useState(false)
   const [selectedContract, setSelectedContract] = useState<Contract | null>(null)
   const [creating, setCreating] = useState(false)
+  const [attaching, setAttaching] = useState(false)
   const [error, setError] = useState('')
+  const [pdfUrl, setPdfUrl] = useState('')
+  const [pdfFileName, setPdfFileName] = useState('')
 
   const [newContract, setNewContract] = useState({
     title: '',
@@ -178,9 +184,51 @@ export function ContractsList({ branchId, projectId }: ContractsListProps) {
     }
   }
 
+  const openAttachPdfDialog = (contract: Contract) => {
+    setSelectedContract(contract)
+    setPdfUrl(contract.fileUrl || '')
+    setPdfFileName(contract.fileName || '')
+    setError('')
+    setAttachPdfDialogOpen(true)
+  }
+
+  const handleAttachPdf = async () => {
+    if (!selectedContract) return
+    setAttaching(true)
+    setError('')
+
+    try {
+      const response = await fetch(`/api/branches/${branchId}/contracts/${selectedContract.id}`, {
+        method: 'PATCH',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          fileUrl: pdfUrl,
+          fileName: pdfFileName || 'Contract Document.pdf',
+        }),
+      })
+
+      if (!response.ok) {
+        const data = await response.json()
+        throw new Error(data.error || 'Failed to attach PDF')
+      }
+
+      setAttachPdfDialogOpen(false)
+      setPdfUrl('')
+      setPdfFileName('')
+      setSelectedContract(null)
+      fetchContracts()
+      router.refresh()
+    } catch (err) {
+      setError(err instanceof Error ? err.message : 'An error occurred')
+    } finally {
+      setAttaching(false)
+    }
+  }
+
   const getStatusBadge = (status: Contract['status']) => {
     const config: Record<string, { style: string; icon: typeof FileText; label: string }> = {
       DRAFT: { style: 'bg-gray-100 text-gray-700', icon: FileText, label: 'Draft' },
+      PENDING_SIGNATURE: { style: 'bg-amber-100 text-amber-700', icon: Clock, label: 'Awaiting Signature' },
       SIGNED: { style: 'bg-blue-100 text-blue-700', icon: CheckCircle, label: 'Signed' },
       ACTIVE: { style: 'bg-green-100 text-green-700', icon: CheckCircle, label: 'Active' },
       EXPIRED: { style: 'bg-orange-100 text-orange-700', icon: Clock, label: 'Expired' },
@@ -291,6 +339,12 @@ export function ContractsList({ branchId, projectId }: ContractsListProps) {
                         </Button>
                       </DropdownMenuTrigger>
                       <DropdownMenuContent align="end">
+                        {contract.status === 'PENDING_SIGNATURE' && (
+                          <DropdownMenuItem onClick={() => openAttachPdfDialog(contract)}>
+                            <Upload className="mr-2 h-4 w-4" />
+                            {contract.fileUrl ? 'Update PDF' : 'Attach PDF'}
+                          </DropdownMenuItem>
+                        )}
                         {contract.status === 'DRAFT' && (
                           <DropdownMenuItem onClick={() => handleUpdateStatus(contract.id, 'ACTIVE')}>
                             Activate Contract
@@ -510,6 +564,60 @@ export function ContractsList({ branchId, projectId }: ContractsListProps) {
               </div>
             </div>
           )}
+        </DialogContent>
+      </Dialog>
+
+      {/* Attach PDF Dialog */}
+      <Dialog open={attachPdfDialogOpen} onOpenChange={setAttachPdfDialogOpen}>
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle>Attach Contract PDF</DialogTitle>
+            <DialogDescription>
+              Add a PDF document to this contract. The client will be able to view it before signing.
+            </DialogDescription>
+          </DialogHeader>
+          {error && (
+            <div className="bg-destructive/10 text-destructive p-3 rounded-lg text-sm">
+              {error}
+            </div>
+          )}
+          <div className="space-y-4">
+            <div className="space-y-2">
+              <Label htmlFor="pdfFileName">File Name</Label>
+              <Input
+                id="pdfFileName"
+                value={pdfFileName}
+                onChange={(e) => setPdfFileName(e.target.value)}
+                placeholder="e.g., Service Agreement 2026.pdf"
+              />
+            </div>
+            <div className="space-y-2">
+              <Label htmlFor="pdfUrl">PDF URL *</Label>
+              <Input
+                id="pdfUrl"
+                value={pdfUrl}
+                onChange={(e) => setPdfUrl(e.target.value)}
+                placeholder="https://..."
+                required
+              />
+              <p className="text-xs text-muted-foreground">
+                Enter the URL where the PDF is hosted (Google Drive, Dropbox, etc.)
+              </p>
+            </div>
+          </div>
+          <DialogFooter>
+            <Button variant="outline" onClick={() => setAttachPdfDialogOpen(false)}>
+              Cancel
+            </Button>
+            <Button onClick={handleAttachPdf} disabled={attaching || !pdfUrl}>
+              {attaching ? (
+                <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+              ) : (
+                <Upload className="mr-2 h-4 w-4" />
+              )}
+              Attach PDF
+            </Button>
+          </DialogFooter>
         </DialogContent>
       </Dialog>
     </>

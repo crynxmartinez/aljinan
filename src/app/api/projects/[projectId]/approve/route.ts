@@ -76,16 +76,17 @@ export async function POST(
         }
       })
 
-      // 3. Create a Contract
+      // 3. Create a Contract (pending client signature)
       const contract = await tx.contract.create({
         data: {
           branchId: project.branchId,
           projectId,
           title: `Contract: ${project.title}`,
           description: project.description,
-          status: 'SIGNED',
+          status: 'PENDING_SIGNATURE',
           totalValue,
-          signedAt: new Date(),
+          startDate: project.startDate,
+          endDate: project.endDate,
           createdById: session.user.id,
         }
       })
