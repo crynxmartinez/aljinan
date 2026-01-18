@@ -68,11 +68,14 @@ interface Contract {
   fileName: string | null
   fileUrl: string | null
   fileSize: number | null
+  certificateFileName: string | null
+  certificateUrl: string | null
   totalValue: number
   startDate: string | null
   endDate: string | null
-  signedAt: string | null
-  status: 'DRAFT' | 'PENDING_SIGNATURE' | 'SIGNED' | 'ACTIVE' | 'EXPIRED' | 'TERMINATED'
+  startSignedAt: string | null
+  endSignedAt: string | null
+  status: 'DRAFT' | 'PENDING_SIGNATURE' | 'SIGNED' | 'COMPLETED' | 'EXPIRED' | 'TERMINATED'
   createdAt: string
   project: Project | null
 }
@@ -87,10 +90,12 @@ export function ClientBranchContracts({ branchId, projectId }: ClientBranchContr
   const [contracts, setContracts] = useState<Contract[]>([])
   const [loading, setLoading] = useState(true)
   const [signDialogOpen, setSignDialogOpen] = useState(false)
+  const [endSignDialogOpen, setEndSignDialogOpen] = useState(false)
   const [contractToSign, setContractToSign] = useState<Contract | null>(null)
   const [signing, setSigning] = useState(false)
   const [isDrawing, setIsDrawing] = useState(false)
   const canvasRef = useRef<HTMLCanvasElement>(null)
+  const endCanvasRef = useRef<HTMLCanvasElement>(null)
 
   const fetchContracts = async () => {
     try {
@@ -119,9 +124,9 @@ export function ClientBranchContracts({ branchId, projectId }: ClientBranchContr
   const getStatusBadge = (status: Contract['status']) => {
     const config: Record<string, { style: string; icon: typeof FileText; label: string }> = {
       DRAFT: { style: 'bg-gray-100 text-gray-700', icon: FileText, label: 'Draft' },
-      PENDING_SIGNATURE: { style: 'bg-amber-100 text-amber-700', icon: PenTool, label: 'Awaiting Signature' },
-      SIGNED: { style: 'bg-blue-100 text-blue-700', icon: CheckCircle, label: 'Signed' },
-      ACTIVE: { style: 'bg-green-100 text-green-700', icon: CheckCircle, label: 'Active' },
+      PENDING_SIGNATURE: { style: 'bg-amber-100 text-amber-700', icon: PenTool, label: 'Awaiting Start Signature' },
+      SIGNED: { style: 'bg-blue-100 text-blue-700', icon: CheckCircle, label: 'Active' },
+      COMPLETED: { style: 'bg-green-100 text-green-700', icon: CheckCircle, label: 'Completed' },
       EXPIRED: { style: 'bg-orange-100 text-orange-700', icon: Clock, label: 'Expired' },
       TERMINATED: { style: 'bg-red-100 text-red-700', icon: XCircle, label: 'Terminated' },
     }
@@ -181,9 +186,29 @@ export function ClientBranchContracts({ branchId, projectId }: ClientBranchContr
     ctx.clearRect(0, 0, canvas.width, canvas.height)
   }
 
+  const clearEndSignature = () => {
+    const canvas = endCanvasRef.current
+    if (!canvas) return
+    const ctx = canvas.getContext('2d')
+    if (!ctx) return
+    ctx.clearRect(0, 0, canvas.width, canvas.height)
+  }
+
   const openSignDialog = (contract: Contract) => {
     setContractToSign(contract)
     setSignDialogOpen(true)
+  }
+
+  const openEndSignDialog = (contract: Contract) => {
+    setContractToSign(contract)
+    setEndSignDialogOpen(true)
+  }
+
+  // Check if all work orders are completed for a contract
+  const areAllWorkOrdersCompleted = (contract: Contract): boolean => {
+    if (!contract.project) return false
+    const allItems = contract.project.checklists.flatMap(c => c.items)
+    return allItems.length > 0 && allItems.every(item => item.stage === 'COMPLETED')
   }
 
   const handleSign = async () => {
@@ -209,7 +234,7 @@ export function ClientBranchContracts({ branchId, projectId }: ClientBranchContr
         method: 'PATCH',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
-          action: 'sign',
+          action: 'start_sign',
           signatureUrl: signatureDataUrl
         })
       })
@@ -228,6 +253,51 @@ export function ClientBranchContracts({ branchId, projectId }: ClientBranchContr
     }
   }
 
+  const handleEndSign = async () => {
+    if (!contractToSign || !endCanvasRef.current) return
+    
+    const canvas = endCanvasRef.current
+    const signatureDataUrl = canvas.toDataURL('image/png')
+    
+    // Check if canvas is empty
+    const ctx = canvas.getContext('2d')
+    if (!ctx) return
+    const imageData = ctx.getImageData(0, 0, canvas.width, canvas.height)
+    const isEmpty = !imageData.data.some((channel, index) => index % 4 !== 3 ? channel !== 0 : channel !== 0)
+    
+    if (isEmpty) {
+      alert('Please draw your signature before signing')
+      return
+    }
+
+    setSigning(true)
+    try {
+      const response = await fetch(`/api/branches/${branchId}/contracts/${contractToSign.id}`, {
+        method: 'PATCH',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          action: 'end_sign',
+          signatureUrl: signatureDataUrl
+        })
+      })
+
+      if (response.ok) {
+        setEndSignDialogOpen(false)
+        setContractToSign(null)
+        clearEndSignature()
+        fetchContracts()
+        router.refresh()
+      } else {
+        const data = await response.json()
+        alert(data.error || 'Failed to complete contract')
+      }
+    } catch (err) {
+      console.error('Failed to complete contract:', err)
+    } finally {
+      setSigning(false)
+    }
+  }
+
   if (loading) {
     return (
       <Card>
@@ -238,9 +308,10 @@ export function ClientBranchContracts({ branchId, projectId }: ClientBranchContr
     )
   }
 
-  const activeContracts = contracts.filter(c => c.status === 'ACTIVE' || c.status === 'SIGNED')
+  const activeContracts = contracts.filter(c => c.status === 'SIGNED')
+  const completedContracts = contracts.filter(c => c.status === 'COMPLETED')
   const pendingSignature = contracts.filter(c => c.status === 'PENDING_SIGNATURE')
-  const otherContracts = contracts.filter(c => c.status !== 'ACTIVE' && c.status !== 'SIGNED' && c.status !== 'PENDING_SIGNATURE')
+  const otherContracts = contracts.filter(c => c.status !== 'SIGNED' && c.status !== 'COMPLETED' && c.status !== 'PENDING_SIGNATURE')
 
   return (
     <div className="space-y-6">
@@ -353,14 +424,119 @@ export function ClientBranchContracts({ branchId, projectId }: ClientBranchContr
                       <ClipboardList className="mr-2 h-4 w-4" />
                       View Details
                     </Button>
+                    {areAllWorkOrdersCompleted(contract) && (
+                      <Button
+                        size="sm"
+                        onClick={() => openEndSignDialog(contract)}
+                        className="bg-green-600 hover:bg-green-700"
+                      >
+                        <PenTool className="mr-2 h-4 w-4" />
+                        Sign to Complete
+                      </Button>
+                    )}
+                  </div>
+                </div>
+                {/* Work order progress */}
+                {contract.project && (
+                  <div className="mt-3 pt-3 border-t">
+                    <div className="flex items-center justify-between text-sm">
+                      <span className="text-muted-foreground">Work Orders Progress</span>
+                      <span className="font-medium">
+                        {contract.project.checklists.flatMap(c => c.items).filter(i => i.stage === 'COMPLETED').length} / {contract.project.checklists.flatMap(c => c.items).length} completed
+                      </span>
+                    </div>
+                    {!areAllWorkOrdersCompleted(contract) && (
+                      <p className="text-xs text-muted-foreground mt-1">
+                        Complete all work orders to sign and finalize the contract
+                      </p>
+                    )}
+                  </div>
+                )}
+              </div>
+            ))}
+          </CardContent>
+        </Card>
+      )}
+
+      {/* Completed Contracts - With Downloads */}
+      {completedContracts.length > 0 && (
+        <Card className="border-blue-200 bg-blue-50/50">
+          <CardHeader>
+            <CardTitle className="flex items-center gap-2 text-blue-800">
+              <CheckCircle className="h-5 w-5" />
+              Completed Contracts
+            </CardTitle>
+            <CardDescription>
+              Finalized contracts with all documents available for download
+            </CardDescription>
+          </CardHeader>
+          <CardContent className="space-y-4">
+            {completedContracts.map((contract) => (
+              <div
+                key={contract.id}
+                className="p-4 bg-white border rounded-lg"
+              >
+                <div className="flex items-start justify-between">
+                  <div className="space-y-1">
+                    <div className="flex items-center gap-2">
+                      <FileText className="h-4 w-4 text-muted-foreground" />
+                      <h4 className="font-medium">{contract.title}</h4>
+                      {getStatusBadge(contract.status)}
+                    </div>
+                    {contract.description && (
+                      <p className="text-sm text-muted-foreground">
+                        {contract.description}
+                      </p>
+                    )}
+                    <div className="flex items-center gap-4 text-sm text-muted-foreground">
+                      {contract.startDate && contract.endDate && (
+                        <span>
+                          {new Date(contract.startDate).toLocaleDateString()} - {new Date(contract.endDate).toLocaleDateString()}
+                        </span>
+                      )}
+                      <span className="font-medium text-green-700">
+                        ${(contract.totalValue || 0).toLocaleString('en-US', { minimumFractionDigits: 2 })}
+                      </span>
+                    </div>
+                  </div>
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    onClick={() => {
+                      setSelectedContract(contract)
+                      setDetailsOpen(true)
+                    }}
+                  >
+                    <ClipboardList className="mr-2 h-4 w-4" />
+                    View Details
+                  </Button>
+                </div>
+                {/* Download Section */}
+                <div className="mt-4 pt-4 border-t">
+                  <p className="text-sm font-medium mb-3">Available Downloads</p>
+                  <div className="flex flex-wrap gap-2">
                     {contract.fileUrl && (
                       <Button
+                        variant="outline"
                         size="sm"
                         onClick={() => window.open(contract.fileUrl!, '_blank')}
                       >
                         <Download className="mr-2 h-4 w-4" />
-                        Download PDF
+                        {contract.fileName || 'Contract PDF'}
                       </Button>
+                    )}
+                    {contract.certificateUrl && (
+                      <Button
+                        variant="outline"
+                        size="sm"
+                        onClick={() => window.open(contract.certificateUrl!, '_blank')}
+                      >
+                        <Download className="mr-2 h-4 w-4" />
+                        {contract.certificateFileName || 'Certificate'}
+                      </Button>
+                    )}
+                    {!contract.fileUrl && !contract.certificateUrl && (
+                      <p className="text-sm text-muted-foreground">No documents attached</p>
                     )}
                   </div>
                 </div>
@@ -570,16 +746,16 @@ export function ClientBranchContracts({ branchId, projectId }: ClientBranchContr
         </DialogContent>
       </Dialog>
 
-      {/* Signature Dialog */}
+      {/* Start Signature Dialog */}
       <Dialog open={signDialogOpen} onOpenChange={setSignDialogOpen}>
         <DialogContent className="max-w-lg">
           <DialogHeader>
             <DialogTitle className="flex items-center gap-2">
               <PenTool className="h-5 w-5" />
-              Sign Contract
+              Accept & Sign Contract
             </DialogTitle>
             <DialogDescription>
-              Draw your signature below to sign this contract
+              Draw your signature below to accept and start this contract
             </DialogDescription>
           </DialogHeader>
 
@@ -625,7 +801,94 @@ export function ClientBranchContracts({ branchId, projectId }: ClientBranchContr
             </Button>
             <Button onClick={handleSign} disabled={signing}>
               {signing && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
-              Sign Contract
+              Accept & Sign
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
+
+      {/* End Signature Dialog */}
+      <Dialog open={endSignDialogOpen} onOpenChange={setEndSignDialogOpen}>
+        <DialogContent className="max-w-lg">
+          <DialogHeader>
+            <DialogTitle className="flex items-center gap-2">
+              <CheckCircle className="h-5 w-5 text-green-600" />
+              Complete Contract
+            </DialogTitle>
+            <DialogDescription>
+              All work orders are completed. Sign below to finalize this contract.
+            </DialogDescription>
+          </DialogHeader>
+
+          {contractToSign && (
+            <div className="space-y-4">
+              <div className="p-4 bg-green-50 rounded-lg border border-green-200">
+                <p className="font-medium text-green-800">{contractToSign.title}</p>
+                <p className="text-sm text-green-700">
+                  Total Value: ${(contractToSign.totalValue || 0).toLocaleString('en-US', { minimumFractionDigits: 2 })}
+                </p>
+                {contractToSign.project && (
+                  <p className="text-sm text-green-700 mt-1">
+                    {contractToSign.project.checklists.flatMap(c => c.items).length} work orders completed
+                  </p>
+                )}
+              </div>
+
+              <div className="space-y-2">
+                <div className="flex items-center justify-between">
+                  <p className="text-sm font-medium">Your Final Signature</p>
+                  <Button variant="ghost" size="sm" onClick={clearEndSignature}>
+                    <RotateCcw className="mr-2 h-4 w-4" />
+                    Clear
+                  </Button>
+                </div>
+                <div className="border-2 border-dashed rounded-lg p-1 bg-white">
+                  <canvas
+                    ref={endCanvasRef}
+                    width={400}
+                    height={150}
+                    className="w-full cursor-crosshair"
+                    onMouseDown={(e) => {
+                      const canvas = endCanvasRef.current
+                      if (!canvas) return
+                      const ctx = canvas.getContext('2d')
+                      if (!ctx) return
+                      setIsDrawing(true)
+                      const rect = canvas.getBoundingClientRect()
+                      ctx.beginPath()
+                      ctx.moveTo(e.clientX - rect.left, e.clientY - rect.top)
+                    }}
+                    onMouseMove={(e) => {
+                      if (!isDrawing) return
+                      const canvas = endCanvasRef.current
+                      if (!canvas) return
+                      const ctx = canvas.getContext('2d')
+                      if (!ctx) return
+                      const rect = canvas.getBoundingClientRect()
+                      ctx.lineWidth = 2
+                      ctx.lineCap = 'round'
+                      ctx.strokeStyle = '#000'
+                      ctx.lineTo(e.clientX - rect.left, e.clientY - rect.top)
+                      ctx.stroke()
+                    }}
+                    onMouseUp={() => setIsDrawing(false)}
+                    onMouseLeave={() => setIsDrawing(false)}
+                  />
+                </div>
+                <p className="text-xs text-muted-foreground">
+                  Draw your signature to confirm completion of all services
+                </p>
+              </div>
+            </div>
+          )}
+
+          <DialogFooter>
+            <Button variant="outline" onClick={() => setEndSignDialogOpen(false)}>
+              Cancel
+            </Button>
+            <Button onClick={handleEndSign} disabled={signing} className="bg-green-600 hover:bg-green-700">
+              {signing && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
+              Complete Contract
             </Button>
           </DialogFooter>
         </DialogContent>

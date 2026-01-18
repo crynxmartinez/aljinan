@@ -323,35 +323,40 @@ model InvoiceItem {
 // Contract statuses
 enum ContractStatus {
   DRAFT
-  PENDING_SIGNATURE  // Awaiting client signature
-  SIGNED
-  ACTIVE
+  PENDING_SIGNATURE  // Awaiting client start signature
+  SIGNED             // Client signed start, project active
+  COMPLETED          // Client signed end, project done
   EXPIRED
   TERMINATED
 }
 
 // Contract - service agreements for projects
 model Contract {
-  id            String         @id @default(cuid())
-  branchId      String
-  branch        Branch         @relation(fields: [branchId], references: [id], onDelete: Cascade)
-  projectId     String?
-  project       Project?       @relation(fields: [projectId], references: [id], onDelete: SetNull)
-  title         String
-  description   String?
-  fileName      String?
-  fileUrl       String?
-  fileSize      Int?
-  signatureUrl  String?        // Client signature image URL
-  signedById    String?        // User who signed
-  totalValue    Float          @default(0)
-  startDate     DateTime?
-  endDate       DateTime?
-  signedAt      DateTime?
-  status        ContractStatus @default(DRAFT)
-  createdById   String
-  createdAt     DateTime       @default(now())
-  updatedAt     DateTime       @updatedAt
+  id                  String         @id @default(cuid())
+  branchId            String
+  branch              Branch         @relation(fields: [branchId], references: [id], onDelete: Cascade)
+  projectId           String?
+  project             Project?       @relation(fields: [projectId], references: [id], onDelete: SetNull)
+  title               String
+  description         String?
+  fileName            String?        // PDF attachment file name
+  fileUrl             String?        // PDF attachment URL
+  fileSize            Int?
+  certificateFileName String?        // Certificate file name
+  certificateUrl      String?        // Certificate URL
+  startSignatureUrl   String?        // Client start signature image
+  startSignedById     String?        // User who signed at start
+  startSignedAt       DateTime?      // When client signed at start
+  endSignatureUrl     String?        // Client end signature image
+  endSignedById       String?        // User who signed at end
+  endSignedAt         DateTime?      // When client signed at end
+  totalValue          Float          @default(0)
+  startDate           DateTime?
+  endDate             DateTime?
+  status              ContractStatus @default(DRAFT)
+  createdById         String
+  createdAt           DateTime       @default(now())
+  updatedAt           DateTime       @updatedAt
 }
 
 // Checklist statuses
@@ -376,6 +381,13 @@ enum ChecklistItemType {
   ADHOC          // Added during contract period
 }
 
+// Recurring frequency for work orders
+enum RecurringType {
+  ONCE           // One-time work order
+  MONTHLY        // Repeats every month
+  QUARTERLY      // Repeats every 3 months
+}
+
 // Checklist - inspection checklists created by contractor
 model Checklist {
   id            String          @id @default(cuid())
@@ -397,19 +409,22 @@ model Checklist {
 
 // Checklist items (Work Orders)
 model ChecklistItem {
-  id            String             @id @default(cuid())
-  checklistId   String
-  checklist     Checklist          @relation(fields: [checklistId], references: [id], onDelete: Cascade)
-  description   String
-  notes         String?
-  stage         ChecklistItemStage @default(SCHEDULED)
-  type          ChecklistItemType  @default(SCHEDULED)
-  scheduledDate DateTime?
-  price         Float?
-  isCompleted   Boolean            @default(false)
-  order         Int                @default(0)
-  createdAt     DateTime           @default(now())
-  updatedAt     DateTime           @updatedAt
+  id              String             @id @default(cuid())
+  checklistId     String
+  checklist       Checklist          @relation(fields: [checklistId], references: [id], onDelete: Cascade)
+  description     String
+  notes           String?
+  stage           ChecklistItemStage @default(SCHEDULED)
+  type            ChecklistItemType  @default(SCHEDULED)
+  recurringType   RecurringType      @default(ONCE)
+  parentItemId    String?            // For recurring: links to original work order
+  occurrenceIndex Int?               // For recurring: which occurrence (1, 2, 3...)
+  scheduledDate   DateTime?
+  price           Float?
+  isCompleted     Boolean            @default(false)
+  order           Int                @default(0)
+  createdAt       DateTime           @default(now())
+  updatedAt       DateTime           @updatedAt
 }
 
 // Activity types for tracking
@@ -506,6 +521,7 @@ enum NotificationType {
   WORK_ORDER_FOR_REVIEW  // Work order sent for review
   WORK_ORDER_COMPLETED   // Work order completed
   CONTRACT_SIGNED        // Client signed contract
+  CONTRACT_EXPIRING      // Contract expiring soon
   PROJECT_APPROVED       // Client approved project
   REQUEST_RECEIVED       // New request from client
   GENERAL                // General notification

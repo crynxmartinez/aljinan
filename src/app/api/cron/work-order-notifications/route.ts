@@ -23,7 +23,7 @@ export async function GET(request: Request) {
 
     const notifications: Array<{
       userId: string
-      type: 'WORK_ORDER_REMINDER' | 'WORK_ORDER_STARTED'
+      type: 'WORK_ORDER_REMINDER' | 'WORK_ORDER_STARTED' | 'CONTRACT_EXPIRING'
       title: string
       message: string
       link: string | null
@@ -119,6 +119,73 @@ export async function GET(request: Request) {
         await prisma.checklistItem.update({
           where: { id: workOrder.id },
           data: { stage: 'IN_PROGRESS' }
+        })
+      }
+    }
+
+    // Contract expiry notifications
+    // Contractor: 10, 5, 3, 1 days before
+    // Client: 1 day before
+    const contracts = await prisma.contract.findMany({
+      where: {
+        status: 'SIGNED',
+        endDate: { not: null }
+      },
+      include: {
+        branch: {
+          include: {
+            client: {
+              include: {
+                user: true
+              }
+            }
+          }
+        }
+      }
+    })
+
+    for (const contract of contracts) {
+      if (!contract.endDate) continue
+
+      const endDate = new Date(contract.endDate)
+      endDate.setHours(0, 0, 0, 0)
+
+      const diffTime = endDate.getTime() - today.getTime()
+      const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24))
+
+      const client = contract.branch.client
+      if (!client) continue
+
+      const contractorLink = `/dashboard/clients/${client.id}/branches/${contract.branchId}?tab=contracts`
+      const clientLink = `/portal/branches/${contract.branchId}?tab=contracts`
+
+      // Contractor notifications: 10, 5, 3, 1 days before
+      if ([10, 5, 3, 1].includes(diffDays)) {
+        const dayText = diffDays === 1 ? 'tomorrow' : `in ${diffDays} days`
+
+        for (const contractorUserId of contractorUserIds) {
+          notifications.push({
+            userId: contractorUserId,
+            type: 'CONTRACT_EXPIRING',
+            title: 'Contract Expiring Soon',
+            message: `Contract "${contract.title}" for ${client.companyName} expires ${dayText}`,
+            link: contractorLink,
+            relatedId: contract.id,
+            relatedType: 'Contract'
+          })
+        }
+      }
+
+      // Client notification: 1 day before
+      if (diffDays === 1 && client.user) {
+        notifications.push({
+          userId: client.user.id,
+          type: 'CONTRACT_EXPIRING',
+          title: 'Contract Expiring Tomorrow',
+          message: `Your contract "${contract.title}" expires tomorrow`,
+          link: clientLink,
+          relatedId: contract.id,
+          relatedType: 'Contract'
         })
       }
     }

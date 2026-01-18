@@ -60,8 +60,8 @@ export async function PATCH(
       return NextResponse.json({ error: 'Access denied' }, { status: 403 })
     }
 
-    // Handle client signing
-    if (body.action === 'sign') {
+    // Handle client start signature (when accepting contract)
+    if (body.action === 'start_sign') {
       if (session.user.role !== 'CLIENT') {
         return NextResponse.json({ error: 'Only clients can sign contracts' }, { status: 403 })
       }
@@ -74,10 +74,59 @@ export async function PATCH(
       const updated = await prisma.contract.update({
         where: { id: contractId },
         data: {
-          signatureUrl,
-          signedById: session.user.id,
-          signedAt: new Date(),
+          startSignatureUrl: signatureUrl,
+          startSignedById: session.user.id,
+          startSignedAt: new Date(),
           status: 'SIGNED'
+        }
+      })
+
+      return NextResponse.json(updated)
+    }
+
+    // Handle client end signature (when completing contract)
+    if (body.action === 'end_sign') {
+      if (session.user.role !== 'CLIENT') {
+        return NextResponse.json({ error: 'Only clients can sign contracts' }, { status: 403 })
+      }
+
+      const { signatureUrl } = body
+      if (!signatureUrl) {
+        return NextResponse.json({ error: 'Signature is required' }, { status: 400 })
+      }
+
+      // Verify all work orders are completed before allowing end signature
+      const contract = await prisma.contract.findUnique({
+        where: { id: contractId },
+        include: {
+          project: {
+            include: {
+              checklists: {
+                include: {
+                  items: true
+                }
+              }
+            }
+          }
+        }
+      })
+
+      if (contract?.project) {
+        const allItems = contract.project.checklists.flatMap(c => c.items)
+        const allCompleted = allItems.length > 0 && allItems.every(item => item.stage === 'COMPLETED')
+        
+        if (!allCompleted) {
+          return NextResponse.json({ error: 'All work orders must be completed before signing' }, { status: 400 })
+        }
+      }
+
+      const updated = await prisma.contract.update({
+        where: { id: contractId },
+        data: {
+          endSignatureUrl: signatureUrl,
+          endSignedById: session.user.id,
+          endSignedAt: new Date(),
+          status: 'COMPLETED'
         }
       })
 
@@ -89,7 +138,7 @@ export async function PATCH(
       return NextResponse.json({ error: 'Only contractors can update contracts' }, { status: 403 })
     }
 
-    const { title, description, startDate, endDate, status, fileName, fileUrl, fileSize } = body
+    const { title, description, startDate, endDate, status, fileName, fileUrl, fileSize, certificateFileName, certificateUrl } = body
 
     const updateData: Record<string, unknown> = {}
     if (title !== undefined) updateData.title = title
@@ -100,6 +149,8 @@ export async function PATCH(
     if (fileName !== undefined) updateData.fileName = fileName
     if (fileUrl !== undefined) updateData.fileUrl = fileUrl
     if (fileSize !== undefined) updateData.fileSize = fileSize
+    if (certificateFileName !== undefined) updateData.certificateFileName = certificateFileName
+    if (certificateUrl !== undefined) updateData.certificateUrl = certificateUrl
 
     const updated = await prisma.contract.update({
       where: { id: contractId },

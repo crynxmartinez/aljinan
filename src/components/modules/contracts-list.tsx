@@ -53,10 +53,14 @@ interface Contract {
   fileSize: number | null
   startDate: string | null
   endDate: string | null
-  signedAt: string | null
-  signatureUrl: string | null
+  startSignedAt: string | null
+  endSignedAt: string | null
+  startSignatureUrl: string | null
+  endSignatureUrl: string | null
+  certificateFileName: string | null
+  certificateUrl: string | null
   totalValue: number | null
-  status: 'DRAFT' | 'PENDING_SIGNATURE' | 'SIGNED' | 'ACTIVE' | 'EXPIRED' | 'TERMINATED'
+  status: 'DRAFT' | 'PENDING_SIGNATURE' | 'SIGNED' | 'COMPLETED' | 'EXPIRED' | 'TERMINATED'
   createdAt: string
 }
 
@@ -72,12 +76,15 @@ export function ContractsList({ branchId, projectId }: ContractsListProps) {
   const [createDialogOpen, setCreateDialogOpen] = useState(false)
   const [detailDialogOpen, setDetailDialogOpen] = useState(false)
   const [attachPdfDialogOpen, setAttachPdfDialogOpen] = useState(false)
+  const [attachCertDialogOpen, setAttachCertDialogOpen] = useState(false)
   const [selectedContract, setSelectedContract] = useState<Contract | null>(null)
   const [creating, setCreating] = useState(false)
   const [attaching, setAttaching] = useState(false)
   const [error, setError] = useState('')
   const [pdfUrl, setPdfUrl] = useState('')
   const [pdfFileName, setPdfFileName] = useState('')
+  const [certUrl, setCertUrl] = useState('')
+  const [certFileName, setCertFileName] = useState('')
 
   const [newContract, setNewContract] = useState({
     title: '',
@@ -225,12 +232,53 @@ export function ContractsList({ branchId, projectId }: ContractsListProps) {
     }
   }
 
+  const openAttachCertDialog = (contract: Contract) => {
+    setSelectedContract(contract)
+    setCertUrl(contract.certificateUrl || '')
+    setCertFileName(contract.certificateFileName || '')
+    setError('')
+    setAttachCertDialogOpen(true)
+  }
+
+  const handleAttachCert = async () => {
+    if (!selectedContract) return
+    setAttaching(true)
+    setError('')
+
+    try {
+      const response = await fetch(`/api/branches/${branchId}/contracts/${selectedContract.id}`, {
+        method: 'PATCH',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          certificateUrl: certUrl,
+          certificateFileName: certFileName || 'Certificate.pdf',
+        }),
+      })
+
+      if (!response.ok) {
+        const data = await response.json()
+        throw new Error(data.error || 'Failed to attach certificate')
+      }
+
+      setAttachCertDialogOpen(false)
+      setCertUrl('')
+      setCertFileName('')
+      setSelectedContract(null)
+      fetchContracts()
+      router.refresh()
+    } catch (err) {
+      setError(err instanceof Error ? err.message : 'An error occurred')
+    } finally {
+      setAttaching(false)
+    }
+  }
+
   const getStatusBadge = (status: Contract['status']) => {
     const config: Record<string, { style: string; icon: typeof FileText; label: string }> = {
       DRAFT: { style: 'bg-gray-100 text-gray-700', icon: FileText, label: 'Draft' },
       PENDING_SIGNATURE: { style: 'bg-amber-100 text-amber-700', icon: Clock, label: 'Awaiting Signature' },
-      SIGNED: { style: 'bg-blue-100 text-blue-700', icon: CheckCircle, label: 'Signed' },
-      ACTIVE: { style: 'bg-green-100 text-green-700', icon: CheckCircle, label: 'Active' },
+      SIGNED: { style: 'bg-blue-100 text-blue-700', icon: CheckCircle, label: 'Active' },
+      COMPLETED: { style: 'bg-green-100 text-green-700', icon: CheckCircle, label: 'Completed' },
       EXPIRED: { style: 'bg-orange-100 text-orange-700', icon: Clock, label: 'Expired' },
       TERMINATED: { style: 'bg-red-100 text-red-700', icon: XCircle, label: 'Terminated' },
     }
@@ -339,18 +387,19 @@ export function ContractsList({ branchId, projectId }: ContractsListProps) {
                         </Button>
                       </DropdownMenuTrigger>
                       <DropdownMenuContent align="end">
-                        {contract.status === 'PENDING_SIGNATURE' && (
+                        {(contract.status === 'PENDING_SIGNATURE' || contract.status === 'SIGNED') && (
                           <DropdownMenuItem onClick={() => openAttachPdfDialog(contract)}>
                             <Upload className="mr-2 h-4 w-4" />
                             {contract.fileUrl ? 'Update PDF' : 'Attach PDF'}
                           </DropdownMenuItem>
                         )}
-                        {contract.status === 'DRAFT' && (
-                          <DropdownMenuItem onClick={() => handleUpdateStatus(contract.id, 'ACTIVE')}>
-                            Activate Contract
+                        {(contract.status === 'PENDING_SIGNATURE' || contract.status === 'SIGNED') && (
+                          <DropdownMenuItem onClick={() => openAttachCertDialog(contract)}>
+                            <FileCheck className="mr-2 h-4 w-4" />
+                            {contract.certificateUrl ? 'Update Certificate' : 'Attach Certificate'}
                           </DropdownMenuItem>
                         )}
-                        {contract.status === 'ACTIVE' && (
+                        {contract.status === 'SIGNED' && (
                           <DropdownMenuItem onClick={() => handleUpdateStatus(contract.id, 'TERMINATED')}>
                             Terminate Contract
                           </DropdownMenuItem>
@@ -549,18 +598,6 @@ export function ContractsList({ branchId, projectId }: ContractsListProps) {
                     View Document
                   </Button>
                 )}
-                {selectedContract.status === 'DRAFT' && (
-                  <Button 
-                    variant="outline"
-                    onClick={() => {
-                      handleUpdateStatus(selectedContract.id, 'ACTIVE')
-                      setDetailDialogOpen(false)
-                    }}
-                  >
-                    <CheckCircle className="mr-2 h-4 w-4" />
-                    Activate
-                  </Button>
-                )}
               </div>
             </div>
           )}
@@ -616,6 +653,60 @@ export function ContractsList({ branchId, projectId }: ContractsListProps) {
                 <Upload className="mr-2 h-4 w-4" />
               )}
               Attach PDF
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
+
+      {/* Attach Certificate Dialog */}
+      <Dialog open={attachCertDialogOpen} onOpenChange={setAttachCertDialogOpen}>
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle>Attach Certificate</DialogTitle>
+            <DialogDescription>
+              Add a certificate document to this contract. The client will be able to download it after signing.
+            </DialogDescription>
+          </DialogHeader>
+          {error && (
+            <div className="bg-destructive/10 text-destructive p-3 rounded-lg text-sm">
+              {error}
+            </div>
+          )}
+          <div className="space-y-4">
+            <div className="space-y-2">
+              <Label htmlFor="certFileName">File Name</Label>
+              <Input
+                id="certFileName"
+                value={certFileName}
+                onChange={(e) => setCertFileName(e.target.value)}
+                placeholder="e.g., Service Certificate 2026.pdf"
+              />
+            </div>
+            <div className="space-y-2">
+              <Label htmlFor="certUrl">Certificate URL *</Label>
+              <Input
+                id="certUrl"
+                value={certUrl}
+                onChange={(e) => setCertUrl(e.target.value)}
+                placeholder="https://..."
+                required
+              />
+              <p className="text-xs text-muted-foreground">
+                Enter the URL where the certificate is hosted (Google Drive, Dropbox, etc.)
+              </p>
+            </div>
+          </div>
+          <DialogFooter>
+            <Button variant="outline" onClick={() => setAttachCertDialogOpen(false)}>
+              Cancel
+            </Button>
+            <Button onClick={handleAttachCert} disabled={attaching || !certUrl}>
+              {attaching ? (
+                <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+              ) : (
+                <FileCheck className="mr-2 h-4 w-4" />
+              )}
+              Attach Certificate
             </Button>
           </DialogFooter>
         </DialogContent>

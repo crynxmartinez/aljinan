@@ -180,6 +180,7 @@ interface WorkOrder {
   description: string
   scheduledDate: string
   price: string
+  recurringType: 'ONCE' | 'MONTHLY' | 'QUARTERLY'
 }
 
 function BranchDashboard({ branch, branchId }: { branch: Branch; branchId: string }) {
@@ -195,7 +196,7 @@ function BranchDashboard({ branch, branchId }: { branch: Branch; branchId: strin
     autoRenew: false,
   })
   const [workOrders, setWorkOrders] = useState<WorkOrder[]>([
-    { id: crypto.randomUUID(), name: '', description: '', scheduledDate: '', price: '' }
+    { id: crypto.randomUUID(), name: '', description: '', scheduledDate: '', price: '', recurringType: 'ONCE' }
   ])
 
   const handleCreateProject = () => {
@@ -205,7 +206,7 @@ function BranchDashboard({ branch, branchId }: { branch: Branch; branchId: strin
   const addWorkOrder = () => {
     setWorkOrders([
       ...workOrders,
-      { id: crypto.randomUUID(), name: '', description: '', scheduledDate: '', price: '' }
+      { id: crypto.randomUUID(), name: '', description: '', scheduledDate: '', price: '', recurringType: 'ONCE' }
     ])
   }
 
@@ -256,6 +257,7 @@ function BranchDashboard({ branch, branchId }: { branch: Branch; branchId: strin
             description: wo.description || null,
             scheduledDate: wo.scheduledDate || null,
             price: wo.price ? parseFloat(wo.price) : null,
+            recurringType: wo.recurringType,
           })),
         }),
       })
@@ -275,7 +277,7 @@ function BranchDashboard({ branch, branchId }: { branch: Branch; branchId: strin
         autoRenew: false,
       })
       setWorkOrders([
-        { id: crypto.randomUUID(), name: '', description: '', scheduledDate: '', price: '' }
+        { id: crypto.randomUUID(), name: '', description: '', scheduledDate: '', price: '', recurringType: 'ONCE' }
       ])
       router.refresh()
       window.location.reload()
@@ -400,7 +402,7 @@ function BranchDashboard({ branch, branchId }: { branch: Branch; branchId: strin
                           onChange={(e) => updateWorkOrder(wo.id, 'description', e.target.value)}
                         />
                       </div>
-                      <div className="grid grid-cols-2 gap-2">
+                      <div className="grid grid-cols-3 gap-2">
                         <Input
                           type="date"
                           placeholder="Scheduled date"
@@ -415,6 +417,19 @@ function BranchDashboard({ branch, branchId }: { branch: Branch; branchId: strin
                           value={wo.price}
                           onChange={(e) => updateWorkOrder(wo.id, 'price', e.target.value)}
                         />
+                        <Select
+                          value={wo.recurringType}
+                          onValueChange={(value) => updateWorkOrder(wo.id, 'recurringType', value)}
+                        >
+                          <SelectTrigger>
+                            <SelectValue placeholder="Frequency" />
+                          </SelectTrigger>
+                          <SelectContent>
+                            <SelectItem value="ONCE">Once</SelectItem>
+                            <SelectItem value="MONTHLY">Monthly</SelectItem>
+                            <SelectItem value="QUARTERLY">Quarterly</SelectItem>
+                          </SelectContent>
+                        </Select>
                       </div>
                     </div>
                   ))}
