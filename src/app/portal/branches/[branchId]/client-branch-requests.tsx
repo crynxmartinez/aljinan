@@ -43,6 +43,9 @@ import {
   DollarSign,
   Send,
   MessageSquare,
+  ChevronDown,
+  ChevronRight,
+  CornerDownRight,
 } from 'lucide-react'
 
 interface WorkOrder {
@@ -85,6 +88,139 @@ interface ClientBranchRequestsProps {
   branchId: string
   projectId?: string | null
   onDataChange?: () => void
+}
+
+// Helper function to extract base name from work order title (removes Q1, Q2, Month1, etc.)
+function getBaseWorkOrderName(title: string): string {
+  // Remove patterns like (Q1), (Q2), (Month1), (Month2), etc.
+  return title.replace(/\s*\((Q\d+|Month\d+)\)\s*$/i, '').trim()
+}
+
+// Group work orders by their base name
+function groupWorkOrders(workOrders: WorkOrder[]): Map<string, WorkOrder[]> {
+  const groups = new Map<string, WorkOrder[]>()
+  
+  for (const wo of workOrders) {
+    const baseName = getBaseWorkOrderName(wo.title)
+    if (!groups.has(baseName)) {
+      groups.set(baseName, [])
+    }
+    groups.get(baseName)!.push(wo)
+  }
+  
+  return groups
+}
+
+// Collapsible Work Orders Grouped View Component
+function WorkOrdersGroupedView({ workOrders }: { workOrders: WorkOrder[] }) {
+  const [expandedGroups, setExpandedGroups] = useState<Set<string>>(new Set())
+  const groups = groupWorkOrders(workOrders)
+  
+  const toggleGroup = (groupName: string) => {
+    setExpandedGroups(prev => {
+      const next = new Set(prev)
+      if (next.has(groupName)) {
+        next.delete(groupName)
+      } else {
+        next.add(groupName)
+      }
+      return next
+    })
+  }
+  
+  return (
+    <div className="divide-y">
+      {Array.from(groups.entries()).map(([groupName, items]) => {
+        const isExpanded = expandedGroups.has(groupName)
+        const groupTotal = items.reduce((sum, wo) => sum + (wo.price || 0), 0)
+        const hasPendingPrice = items.some(wo => wo.price === null)
+        const isSingleItem = items.length === 1
+        
+        return (
+          <div key={groupName} className="bg-white">
+            {/* Group Header */}
+            <button
+              onClick={() => !isSingleItem && toggleGroup(groupName)}
+              className={`w-full flex items-center justify-between p-4 text-left hover:bg-muted/50 transition-colors ${isSingleItem ? 'cursor-default' : 'cursor-pointer'}`}
+            >
+              <div className="flex items-center gap-2">
+                {!isSingleItem && (
+                  isExpanded ? (
+                    <ChevronDown className="h-4 w-4 text-muted-foreground" />
+                  ) : (
+                    <ChevronRight className="h-4 w-4 text-muted-foreground" />
+                  )
+                )}
+                <span className="font-medium">{groupName}</span>
+                {!isSingleItem && (
+                  <Badge variant="secondary" className="text-xs">
+                    {items.length} occurrences
+                  </Badge>
+                )}
+              </div>
+              <div className="text-right">
+                {hasPendingPrice ? (
+                  <Badge variant="outline" className="text-xs">Pending Price</Badge>
+                ) : (
+                  <span className="font-semibold text-primary">
+                    ${groupTotal.toLocaleString('en-US', { minimumFractionDigits: 2 })}
+                  </span>
+                )}
+              </div>
+            </button>
+            
+            {/* Single Item Details (inline) */}
+            {isSingleItem && (
+              <div className="px-4 pb-4 pt-0">
+                <div className="flex items-center gap-4 text-sm text-muted-foreground ml-6">
+                  <CornerDownRight className="h-4 w-4 flex-shrink-0" />
+                  {items[0].scheduledDate ? (
+                    <div className="flex items-center gap-1">
+                      <Calendar className="h-3 w-3" />
+                      {new Date(items[0].scheduledDate).toLocaleDateString()}
+                    </div>
+                  ) : (
+                    <span>No date scheduled</span>
+                  )}
+                </div>
+              </div>
+            )}
+            
+            {/* Expanded Items */}
+            {!isSingleItem && isExpanded && (
+              <div className="bg-muted/30 border-t">
+                {items.map((wo, idx) => (
+                  <div key={wo.id || idx} className="flex items-center justify-between px-4 py-3 border-b last:border-b-0">
+                    <div className="flex items-center gap-3 text-sm">
+                      <CornerDownRight className="h-4 w-4 text-muted-foreground flex-shrink-0 ml-2" />
+                      <div>
+                        <span className="text-muted-foreground">
+                          {wo.title.match(/\((Q\d+|Month\d+)\)/i)?.[1] || `#${idx + 1}`}:
+                        </span>
+                        {wo.scheduledDate && (
+                          <span className="ml-2 flex items-center gap-1 inline-flex">
+                            <Calendar className="h-3 w-3" />
+                            {new Date(wo.scheduledDate).toLocaleDateString()}
+                          </span>
+                        )}
+                      </div>
+                    </div>
+                    <div className="text-right">
+                      {wo.price !== null ? (
+                        <span className="font-medium">${wo.price.toLocaleString('en-US', { minimumFractionDigits: 2 })}</span>
+                      ) : (
+                        <Badge variant="outline" className="text-xs">Pending</Badge>
+                      )}
+                    </div>
+                  </div>
+                ))}
+              </div>
+            )}
+          </div>
+        )
+      })}
+    </div>
+  )
 }
 
 export function ClientBranchRequests({ branchId, projectId, onDataChange }: ClientBranchRequestsProps) {
@@ -515,7 +651,7 @@ export function ClientBranchRequests({ branchId, projectId, onDataChange }: Clie
                 </div>
               </div>
 
-              {/* Work Orders Table */}
+              {/* Work Orders - Grouped Collapsible View */}
               <div>
                 <div className="flex items-center justify-between mb-3">
                   <h3 className="font-semibold">Work Orders</h3>
@@ -529,39 +665,7 @@ export function ClientBranchRequests({ branchId, projectId, onDataChange }: Clie
                 
                 {selectedProject.workOrders && selectedProject.workOrders.length > 0 ? (
                   <div className="border rounded-lg overflow-hidden">
-                    <Table>
-                      <TableHeader>
-                        <TableRow>
-                          <TableHead>Work Order</TableHead>
-                          <TableHead>Description</TableHead>
-                          <TableHead>Scheduled Date</TableHead>
-                          <TableHead className="text-right">Price</TableHead>
-                        </TableRow>
-                      </TableHeader>
-                      <TableBody>
-                        {selectedProject.workOrders.map((wo, index) => (
-                          <TableRow key={wo.id || index}>
-                            <TableCell className="font-medium">{wo.title}</TableCell>
-                            <TableCell className="text-muted-foreground">{wo.description || '-'}</TableCell>
-                            <TableCell>
-                              {wo.scheduledDate ? (
-                                <div className="flex items-center gap-1 text-sm">
-                                  <Calendar className="h-3 w-3" />
-                                  {new Date(wo.scheduledDate).toLocaleDateString()}
-                                </div>
-                              ) : '-'}
-                            </TableCell>
-                            <TableCell className="text-right">
-                              {wo.price !== null ? (
-                                <span className="font-medium">${wo.price.toLocaleString('en-US', { minimumFractionDigits: 2 })}</span>
-                              ) : (
-                                <Badge variant="outline" className="text-xs">Pending Price</Badge>
-                              )}
-                            </TableCell>
-                          </TableRow>
-                        ))}
-                      </TableBody>
-                    </Table>
+                    <WorkOrdersGroupedView workOrders={selectedProject.workOrders} />
                     
                     {/* Total Row */}
                     <div className="flex items-center justify-between p-4 bg-primary/5 border-t">
