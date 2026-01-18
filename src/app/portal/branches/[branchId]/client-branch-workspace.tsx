@@ -12,6 +12,7 @@ import { ClientBranchInvoices } from './client-branch-invoices'
 import { ClientBranchContracts } from './client-branch-contracts'
 import { ClientBranchQuotations } from './client-branch-quotations'
 import { CalendarView } from '@/components/modules/calendar-view'
+import { ChecklistKanban } from '@/components/modules/checklist-kanban'
 import {
   LayoutDashboard,
   FileText,
@@ -124,6 +125,13 @@ export function ClientBranchWorkspace({ branchId, branch }: ClientBranchWorkspac
             <LayoutDashboard className="h-4 w-4" />
             Dashboard
           </TabsTrigger>
+          {/* Only show Checklist when there's an active project */}
+          {hasActiveProject && (
+            <TabsTrigger value="checklist" className="flex items-center gap-2">
+              <ClipboardList className="h-4 w-4" />
+              Checklist
+            </TabsTrigger>
+          )}
           <TabsTrigger value="requests" className="flex items-center gap-2">
             <FileText className="h-4 w-4" />
             Requests
@@ -140,13 +148,9 @@ export function ClientBranchWorkspace({ branchId, branch }: ClientBranchWorkspac
                 <Calendar className="h-4 w-4" />
                 Calendar
               </TabsTrigger>
-              <TabsTrigger value="quotations" className="flex items-center gap-2">
-                <Receipt className="h-4 w-4" />
-                Quotations
-              </TabsTrigger>
-              <TabsTrigger value="invoices" className="flex items-center gap-2">
+              <TabsTrigger value="billing" className="flex items-center gap-2">
                 <DollarSign className="h-4 w-4" />
-                Invoices
+                Billing
               </TabsTrigger>
               <TabsTrigger value="contracts" className="flex items-center gap-2">
                 <FileCheck className="h-4 w-4" />
@@ -332,6 +336,13 @@ export function ClientBranchWorkspace({ branchId, branch }: ClientBranchWorkspac
             </div>
           </TabsContent>
 
+          {/* Checklist Tab - Read-only Kanban view for client */}
+          {hasActiveProject && (
+            <TabsContent value="checklist" className="mt-0">
+              <ChecklistKanban branchId={branchId} projectId={selectedProjectId} />
+            </TabsContent>
+          )}
+
           {/* Proposals/Requests Tab */}
           <TabsContent value="requests" className="mt-0">
             <ClientBranchRequests branchId={branchId} projectId={selectedProjectId} onDataChange={handleDataChange} />
@@ -344,17 +355,13 @@ export function ClientBranchWorkspace({ branchId, branch }: ClientBranchWorkspac
             </TabsContent>
           )}
 
-          {/* Quotations Tab - Only when active project */}
+          {/* Billing Tab - Combined Quotations + Invoices */}
           {hasActiveProject && (
-            <TabsContent value="quotations" className="mt-0">
-              <ClientBranchQuotations branchId={branchId} projectId={selectedProjectId} />
-            </TabsContent>
-          )}
-
-          {/* Invoices Tab - Only when active project */}
-          {hasActiveProject && (
-            <TabsContent value="invoices" className="mt-0">
-              <ClientBranchInvoices branchId={branchId} projectId={selectedProjectId} />
+            <TabsContent value="billing" className="mt-0">
+              <div className="space-y-6">
+                <ClientBranchQuotations branchId={branchId} projectId={selectedProjectId} />
+                <ClientBranchInvoices branchId={branchId} projectId={selectedProjectId} />
+              </div>
             </TabsContent>
           )}
 

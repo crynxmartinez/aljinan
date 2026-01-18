@@ -40,7 +40,7 @@ export async function GET(
   }
 }
 
-// PATCH - Update a contract (contractor only)
+// PATCH - Update a contract (contractor can update, client can sign)
 export async function PATCH(
   request: Request,
   { params }: { params: Promise<{ branchId: string; contractId: string }> }
@@ -52,10 +52,6 @@ export async function PATCH(
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
     }
 
-    if (session.user.role !== 'CONTRACTOR') {
-      return NextResponse.json({ error: 'Only contractors can update contracts' }, { status: 403 })
-    }
-
     const { branchId, contractId } = await params
     const body = await request.json()
 
@@ -64,7 +60,36 @@ export async function PATCH(
       return NextResponse.json({ error: 'Access denied' }, { status: 403 })
     }
 
-    const { title, description, startDate, endDate, status } = body
+    // Handle client signing
+    if (body.action === 'sign') {
+      if (session.user.role !== 'CLIENT') {
+        return NextResponse.json({ error: 'Only clients can sign contracts' }, { status: 403 })
+      }
+
+      const { signatureUrl } = body
+      if (!signatureUrl) {
+        return NextResponse.json({ error: 'Signature is required' }, { status: 400 })
+      }
+
+      const updated = await prisma.contract.update({
+        where: { id: contractId },
+        data: {
+          signatureUrl,
+          signedById: session.user.id,
+          signedAt: new Date(),
+          status: 'SIGNED'
+        }
+      })
+
+      return NextResponse.json(updated)
+    }
+
+    // Regular update (contractor only)
+    if (session.user.role !== 'CONTRACTOR') {
+      return NextResponse.json({ error: 'Only contractors can update contracts' }, { status: 403 })
+    }
+
+    const { title, description, startDate, endDate, status, fileName, fileUrl, fileSize } = body
 
     const updateData: Record<string, unknown> = {}
     if (title !== undefined) updateData.title = title
@@ -72,6 +97,9 @@ export async function PATCH(
     if (startDate !== undefined) updateData.startDate = startDate ? new Date(startDate) : null
     if (endDate !== undefined) updateData.endDate = endDate ? new Date(endDate) : null
     if (status !== undefined) updateData.status = status
+    if (fileName !== undefined) updateData.fileName = fileName
+    if (fileUrl !== undefined) updateData.fileUrl = fileUrl
+    if (fileSize !== undefined) updateData.fileSize = fileSize
 
     const updated = await prisma.contract.update({
       where: { id: contractId },

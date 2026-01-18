@@ -30,7 +30,22 @@ export async function GET(
     const contracts = await prisma.contract.findMany({
       where: whereClause,
       include: {
-        project: { select: { id: true, title: true, status: true } }
+        project: { 
+          select: { 
+            id: true, 
+            title: true, 
+            status: true,
+            description: true,
+            startDate: true,
+            endDate: true,
+            totalValue: true,
+            checklists: {
+              include: {
+                items: true
+              }
+            }
+          } 
+        }
       },
       orderBy: { createdAt: 'desc' }
     })

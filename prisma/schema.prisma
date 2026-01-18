@@ -334,6 +334,8 @@ model Contract {
   fileName      String?
   fileUrl       String?
   fileSize      Int?
+  signatureUrl  String?        // Client signature image URL
+  signedById    String?        // User who signed
   totalValue    Float          @default(0)
   startDate     DateTime?
   endDate       DateTime?
