@@ -50,6 +50,8 @@ import {
   DollarSign,
   Pencil,
   Save,
+  Eye,
+  EyeOff,
 } from 'lucide-react'
 
 interface WorkOrder {
@@ -108,6 +110,7 @@ export function RequestsList({ branchId, userRole, projectId }: RequestsListProp
   const [saving, setSaving] = useState(false)
   const [error, setError] = useState('')
   const [successMessage, setSuccessMessage] = useState('')
+  const [showCompleted, setShowCompleted] = useState(false) // Toggle to show/hide completed requests
   
   // Work order editing state
   const [editingWorkOrderId, setEditingWorkOrderId] = useState<string | null>(null)
@@ -133,7 +136,7 @@ export function RequestsList({ branchId, userRole, projectId }: RequestsListProp
       const response = await fetch(`/api/branches/${branchId}/requests`)
       if (response.ok) {
         const data = await response.json()
-        const filtered = projectId 
+        let filtered = projectId 
           ? data.filter((r: Request & { projectId?: string }) => r.projectId === projectId)
           : data
         setRequests(filtered)
@@ -144,6 +147,11 @@ export function RequestsList({ branchId, userRole, projectId }: RequestsListProp
       setLoading(false)
     }
   }
+
+  // Filter requests based on showCompleted toggle
+  const filteredRequests = showCompleted 
+    ? requests 
+    : requests.filter(r => r.status !== 'COMPLETED')
 
   const fetchProjects = async () => {
     try {
@@ -322,24 +330,43 @@ export function RequestsList({ branchId, userRole, projectId }: RequestsListProp
                 : 'View and submit service requests for this branch'}
             </CardDescription>
           </div>
-          {userRole !== 'CONTRACTOR' && (
-            <Button onClick={() => setCreateDialogOpen(true)}>
-              <Plus className="mr-2 h-4 w-4" />
-              New Request
-            </Button>
-          )}
+          <div className="flex items-center gap-2">
+            {userRole === 'CONTRACTOR' && (
+              <Button
+                variant="outline"
+                size="sm"
+                onClick={() => setShowCompleted(!showCompleted)}
+              >
+                {showCompleted ? (
+                  <><EyeOff className="mr-2 h-4 w-4" />Hide Completed</>
+                ) : (
+                  <><Eye className="mr-2 h-4 w-4" />Show Completed</>
+                )}
+              </Button>
+            )}
+            {userRole !== 'CONTRACTOR' && (
+              <Button onClick={() => setCreateDialogOpen(true)}>
+                <Plus className="mr-2 h-4 w-4" />
+                New Request
+              </Button>
+            )}
+          </div>
         </CardHeader>
         <CardContent>
-          {requests.length === 0 ? (
+          {filteredRequests.length === 0 ? (
             <div className="flex flex-col items-center justify-center py-12 text-center">
               <FileText className="h-12 w-12 text-muted-foreground/30 mb-4" />
-              <h3 className="text-lg font-semibold mb-2">No requests yet</h3>
+              <h3 className="text-lg font-semibold mb-2">
+                {requests.length > 0 && !showCompleted ? 'No active requests' : 'No requests yet'}
+              </h3>
               <p className="text-muted-foreground max-w-md mb-4">
-                {userRole === 'CONTRACTOR'
-                  ? 'No service requests from the client yet.'
-                  : 'Submit a service request to get started.'}
+                {requests.length > 0 && !showCompleted
+                  ? 'All requests have been completed. Toggle "Show Completed" to view them.'
+                  : userRole === 'CONTRACTOR'
+                    ? 'No service requests from the client yet.'
+                    : 'Submit a service request to get started.'}
               </p>
-              {userRole !== 'CONTRACTOR' && (
+              {userRole !== 'CONTRACTOR' && requests.length === 0 && (
                 <Button onClick={() => setCreateDialogOpen(true)}>
                   <Plus className="mr-2 h-4 w-4" />
                   Create Request
@@ -348,7 +375,7 @@ export function RequestsList({ branchId, userRole, projectId }: RequestsListProp
             </div>
           ) : (
             <div className="space-y-4">
-              {requests.map((request) => (
+              {filteredRequests.map((request) => (
                 <div
                   key={request.id}
                   className="flex items-start justify-between p-4 border rounded-lg hover:bg-muted/50 transition-colors cursor-pointer"
