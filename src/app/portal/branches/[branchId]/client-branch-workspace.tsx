@@ -8,10 +8,10 @@ import { Badge } from '@/components/ui/badge'
 import { ClientProjectFilter } from '@/components/modules/client-project-filter'
 import { ActivityPanel } from '@/components/modules/activity-panel'
 import { ClientBranchRequests } from './client-branch-requests'
-import { ClientBranchAppointments } from './client-branch-appointments'
 import { ClientBranchInvoices } from './client-branch-invoices'
 import { ClientBranchContracts } from './client-branch-contracts'
 import { ClientBranchQuotations } from './client-branch-quotations'
+import { CalendarView } from '@/components/modules/calendar-view'
 import {
   LayoutDashboard,
   FileText,
@@ -334,7 +334,7 @@ export function ClientBranchWorkspace({ branchId, branch }: ClientBranchWorkspac
           {/* Calendar Tab - Only when active project */}
           {hasActiveProject && (
             <TabsContent value="calendar" className="mt-0">
-              <ClientBranchAppointments branchId={branchId} projectId={selectedProjectId} />
+              <CalendarView branchId={branchId} projectId={selectedProjectId} />
             </TabsContent>
           )}
 

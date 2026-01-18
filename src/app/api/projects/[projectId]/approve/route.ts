@@ -18,7 +18,7 @@ export async function POST(
 
     const { projectId } = await params
 
-    // Get the project with its quotations and work orders
+    // Get the project with its quotations, work orders, and requests
     const project = await prisma.project.findUnique({
       where: { id: projectId },
       include: {
@@ -30,7 +30,8 @@ export async function POST(
           include: {
             items: true
           }
-        }
+        },
+        requests: true
       }
     })
 
@@ -123,7 +124,20 @@ export async function POST(
         })
       }
 
-      // 6. Add activity
+      // 6. Complete all associated requests
+      if (project.requests && project.requests.length > 0) {
+        await tx.request.updateMany({
+          where: {
+            projectId,
+            status: 'OPEN'
+          },
+          data: {
+            status: 'COMPLETED'
+          }
+        })
+      }
+
+      // 7. Add activity
       await tx.activity.create({
         data: {
           projectId,
