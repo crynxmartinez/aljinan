@@ -1,7 +1,7 @@
 'use client'
 
 import Link from 'next/link'
-import { usePathname } from 'next/navigation'
+import { usePathname, useRouter } from 'next/navigation'
 import { signOut, useSession } from 'next-auth/react'
 import {
   LayoutDashboard,
@@ -15,6 +15,7 @@ import {
   MapPin,
   Bell,
   UserCog,
+  Loader2,
 } from 'lucide-react'
 import { cn } from '@/lib/utils'
 import { Button } from '@/components/ui/button'
@@ -84,8 +85,23 @@ export function Sidebar({ clients = [], userRole, teamMemberRole }: SidebarProps
   const isTeamMember = userRole === 'TEAM_MEMBER'
   const isTechnician = teamMemberRole === 'TECHNICIAN'
   const pathname = usePathname()
+  const router = useRouter()
   const { data: session } = useSession()
   const [expandedClients, setExpandedClients] = useState<string[]>([])
+  const [loadingHref, setLoadingHref] = useState<string | null>(null)
+
+  const handleNavClick = (e: React.MouseEvent, href: string) => {
+    // Don't show loading if already on this page
+    if (pathname === href) return
+    e.preventDefault()
+    setLoadingHref(href)
+    router.push(href)
+  }
+
+  // Clear loading state when pathname changes
+  if (loadingHref && pathname === loadingHref) {
+    setLoadingHref(null)
+  }
 
   const toggleClient = (clientId: string) => {
     setExpandedClients((prev) =>
@@ -132,6 +148,7 @@ export function Sidebar({ clients = [], userRole, teamMemberRole }: SidebarProps
             <Link
               key={item.href}
               href={item.href}
+              onClick={(e) => handleNavClick(e, item.href)}
               className={cn(
                 'flex items-center gap-3 rounded-lg px-3 py-2 text-sm transition-colors',
                 pathname === item.href
@@ -139,7 +156,11 @@ export function Sidebar({ clients = [], userRole, teamMemberRole }: SidebarProps
                   : 'text-sidebar-foreground/70 hover:bg-sidebar-accent hover:text-sidebar-accent-foreground'
               )}
             >
-              <item.icon className="h-4 w-4" />
+              {loadingHref === item.href ? (
+                <Loader2 className="h-4 w-4 animate-spin" />
+              ) : (
+                <item.icon className="h-4 w-4" />
+              )}
               {item.title}
             </Link>
           ))}
@@ -193,6 +214,7 @@ export function Sidebar({ clients = [], userRole, teamMemberRole }: SidebarProps
                   </CollapsibleTrigger>
                   <Link
                     href={`/dashboard/clients/${client.id}`}
+                    onClick={(e) => handleNavClick(e, `/dashboard/clients/${client.id}`)}
                     className={cn(
                       'flex flex-1 items-center gap-2 rounded-lg px-2 py-2 text-sm transition-colors',
                       pathname === `/dashboard/clients/${client.id}` || pathname.startsWith(`/dashboard/clients/${client.id}/`)
@@ -200,7 +222,11 @@ export function Sidebar({ clients = [], userRole, teamMemberRole }: SidebarProps
                         : 'text-sidebar-foreground/70 hover:bg-sidebar-accent hover:text-sidebar-accent-foreground'
                     )}
                   >
-                    <Users className="h-4 w-4" />
+                    {loadingHref === `/dashboard/clients/${client.id}` ? (
+                      <Loader2 className="h-4 w-4 animate-spin" />
+                    ) : (
+                      <Users className="h-4 w-4" />
+                    )}
                     <span className="truncate">{client.companyName}</span>
                   </Link>
                 </div>
@@ -209,6 +235,7 @@ export function Sidebar({ clients = [], userRole, teamMemberRole }: SidebarProps
                     <Link
                       key={branch.id}
                       href={`/dashboard/clients/${client.id}/branches/${branch.id}`}
+                      onClick={(e) => handleNavClick(e, `/dashboard/clients/${client.id}/branches/${branch.id}`)}
                       className={cn(
                         'flex items-center gap-2 rounded-lg px-3 py-2 text-sm transition-colors',
                         pathname === `/dashboard/clients/${client.id}/branches/${branch.id}`
@@ -216,7 +243,11 @@ export function Sidebar({ clients = [], userRole, teamMemberRole }: SidebarProps
                           : 'text-sidebar-foreground/60 hover:bg-sidebar-accent hover:text-sidebar-accent-foreground'
                       )}
                     >
-                      <MapPin className="h-3 w-3" />
+                      {loadingHref === `/dashboard/clients/${client.id}/branches/${branch.id}` ? (
+                        <Loader2 className="h-3 w-3 animate-spin" />
+                      ) : (
+                        <MapPin className="h-3 w-3" />
+                      )}
                       <span className="truncate">{branch.address}</span>
                     </Link>
                   ))}
@@ -234,6 +265,7 @@ export function Sidebar({ clients = [], userRole, teamMemberRole }: SidebarProps
             <Link
               key={item.href}
               href={item.href}
+              onClick={(e) => handleNavClick(e, item.href)}
               className={cn(
                 'flex items-center gap-3 rounded-lg px-3 py-2 text-sm transition-colors',
                 pathname === item.href
@@ -241,7 +273,11 @@ export function Sidebar({ clients = [], userRole, teamMemberRole }: SidebarProps
                   : 'text-sidebar-foreground/70 hover:bg-sidebar-accent hover:text-sidebar-accent-foreground'
               )}
             >
-              <item.icon className="h-4 w-4" />
+              {loadingHref === item.href ? (
+                <Loader2 className="h-4 w-4 animate-spin" />
+              ) : (
+                <item.icon className="h-4 w-4" />
+              )}
               {item.title}
             </Link>
           ))}

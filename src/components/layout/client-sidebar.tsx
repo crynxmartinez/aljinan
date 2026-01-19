@@ -1,7 +1,8 @@
 'use client'
 
 import Link from 'next/link'
-import { usePathname } from 'next/navigation'
+import { usePathname, useRouter } from 'next/navigation'
+import { useState } from 'react'
 import { signOut, useSession } from 'next-auth/react'
 import {
   LayoutDashboard,
@@ -9,6 +10,7 @@ import {
   LogOut,
   Building2,
   Settings,
+  Loader2,
 } from 'lucide-react'
 import { cn } from '@/lib/utils'
 import { Button } from '@/components/ui/button'
@@ -38,7 +40,21 @@ interface ClientSidebarProps {
 
 export function ClientSidebar({ client }: ClientSidebarProps) {
   const pathname = usePathname()
+  const router = useRouter()
   const { data: session } = useSession()
+  const [loadingHref, setLoadingHref] = useState<string | null>(null)
+
+  const handleNavClick = (e: React.MouseEvent, href: string) => {
+    if (pathname === href) return
+    e.preventDefault()
+    setLoadingHref(href)
+    router.push(href)
+  }
+
+  // Clear loading state when pathname changes
+  if (loadingHref && pathname === loadingHref) {
+    setLoadingHref(null)
+  }
 
   const getInitials = (name: string | null | undefined) => {
     if (!name) return 'U'
@@ -84,6 +100,7 @@ export function ClientSidebar({ client }: ClientSidebarProps) {
         <div className="space-y-1">
           <Link
             href="/portal"
+            onClick={(e) => handleNavClick(e, '/portal')}
             className={cn(
               'flex items-center gap-3 rounded-lg px-3 py-2 text-sm transition-colors',
               pathname === '/portal'
@@ -91,7 +108,11 @@ export function ClientSidebar({ client }: ClientSidebarProps) {
                 : 'text-sidebar-foreground/70 hover:bg-sidebar-accent hover:text-sidebar-accent-foreground'
             )}
           >
-            <LayoutDashboard className="h-4 w-4" />
+            {loadingHref === '/portal' ? (
+              <Loader2 className="h-4 w-4 animate-spin" />
+            ) : (
+              <LayoutDashboard className="h-4 w-4" />
+            )}
             Dashboard
           </Link>
         </div>
@@ -119,6 +140,7 @@ export function ClientSidebar({ client }: ClientSidebarProps) {
               <Link
                 key={branch.id}
                 href={`/portal/branches/${branch.id}`}
+                onClick={(e) => handleNavClick(e, `/portal/branches/${branch.id}`)}
                 className={cn(
                   'flex items-center gap-2 rounded-lg px-3 py-2 text-sm transition-colors',
                   pathname === `/portal/branches/${branch.id}`
@@ -126,7 +148,11 @@ export function ClientSidebar({ client }: ClientSidebarProps) {
                     : 'text-sidebar-foreground/70 hover:bg-sidebar-accent hover:text-sidebar-accent-foreground'
                 )}
               >
-                <MapPin className="h-4 w-4 flex-shrink-0" />
+                {loadingHref === `/portal/branches/${branch.id}` ? (
+                  <Loader2 className="h-4 w-4 flex-shrink-0 animate-spin" />
+                ) : (
+                  <MapPin className="h-4 w-4 flex-shrink-0" />
+                )}
                 <div className="flex-1 min-w-0">
                   <p className="truncate">{branch.address}</p>
                   {branch.city && (
@@ -144,6 +170,7 @@ export function ClientSidebar({ client }: ClientSidebarProps) {
         <div className="space-y-1">
           <Link
             href="/portal/settings"
+            onClick={(e) => handleNavClick(e, '/portal/settings')}
             className={cn(
               'flex items-center gap-3 rounded-lg px-3 py-2 text-sm transition-colors',
               pathname === '/portal/settings'
@@ -151,7 +178,11 @@ export function ClientSidebar({ client }: ClientSidebarProps) {
                 : 'text-sidebar-foreground/70 hover:bg-sidebar-accent hover:text-sidebar-accent-foreground'
             )}
           >
-            <Settings className="h-4 w-4" />
+            {loadingHref === '/portal/settings' ? (
+              <Loader2 className="h-4 w-4 animate-spin" />
+            ) : (
+              <Settings className="h-4 w-4" />
+            )}
             Account Settings
           </Link>
         </div>
