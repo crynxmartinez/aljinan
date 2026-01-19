@@ -72,7 +72,7 @@ export function ClientProjectFilter({
   // Notify parent of loading state changes
   useEffect(() => {
     onLoadingChange?.(loading)
-  }, [loading, onLoadingChange])
+  }, [loading]) // eslint-disable-line react-hooks/exhaustive-deps
 
   const fetchProjects = async () => {
     try {
