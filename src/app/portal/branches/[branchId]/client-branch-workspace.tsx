@@ -102,10 +102,26 @@ export function ClientBranchWorkspace({ branchId, branch }: ClientBranchWorkspac
     setRefreshTrigger(prev => prev + 1) // Trigger project list refresh
   }
 
+  // Hidden ClientProjectFilter to trigger data loading even during skeleton display
+  // This ensures onLoadingChange gets called
+  const hiddenProjectFilter = (
+    <div className="hidden">
+      <ClientProjectFilter
+        branchId={branchId}
+        selectedProjectId={selectedProjectId}
+        onProjectChange={setSelectedProjectId}
+        onProjectsLoaded={setProjects}
+        onLoadingChange={setProjectsLoading}
+        refreshTrigger={refreshTrigger}
+      />
+    </div>
+  )
+
   // Skeleton UI while loading
   if (projectsLoading) {
     return (
       <div className="space-y-6">
+        {hiddenProjectFilter}
         {/* Project Filter Skeleton */}
         <div className="flex items-center justify-between">
           <Skeleton className="h-9 w-[280px]" />
