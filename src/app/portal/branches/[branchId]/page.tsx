@@ -73,7 +73,13 @@ export default async function ClientBranchPage({
         </div>
       </div>
 
-      <ClientBranchWorkspace branchId={branchId} branch={branch} />
+      <ClientBranchWorkspace 
+        branchId={branchId} 
+        branch={{
+          ...branch,
+          cdCertificateExpiry: branch.cdCertificateExpiry?.toISOString() || null,
+        }} 
+      />
     </div>
   )
 }

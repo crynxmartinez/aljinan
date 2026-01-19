@@ -121,7 +121,10 @@ export default async function BranchPage({
       <BranchWorkspace 
         clientId={clientId} 
         branchId={branchId} 
-        branch={branch}
+        branch={{
+          ...branch,
+          cdCertificateExpiry: branch.cdCertificateExpiry?.toISOString() || null,
+        }}
         userRole={session.user.role}
         teamMemberRole={session.user.teamMemberRole}
       />

@@ -23,6 +23,26 @@ enum UserStatus {
   ARCHIVED
 }
 
+enum BuildingType {
+  OFFICE
+  RETAIL
+  WAREHOUSE
+  INDUSTRIAL
+  RESIDENTIAL
+  HOSPITAL
+  EDUCATIONAL
+  HOTEL
+  RESTAURANT
+  MALL
+  MIXED_USE
+  PARKING
+  MOSQUE
+  GOVERNMENT
+  SPORTS
+  DATA_CENTER
+  OTHER
+}
+
 model User {
   id             String     @id @default(cuid())
   email          String     @unique
@@ -70,6 +90,15 @@ model Client {
   companyName   String
   companyPhone  String?
   companyEmail  String?
+  
+  // New profile fields
+  crNumber            String?    // Commercial Registration number
+  vatNumber           String?    // VAT registration number
+  billingAddress      String?    // Billing/invoice address
+  contractStartDate   DateTime?  // Contract start date with contractor
+  contractExpiryDate  DateTime?  // Contract expiry date
+  contacts            Json?      // Array of contact persons: [{name, phone, email, whatsapp}]
+  
   createdAt     DateTime   @default(now())
   updatedAt     DateTime   @updatedAt
 
@@ -93,6 +122,16 @@ model Branch {
   latitude    Float?
   longitude   Float?
   isActive    Boolean  @default(true)
+  
+  // New facility profile fields
+  municipality          String?       // Municipality / Civil Defense region
+  buildingType          BuildingType? // Type of building
+  floorCount            Int?          // Number of floors
+  areaSize              Float?        // Area in square meters
+  cdCertificateNumber   String?       // Civil Defense certificate number
+  cdCertificateExpiry   DateTime?     // When CD certificate expires
+  cdCertificateUrl      String?       // Uploaded certificate file URL
+  
   createdAt   DateTime @default(now())
   updatedAt   DateTime @updatedAt
 

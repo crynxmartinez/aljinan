@@ -1,8 +1,23 @@
 import { getServerSession } from 'next-auth'
 import { redirect } from 'next/navigation'
 import { authOptions } from '@/lib/auth'
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
-import { Settings, Construction } from 'lucide-react'
+import { prisma } from '@/lib/prisma'
+import { ClientProfileCard } from '@/components/clients/client-profile-card'
+
+async function getClientProfile(userId: string) {
+  const client = await prisma.client.findUnique({
+    where: { userId },
+    include: {
+      user: {
+        select: {
+          email: true,
+          status: true,
+        }
+      }
+    }
+  })
+  return client
+}
 
 export default async function ClientSettingsPage() {
   const session = await getServerSession(authOptions)
@@ -11,37 +26,32 @@ export default async function ClientSettingsPage() {
     redirect('/login')
   }
 
+  const client = await getClientProfile(session.user.id)
+
+  if (!client) {
+    redirect('/portal')
+  }
+
   return (
     <div className="p-8">
       <div className="mb-8">
-        <h1 className="text-3xl font-bold">Account Settings</h1>
+        <h1 className="text-3xl font-bold">Company Profile</h1>
         <p className="text-muted-foreground mt-1">
-          Manage your account preferences
+          Manage your company information
         </p>
       </div>
 
-      <Card>
-        <CardHeader>
-          <CardTitle className="flex items-center gap-2">
-            <Construction className="h-5 w-5 text-yellow-600" />
-            Coming Soon
-          </CardTitle>
-          <CardDescription>
-            This page is under construction
-          </CardDescription>
-        </CardHeader>
-        <CardContent>
-          <div className="flex flex-col items-center justify-center py-12 text-center">
-            <Settings className="h-16 w-16 text-muted-foreground/30 mb-4" />
-            <p className="text-muted-foreground">
-              Settings functionality will be available in a future update.
-            </p>
-            <p className="text-sm text-muted-foreground mt-2">
-              You&apos;ll be able to manage your profile, notifications, and preferences here.
-            </p>
-          </div>
-        </CardContent>
-      </Card>
+      <div className="max-w-2xl">
+        <ClientProfileCard 
+          client={{
+            ...client,
+            contractStartDate: client.contractStartDate?.toISOString() || null,
+            contractExpiryDate: client.contractExpiryDate?.toISOString() || null,
+            contacts: client.contacts as { name: string; phone: string; email: string; whatsapp: string }[] | null,
+          }} 
+          canEdit={true} 
+        />
+      </div>
     </div>
   )
 }

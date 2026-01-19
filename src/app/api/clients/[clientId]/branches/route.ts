@@ -63,7 +63,10 @@ export async function POST(
 
     const { clientId } = await params
     const body = await request.json()
-    const { name, address, city, state, zipCode, country, phone, notes, latitude, longitude } = body
+    const { 
+      name, address, city, state, zipCode, country, phone, notes, latitude, longitude,
+      municipality, buildingType, floorCount, areaSize, cdCertificateNumber, cdCertificateExpiry, cdCertificateUrl
+    } = body
 
     if (!name) {
       return NextResponse.json(
@@ -111,6 +114,13 @@ export async function POST(
         notes,
         latitude,
         longitude,
+        municipality,
+        buildingType,
+        floorCount,
+        areaSize,
+        cdCertificateNumber,
+        cdCertificateExpiry: cdCertificateExpiry ? new Date(cdCertificateExpiry) : null,
+        cdCertificateUrl,
       }
     })
 

@@ -25,18 +25,29 @@ import {
   CheckCircle,
   AlertCircle,
   ClipboardList,
+  Settings,
 } from 'lucide-react'
+import { BranchProfileCard } from '@/components/branches/branch-profile-card'
 import { Skeleton } from '@/components/ui/skeleton'
 
 interface Branch {
   id: string
+  clientId: string
   name: string
   address: string
   city: string | null
   state: string | null
   zipCode: string | null
+  country: string | null
   phone: string | null
   notes: string | null
+  municipality: string | null
+  buildingType: string | null
+  floorCount: number | null
+  areaSize: number | null
+  cdCertificateNumber: string | null
+  cdCertificateExpiry: string | null
+  cdCertificateUrl: string | null
 }
 
 interface ClientBranchWorkspaceProps {
@@ -262,6 +273,10 @@ export function ClientBranchWorkspace({ branchId, branch }: ClientBranchWorkspac
               </TabsTrigger>
             </>
           )}
+          <TabsTrigger value="settings" className="flex items-center gap-2">
+            <Settings className="h-4 w-4" />
+            Settings
+          </TabsTrigger>
         </TabsList>
 
         <div className="mt-6">
@@ -471,6 +486,16 @@ export function ClientBranchWorkspace({ branchId, branch }: ClientBranchWorkspac
               <ClientBranchContracts branchId={branchId} projectId={selectedProjectId} />
             </TabsContent>
           )}
+
+          {/* Settings Tab */}
+          <TabsContent value="settings" className="mt-0">
+            <div className="max-w-2xl">
+              <BranchProfileCard 
+                branch={branch} 
+                canEdit={true} 
+              />
+            </div>
+          </TabsContent>
         </div>
       </Tabs>
 

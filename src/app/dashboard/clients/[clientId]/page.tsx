@@ -6,7 +6,8 @@ import Link from 'next/link'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
 import { Badge } from '@/components/ui/badge'
-import { ArrowLeft, MapPin, Plus, Building2, Mail, Phone } from 'lucide-react'
+import { ArrowLeft, MapPin, Plus, Building2 } from 'lucide-react'
+import { ClientProfileCard } from '@/components/clients/client-profile-card'
 
 async function getClient(clientId: string, userId: string) {
   const contractor = await prisma.contractor.findUnique({
@@ -154,38 +155,15 @@ export default async function ClientDetailPage({
         </div>
 
         <div className="space-y-6">
-          <Card>
-            <CardHeader>
-              <CardTitle>Contact Information</CardTitle>
-            </CardHeader>
-            <CardContent className="space-y-4">
-              <div className="flex items-center gap-3">
-                <Mail className="h-4 w-4 text-muted-foreground" />
-                <div>
-                  <p className="text-sm text-muted-foreground">Email</p>
-                  <p className="font-medium">{client.user.email}</p>
-                </div>
-              </div>
-              {client.companyPhone && (
-                <div className="flex items-center gap-3">
-                  <Phone className="h-4 w-4 text-muted-foreground" />
-                  <div>
-                    <p className="text-sm text-muted-foreground">Phone</p>
-                    <p className="font-medium">{client.companyPhone}</p>
-                  </div>
-                </div>
-              )}
-              {client.companyEmail && client.companyEmail !== client.user.email && (
-                <div className="flex items-center gap-3">
-                  <Mail className="h-4 w-4 text-muted-foreground" />
-                  <div>
-                    <p className="text-sm text-muted-foreground">Company Email</p>
-                    <p className="font-medium">{client.companyEmail}</p>
-                  </div>
-                </div>
-              )}
-            </CardContent>
-          </Card>
+          <ClientProfileCard 
+            client={{
+              ...client,
+              contractStartDate: client.contractStartDate?.toISOString() || null,
+              contractExpiryDate: client.contractExpiryDate?.toISOString() || null,
+              contacts: client.contacts as { name: string; phone: string; email: string; whatsapp: string }[] | null,
+            }} 
+            canEdit={true} 
+          />
         </div>
       </div>
     </div>

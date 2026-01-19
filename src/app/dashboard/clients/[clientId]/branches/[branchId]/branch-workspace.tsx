@@ -41,17 +41,29 @@ import {
   MessageSquare,
   Plus,
   Trash2,
+  Settings,
 } from 'lucide-react'
+import { BranchProfileCard } from '@/components/branches/branch-profile-card'
 
 interface Branch {
   id: string
+  clientId: string
   name: string
   address: string
   city: string | null
   state: string | null
+  zipCode: string | null
+  country: string | null
   phone: string | null
   notes: string | null
   isActive: boolean
+  municipality: string | null
+  buildingType: string | null
+  floorCount: number | null
+  areaSize: number | null
+  cdCertificateNumber: string | null
+  cdCertificateExpiry: string | null
+  cdCertificateUrl: string | null
 }
 
 interface BranchWorkspaceProps {
@@ -92,7 +104,7 @@ export function BranchWorkspace({ clientId, branchId, branch, userRole, teamMemb
     fetchCounts()
   }, [branchId])
 
-  // Filter modules based on role - technicians can't see billing/contracts
+  // Filter modules based on role - technicians can't see billing/contracts/settings
   const allModules = [
     { id: 'dashboard', label: 'Dashboard', icon: LayoutDashboard },
     { id: 'checklists', label: 'Checklist', icon: ClipboardList },
@@ -100,6 +112,7 @@ export function BranchWorkspace({ clientId, branchId, branch, userRole, teamMemb
     { id: 'calendar', label: 'Calendar', icon: Calendar },
     { id: 'billing', label: 'Billing', icon: DollarSign, restrictedForTechnician: true },
     { id: 'contracts', label: 'Contracts', icon: FileCheck, restrictedForTechnician: true },
+    { id: 'settings', label: 'Settings', icon: Settings, restrictedForTechnician: true },
   ]
   
   const modules = isTechnician 
@@ -172,6 +185,18 @@ export function BranchWorkspace({ clientId, branchId, branch, userRole, teamMemb
 
         <TabsContent value="contracts" className="mt-0">
           <ContractsList branchId={branchId} projectId={selectedProjectId} />
+        </TabsContent>
+
+        <TabsContent value="settings" className="mt-0">
+          <div className="max-w-2xl">
+            <BranchProfileCard 
+              branch={{
+                ...branch,
+                cdCertificateExpiry: branch.cdCertificateExpiry ? new Date(branch.cdCertificateExpiry).toISOString() : null,
+              }} 
+              canEdit={true} 
+            />
+          </div>
         </TabsContent>
       </div>
     </Tabs>
