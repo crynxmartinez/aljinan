@@ -37,7 +37,7 @@ interface Project {
 interface BillingViewProps {
   branchId: string
   projectId?: string | null
-  userRole: 'CONTRACTOR' | 'CLIENT' | 'MANAGER'
+  userRole: 'CONTRACTOR' | 'CLIENT'
 }
 
 export function BillingView({ branchId, projectId, userRole }: BillingViewProps) {

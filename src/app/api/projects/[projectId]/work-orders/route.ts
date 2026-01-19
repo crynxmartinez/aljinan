@@ -196,7 +196,7 @@ export async function POST(
         type: 'CREATED',
         content: `Work order${createdWorkOrders.length > 1 ? 's' : ''} added: ${workOrderName}${createdWorkOrders.length > 1 ? ` (${createdWorkOrders.length} occurrences)` : ''}`,
         createdById: session.user.id,
-        createdByRole: session.user.role as 'CONTRACTOR' | 'CLIENT' | 'MANAGER',
+        createdByRole: session.user.role as 'CONTRACTOR' | 'CLIENT',
       }
     })
 

@@ -141,7 +141,7 @@ export async function PATCH(
 
     if (action === 'submit_payment') {
       // Client submitting payment proof
-      if (session.user.role !== 'CLIENT' && session.user.role !== 'MANAGER') {
+      if (session.user.role !== 'CLIENT') {
         return NextResponse.json({ error: 'Only clients can submit payment proof' }, { status: 403 })
       }
 
@@ -283,12 +283,6 @@ async function verifyBranchAccess(branchId: string, userId: string, role: string
       include: { branches: { where: { id: branchId } } }
     })
     return (client?.branches.length || 0) > 0
-  } else if (role === 'MANAGER') {
-    const manager = await prisma.manager.findUnique({
-      where: { userId },
-      include: { branchAccess: { where: { branchId } } }
-    })
-    return (manager?.branchAccess.length || 0) > 0
   }
   return false
 }

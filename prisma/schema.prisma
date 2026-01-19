@@ -9,7 +9,6 @@ datasource db {
 enum UserRole {
   CONTRACTOR
   CLIENT
-  MANAGER
 }
 
 enum UserStatus {
@@ -34,9 +33,6 @@ model User {
   
   // Client-specific relations
   client         Client?
-
-  // Manager-specific relations (created by clients to manage branches)
-  manager        Manager?
 }
 
 model Contractor {
@@ -69,7 +65,6 @@ model Client {
 
   // Relations
   branches        Branch[]
-  managers        Manager[]  // Managers created by this client
   branchRequests  BranchRequest[]
 }
 
@@ -91,9 +86,6 @@ model Branch {
   createdAt   DateTime @default(now())
   updatedAt   DateTime @updatedAt
 
-  // Manager access - which managers can access this branch
-  managerAccess BranchManager[]
-  
   // Module relations
   projects     Project[]
   requests     Request[]
@@ -468,36 +460,6 @@ model Activity {
   createdById String
   createdByRole UserRole
   createdAt   DateTime     @default(now())
-}
-
-// Manager - created by clients to manage specific branches
-model Manager {
-  id          String   @id @default(cuid())
-  userId      String   @unique
-  user        User     @relation(fields: [userId], references: [id], onDelete: Cascade)
-  clientId    String
-  client      Client   @relation(fields: [clientId], references: [id], onDelete: Cascade)
-  jobTitle    String?
-  phone       String?
-  createdAt   DateTime @default(now())
-  updatedAt   DateTime @updatedAt
-
-  // Which branches this manager can access
-  branchAccess BranchManager[]
-}
-
-// Junction table for Manager <-> Branch many-to-many relationship
-model BranchManager {
-  id         String   @id @default(cuid())
-  branchId   String
-  branch     Branch   @relation(fields: [branchId], references: [id], onDelete: Cascade)
-  managerId  String
-  manager    Manager  @relation(fields: [managerId], references: [id], onDelete: Cascade)
-  canEdit    Boolean  @default(true)  // Can edit requests, quotes, etc.
-  canApprove Boolean  @default(false) // Can approve quotes, payments
-  createdAt  DateTime @default(now())
-
-  @@unique([branchId, managerId])
 }
 
 // Branch Request statuses

@@ -116,7 +116,7 @@ interface Request {
 
 interface RequestsListProps {
   branchId: string
-  userRole: 'CONTRACTOR' | 'CLIENT' | 'MANAGER'
+  userRole: 'CONTRACTOR' | 'CLIENT'
   projectId?: string | null
 }
 

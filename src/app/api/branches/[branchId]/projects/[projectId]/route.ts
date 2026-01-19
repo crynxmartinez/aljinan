@@ -98,7 +98,7 @@ export async function PATCH(
             type: 'STATUS_CHANGE',
             content: `Status changed from ${currentProject.status} to ${status}`,
             createdById: session.user.id,
-            createdByRole: session.user.role as 'CONTRACTOR' | 'CLIENT' | 'MANAGER',
+            createdByRole: session.user.role as 'CONTRACTOR' | 'CLIENT',
           }
         })
       }
@@ -196,12 +196,6 @@ async function verifyBranchAccess(branchId: string, userId: string, role: string
       include: { branches: { where: { id: branchId } } }
     })
     return (client?.branches.length || 0) > 0
-  } else if (role === 'MANAGER') {
-    const manager = await prisma.manager.findUnique({
-      where: { userId },
-      include: { branchAccess: { where: { branchId } } }
-    })
-    return (manager?.branchAccess.length || 0) > 0
   }
   return false
 }

@@ -34,8 +34,8 @@ export default async function PortalLayout({
     redirect('/login')
   }
 
-  // Only CLIENT and MANAGER roles can access portal
-  if (session.user.role !== 'CLIENT' && session.user.role !== 'MANAGER') {
+  // Only CLIENT role can access portal
+  if (session.user.role !== 'CLIENT') {
     redirect('/dashboard')
   }
 

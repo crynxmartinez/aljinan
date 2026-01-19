@@ -71,7 +71,7 @@ export async function PATCH(
     }
 
     // Handle client approval/rejection
-    if (session.user.role === 'CLIENT' || session.user.role === 'MANAGER') {
+    if (session.user.role === 'CLIENT') {
       const { action, rejectionNote } = body
 
       if (action === 'approve') {
@@ -264,16 +264,6 @@ async function verifyBranchAccess(branchId: string, userId: string, role: string
       }
     })
     return (client?.branches.length || 0) > 0
-  } else if (role === 'MANAGER') {
-    const manager = await prisma.manager.findUnique({
-      where: { userId },
-      include: {
-        branchAccess: {
-          where: { branchId }
-        }
-      }
-    })
-    return (manager?.branchAccess.length || 0) > 0
   }
   return false
 }

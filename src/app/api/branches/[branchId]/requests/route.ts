@@ -77,7 +77,7 @@ export async function POST(
         description,
         priority: priority || 'MEDIUM',
         createdById: session.user.id,
-        createdByRole: session.user.role as 'CONTRACTOR' | 'CLIENT' | 'MANAGER',
+        createdByRole: session.user.role as 'CONTRACTOR' | 'CLIENT',
         dueDate: dueDate ? new Date(dueDate) : null,
       }
     })
@@ -120,17 +120,6 @@ async function verifyBranchAccess(branchId: string, userId: string, role: string
       }
     })
     return (client?.branches.length || 0) > 0
-  } else if (role === 'MANAGER') {
-    // Manager can access branches they're assigned to
-    const manager = await prisma.manager.findUnique({
-      where: { userId },
-      include: {
-        branchAccess: {
-          where: { branchId }
-        }
-      }
-    })
-    return (manager?.branchAccess.length || 0) > 0
   }
   return false
 }

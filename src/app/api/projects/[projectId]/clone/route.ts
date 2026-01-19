@@ -63,7 +63,7 @@ export async function POST(
           endDate: endDate ? new Date(endDate) : null,
           autoRenew: autoRenew !== undefined ? autoRenew : templateProject.autoRenew,
           createdById: session.user.id,
-          createdByRole: session.user.role as 'CONTRACTOR' | 'CLIENT' | 'MANAGER',
+          createdByRole: session.user.role as 'CONTRACTOR' | 'CLIENT',
         }
       })
 
@@ -108,7 +108,7 @@ export async function POST(
           priority: templateProject.priority,
           status: 'OPEN',
           createdById: session.user.id,
-          createdByRole: session.user.role as 'CONTRACTOR' | 'CLIENT' | 'MANAGER',
+          createdByRole: session.user.role as 'CONTRACTOR' | 'CLIENT',
         }
       })
 
@@ -119,7 +119,7 @@ export async function POST(
           type: 'CREATED',
           content: `Project created from template: ${templateProject.title}`,
           createdById: session.user.id,
-          createdByRole: session.user.role as 'CONTRACTOR' | 'CLIENT' | 'MANAGER',
+          createdByRole: session.user.role as 'CONTRACTOR' | 'CLIENT',
         }
       })
 

@@ -200,7 +200,7 @@ export async function POST(
         endDate: endDate ? new Date(endDate) : null,
         autoRenew: autoRenew || false,
         createdById: session.user.id,
-        createdByRole: session.user.role as 'CONTRACTOR' | 'CLIENT' | 'MANAGER',
+        createdByRole: session.user.role as 'CONTRACTOR' | 'CLIENT',
       },
       include: {
         _count: {
@@ -263,7 +263,7 @@ export async function POST(
           type: 'CREATED',
           content: `Project created from request`,
           createdById: session.user.id,
-          createdByRole: session.user.role as 'CONTRACTOR' | 'CLIENT' | 'MANAGER',
+          createdByRole: session.user.role as 'CONTRACTOR' | 'CLIENT',
         }
       })
     } else {
@@ -277,7 +277,7 @@ export async function POST(
           priority: 'MEDIUM',
           status: 'OPEN',
           createdById: session.user.id,
-          createdByRole: session.user.role as 'CONTRACTOR' | 'CLIENT' | 'MANAGER',
+          createdByRole: session.user.role as 'CONTRACTOR' | 'CLIENT',
         }
       })
 
@@ -288,7 +288,7 @@ export async function POST(
           type: 'CREATED',
           content: `Project created with ${generatedWorkOrders.length} work orders. Total value: $${totalValue.toFixed(2)}`,
           createdById: session.user.id,
-          createdByRole: session.user.role as 'CONTRACTOR' | 'CLIENT' | 'MANAGER',
+          createdByRole: session.user.role as 'CONTRACTOR' | 'CLIENT',
         }
       })
     }
@@ -323,12 +323,6 @@ async function verifyBranchAccess(branchId: string, userId: string, role: string
       include: { branches: { where: { id: branchId } } }
     })
     return (client?.branches.length || 0) > 0
-  } else if (role === 'MANAGER') {
-    const manager = await prisma.manager.findUnique({
-      where: { userId },
-      include: { branchAccess: { where: { branchId } } }
-    })
-    return (manager?.branchAccess.length || 0) > 0
   }
   return false
 }

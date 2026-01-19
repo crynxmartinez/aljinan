@@ -131,7 +131,7 @@ export async function POST(
           type: 'APPROVED',
           content: `Ad-hoc work order approved: ${workOrder.description}`,
           createdById: session.user.id,
-          createdByRole: session.user.role as 'CONTRACTOR' | 'CLIENT' | 'MANAGER',
+          createdByRole: session.user.role as 'CONTRACTOR' | 'CLIENT',
         }
       })
 

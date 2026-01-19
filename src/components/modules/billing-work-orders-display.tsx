@@ -40,7 +40,7 @@ export interface BillingWorkOrder {
 
 interface BillingWorkOrdersDisplayProps {
   workOrders: BillingWorkOrder[]
-  userRole: 'CONTRACTOR' | 'CLIENT' | 'MANAGER'
+  userRole: 'CONTRACTOR' | 'CLIENT'
   onPaySingle?: (workOrderId: string) => void
   onPayGroup?: (workOrderIds: string[]) => void
   onVerifyPayment?: (workOrderId: string) => void
