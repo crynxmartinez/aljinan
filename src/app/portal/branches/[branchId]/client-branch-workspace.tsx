@@ -63,6 +63,7 @@ export function ClientBranchWorkspace({ branchId, branch }: ClientBranchWorkspac
   const [openRequestsCount, setOpenRequestsCount] = useState(0)
   const [projects, setProjects] = useState<Project[]>([])
   const [activeTab, setActiveTab] = useState('dashboard')
+  const [refreshTrigger, setRefreshTrigger] = useState(0)
 
   // Get the selected project or find pending projects
   const selectedProject = projects.find(p => p.id === selectedProjectId)
@@ -96,6 +97,7 @@ export function ClientBranchWorkspace({ branchId, branch }: ClientBranchWorkspac
   // Callback when child components change data
   const handleDataChange = () => {
     fetchRequestsCount()
+    setRefreshTrigger(prev => prev + 1) // Trigger project list refresh
   }
 
   return (
@@ -108,6 +110,7 @@ export function ClientBranchWorkspace({ branchId, branch }: ClientBranchWorkspac
             selectedProjectId={selectedProjectId}
             onProjectChange={setSelectedProjectId}
             onProjectsLoaded={setProjects}
+            refreshTrigger={refreshTrigger}
           />
           <Button
             variant="outline"

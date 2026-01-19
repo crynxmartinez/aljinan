@@ -38,6 +38,7 @@ interface ClientProjectFilterProps {
   selectedProjectId: string | null
   onProjectChange: (projectId: string | null) => void
   onProjectsLoaded?: (projects: Project[]) => void
+  refreshTrigger?: number // Increment this to trigger a refresh
 }
 
 const statusColors: Record<string, string> = {
@@ -60,7 +61,8 @@ export function ClientProjectFilter({
   branchId, 
   selectedProjectId, 
   onProjectChange,
-  onProjectsLoaded 
+  onProjectsLoaded,
+  refreshTrigger 
 }: ClientProjectFilterProps) {
   const [projects, setProjects] = useState<Project[]>([])
   const [loading, setLoading] = useState(true)
@@ -82,7 +84,7 @@ export function ClientProjectFilter({
 
   useEffect(() => {
     fetchProjects()
-  }, [branchId])
+  }, [branchId, refreshTrigger])
 
   const selectedProject = projects.find(p => p.id === selectedProjectId)
 
