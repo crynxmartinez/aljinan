@@ -77,105 +77,134 @@ export function ClientProfileCard({ client, canEdit }: ClientProfileCardProps) {
           )}
         </CardHeader>
         <CardContent className="space-y-6">
-          <div className="space-y-4">
-            <div className="flex items-center gap-3">
-              <Mail className="h-4 w-4 text-muted-foreground" />
+          {/* Basic Info */}
+          <div className="grid gap-4 sm:grid-cols-2">
+            <div className="flex items-start gap-3">
+              <Mail className="h-4 w-4 text-muted-foreground mt-0.5" />
               <div>
-                <p className="text-sm text-muted-foreground">Email</p>
-                <p className="font-medium">{client.user.email}</p>
+                <p className="text-xs text-muted-foreground">Email</p>
+                <p className="text-sm font-medium">{client.user.email}</p>
               </div>
             </div>
 
-            {client.companyPhone && (
-              <div className="flex items-center gap-3">
-                <Phone className="h-4 w-4 text-muted-foreground" />
-                <div>
-                  <p className="text-sm text-muted-foreground">Phone</p>
-                  <p className="font-medium">{client.companyPhone}</p>
-                </div>
+            <div className="flex items-start gap-3">
+              <Phone className="h-4 w-4 text-muted-foreground mt-0.5" />
+              <div>
+                <p className="text-xs text-muted-foreground">Phone</p>
+                <p className={`text-sm ${client.companyPhone ? 'font-medium' : 'text-muted-foreground italic'}`}>
+                  {client.companyPhone || 'Not set'}
+                </p>
               </div>
-            )}
+            </div>
 
-            {client.crNumber && (
-              <div className="flex items-center gap-3">
-                <FileText className="h-4 w-4 text-muted-foreground" />
-                <div>
-                  <p className="text-sm text-muted-foreground">CR Number</p>
-                  <p className="font-medium">{client.crNumber}</p>
-                </div>
+            <div className="flex items-start gap-3">
+              <FileText className="h-4 w-4 text-muted-foreground mt-0.5" />
+              <div>
+                <p className="text-xs text-muted-foreground">CR Number</p>
+                <p className={`text-sm ${client.crNumber ? 'font-medium' : 'text-muted-foreground italic'}`}>
+                  {client.crNumber || 'Not set'}
+                </p>
               </div>
-            )}
+            </div>
 
-            {client.vatNumber && (
-              <div className="flex items-center gap-3">
-                <FileText className="h-4 w-4 text-muted-foreground" />
-                <div>
-                  <p className="text-sm text-muted-foreground">VAT Number</p>
-                  <p className="font-medium">{client.vatNumber}</p>
-                </div>
+            <div className="flex items-start gap-3">
+              <FileText className="h-4 w-4 text-muted-foreground mt-0.5" />
+              <div>
+                <p className="text-xs text-muted-foreground">VAT Number</p>
+                <p className={`text-sm ${client.vatNumber ? 'font-medium' : 'text-muted-foreground italic'}`}>
+                  {client.vatNumber || 'Not set'}
+                </p>
               </div>
-            )}
-
-            {client.billingAddress && (
-              <div className="flex items-center gap-3">
-                <Building2 className="h-4 w-4 text-muted-foreground" />
-                <div>
-                  <p className="text-sm text-muted-foreground">Billing Address</p>
-                  <p className="font-medium whitespace-pre-line">{client.billingAddress}</p>
-                </div>
-              </div>
-            )}
+            </div>
           </div>
 
-          {(client.contractStartDate || client.contractExpiryDate) && (
-            <div className="pt-4 border-t space-y-3">
-              <h4 className="text-sm font-semibold text-muted-foreground uppercase tracking-wide">
-                Contract Period
-              </h4>
-              <div className="flex items-center gap-3">
-                <Calendar className="h-4 w-4 text-muted-foreground" />
-                <div className="flex-1">
-                  <div className="flex items-center gap-2">
-                    <span className="text-sm">
-                      {formatDate(client.contractStartDate) || 'Not set'} 
-                      {' → '}
-                      {formatDate(client.contractExpiryDate) || 'Not set'}
-                    </span>
-                    {isContractExpired() && (
-                      <Badge variant="destructive" className="text-xs">
-                        <AlertTriangle className="h-3 w-3 mr-1" />
-                        Expired
-                      </Badge>
-                    )}
-                    {isContractExpiringSoon() && (
-                      <Badge className="bg-yellow-100 text-yellow-700 hover:bg-yellow-100 text-xs">
-                        <AlertTriangle className="h-3 w-3 mr-1" />
-                        Expiring Soon
-                      </Badge>
-                    )}
-                  </div>
+          {/* Billing Address */}
+          <div className="flex items-start gap-3">
+            <Building2 className="h-4 w-4 text-muted-foreground mt-0.5" />
+            <div className="flex-1">
+              <p className="text-xs text-muted-foreground">Billing Address</p>
+              <p className={`text-sm ${client.billingAddress ? 'font-medium whitespace-pre-line' : 'text-muted-foreground italic'}`}>
+                {client.billingAddress || 'Not set'}
+              </p>
+            </div>
+          </div>
+
+          {/* Contract Period */}
+          <div className="pt-4 border-t space-y-3">
+            <h4 className="text-sm font-semibold text-muted-foreground uppercase tracking-wide">
+              Contract Period
+            </h4>
+            <div className="flex items-center gap-3">
+              <Calendar className="h-4 w-4 text-muted-foreground" />
+              <div className="flex-1">
+                <div className="flex items-center gap-2 flex-wrap">
+                  <span className={`text-sm ${(client.contractStartDate || client.contractExpiryDate) ? '' : 'text-muted-foreground italic'}`}>
+                    {(client.contractStartDate || client.contractExpiryDate) 
+                      ? `${formatDate(client.contractStartDate) || 'Not set'} → ${formatDate(client.contractExpiryDate) || 'Not set'}`
+                      : 'Not set'
+                    }
+                  </span>
+                  {isContractExpired() && (
+                    <Badge variant="destructive" className="text-xs">
+                      <AlertTriangle className="h-3 w-3 mr-1" />
+                      Expired
+                    </Badge>
+                  )}
+                  {isContractExpiringSoon() && (
+                    <Badge className="bg-yellow-100 text-yellow-700 hover:bg-yellow-100 text-xs">
+                      <AlertTriangle className="h-3 w-3 mr-1" />
+                      Expiring Soon
+                    </Badge>
+                  )}
                 </div>
               </div>
             </div>
-          )}
+          </div>
 
-          {contacts && contacts.length > 0 && (
-            <div className="pt-4 border-t space-y-3">
-              <h4 className="text-sm font-semibold text-muted-foreground uppercase tracking-wide flex items-center gap-2">
-                <Users className="h-4 w-4" />
-                Contact Persons
-              </h4>
+          {/* Contact Persons */}
+          <div className="pt-4 border-t space-y-3">
+            <h4 className="text-sm font-semibold text-muted-foreground uppercase tracking-wide flex items-center gap-2">
+              <Users className="h-4 w-4" />
+              Contact Persons
+            </h4>
+            {contacts && contacts.length > 0 ? (
               <div className="space-y-3">
                 {contacts.map((contact, index) => (
                   <div key={index} className="p-3 bg-muted/50 rounded-lg">
-                    <p className="font-medium">{contact.name || `Contact ${index + 1}`}</p>
-                    <div className="text-sm text-muted-foreground mt-1 space-y-0.5">
+                    <p className="font-medium text-sm">{contact.name || `Contact ${index + 1}`}</p>
+                    <div className="text-xs text-muted-foreground mt-1 space-y-0.5">
                       {contact.phone && <p>📞 {contact.phone}</p>}
                       {contact.email && <p>✉️ {contact.email}</p>}
                       {contact.whatsapp && <p>💬 {contact.whatsapp}</p>}
                     </div>
                   </div>
                 ))}
+              </div>
+            ) : (
+              <p className="text-sm text-muted-foreground italic">No contacts added</p>
+            )}
+          </div>
+
+          {/* Edit prompt if profile is incomplete */}
+          {canEdit && (!client.crNumber || !client.vatNumber || !client.billingAddress || !client.contractStartDate) && (
+            <div className="pt-4 border-t">
+              <div className="bg-amber-50 border border-amber-200 rounded-lg p-4 flex items-start gap-3">
+                <AlertTriangle className="h-5 w-5 text-amber-600 flex-shrink-0 mt-0.5" />
+                <div>
+                  <p className="font-medium text-amber-800 text-sm">Profile Incomplete</p>
+                  <p className="text-xs text-amber-600 mt-1">
+                    Complete your company profile to ensure smooth operations and compliance.
+                  </p>
+                  <Button 
+                    variant="outline" 
+                    size="sm" 
+                    className="mt-3 bg-white"
+                    onClick={() => setEditOpen(true)}
+                  >
+                    <Edit className="h-4 w-4 mr-1" />
+                    Complete Profile
+                  </Button>
+                </div>
               </div>
             </div>
           )}
