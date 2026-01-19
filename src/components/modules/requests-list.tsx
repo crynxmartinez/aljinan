@@ -243,15 +243,18 @@ function WorkOrdersGroupedViewContractor({
               <div className="flex items-center gap-3">
                 {isEditingThisGroup ? (
                   <div className="flex items-center gap-2">
-                    {/* Date input for single items */}
-                    {isSingleItem && (
+                    {/* Date input - for single items it's the date, for groups it's the start date */}
+                    <div className="flex items-center gap-1">
+                      {!isSingleItem && (
+                        <span className="text-xs text-muted-foreground">Start:</span>
+                      )}
                       <Input
                         type="date"
                         value={groupDate}
                         onChange={(e) => setGroupDate(e.target.value)}
                         className="w-[140px]"
                       />
-                    )}
+                    </div>
                     <div className="flex items-center">
                       <span className="text-sm text-muted-foreground mr-1">$</span>
                       <Input
@@ -516,16 +519,40 @@ export function RequestsList({ branchId, userRole, projectId }: RequestsListProp
   }
 
   // Save group price - applies same price to all work orders in the group
+  // For recurring groups, also recalculates occurrence dates based on start date
   const handleSaveGroupPrice = async (groupName: string, price: string, scheduledDate: string, workOrderIds: string[]) => {
     if (!selectedProject) return
     setSaving(true)
     setError('')
     try {
-      // Update all work orders in the group with the same price (and date for single items)
-      for (const workOrderId of workOrderIds) {
+      const isSingleItem = workOrderIds.length === 1
+      
+      // Find the work orders to get their recurring type
+      const workOrders = selectedProject.workOrders?.filter(wo => workOrderIds.includes(wo.id)) || []
+      const recurringType = workOrders[0]?.recurringType || 'ONCE'
+      
+      // For recurring groups, calculate dates based on start date and interval
+      const startDate = scheduledDate ? new Date(scheduledDate) : null
+      const interval = recurringType === 'MONTHLY' ? 1 : recurringType === 'QUARTERLY' ? 3 : 0
+      
+      for (let i = 0; i < workOrderIds.length; i++) {
+        const workOrderId = workOrderIds[i]
         const payload: { price?: string; scheduledDate?: string } = {}
+        
         if (price) payload.price = price
-        if (scheduledDate && workOrderIds.length === 1) payload.scheduledDate = scheduledDate
+        
+        // Calculate date for this occurrence
+        if (startDate && scheduledDate) {
+          if (isSingleItem || recurringType === 'ONCE') {
+            // Single item - use the date directly
+            payload.scheduledDate = scheduledDate
+          } else {
+            // Recurring group - calculate date based on occurrence index
+            const occurrenceDate = new Date(startDate)
+            occurrenceDate.setMonth(occurrenceDate.getMonth() + (i * interval))
+            payload.scheduledDate = occurrenceDate.toISOString().split('T')[0]
+          }
+        }
         
         const response = await fetch(`/api/projects/${selectedProject.id}/work-orders/${workOrderId}`, {
           method: 'PATCH',
