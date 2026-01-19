@@ -95,7 +95,7 @@ export async function PATCH(
         return NextResponse.json({ error: 'Signature is required' }, { status: 400 })
       }
 
-      // Verify all work orders are completed before allowing end signature
+      // Verify all work orders are completed AND paid before allowing end signature
       const contract = await prisma.contract.findUnique({
         where: { id: contractId },
         include: {
@@ -114,9 +114,14 @@ export async function PATCH(
       if (contract?.project) {
         const allItems = contract.project.checklists.flatMap(c => c.items)
         const allCompleted = allItems.length > 0 && allItems.every(item => item.stage === 'COMPLETED')
+        const allPaid = allItems.length > 0 && allItems.every(item => item.paymentStatus === 'PAID')
         
         if (!allCompleted) {
           return NextResponse.json({ error: 'All work orders must be completed before signing' }, { status: 400 })
+        }
+        
+        if (!allPaid) {
+          return NextResponse.json({ error: 'All work orders must be paid before signing' }, { status: 400 })
         }
       }
 

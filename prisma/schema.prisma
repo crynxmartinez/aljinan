@@ -381,6 +381,13 @@ enum ChecklistItemType {
   ADHOC          // Added during contract period
 }
 
+// Payment status for work orders
+enum PaymentStatus {
+  UNPAID                // Not yet paid
+  PENDING_VERIFICATION  // Client submitted proof, awaiting contractor verification
+  PAID                  // Contractor verified payment
+}
+
 // Recurring frequency for work orders
 enum RecurringType {
   ONCE           // One-time work order
@@ -423,6 +430,17 @@ model ChecklistItem {
   price           Float?
   isCompleted     Boolean            @default(false)
   order           Int                @default(0)
+  
+  // Payment tracking
+  paymentStatus        PaymentStatus  @default(UNPAID)
+  paymentProofUrl      String?        // URL to uploaded image/PDF or external link
+  paymentProofType     String?        // 'file' or 'link'
+  paymentProofFileName String?        // Original filename if file upload
+  paymentSubmittedAt   DateTime?      // When client submitted payment proof
+  paymentSubmittedById String?        // User ID who submitted payment
+  paymentVerifiedAt    DateTime?      // When contractor verified payment
+  paymentVerifiedById  String?        // User ID who verified payment
+  
   createdAt       DateTime           @default(now())
   updatedAt       DateTime           @updatedAt
 }
@@ -520,6 +538,8 @@ enum NotificationType {
   WORK_ORDER_STARTED     // Work order moved to IN_PROGRESS
   WORK_ORDER_FOR_REVIEW  // Work order sent for review
   WORK_ORDER_COMPLETED   // Work order completed
+  PAYMENT_SUBMITTED      // Client submitted payment proof
+  PAYMENT_VERIFIED       // Contractor verified payment
   CONTRACT_SIGNED        // Client signed contract
   CONTRACT_EXPIRING      // Contract expiring soon
   PROJECT_APPROVED       // Client approved project

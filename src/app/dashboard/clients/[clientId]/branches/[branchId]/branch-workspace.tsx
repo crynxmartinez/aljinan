@@ -65,21 +65,28 @@ export function BranchWorkspace({ clientId, branchId, branch }: BranchWorkspaceP
   const [selectedProjectId, setSelectedProjectId] = useState<string | null>(null)
   const [activityPanelOpen, setActivityPanelOpen] = useState(false)
   const [pendingRequestsCount, setPendingRequestsCount] = useState(0)
+  const [pendingPaymentsCount, setPendingPaymentsCount] = useState(0)
 
   // Fetch count of pending client requests (ADHOC work orders with REQUESTED stage)
+  // and pending payment verifications
   useEffect(() => {
-    const fetchPendingRequests = async () => {
+    const fetchCounts = async () => {
       try {
-        const response = await fetch(`/api/branches/${branchId}/checklist-items?stage=REQUESTED`)
+        const response = await fetch(`/api/branches/${branchId}/checklist-items`)
         if (response.ok) {
           const data = await response.json()
-          setPendingRequestsCount(data.length)
+          // Count pending requests
+          const pendingRequests = data.filter((item: { stage: string }) => item.stage === 'REQUESTED')
+          setPendingRequestsCount(pendingRequests.length)
+          // Count pending payment verifications
+          const pendingPayments = data.filter((item: { paymentStatus: string }) => item.paymentStatus === 'PENDING_VERIFICATION')
+          setPendingPaymentsCount(pendingPayments.length)
         }
       } catch (err) {
-        console.error('Failed to fetch pending requests:', err)
+        console.error('Failed to fetch counts:', err)
       }
     }
-    fetchPendingRequests()
+    fetchCounts()
   }, [branchId])
 
   const modules = [
@@ -123,6 +130,11 @@ export function BranchWorkspace({ clientId, branchId, branch }: BranchWorkspaceP
               {module.id === 'requests' && pendingRequestsCount > 0 && (
                 <Badge variant="destructive" className="ml-1 h-5 w-5 p-0 flex items-center justify-center text-xs">
                   {pendingRequestsCount}
+                </Badge>
+              )}
+              {module.id === 'billing' && pendingPaymentsCount > 0 && (
+                <Badge className="ml-1 h-5 w-5 p-0 flex items-center justify-center text-xs bg-amber-500 hover:bg-amber-500">
+                  {pendingPaymentsCount}
                 </Badge>
               )}
             </TabsTrigger>

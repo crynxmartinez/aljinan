@@ -32,6 +32,9 @@ import {
   Calendar,
   History,
 } from 'lucide-react'
+import { BillingWorkOrdersDisplay, BillingWorkOrder } from './billing-work-orders-display'
+import { PaymentSubmitDialog } from './payment-submit-dialog'
+import { PaymentVerifyDialog } from './payment-verify-dialog'
 
 interface WorkOrder {
   id: string
@@ -45,6 +48,11 @@ interface WorkOrder {
   checklistId: string
   checklistTitle: string
   projectTitle: string | null
+  paymentStatus: 'UNPAID' | 'PENDING_VERIFICATION' | 'PAID'
+  paymentProofUrl: string | null
+  paymentProofType: string | null
+  paymentProofFileName: string | null
+  paymentSubmittedAt: string | null
 }
 
 interface Invoice {
@@ -106,6 +114,16 @@ export function BillingView({ branchId, projectId, userRole }: BillingViewProps)
 
   // Confirm payment state
   const [confirming, setConfirming] = useState(false)
+
+  // Work order payment dialog state
+  const [woPaymentDialogOpen, setWoPaymentDialogOpen] = useState(false)
+  const [selectedWorkOrderIds, setSelectedWorkOrderIds] = useState<string[]>([])
+  const [selectedWorkOrderDescriptions, setSelectedWorkOrderDescriptions] = useState<string[]>([])
+  const [selectedWorkOrderTotal, setSelectedWorkOrderTotal] = useState(0)
+
+  // Work order verify dialog state
+  const [woVerifyDialogOpen, setWoVerifyDialogOpen] = useState(false)
+  const [verifyWorkOrder, setVerifyWorkOrder] = useState<WorkOrder | null>(null)
 
   const fetchData = async () => {
     try {
@@ -291,6 +309,42 @@ export function BillingView({ branchId, projectId, userRole }: BillingViewProps)
     setViewProofDialogOpen(true)
   }
 
+  // Work order payment handlers
+  const handlePaySingle = (workOrderId: string) => {
+    const wo = workOrders.find(w => w.id === workOrderId)
+    if (wo) {
+      setSelectedWorkOrderIds([workOrderId])
+      setSelectedWorkOrderDescriptions([wo.description])
+      setSelectedWorkOrderTotal(wo.price || 0)
+      setWoPaymentDialogOpen(true)
+    }
+  }
+
+  const handlePayGroup = (workOrderIds: string[]) => {
+    const wos = workOrders.filter(w => workOrderIds.includes(w.id))
+    setSelectedWorkOrderIds(workOrderIds)
+    setSelectedWorkOrderDescriptions(wos.map(w => w.description))
+    setSelectedWorkOrderTotal(wos.reduce((sum, w) => sum + (w.price || 0), 0))
+    setWoPaymentDialogOpen(true)
+  }
+
+  const handleVerifyPayment = (workOrderId: string) => {
+    const wo = workOrders.find(w => w.id === workOrderId)
+    if (wo) {
+      setVerifyWorkOrder(wo)
+      setWoVerifyDialogOpen(true)
+    }
+  }
+
+  const handleViewWorkOrderProof = (wo: BillingWorkOrder) => {
+    // Find the full WorkOrder from our state
+    const fullWo = workOrders.find(w => w.id === wo.id)
+    if (fullWo) {
+      setVerifyWorkOrder(fullWo)
+      setWoVerifyDialogOpen(true)
+    }
+  }
+
   if (loading) {
     return (
       <Card>
@@ -398,33 +452,14 @@ export function BillingView({ branchId, projectId, userRole }: BillingViewProps)
                   <p className="text-muted-foreground">No work orders yet</p>
                 </div>
               ) : (
-                <div className="space-y-3">
-                  {activeWorkOrders.map((wo) => (
-                    <div
-                      key={wo.id}
-                      className="flex items-center justify-between p-3 border rounded-lg hover:bg-muted/50 transition-colors"
-                    >
-                      <div className="space-y-1">
-                        <div className="flex items-center gap-2">
-                          <span className="font-medium">{wo.description}</span>
-                          {getStageBadge(wo.stage)}
-                          {wo.type === 'ADHOC' && (
-                            <Badge variant="outline" className="text-xs">Ad-hoc</Badge>
-                          )}
-                        </div>
-                        {wo.scheduledDate && (
-                          <p className="text-xs text-muted-foreground flex items-center gap-1">
-                            <Calendar className="h-3 w-3" />
-                            Scheduled: {new Date(wo.scheduledDate).toLocaleDateString()}
-                          </p>
-                        )}
-                      </div>
-                      <div className="text-right">
-                        <div className="font-semibold">{formatCurrency(wo.price)}</div>
-                      </div>
-                    </div>
-                  ))}
-                </div>
+                <BillingWorkOrdersDisplay
+                  workOrders={activeWorkOrders}
+                  userRole={userRole}
+                  onPaySingle={handlePaySingle}
+                  onPayGroup={handlePayGroup}
+                  onVerifyPayment={handleVerifyPayment}
+                  onViewProof={handleViewWorkOrderProof}
+                />
               )}
             </CardContent>
           </Card>
@@ -709,6 +744,32 @@ export function BillingView({ branchId, projectId, userRole }: BillingViewProps)
           </DialogFooter>
         </DialogContent>
       </Dialog>
+
+      {/* Work Order Payment Submit Dialog */}
+      <PaymentSubmitDialog
+        open={woPaymentDialogOpen}
+        onOpenChange={setWoPaymentDialogOpen}
+        workOrderIds={selectedWorkOrderIds}
+        workOrderDescriptions={selectedWorkOrderDescriptions}
+        totalAmount={selectedWorkOrderTotal}
+        branchId={branchId}
+        onSuccess={() => {
+          fetchData()
+          router.refresh()
+        }}
+      />
+
+      {/* Work Order Payment Verify Dialog */}
+      <PaymentVerifyDialog
+        open={woVerifyDialogOpen}
+        onOpenChange={setWoVerifyDialogOpen}
+        workOrder={verifyWorkOrder}
+        branchId={branchId}
+        onSuccess={() => {
+          fetchData()
+          router.refresh()
+        }}
+      />
     </div>
   )
 }

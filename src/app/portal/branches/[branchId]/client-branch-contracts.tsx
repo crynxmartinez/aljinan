@@ -46,6 +46,7 @@ interface WorkOrder {
   price: number | null
   scheduledDate: string | null
   stage: string
+  paymentStatus: 'UNPAID' | 'PENDING_VERIFICATION' | 'PAID'
 }
 
 interface Checklist {
@@ -213,6 +214,18 @@ export function ClientBranchContracts({ branchId, projectId }: ClientBranchContr
     if (!contract.project) return false
     const allItems = contract.project.checklists.flatMap(c => c.items)
     return allItems.length > 0 && allItems.every(item => item.stage === 'COMPLETED')
+  }
+
+  // Check if all work orders are paid for a contract
+  const areAllWorkOrdersPaid = (contract: Contract): boolean => {
+    if (!contract.project) return false
+    const allItems = contract.project.checklists.flatMap(c => c.items)
+    return allItems.length > 0 && allItems.every(item => item.paymentStatus === 'PAID')
+  }
+
+  // Check if contract can be signed (completed AND paid)
+  const canSignContract = (contract: Contract): boolean => {
+    return areAllWorkOrdersCompleted(contract) && areAllWorkOrdersPaid(contract)
   }
 
   const handleSign = async () => {
@@ -434,7 +447,7 @@ export function ClientBranchContracts({ branchId, projectId }: ClientBranchContr
                       <ClipboardList className="mr-2 h-4 w-4" />
                       View Details
                     </Button>
-                    {areAllWorkOrdersCompleted(contract) && (
+                    {canSignContract(contract) && (
                       <Button
                         size="sm"
                         onClick={() => openEndSignDialog(contract)}
@@ -484,9 +497,14 @@ export function ClientBranchContracts({ branchId, projectId }: ClientBranchContr
                       </Badge>
                     )}
                     
-                    {!areAllWorkOrdersCompleted(contract) && workOrders.length > 0 && (
+                    {!canSignContract(contract) && workOrders.length > 0 && (
                       <span className="text-xs text-muted-foreground ml-auto">
-                        Complete all work orders to finalize
+                        {!areAllWorkOrdersCompleted(contract) 
+                          ? 'Complete all work orders to finalize'
+                          : !areAllWorkOrdersPaid(contract)
+                            ? 'Pay all work orders to finalize'
+                            : ''
+                        }
                       </span>
                     )}
                   </div>
