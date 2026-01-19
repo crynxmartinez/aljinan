@@ -1,6 +1,5 @@
 'use client'
 
-import { useState, useEffect } from 'react'
 import {
   Select,
   SelectContent,
@@ -23,23 +22,12 @@ interface Project {
     title: string
     price: number | null
   }>
-  _count: {
-    requests: number
-    quotations: number
-    appointments: number
-    invoices: number
-    checklists: number
-    contracts: number
-  }
 }
 
 interface ClientProjectFilterProps {
-  branchId: string
+  projects: Project[]
   selectedProjectId: string | null
   onProjectChange: (projectId: string | null) => void
-  onProjectsLoaded?: (projects: Project[]) => void
-  onLoadingChange?: (loading: boolean) => void
-  refreshTrigger?: number // Increment this to trigger a refresh
 }
 
 const statusColors: Record<string, string> = {
@@ -59,50 +47,11 @@ const statusLabels: Record<string, string> = {
 }
 
 export function ClientProjectFilter({ 
-  branchId, 
+  projects,
   selectedProjectId, 
   onProjectChange,
-  onProjectsLoaded,
-  onLoadingChange,
-  refreshTrigger 
 }: ClientProjectFilterProps) {
-  const [projects, setProjects] = useState<Project[]>([])
-  const [loading, setLoading] = useState(true)
-
-  // Notify parent of loading state changes
-  useEffect(() => {
-    onLoadingChange?.(loading)
-  }, [loading]) // eslint-disable-line react-hooks/exhaustive-deps
-
-  const fetchProjects = async () => {
-    try {
-      const response = await fetch(`/api/branches/${branchId}/projects`)
-      if (response.ok) {
-        const data = await response.json()
-        setProjects(data)
-        onProjectsLoaded?.(data)
-      }
-    } catch (err) {
-      console.error('Failed to fetch projects:', err)
-    } finally {
-      setLoading(false)
-    }
-  }
-
-  useEffect(() => {
-    fetchProjects()
-  }, [branchId, refreshTrigger])
-
   const selectedProject = projects.find(p => p.id === selectedProjectId)
-
-  if (loading) {
-    return (
-      <div className="flex items-center gap-2">
-        <FolderKanban className="h-4 w-4 text-muted-foreground" />
-        <div className="w-[250px] h-9 bg-muted animate-pulse rounded-md" />
-      </div>
-    )
-  }
 
   // If no projects, show a simple message
   if (projects.length === 0) {

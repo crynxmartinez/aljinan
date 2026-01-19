@@ -26,6 +26,7 @@ import {
   AlertCircle,
   ClipboardList,
 } from 'lucide-react'
+import { Skeleton } from '@/components/ui/skeleton'
 
 interface Branch {
   id: string
@@ -64,6 +65,7 @@ export function ClientBranchWorkspace({ branchId, branch }: ClientBranchWorkspac
   const [projects, setProjects] = useState<Project[]>([])
   const [activeTab, setActiveTab] = useState('dashboard')
   const [refreshTrigger, setRefreshTrigger] = useState(0)
+  const [isLoading, setIsLoading] = useState(true)
 
   // Get the selected project or find pending projects
   const selectedProject = projects.find(p => p.id === selectedProjectId)
@@ -75,6 +77,21 @@ export function ClientBranchWorkspace({ branchId, branch }: ClientBranchWorkspac
   const viewProjectProposal = (projectId: string) => {
     setSelectedProjectId(projectId)
     setActiveTab('requests')
+  }
+
+  // Fetch projects directly in parent
+  const fetchProjects = async () => {
+    try {
+      const response = await fetch(`/api/branches/${branchId}/projects`)
+      if (response.ok) {
+        const data = await response.json()
+        setProjects(data)
+      }
+    } catch (err) {
+      console.error('Failed to fetch projects:', err)
+    } finally {
+      setIsLoading(false)
+    }
   }
 
   const fetchRequestsCount = async () => {
@@ -90,14 +107,87 @@ export function ClientBranchWorkspace({ branchId, branch }: ClientBranchWorkspac
     }
   }
 
+  // Initial data fetch
   useEffect(() => {
+    fetchProjects()
     fetchRequestsCount()
   }, [branchId])
+
+  // Refetch projects when refreshTrigger changes
+  useEffect(() => {
+    if (refreshTrigger > 0) {
+      fetchProjects()
+    }
+  }, [refreshTrigger])
 
   // Callback when child components change data
   const handleDataChange = () => {
     fetchRequestsCount()
     setRefreshTrigger(prev => prev + 1) // Trigger project list refresh
+  }
+
+  // Skeleton UI while loading
+  if (isLoading) {
+    return (
+      <div className="space-y-6">
+        {/* Project Filter Skeleton */}
+        <div className="flex items-center justify-between">
+          <Skeleton className="h-9 w-[280px]" />
+          <Skeleton className="h-9 w-24" />
+        </div>
+
+        {/* Tabs Skeleton */}
+        <div className="flex gap-2">
+          <Skeleton className="h-9 w-28" />
+          <Skeleton className="h-9 w-24" />
+          <Skeleton className="h-9 w-24" />
+          <Skeleton className="h-9 w-24" />
+          <Skeleton className="h-9 w-20" />
+          <Skeleton className="h-9 w-24" />
+        </div>
+
+        {/* Content Skeleton */}
+        <div className="grid gap-6 md:grid-cols-2">
+          {/* Active Projects Card Skeleton */}
+          <Card className="md:col-span-2">
+            <CardHeader>
+              <Skeleton className="h-6 w-40" />
+              <Skeleton className="h-4 w-60" />
+            </CardHeader>
+            <CardContent>
+              <div className="space-y-3">
+                <Skeleton className="h-16 w-full" />
+              </div>
+            </CardContent>
+          </Card>
+
+          {/* Branch Details Skeleton */}
+          <Card>
+            <CardHeader>
+              <Skeleton className="h-6 w-32" />
+            </CardHeader>
+            <CardContent className="space-y-4">
+              <Skeleton className="h-4 w-full" />
+              <Skeleton className="h-4 w-3/4" />
+              <Skeleton className="h-4 w-1/2" />
+            </CardContent>
+          </Card>
+
+          {/* Quick Actions Skeleton */}
+          <Card>
+            <CardHeader>
+              <Skeleton className="h-6 w-32" />
+              <Skeleton className="h-4 w-48" />
+            </CardHeader>
+            <CardContent className="space-y-2">
+              <Skeleton className="h-10 w-full" />
+              <Skeleton className="h-10 w-full" />
+              <Skeleton className="h-10 w-full" />
+            </CardContent>
+          </Card>
+        </div>
+      </div>
+    )
   }
 
   return (
@@ -106,11 +196,9 @@ export function ClientBranchWorkspace({ branchId, branch }: ClientBranchWorkspac
         {/* Project Filter and Activity Toggle */}
         <div className="flex items-center justify-between mb-4">
           <ClientProjectFilter
-            branchId={branchId}
+            projects={projects}
             selectedProjectId={selectedProjectId}
             onProjectChange={setSelectedProjectId}
-            onProjectsLoaded={setProjects}
-            refreshTrigger={refreshTrigger}
           />
           <Button
             variant="outline"
