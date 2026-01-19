@@ -137,10 +137,9 @@ export function BranchRequestForm() {
   }
 
   const pendingRequests = requests.filter(r => r.status === 'PENDING')
-  const processedRequests = requests.filter(r => r.status !== 'PENDING')
 
   return (
-    <div className="space-y-4">
+    <>
       {/* Request New Branch Button */}
       <Dialog open={open} onOpenChange={setOpen}>
         <DialogTrigger asChild>
@@ -222,65 +221,6 @@ export function BranchRequestForm() {
         </DialogContent>
       </Dialog>
 
-      {/* Pending Requests */}
-      {pendingRequests.length > 0 && (
-        <div className="space-y-3">
-          <h3 className="font-medium text-sm text-muted-foreground">Pending Requests</h3>
-          {pendingRequests.map((request) => (
-            <div
-              key={request.id}
-              className="flex items-center justify-between p-3 border rounded-lg bg-amber-50 border-amber-200"
-            >
-              <div>
-                <p className="font-medium">{request.name}</p>
-                <p className="text-sm text-muted-foreground">{request.address}</p>
-                <p className="text-xs text-amber-600 mt-1">Awaiting contractor approval</p>
-              </div>
-              <Button
-                variant="ghost"
-                size="sm"
-                onClick={() => handleCancelRequest(request.id)}
-              >
-                Cancel
-              </Button>
-            </div>
-          ))}
-        </div>
-      )}
-
-      {/* Processed Requests (Approved/Rejected) */}
-      {processedRequests.length > 0 && (
-        <div className="space-y-3">
-          <h3 className="font-medium text-sm text-muted-foreground">Request History</h3>
-          {processedRequests.slice(0, 3).map((request) => (
-            <div
-              key={request.id}
-              className={`p-3 border rounded-lg ${
-                request.status === 'APPROVED'
-                  ? 'bg-green-50 border-green-200'
-                  : 'bg-red-50 border-red-200'
-              }`}
-            >
-              <div className="flex items-center justify-between">
-                <div>
-                  <p className="font-medium">{request.name}</p>
-                  <p className="text-sm text-muted-foreground">{request.address}</p>
-                </div>
-                <span
-                  className={`text-xs font-medium ${
-                    request.status === 'APPROVED' ? 'text-green-600' : 'text-red-600'
-                  }`}
-                >
-                  {request.status}
-                </span>
-              </div>
-              {request.status === 'REJECTED' && request.rejectionNote && (
-                <p className="text-xs text-red-600 mt-2">Reason: {request.rejectionNote}</p>
-              )}
-            </div>
-          ))}
-        </div>
-      )}
-    </div>
+    </>
   )
 }
