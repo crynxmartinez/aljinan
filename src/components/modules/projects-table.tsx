@@ -18,6 +18,7 @@ import {
   CheckCircle,
   AlertCircle,
   FileText,
+  CornerDownRight,
 } from 'lucide-react'
 import { cn } from '@/lib/utils'
 
@@ -29,6 +30,147 @@ interface WorkOrder {
   status: string
   type: 'scheduled' | 'adhoc'
   price: number | null
+  recurringType?: 'ONCE' | 'MONTHLY' | 'QUARTERLY'
+}
+
+// Helper function to extract base name from work order title (removes Q1, Q2, Month1, etc.)
+function getBaseWorkOrderName(title: string): string {
+  return title.replace(/\s*\((Q\d+|Month\d+)\)\s*$/i, '').trim()
+}
+
+// Group work orders by their base name
+function groupWorkOrders(workOrders: WorkOrder[]): Map<string, WorkOrder[]> {
+  const groups = new Map<string, WorkOrder[]>()
+  
+  for (const wo of workOrders) {
+    const baseName = getBaseWorkOrderName(wo.title)
+    if (!groups.has(baseName)) {
+      groups.set(baseName, [])
+    }
+    groups.get(baseName)!.push(wo)
+  }
+  
+  return groups
+}
+
+// Read-only collapsible grouped view for work orders
+function WorkOrdersGroupedView({ workOrders }: { workOrders: WorkOrder[] }) {
+  const [expandedGroups, setExpandedGroups] = useState<Set<string>>(new Set())
+  const groups = groupWorkOrders(workOrders)
+  
+  const toggleGroup = (groupName: string) => {
+    setExpandedGroups(prev => {
+      const next = new Set(prev)
+      if (next.has(groupName)) {
+        next.delete(groupName)
+      } else {
+        next.add(groupName)
+      }
+      return next
+    })
+  }
+  
+  return (
+    <div className="space-y-1">
+      {Array.from(groups.entries()).map(([groupName, items]) => {
+        const isExpanded = expandedGroups.has(groupName)
+        const groupTotal = items.reduce((sum, wo) => sum + (wo.price || 0), 0)
+        const isSingleItem = items.length === 1
+        const hasAdhoc = items.some(wo => wo.type === 'adhoc')
+        
+        return (
+          <div key={groupName} className="rounded-lg bg-background border">
+            {/* Group Header */}
+            <button
+              onClick={() => !isSingleItem && toggleGroup(groupName)}
+              className={cn(
+                "w-full flex items-center justify-between p-3 text-left transition-colors",
+                !isSingleItem && "hover:bg-muted/50 cursor-pointer",
+                isSingleItem && "cursor-default"
+              )}
+            >
+              <div className="flex items-center gap-2 flex-1">
+                {!isSingleItem && (
+                  isExpanded ? (
+                    <ChevronDown className="h-4 w-4 text-muted-foreground" />
+                  ) : (
+                    <ChevronRight className="h-4 w-4 text-muted-foreground" />
+                  )
+                )}
+                {isSingleItem && (
+                  <FileText className="h-4 w-4 text-muted-foreground" />
+                )}
+                <div className="flex-1">
+                  <div className="flex items-center gap-2">
+                    <span className="font-medium text-sm">{groupName}</span>
+                    {!isSingleItem && (
+                      <Badge variant="secondary" className="text-xs">
+                        {items.length} occurrences
+                      </Badge>
+                    )}
+                    {hasAdhoc && (
+                      <Badge variant="outline" className="text-purple-600 text-xs">
+                        Client Added
+                      </Badge>
+                    )}
+                  </div>
+                  {items[0].description && (
+                    <p className="text-xs text-muted-foreground mt-0.5">
+                      {items[0].description}
+                    </p>
+                  )}
+                </div>
+              </div>
+              <div className="text-right text-sm font-medium">
+                {groupTotal > 0 ? formatCurrency(groupTotal) : '-'}
+              </div>
+            </button>
+            
+            {/* Single Item Details */}
+            {isSingleItem && (
+              <div className="px-3 pb-3 pt-0">
+                <div className="flex items-center gap-4 text-xs text-muted-foreground ml-6">
+                  <span className="flex items-center gap-1">
+                    <Calendar className="h-3 w-3" />
+                    {formatDate(items[0].scheduledDate)}
+                  </span>
+                  <Badge variant="secondary" className="text-xs">
+                    {items[0].status.replace('_', ' ')}
+                  </Badge>
+                </div>
+              </div>
+            )}
+            
+            {/* Expanded Items */}
+            {!isSingleItem && isExpanded && (
+              <div className="border-t bg-muted/30">
+                {items.map((wo, idx) => (
+                  <div key={wo.id} className="flex items-center justify-between px-3 py-2 border-b last:border-b-0">
+                    <div className="flex items-center gap-2 text-sm">
+                      <CornerDownRight className="h-3 w-3 text-muted-foreground ml-2" />
+                      <span className="text-muted-foreground">
+                        {wo.title.match(/\((Q\d+|Month\d+)\)/i)?.[1] || `#${idx + 1}`}:
+                      </span>
+                      <span className="flex items-center gap-1 text-xs">
+                        <Calendar className="h-3 w-3" />
+                        {formatDate(wo.scheduledDate)}
+                      </span>
+                      <Badge variant="secondary" className="text-xs">
+                        {wo.status.replace('_', ' ')}
+                      </Badge>
+                    </div>
+                    <span className="text-sm font-medium">
+                      {wo.price ? formatCurrency(wo.price) : '-'}
+                    </span>
+                  </div>
+                ))}
+              </div>
+            )}
+          </div>
+        )
+      })}
+    </div>
+  )
 }
 
 interface Project {
@@ -213,57 +355,7 @@ export function ProjectsTable({ branchId, onCreateProject }: ProjectsTableProps)
                           No work orders in this project
                         </p>
                       ) : (
-                        <div className="space-y-2">
-                          <div className="grid grid-cols-12 gap-2 text-xs font-medium text-muted-foreground uppercase px-3 py-2">
-                            <div className="col-span-1"></div>
-                            <div className="col-span-4">Work Order</div>
-                            <div className="col-span-2">Type</div>
-                            <div className="col-span-2">Scheduled</div>
-                            <div className="col-span-2">Status</div>
-                            <div className="col-span-1 text-right">Price</div>
-                          </div>
-                          {project.workOrders.map((workOrder) => (
-                            <div
-                              key={workOrder.id}
-                              className="grid grid-cols-12 gap-2 items-center px-3 py-3 rounded-lg bg-background border hover:bg-muted/50 transition-colors cursor-pointer"
-                            >
-                              <div className="col-span-1">
-                                {getWorkOrderStatusIcon(workOrder.status)}
-                              </div>
-                              <div className="col-span-4">
-                                <p className="font-medium text-sm">{workOrder.title}</p>
-                                {workOrder.description && (
-                                  <p className="text-xs text-muted-foreground truncate">
-                                    {workOrder.description}
-                                  </p>
-                                )}
-                              </div>
-                              <div className="col-span-2">
-                                <Badge 
-                                  variant="outline" 
-                                  className={cn(
-                                    workOrder.type === 'scheduled' 
-                                      ? 'border-blue-200 text-blue-700 bg-blue-50' 
-                                      : 'border-yellow-200 text-yellow-700 bg-yellow-50'
-                                  )}
-                                >
-                                  {workOrder.type === 'scheduled' ? 'Scheduled' : 'Ad-hoc'}
-                                </Badge>
-                              </div>
-                              <div className="col-span-2 text-sm text-muted-foreground">
-                                {formatDate(workOrder.scheduledDate)}
-                              </div>
-                              <div className="col-span-2">
-                                <Badge variant="secondary" className="text-xs">
-                                  {workOrder.status.replace('_', ' ')}
-                                </Badge>
-                              </div>
-                              <div className="col-span-1 text-right text-sm font-medium">
-                                {workOrder.price ? formatCurrency(workOrder.price) : '-'}
-                              </div>
-                            </div>
-                          ))}
-                        </div>
+                        <WorkOrdersGroupedView workOrders={project.workOrders} />
                       )}
                     </div>
                   </CollapsibleContent>
