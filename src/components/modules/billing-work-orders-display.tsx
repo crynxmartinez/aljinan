@@ -48,7 +48,11 @@ interface BillingWorkOrdersDisplayProps {
 }
 
 function getBaseWorkOrderName(title: string): string {
-  return title.replace(/\s*\((Q\d+|Month\d+)\)\s*$/i, '').trim()
+  // Remove suffix patterns like "(Q1)", "(Month1)", or prefix patterns like "Q1:", "Month1:"
+  return title
+    .replace(/\s*\((Q\d+|Month\d+)\)\s*$/i, '') // Suffix: (Q1), (Month1)
+    .replace(/^(Q\d+|Month\d+):\s*/i, '') // Prefix: Q1:, Month1:
+    .trim()
 }
 
 function groupWorkOrders(workOrders: BillingWorkOrder[]): Map<string, BillingWorkOrder[]> {
@@ -180,13 +184,13 @@ export function BillingWorkOrdersDisplay({
           const groupTotal = items.reduce((sum, wo) => sum + (wo.price || 0), 0)
           const paidCount = items.filter(wo => wo.paymentStatus === 'PAID').length
           const pendingCount = items.filter(wo => wo.paymentStatus === 'PENDING_VERIFICATION').length
-          const unpaidCount = items.filter(wo => wo.paymentStatus === 'UNPAID').length
+          const unpaidCount = items.filter(wo => !wo.paymentStatus || wo.paymentStatus === 'UNPAID').length
           const allPaid = paidCount === items.length
           const allUnpaid = unpaidCount === items.length
           const isExpanded = expandedGroups.has(groupName)
           const isPayAllMode = payAllMode[groupName] ?? true
           const isSingleItem = items.length === 1
-          const unpaidItems = items.filter(wo => wo.paymentStatus === 'UNPAID')
+          const unpaidItems = items.filter(wo => !wo.paymentStatus || wo.paymentStatus === 'UNPAID')
           
           return (
             <Collapsible 
@@ -280,8 +284,10 @@ export function BillingWorkOrdersDisplay({
                     {/* Individual Items */}
                     <div className="divide-y">
                       {items.map((wo, idx) => {
-                        const suffix = wo.description.match(/\((Q\d+|Month\d+)\)/i)?.[1] || 
-                                       (isSingleItem ? '' : `#${idx + 1}`)
+                        // Extract suffix from either "(Q1)" format or "Q1:" prefix format
+                        const suffixMatch = wo.description.match(/\((Q\d+|Month\d+)\)/i)?.[1] ||
+                                           wo.description.match(/^(Q\d+|Month\d+):/i)?.[1]
+                        const suffix = suffixMatch || (isSingleItem ? '' : `#${idx + 1}`)
                         
                         return (
                           <div 
