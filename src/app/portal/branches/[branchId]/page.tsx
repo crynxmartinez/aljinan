@@ -11,7 +11,7 @@ async function getBranch(branchId: string, userId: string) {
     where: { userId },
     include: {
       branches: {
-        where: { id: branchId, isActive: true }
+        where: { id: branchId }
       }
     }
   })
