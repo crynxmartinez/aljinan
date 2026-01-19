@@ -52,7 +52,30 @@ import {
   Save,
   Eye,
   EyeOff,
+  ChevronDown,
+  ChevronRight,
+  CornerDownRight,
 } from 'lucide-react'
+
+// Helper function to extract base name from work order title (removes Q1, Q2, Month1, etc.)
+function getBaseWorkOrderName(title: string): string {
+  return title.replace(/\s*\((Q\d+|Month\d+)\)\s*$/i, '').trim()
+}
+
+// Group work orders by their base name
+function groupWorkOrders(workOrders: WorkOrder[]): Map<string, WorkOrder[]> {
+  const groups = new Map<string, WorkOrder[]>()
+  
+  for (const wo of workOrders) {
+    const baseName = getBaseWorkOrderName(wo.title)
+    if (!groups.has(baseName)) {
+      groups.set(baseName, [])
+    }
+    groups.get(baseName)!.push(wo)
+  }
+  
+  return groups
+}
 
 interface WorkOrder {
   id: string
@@ -94,6 +117,250 @@ interface RequestsListProps {
   branchId: string
   userRole: 'CONTRACTOR' | 'CLIENT' | 'MANAGER'
   projectId?: string | null
+}
+
+// Collapsible Work Orders Grouped View for Contractor (with edit capability)
+interface WorkOrdersGroupedViewContractorProps {
+  workOrders: WorkOrder[]
+  editingWorkOrderId: string | null
+  editWorkOrder: { price: string; scheduledDate: string }
+  saving: boolean
+  onStartEdit: (wo: WorkOrder) => void
+  onSave: (workOrderId: string) => void
+  onCancel: () => void
+  onEditChange: (field: 'price' | 'scheduledDate', value: string) => void
+  onSaveGroupPrice: (groupName: string, price: string, workOrderIds: string[]) => void
+}
+
+function WorkOrdersGroupedViewContractor({
+  workOrders,
+  editingWorkOrderId,
+  editWorkOrder,
+  saving,
+  onStartEdit,
+  onSave,
+  onCancel,
+  onEditChange,
+  onSaveGroupPrice,
+}: WorkOrdersGroupedViewContractorProps) {
+  const [expandedGroups, setExpandedGroups] = useState<Set<string>>(new Set())
+  const [editingGroup, setEditingGroup] = useState<string | null>(null)
+  const [groupPrice, setGroupPrice] = useState('')
+  const groups = groupWorkOrders(workOrders)
+  
+  const toggleGroup = (groupName: string) => {
+    setExpandedGroups(prev => {
+      const next = new Set(prev)
+      if (next.has(groupName)) {
+        next.delete(groupName)
+      } else {
+        next.add(groupName)
+      }
+      return next
+    })
+  }
+
+  const startEditGroup = (groupName: string, items: WorkOrder[]) => {
+    setEditingGroup(groupName)
+    // Use the first item's price as default, or empty
+    const firstPrice = items[0]?.price
+    setGroupPrice(firstPrice !== null ? firstPrice.toString() : '')
+  }
+
+  const saveGroupPrice = (groupName: string, items: WorkOrder[]) => {
+    const ids = items.map(wo => wo.id)
+    onSaveGroupPrice(groupName, groupPrice, ids)
+    setEditingGroup(null)
+    setGroupPrice('')
+  }
+
+  const cancelEditGroup = () => {
+    setEditingGroup(null)
+    setGroupPrice('')
+  }
+  
+  return (
+    <div className="divide-y border rounded-lg overflow-hidden">
+      {Array.from(groups.entries()).map(([groupName, items]) => {
+        const isExpanded = expandedGroups.has(groupName)
+        const groupTotal = items.reduce((sum, wo) => sum + (wo.price || 0), 0)
+        const hasPendingPrice = items.some(wo => wo.price === null)
+        const isSingleItem = items.length === 1
+        const isEditingThisGroup = editingGroup === groupName
+        const hasAdhoc = items.some(wo => wo.type === 'adhoc' || wo.type === 'ADHOC')
+        
+        return (
+          <div key={groupName} className="bg-white">
+            {/* Group Header */}
+            <div className="flex items-center justify-between p-4 hover:bg-muted/50 transition-colors">
+              <button
+                onClick={() => !isSingleItem && toggleGroup(groupName)}
+                className={`flex-1 flex items-center gap-2 text-left ${isSingleItem ? 'cursor-default' : 'cursor-pointer'}`}
+              >
+                {!isSingleItem && (
+                  isExpanded ? (
+                    <ChevronDown className="h-4 w-4 text-muted-foreground" />
+                  ) : (
+                    <ChevronRight className="h-4 w-4 text-muted-foreground" />
+                  )
+                )}
+                <div className="flex-1">
+                  <div className="flex items-center gap-2">
+                    <span className="font-medium">{groupName}</span>
+                    {!isSingleItem && (
+                      <Badge variant="secondary" className="text-xs">
+                        {items.length} occurrences
+                      </Badge>
+                    )}
+                    {hasAdhoc && (
+                      <Badge variant="outline" className="text-purple-600 text-xs">
+                        Client Added
+                      </Badge>
+                    )}
+                  </div>
+                  {items[0].description && (
+                    <p className="text-sm text-muted-foreground mt-1">
+                      {items[0].description}
+                    </p>
+                  )}
+                </div>
+              </button>
+              
+              {/* Price & Edit Section */}
+              <div className="flex items-center gap-3">
+                {isEditingThisGroup ? (
+                  <div className="flex items-center gap-2">
+                    <div className="flex items-center">
+                      <span className="text-sm text-muted-foreground mr-1">$</span>
+                      <Input
+                        type="number"
+                        step="0.01"
+                        value={groupPrice}
+                        onChange={(e) => setGroupPrice(e.target.value)}
+                        placeholder="0.00"
+                        className="w-[100px] text-right"
+                      />
+                      {!isSingleItem && (
+                        <span className="text-xs text-muted-foreground ml-1">each</span>
+                      )}
+                    </div>
+                    <Button
+                      size="sm"
+                      onClick={() => saveGroupPrice(groupName, items)}
+                      disabled={saving}
+                    >
+                      {saving ? <Loader2 className="h-3 w-3 animate-spin" /> : <Save className="h-3 w-3" />}
+                    </Button>
+                    <Button
+                      size="sm"
+                      variant="outline"
+                      onClick={cancelEditGroup}
+                    >
+                      <XCircle className="h-3 w-3" />
+                    </Button>
+                  </div>
+                ) : (
+                  <>
+                    <div className="text-right">
+                      {hasPendingPrice ? (
+                        <Badge variant="outline" className="text-orange-600 border-orange-300">
+                          Needs Price
+                        </Badge>
+                      ) : (
+                        <span className="font-semibold text-primary">
+                          ${groupTotal.toLocaleString('en-US', { minimumFractionDigits: 2 })}
+                        </span>
+                      )}
+                    </div>
+                    <Button
+                      size="sm"
+                      variant="ghost"
+                      onClick={() => startEditGroup(groupName, items)}
+                    >
+                      <Pencil className="h-3 w-3 mr-1" />
+                      Edit
+                    </Button>
+                  </>
+                )}
+              </div>
+            </div>
+            
+            {/* Single Item Details (inline) */}
+            {isSingleItem && (
+              <div className="px-4 pb-4 pt-0">
+                <div className="flex items-center gap-4 text-sm text-muted-foreground ml-6">
+                  <CornerDownRight className="h-4 w-4 flex-shrink-0" />
+                  {items[0].scheduledDate ? (
+                    <div className="flex items-center gap-1">
+                      <Calendar className="h-3 w-3" />
+                      {new Date(items[0].scheduledDate).toLocaleDateString()}
+                    </div>
+                  ) : (
+                    <span>No date scheduled</span>
+                  )}
+                </div>
+              </div>
+            )}
+            
+            {/* Expanded Items */}
+            {!isSingleItem && isExpanded && (
+              <div className="bg-muted/30 border-t">
+                {items.map((wo, idx) => (
+                  <div key={wo.id} className="flex items-center justify-between px-4 py-3 border-b last:border-b-0">
+                    <div className="flex items-center gap-3 text-sm">
+                      <CornerDownRight className="h-4 w-4 text-muted-foreground flex-shrink-0 ml-2" />
+                      <div>
+                        <span className="text-muted-foreground">
+                          {wo.title.match(/\((Q\d+|Month\d+)\)/i)?.[1] || `#${idx + 1}`}:
+                        </span>
+                        {wo.scheduledDate && (
+                          <span className="ml-2 inline-flex items-center gap-1">
+                            <Calendar className="h-3 w-3" />
+                            {new Date(wo.scheduledDate).toLocaleDateString()}
+                          </span>
+                        )}
+                      </div>
+                    </div>
+                    <div className="flex items-center gap-2">
+                      {editingWorkOrderId === wo.id ? (
+                        <div className="flex items-center gap-2">
+                          <Input
+                            type="number"
+                            step="0.01"
+                            value={editWorkOrder.price}
+                            onChange={(e) => onEditChange('price', e.target.value)}
+                            placeholder="0.00"
+                            className="w-[80px] text-right"
+                          />
+                          <Button size="sm" onClick={() => onSave(wo.id)} disabled={saving}>
+                            {saving ? <Loader2 className="h-3 w-3 animate-spin" /> : <Save className="h-3 w-3" />}
+                          </Button>
+                          <Button size="sm" variant="outline" onClick={onCancel}>
+                            <XCircle className="h-3 w-3" />
+                          </Button>
+                        </div>
+                      ) : (
+                        <>
+                          {wo.price !== null ? (
+                            <span className="font-medium">${wo.price.toLocaleString('en-US', { minimumFractionDigits: 2 })}</span>
+                          ) : (
+                            <Badge variant="outline" className="text-xs text-orange-600">Pending</Badge>
+                          )}
+                          <Button size="sm" variant="ghost" onClick={() => onStartEdit(wo)}>
+                            <Pencil className="h-3 w-3" />
+                          </Button>
+                        </>
+                      )}
+                    </div>
+                  </div>
+                ))}
+              </div>
+            )}
+          </div>
+        )
+      })}
+    </div>
+  )
 }
 
 export function RequestsList({ branchId, userRole, projectId }: RequestsListProps) {
@@ -220,6 +487,39 @@ export function RequestsList({ branchId, userRole, projectId }: RequestsListProp
       if (updated) setSelectedProject(updated)
     } catch (err) {
       console.error('Save error:', err)
+      setError(err instanceof Error ? err.message : 'An error occurred')
+    } finally {
+      setSaving(false)
+    }
+  }
+
+  // Save group price - applies same price to all work orders in the group
+  const handleSaveGroupPrice = async (groupName: string, price: string, workOrderIds: string[]) => {
+    if (!selectedProject || !price) return
+    setSaving(true)
+    setError('')
+    try {
+      // Update all work orders in the group with the same price
+      for (const workOrderId of workOrderIds) {
+        const response = await fetch(`/api/projects/${selectedProject.id}/work-orders/${workOrderId}`, {
+          method: 'PATCH',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ price }),
+        })
+        
+        if (!response.ok) {
+          const data = await response.json()
+          throw new Error(data.error || 'Failed to update work order')
+        }
+      }
+      
+      // Refresh projects and update selected project
+      const updatedProjects = await fetch(`/api/branches/${branchId}/projects`).then(r => r.json())
+      setProjects(updatedProjects)
+      const updated = updatedProjects.find((p: Project) => p.id === selectedProject.id)
+      if (updated) setSelectedProject(updated)
+    } catch (err) {
+      console.error('Save group error:', err)
       setError(err instanceof Error ? err.message : 'An error occurred')
     } finally {
       setSaving(false)
@@ -687,110 +987,27 @@ export function RequestsList({ branchId, userRole, projectId }: RequestsListProp
                 </div>
                 
                 {selectedProject.workOrders && selectedProject.workOrders.length > 0 ? (
-                  <div className="border rounded-lg overflow-hidden">
-                    <Table>
-                      <TableHeader>
-                        <TableRow>
-                          <TableHead>Work Order</TableHead>
-                          <TableHead>Type</TableHead>
-                          <TableHead>Scheduled Date</TableHead>
-                          <TableHead className="text-right">Price</TableHead>
-                          <TableHead className="w-[100px]">Actions</TableHead>
-                        </TableRow>
-                      </TableHeader>
-                      <TableBody>
-                        {selectedProject.workOrders.map((wo) => (
-                          <TableRow key={wo.id}>
-                            <TableCell>
-                              <div>
-                                <p className="font-medium">{wo.title}</p>
-                                {wo.description && (
-                                  <p className="text-xs text-muted-foreground">{wo.description}</p>
-                                )}
-                              </div>
-                            </TableCell>
-                            <TableCell>
-                              <Badge variant="outline" className={wo.type === 'adhoc' || wo.type === 'ADHOC' ? 'text-purple-600' : ''}>
-                                {wo.type === 'adhoc' || wo.type === 'ADHOC' ? 'Client Added' : 'Scheduled'}
-                              </Badge>
-                            </TableCell>
-                            <TableCell>
-                              {editingWorkOrderId === wo.id ? (
-                                <Input
-                                  type="date"
-                                  value={editWorkOrder.scheduledDate}
-                                  onChange={(e) => setEditWorkOrder({ ...editWorkOrder, scheduledDate: e.target.value })}
-                                  className="w-[140px]"
-                                />
-                              ) : wo.scheduledDate ? (
-                                <div className="flex items-center gap-1 text-sm">
-                                  <Calendar className="h-3 w-3" />
-                                  {new Date(wo.scheduledDate).toLocaleDateString()}
-                                </div>
-                              ) : (
-                                <span className="text-muted-foreground">-</span>
-                              )}
-                            </TableCell>
-                            <TableCell className="text-right">
-                              {editingWorkOrderId === wo.id ? (
-                                <Input
-                                  type="number"
-                                  step="0.01"
-                                  value={editWorkOrder.price}
-                                  onChange={(e) => setEditWorkOrder({ ...editWorkOrder, price: e.target.value })}
-                                  placeholder="0.00"
-                                  className="w-[100px] text-right"
-                                />
-                              ) : wo.price !== null ? (
-                                <span className="font-medium">${wo.price.toLocaleString('en-US', { minimumFractionDigits: 2 })}</span>
-                              ) : (
-                                <Badge variant="outline" className="text-orange-600 border-orange-300">
-                                  Needs Price
-                                </Badge>
-                              )}
-                            </TableCell>
-                            <TableCell>
-                              {editingWorkOrderId === wo.id ? (
-                                <div className="flex gap-1">
-                                  <Button
-                                    size="sm"
-                                    onClick={() => handleSaveWorkOrder(wo.id)}
-                                    disabled={saving}
-                                  >
-                                    {saving ? <Loader2 className="h-3 w-3 animate-spin" /> : <Save className="h-3 w-3" />}
-                                  </Button>
-                                  <Button
-                                    size="sm"
-                                    variant="outline"
-                                    onClick={() => setEditingWorkOrderId(null)}
-                                  >
-                                    <XCircle className="h-3 w-3" />
-                                  </Button>
-                                </div>
-                              ) : (
-                                <Button
-                                  size="sm"
-                                  variant="ghost"
-                                  onClick={() => startEditWorkOrder(wo)}
-                                >
-                                  <Pencil className="h-3 w-3 mr-1" />
-                                  Edit
-                                </Button>
-                              )}
-                            </TableCell>
-                          </TableRow>
-                        ))}
-                      </TableBody>
-                    </Table>
+                  <>
+                    <WorkOrdersGroupedViewContractor
+                      workOrders={selectedProject.workOrders}
+                      editingWorkOrderId={editingWorkOrderId}
+                      editWorkOrder={editWorkOrder}
+                      saving={saving}
+                      onStartEdit={startEditWorkOrder}
+                      onSave={handleSaveWorkOrder}
+                      onCancel={() => setEditingWorkOrderId(null)}
+                      onEditChange={(field, value) => setEditWorkOrder({ ...editWorkOrder, [field]: value })}
+                      onSaveGroupPrice={handleSaveGroupPrice}
+                    />
                     
                     {/* Total Row */}
-                    <div className="flex items-center justify-between p-4 bg-primary/5 border-t">
+                    <div className="flex items-center justify-between p-4 bg-primary/5 border rounded-lg mt-3">
                       <span className="font-semibold">Total</span>
                       <span className="text-xl font-bold">
                         ${calculatedTotal.toLocaleString('en-US', { minimumFractionDigits: 2 })}
                       </span>
                     </div>
-                  </div>
+                  </>
                 ) : (
                   <div className="text-center py-8 text-muted-foreground border rounded-lg">
                     No work orders defined yet
