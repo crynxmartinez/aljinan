@@ -396,7 +396,7 @@ export function RequestsList({ branchId, userRole, projectId }: RequestsListProp
                       {getPriorityBadge(request.priority)}
                       {getStatusBadge(request.status)}
                     </div>
-                    {request.description && (
+                    {request.description && !request.title.startsWith('Project Proposal:') && (
                       <p className="text-sm text-muted-foreground line-clamp-2">
                         {request.description}
                       </p>
