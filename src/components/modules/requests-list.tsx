@@ -85,6 +85,7 @@ interface WorkOrder {
   price: number | null
   stage: string
   type: string
+  recurringType?: 'ONCE' | 'MONTHLY' | 'QUARTERLY'
 }
 
 interface Project {
@@ -129,7 +130,7 @@ interface WorkOrdersGroupedViewContractorProps {
   onSave: (workOrderId: string) => void
   onCancel: () => void
   onEditChange: (field: 'price' | 'scheduledDate', value: string) => void
-  onSaveGroupPrice: (groupName: string, price: string, workOrderIds: string[]) => void
+  onSaveGroupPrice: (groupName: string, price: string, scheduledDate: string, workOrderIds: string[]) => void
 }
 
 function WorkOrdersGroupedViewContractor({
@@ -146,6 +147,7 @@ function WorkOrdersGroupedViewContractor({
   const [expandedGroups, setExpandedGroups] = useState<Set<string>>(new Set())
   const [editingGroup, setEditingGroup] = useState<string | null>(null)
   const [groupPrice, setGroupPrice] = useState('')
+  const [groupDate, setGroupDate] = useState('')
   const groups = groupWorkOrders(workOrders)
   
   const toggleGroup = (groupName: string) => {
@@ -165,18 +167,23 @@ function WorkOrdersGroupedViewContractor({
     // Use the first item's price as default, or empty
     const firstPrice = items[0]?.price
     setGroupPrice(firstPrice !== null ? firstPrice.toString() : '')
+    // For single items, also set the date
+    const firstDate = items[0]?.scheduledDate
+    setGroupDate(firstDate ? new Date(firstDate).toISOString().split('T')[0] : '')
   }
 
   const saveGroupPrice = (groupName: string, items: WorkOrder[]) => {
     const ids = items.map(wo => wo.id)
-    onSaveGroupPrice(groupName, groupPrice, ids)
+    onSaveGroupPrice(groupName, groupPrice, groupDate, ids)
     setEditingGroup(null)
     setGroupPrice('')
+    setGroupDate('')
   }
 
   const cancelEditGroup = () => {
     setEditingGroup(null)
     setGroupPrice('')
+    setGroupDate('')
   }
   
   return (
@@ -217,6 +224,12 @@ function WorkOrdersGroupedViewContractor({
                         Client Added
                       </Badge>
                     )}
+                    {/* Show recurring type for client-added items */}
+                    {hasAdhoc && items[0].recurringType && items[0].recurringType !== 'ONCE' && (
+                      <Badge variant="outline" className="text-blue-600 text-xs">
+                        {items[0].recurringType === 'MONTHLY' ? 'Monthly' : 'Quarterly'}
+                      </Badge>
+                    )}
                   </div>
                   {items[0].description && (
                     <p className="text-sm text-muted-foreground mt-1">
@@ -230,6 +243,15 @@ function WorkOrdersGroupedViewContractor({
               <div className="flex items-center gap-3">
                 {isEditingThisGroup ? (
                   <div className="flex items-center gap-2">
+                    {/* Date input for single items */}
+                    {isSingleItem && (
+                      <Input
+                        type="date"
+                        value={groupDate}
+                        onChange={(e) => setGroupDate(e.target.value)}
+                        className="w-[140px]"
+                      />
+                    )}
                     <div className="flex items-center">
                       <span className="text-sm text-muted-foreground mr-1">$</span>
                       <Input
@@ -494,17 +516,21 @@ export function RequestsList({ branchId, userRole, projectId }: RequestsListProp
   }
 
   // Save group price - applies same price to all work orders in the group
-  const handleSaveGroupPrice = async (groupName: string, price: string, workOrderIds: string[]) => {
-    if (!selectedProject || !price) return
+  const handleSaveGroupPrice = async (groupName: string, price: string, scheduledDate: string, workOrderIds: string[]) => {
+    if (!selectedProject) return
     setSaving(true)
     setError('')
     try {
-      // Update all work orders in the group with the same price
+      // Update all work orders in the group with the same price (and date for single items)
       for (const workOrderId of workOrderIds) {
+        const payload: { price?: string; scheduledDate?: string } = {}
+        if (price) payload.price = price
+        if (scheduledDate && workOrderIds.length === 1) payload.scheduledDate = scheduledDate
+        
         const response = await fetch(`/api/projects/${selectedProject.id}/work-orders/${workOrderId}`, {
           method: 'PATCH',
           headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ price }),
+          body: JSON.stringify(payload),
         })
         
         if (!response.ok) {

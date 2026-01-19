@@ -56,7 +56,8 @@ export async function GET(
           scheduledDate: item.scheduledDate,
           status: item.stage,
           type: item.type === 'ADHOC' ? 'adhoc' as const : 'scheduled' as const,
-          price: item.price
+          price: item.price,
+          recurringType: item.recurringType || 'ONCE'
         }))
       )
 
