@@ -42,7 +42,38 @@ import {
   ExternalLink,
   Upload,
   Link as LinkIcon,
+  Award,
+  ClipboardList,
+  Calendar,
+  PenTool,
 } from 'lucide-react'
+import { ContractWorkOrdersDisplay } from './contract-work-orders-display'
+import { ContractAttachmentsSection } from './contract-attachments-section'
+
+interface WorkOrder {
+  id: string
+  description: string
+  price: number | null
+  scheduledDate: string | null
+  stage: string
+}
+
+interface Checklist {
+  id: string
+  title: string
+  items: WorkOrder[]
+}
+
+interface Project {
+  id: string
+  title: string
+  description: string | null
+  status: string
+  startDate: string | null
+  endDate: string | null
+  totalValue: number
+  checklists: Checklist[]
+}
 
 interface Contract {
   id: string
@@ -62,6 +93,7 @@ interface Contract {
   totalValue: number | null
   status: 'DRAFT' | 'PENDING_SIGNATURE' | 'SIGNED' | 'COMPLETED' | 'EXPIRED' | 'TERMINATED'
   createdAt: string
+  project: Project | null
 }
 
 interface ContractsListProps {
@@ -336,86 +368,102 @@ export function ContractsList({ branchId, projectId }: ContractsListProps) {
             </div>
           ) : (
             <div className="space-y-4">
-              {contracts.map((contract) => (
+              {contracts.map((contract) => {
+                const workOrderCount = contract.project?.checklists.flatMap(c => c.items).length || 0
+                
+                return (
                 <div
                   key={contract.id}
-                  className="flex items-start justify-between p-4 border rounded-lg hover:bg-muted/50 transition-colors cursor-pointer"
+                  className="p-4 border rounded-lg hover:bg-muted/50 transition-colors cursor-pointer"
                   onClick={() => {
                     setSelectedContract(contract)
                     setDetailDialogOpen(true)
                   }}
                 >
-                  <div className="space-y-1 flex-1">
-                    <div className="flex items-center gap-2">
-                      <FileText className="h-4 w-4 text-muted-foreground" />
-                      <h4 className="font-medium">{contract.title}</h4>
-                      {getStatusBadge(contract.status)}
-                    </div>
-                    {contract.description && (
-                      <p className="text-sm text-muted-foreground line-clamp-1">
-                        {contract.description}
-                      </p>
-                    )}
-                    <div className="flex items-center gap-4 text-sm text-muted-foreground">
-                      <span>{contract.fileName}</span>
-                      <span>{formatFileSize(contract.fileSize)}</span>
-                      {contract.startDate && contract.endDate && (
-                        <span>
-                          {new Date(contract.startDate).toLocaleDateString()} - {new Date(contract.endDate).toLocaleDateString()}
-                        </span>
+                  <div className="flex items-start justify-between">
+                    <div className="space-y-1 flex-1">
+                      <div className="flex items-center gap-2">
+                        <FileText className="h-4 w-4 text-muted-foreground" />
+                        <h4 className="font-medium">{contract.title}</h4>
+                        {getStatusBadge(contract.status)}
+                      </div>
+                      {contract.description && (
+                        <p className="text-sm text-muted-foreground line-clamp-1">
+                          {contract.description}
+                        </p>
                       )}
+                      <div className="flex items-center gap-4 text-sm text-muted-foreground">
+                        {contract.startDate && contract.endDate && (
+                          <span className="flex items-center gap-1">
+                            <Calendar className="h-3 w-3" />
+                            {new Date(contract.startDate).toLocaleDateString()} - {new Date(contract.endDate).toLocaleDateString()}
+                          </span>
+                        )}
+                        {contract.totalValue && (
+                          <span className="font-medium text-primary">
+                            ${contract.totalValue.toLocaleString('en-US', { minimumFractionDigits: 2 })}
+                          </span>
+                        )}
+                        {workOrderCount > 0 && (
+                          <span className="flex items-center gap-1">
+                            <ClipboardList className="h-3 w-3" />
+                            {workOrderCount} work orders
+                          </span>
+                        )}
+                      </div>
                     </div>
                   </div>
-                  <div className="flex items-center gap-2">
-                    {contract.fileUrl && (
-                      <Button
-                        variant="outline"
-                        size="sm"
-                        onClick={(e) => {
-                          e.stopPropagation()
-                          window.open(contract.fileUrl!, '_blank')
-                        }}
-                      >
-                        <ExternalLink className="mr-2 h-4 w-4" />
-                        View
-                      </Button>
-                    )}
-                    <DropdownMenu>
-                      <DropdownMenuTrigger asChild>
-                        <Button variant="ghost" size="icon" onClick={(e) => e.stopPropagation()}>
-                          <MoreHorizontal className="h-4 w-4" />
-                        </Button>
-                      </DropdownMenuTrigger>
-                      <DropdownMenuContent align="end">
-                        {(contract.status === 'PENDING_SIGNATURE' || contract.status === 'SIGNED') && (
-                          <DropdownMenuItem onClick={() => openAttachPdfDialog(contract)}>
-                            <Upload className="mr-2 h-4 w-4" />
-                            {contract.fileUrl ? 'Update PDF' : 'Attach PDF'}
-                          </DropdownMenuItem>
-                        )}
-                        {(contract.status === 'PENDING_SIGNATURE' || contract.status === 'SIGNED') && (
-                          <DropdownMenuItem onClick={() => openAttachCertDialog(contract)}>
-                            <FileCheck className="mr-2 h-4 w-4" />
-                            {contract.certificateUrl ? 'Update Certificate' : 'Attach Certificate'}
-                          </DropdownMenuItem>
-                        )}
-                        {contract.status === 'SIGNED' && (
-                          <DropdownMenuItem onClick={() => handleUpdateStatus(contract.id, 'TERMINATED')}>
-                            Terminate Contract
-                          </DropdownMenuItem>
-                        )}
-                        <DropdownMenuItem 
-                          onClick={() => handleDeleteContract(contract.id)}
-                          className="text-destructive"
-                        >
-                          <Trash2 className="mr-2 h-4 w-4" />
-                          Delete
-                        </DropdownMenuItem>
-                      </DropdownMenuContent>
-                    </DropdownMenu>
+                  
+                  {/* Indicator Badges */}
+                  <div className="flex items-center gap-2 mt-3 pt-3 border-t">
+                    <Badge 
+                      variant="outline" 
+                      className={contract.fileUrl 
+                        ? "bg-blue-50 text-blue-700 border-blue-200" 
+                        : "bg-gray-50 text-gray-500 border-gray-200"
+                      }
+                    >
+                      <FileText className="h-3 w-3 mr-1" />
+                      PDF {contract.fileUrl ? '✓' : '—'}
+                    </Badge>
+                    <Badge 
+                      variant="outline" 
+                      className={contract.certificateUrl 
+                        ? "bg-amber-50 text-amber-700 border-amber-200" 
+                        : "bg-gray-50 text-gray-500 border-gray-200"
+                      }
+                    >
+                      <Award className="h-3 w-3 mr-1" />
+                      Cert {contract.certificateUrl ? '✓' : '—'}
+                    </Badge>
+                    <Badge 
+                      variant="outline" 
+                      className={contract.startSignedAt 
+                        ? "bg-green-50 text-green-700 border-green-200" 
+                        : "bg-gray-50 text-gray-500 border-gray-200"
+                      }
+                    >
+                      <PenTool className="h-3 w-3 mr-1" />
+                      Signed {contract.startSignedAt ? '✓' : '—'}
+                    </Badge>
+                    
+                    <div className="flex-1" />
+                    
+                    <Button
+                      variant="outline"
+                      size="sm"
+                      onClick={(e) => {
+                        e.stopPropagation()
+                        setSelectedContract(contract)
+                        setDetailDialogOpen(true)
+                      }}
+                    >
+                      View Details
+                    </Button>
                   </div>
                 </div>
-              ))}
+              )
+              })}
             </div>
           )}
         </CardContent>
@@ -546,58 +594,119 @@ export function ContractsList({ branchId, projectId }: ContractsListProps) {
 
       {/* Contract Detail Dialog */}
       <Dialog open={detailDialogOpen} onOpenChange={setDetailDialogOpen}>
-        <DialogContent className="max-w-lg">
+        <DialogContent className="max-w-3xl max-h-[90vh] overflow-y-auto">
           <DialogHeader>
-            <DialogTitle>{selectedContract?.title}</DialogTitle>
-            <DialogDescription>Contract Details</DialogDescription>
+            <DialogTitle className="flex items-center gap-2">
+              <FileCheck className="h-5 w-5" />
+              {selectedContract?.title}
+            </DialogTitle>
+            <DialogDescription>
+              {selectedContract?.description || 'Contract details and work orders'}
+            </DialogDescription>
           </DialogHeader>
           {selectedContract && (
-            <div className="space-y-4">
-              <div className="flex items-center gap-2">
-                {getStatusBadge(selectedContract.status)}
-              </div>
-
-              {selectedContract.description && (
+            <div className="space-y-6">
+              {/* Contract Summary */}
+              <div className="grid grid-cols-2 md:grid-cols-4 gap-4 p-4 bg-muted/30 rounded-lg">
                 <div>
-                  <p className="text-sm font-medium text-muted-foreground mb-1">Description</p>
-                  <p className="text-sm">{selectedContract.description}</p>
-                </div>
-              )}
-
-              <div className="grid grid-cols-2 gap-4 text-sm">
-                <div>
-                  <p className="font-medium text-muted-foreground">File</p>
-                  <p>{selectedContract.fileName}</p>
-                  <p className="text-xs text-muted-foreground">{formatFileSize(selectedContract.fileSize)}</p>
+                  <p className="text-xs text-muted-foreground mb-1">Status</p>
+                  {getStatusBadge(selectedContract.status)}
                 </div>
                 <div>
-                  <p className="font-medium text-muted-foreground">Created</p>
-                  <p>{new Date(selectedContract.createdAt).toLocaleDateString()}</p>
+                  <p className="text-xs text-muted-foreground mb-1">Total Value</p>
+                  <p className="font-bold text-lg text-primary">
+                    ${(selectedContract.totalValue || 0).toLocaleString('en-US', { minimumFractionDigits: 2 })}
+                  </p>
                 </div>
                 {selectedContract.startDate && (
                   <div>
-                    <p className="font-medium text-muted-foreground">Start Date</p>
-                    <p>{new Date(selectedContract.startDate).toLocaleDateString()}</p>
+                    <p className="text-xs text-muted-foreground mb-1">Start Date</p>
+                    <p className="font-medium text-sm flex items-center gap-1">
+                      <Calendar className="h-3 w-3" />
+                      {new Date(selectedContract.startDate).toLocaleDateString()}
+                    </p>
                   </div>
                 )}
                 {selectedContract.endDate && (
                   <div>
-                    <p className="font-medium text-muted-foreground">End Date</p>
-                    <p>{new Date(selectedContract.endDate).toLocaleDateString()}</p>
+                    <p className="text-xs text-muted-foreground mb-1">End Date</p>
+                    <p className="font-medium text-sm flex items-center gap-1">
+                      <Calendar className="h-3 w-3" />
+                      {new Date(selectedContract.endDate).toLocaleDateString()}
+                    </p>
                   </div>
                 )}
               </div>
 
-              <div className="flex gap-2 pt-4 border-t">
-                {selectedContract.fileUrl && (
-                  <Button 
-                    onClick={() => window.open(selectedContract.fileUrl!, '_blank')}
-                    className="flex-1"
-                  >
-                    <ExternalLink className="mr-2 h-4 w-4" />
-                    View Document
-                  </Button>
-                )}
+              {/* Signatures Status */}
+              <div className="p-4 border rounded-lg bg-card">
+                <h3 className="font-semibold text-sm flex items-center gap-2 mb-3">
+                  <PenTool className="h-4 w-4" />
+                  Signatures
+                </h3>
+                <div className="grid grid-cols-2 gap-4 text-sm">
+                  <div className="flex items-center gap-2">
+                    {selectedContract.startSignedAt ? (
+                      <>
+                        <CheckCircle className="h-4 w-4 text-green-600" />
+                        <span>Start: Signed on {new Date(selectedContract.startSignedAt).toLocaleDateString()}</span>
+                      </>
+                    ) : (
+                      <>
+                        <Clock className="h-4 w-4 text-amber-600" />
+                        <span className="text-muted-foreground">Start: Awaiting signature</span>
+                      </>
+                    )}
+                  </div>
+                  <div className="flex items-center gap-2">
+                    {selectedContract.endSignedAt ? (
+                      <>
+                        <CheckCircle className="h-4 w-4 text-green-600" />
+                        <span>End: Signed on {new Date(selectedContract.endSignedAt).toLocaleDateString()}</span>
+                      </>
+                    ) : (
+                      <>
+                        <Clock className="h-4 w-4 text-muted-foreground" />
+                        <span className="text-muted-foreground">End: Pending completion</span>
+                      </>
+                    )}
+                  </div>
+                </div>
+              </div>
+
+              {/* Work Orders Section */}
+              {selectedContract.project && selectedContract.project.checklists.length > 0 && (
+                <div className="space-y-3">
+                  <h3 className="font-semibold text-sm flex items-center gap-2">
+                    <ClipboardList className="h-4 w-4" />
+                    Work Orders
+                  </h3>
+                  <ContractWorkOrdersDisplay 
+                    workOrders={selectedContract.project.checklists.flatMap(c => c.items)}
+                    showStatus={true}
+                  />
+                </div>
+              )}
+
+              {/* Attachments Section */}
+              <div className="space-y-3">
+                <h3 className="font-semibold text-sm flex items-center gap-2">
+                  <Award className="h-4 w-4" />
+                  Documents & Attachments
+                </h3>
+                <ContractAttachmentsSection
+                  contractId={selectedContract.id}
+                  branchId={branchId}
+                  fileUrl={selectedContract.fileUrl}
+                  fileName={selectedContract.fileName}
+                  certificateUrl={selectedContract.certificateUrl}
+                  certificateFileName={selectedContract.certificateFileName}
+                  isContractor={true}
+                  onUpdate={() => {
+                    fetchContracts()
+                    router.refresh()
+                  }}
+                />
               </div>
             </div>
           )}

@@ -34,7 +34,11 @@ import {
   ClipboardList,
   PenTool,
   RotateCcw,
+  Award,
+  Calendar,
 } from 'lucide-react'
+import { ContractWorkOrdersDisplay } from '@/components/modules/contract-work-orders-display'
+import { ContractAttachmentsSection } from '@/components/modules/contract-attachments-section'
 
 interface WorkOrder {
   id: string
@@ -385,7 +389,11 @@ export function ClientBranchContracts({ branchId, projectId }: ClientBranchContr
             </CardDescription>
           </CardHeader>
           <CardContent className="space-y-4">
-            {activeContracts.map((contract) => (
+            {activeContracts.map((contract) => {
+              const workOrders = contract.project?.checklists.flatMap(c => c.items) || []
+              const completedCount = workOrders.filter(i => i.stage === 'COMPLETED').length
+              
+              return (
               <div
                 key={contract.id}
                 className="p-4 bg-white border rounded-lg"
@@ -403,13 +411,15 @@ export function ClientBranchContracts({ branchId, projectId }: ClientBranchContr
                       </p>
                     )}
                     <div className="flex items-center gap-4 text-sm text-muted-foreground">
-                      <span>{contract.fileName}</span>
-                      {contract.fileSize && <span>{formatFileSize(contract.fileSize)}</span>}
                       {contract.startDate && contract.endDate && (
-                        <span>
-                          Valid: {new Date(contract.startDate).toLocaleDateString()} - {new Date(contract.endDate).toLocaleDateString()}
+                        <span className="flex items-center gap-1">
+                          <Calendar className="h-3 w-3" />
+                          {new Date(contract.startDate).toLocaleDateString()} - {new Date(contract.endDate).toLocaleDateString()}
                         </span>
                       )}
+                      <span className="font-medium text-primary">
+                        ${(contract.totalValue || 0).toLocaleString('en-US', { minimumFractionDigits: 2 })}
+                      </span>
                     </div>
                   </div>
                   <div className="flex gap-2">
@@ -436,24 +446,53 @@ export function ClientBranchContracts({ branchId, projectId }: ClientBranchContr
                     )}
                   </div>
                 </div>
-                {/* Work order progress */}
-                {contract.project && (
-                  <div className="mt-3 pt-3 border-t">
-                    <div className="flex items-center justify-between text-sm">
-                      <span className="text-muted-foreground">Work Orders Progress</span>
-                      <span className="font-medium">
-                        {contract.project.checklists.flatMap(c => c.items).filter(i => i.stage === 'COMPLETED').length} / {contract.project.checklists.flatMap(c => c.items).length} completed
+                
+                {/* Indicator Badges & Progress */}
+                <div className="mt-3 pt-3 border-t">
+                  <div className="flex items-center gap-2 flex-wrap">
+                    <Badge 
+                      variant="outline" 
+                      className={contract.fileUrl 
+                        ? "bg-blue-50 text-blue-700 border-blue-200" 
+                        : "bg-gray-50 text-gray-500 border-gray-200"
+                      }
+                    >
+                      <FileText className="h-3 w-3 mr-1" />
+                      PDF {contract.fileUrl ? '✓' : '—'}
+                    </Badge>
+                    <Badge 
+                      variant="outline" 
+                      className={contract.certificateUrl 
+                        ? "bg-amber-50 text-amber-700 border-amber-200" 
+                        : "bg-gray-50 text-gray-500 border-gray-200"
+                      }
+                    >
+                      <Award className="h-3 w-3 mr-1" />
+                      Cert {contract.certificateUrl ? '✓' : '—'}
+                    </Badge>
+                    
+                    {workOrders.length > 0 && (
+                      <Badge 
+                        variant="outline" 
+                        className={completedCount === workOrders.length 
+                          ? "bg-green-50 text-green-700 border-green-200" 
+                          : "bg-blue-50 text-blue-700 border-blue-200"
+                        }
+                      >
+                        <ClipboardList className="h-3 w-3 mr-1" />
+                        {completedCount}/{workOrders.length} Work Orders
+                      </Badge>
+                    )}
+                    
+                    {!areAllWorkOrdersCompleted(contract) && workOrders.length > 0 && (
+                      <span className="text-xs text-muted-foreground ml-auto">
+                        Complete all work orders to finalize
                       </span>
-                    </div>
-                    {!areAllWorkOrdersCompleted(contract) && (
-                      <p className="text-xs text-muted-foreground mt-1">
-                        Complete all work orders to sign and finalize the contract
-                      </p>
                     )}
                   </div>
-                )}
+                </div>
               </div>
-            ))}
+            )})}
           </CardContent>
         </Card>
       )}
@@ -616,131 +655,114 @@ export function ClientBranchContracts({ branchId, projectId }: ClientBranchContr
               {selectedContract?.title}
             </DialogTitle>
             <DialogDescription>
-              Contract details and work order breakdown
+              {selectedContract?.description || 'Contract details and work orders'}
             </DialogDescription>
           </DialogHeader>
 
           {selectedContract && (
             <div className="space-y-6">
-              {/* Contract Info */}
+              {/* Contract Summary */}
               <div className="grid grid-cols-2 md:grid-cols-4 gap-4 p-4 bg-muted/30 rounded-lg">
                 <div>
-                  <p className="text-xs text-muted-foreground">Status</p>
+                  <p className="text-xs text-muted-foreground mb-1">Status</p>
                   {getStatusBadge(selectedContract.status)}
                 </div>
                 <div>
-                  <p className="text-xs text-muted-foreground">Total Value</p>
+                  <p className="text-xs text-muted-foreground mb-1">Total Value</p>
                   <p className="font-bold text-lg text-primary">
                     ${(selectedContract.totalValue || 0).toLocaleString('en-US', { minimumFractionDigits: 2 })}
                   </p>
                 </div>
                 {selectedContract.startDate && (
                   <div>
-                    <p className="text-xs text-muted-foreground">Start Date</p>
-                    <p className="font-medium text-sm">{new Date(selectedContract.startDate).toLocaleDateString()}</p>
+                    <p className="text-xs text-muted-foreground mb-1">Start Date</p>
+                    <p className="font-medium text-sm flex items-center gap-1">
+                      <Calendar className="h-3 w-3" />
+                      {new Date(selectedContract.startDate).toLocaleDateString()}
+                    </p>
                   </div>
                 )}
                 {selectedContract.endDate && (
                   <div>
-                    <p className="text-xs text-muted-foreground">End Date</p>
-                    <p className="font-medium text-sm">{new Date(selectedContract.endDate).toLocaleDateString()}</p>
+                    <p className="text-xs text-muted-foreground mb-1">End Date</p>
+                    <p className="font-medium text-sm flex items-center gap-1">
+                      <Calendar className="h-3 w-3" />
+                      {new Date(selectedContract.endDate).toLocaleDateString()}
+                    </p>
                   </div>
                 )}
               </div>
 
-              {/* Project Details */}
-              {selectedContract.project && (
-                <div className="space-y-4">
-                  <h3 className="font-semibold flex items-center gap-2">
-                    <Building className="h-4 w-4" />
-                    Project Details
-                  </h3>
-                  <div className="p-4 border rounded-lg">
-                    <h4 className="font-medium">{selectedContract.project.title}</h4>
-                    {selectedContract.project.description && (
-                      <p className="text-sm text-muted-foreground mt-1">{selectedContract.project.description}</p>
+              {/* Signatures Status */}
+              <div className="p-4 border rounded-lg bg-card">
+                <h3 className="font-semibold text-sm flex items-center gap-2 mb-3">
+                  <PenTool className="h-4 w-4" />
+                  Signatures
+                </h3>
+                <div className="grid grid-cols-2 gap-4 text-sm">
+                  <div className="flex items-center gap-2">
+                    {selectedContract.startSignedAt ? (
+                      <>
+                        <CheckCircle className="h-4 w-4 text-green-600" />
+                        <span>Start: Signed on {new Date(selectedContract.startSignedAt).toLocaleDateString()}</span>
+                      </>
+                    ) : (
+                      <>
+                        <Clock className="h-4 w-4 text-amber-600" />
+                        <span className="text-muted-foreground">Start: Awaiting your signature</span>
+                      </>
+                    )}
+                  </div>
+                  <div className="flex items-center gap-2">
+                    {selectedContract.endSignedAt ? (
+                      <>
+                        <CheckCircle className="h-4 w-4 text-green-600" />
+                        <span>End: Signed on {new Date(selectedContract.endSignedAt).toLocaleDateString()}</span>
+                      </>
+                    ) : (
+                      <>
+                        <Clock className="h-4 w-4 text-muted-foreground" />
+                        <span className="text-muted-foreground">End: Complete all work orders first</span>
+                      </>
                     )}
                   </div>
                 </div>
-              )}
+              </div>
 
-              {/* Work Orders */}
-              {selectedContract.project?.checklists && selectedContract.project.checklists.length > 0 && (
-                <div className="space-y-4">
-                  <h3 className="font-semibold flex items-center gap-2">
+              {/* Work Orders Section */}
+              {selectedContract.project && selectedContract.project.checklists.length > 0 && (
+                <div className="space-y-3">
+                  <h3 className="font-semibold text-sm flex items-center gap-2">
                     <ClipboardList className="h-4 w-4" />
                     Work Orders
                   </h3>
-                  <div className="border rounded-lg overflow-hidden">
-                    <Table>
-                      <TableHeader>
-                        <TableRow>
-                          <TableHead>Description</TableHead>
-                          <TableHead>Scheduled Date</TableHead>
-                          <TableHead>Status</TableHead>
-                          <TableHead className="text-right">Price</TableHead>
-                        </TableRow>
-                      </TableHeader>
-                      <TableBody>
-                        {selectedContract.project.checklists.flatMap(checklist => 
-                          checklist.items.map(item => (
-                            <TableRow key={item.id}>
-                              <TableCell className="font-medium">{item.description}</TableCell>
-                              <TableCell>
-                                {item.scheduledDate 
-                                  ? new Date(item.scheduledDate).toLocaleDateString()
-                                  : '-'
-                                }
-                              </TableCell>
-                              <TableCell>
-                                <Badge variant="outline" className="text-xs">
-                                  {item.stage}
-                                </Badge>
-                              </TableCell>
-                              <TableCell className="text-right">
-                                {item.price 
-                                  ? `$${item.price.toLocaleString('en-US', { minimumFractionDigits: 2 })}`
-                                  : '-'
-                                }
-                              </TableCell>
-                            </TableRow>
-                          ))
-                        )}
-                      </TableBody>
-                    </Table>
-                    <div className="flex items-center justify-between p-4 bg-primary/5 border-t">
-                      <span className="font-semibold">Total</span>
-                      <span className="text-xl font-bold">
-                        ${(selectedContract.totalValue || 0).toLocaleString('en-US', { minimumFractionDigits: 2 })}
-                      </span>
-                    </div>
-                  </div>
+                  <ContractWorkOrdersDisplay 
+                    workOrders={selectedContract.project.checklists.flatMap(c => c.items)}
+                    showStatus={true}
+                  />
                 </div>
               )}
 
-              {/* PDF Download */}
-              {selectedContract.fileUrl && (
-                <div className="flex justify-end gap-2 pt-4 border-t">
-                  <Button
-                    variant="outline"
-                    onClick={() => window.open(selectedContract.fileUrl!, '_blank')}
-                  >
-                    <ExternalLink className="mr-2 h-4 w-4" />
-                    Open PDF
-                  </Button>
-                  <Button
-                    onClick={() => {
-                      const link = document.createElement('a')
-                      link.href = selectedContract.fileUrl!
-                      link.download = selectedContract.fileName || 'contract.pdf'
-                      link.click()
-                    }}
-                  >
-                    <Download className="mr-2 h-4 w-4" />
-                    Download PDF
-                  </Button>
-                </div>
-              )}
+              {/* Attachments Section */}
+              <div className="space-y-3">
+                <h3 className="font-semibold text-sm flex items-center gap-2">
+                  <Award className="h-4 w-4" />
+                  Documents & Attachments
+                </h3>
+                <ContractAttachmentsSection
+                  contractId={selectedContract.id}
+                  branchId={branchId}
+                  fileUrl={selectedContract.fileUrl}
+                  fileName={selectedContract.fileName}
+                  certificateUrl={selectedContract.certificateUrl}
+                  certificateFileName={selectedContract.certificateFileName}
+                  isContractor={false}
+                  onUpdate={() => {
+                    fetchContracts()
+                    router.refresh()
+                  }}
+                />
+              </div>
             </div>
           )}
         </DialogContent>
