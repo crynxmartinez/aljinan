@@ -238,17 +238,21 @@ export function BillingWorkOrdersDisplay({
                           {formatCurrency(groupTotal)}
                         </span>
                         
-                        {/* Pay All button (header) - only for client in pay all mode */}
-                        {userRole === 'CLIENT' && isPayAllMode && !isSingleItem && unpaidItems.length > 0 && (
+                        {/* Pay All button (header) - for client: show for multi-item groups in pay all mode, or single items */}
+                        {userRole === 'CLIENT' && unpaidItems.length > 0 && (isPayAllMode || isSingleItem) && (
                           <Button
                             size="sm"
                             onClick={(e) => {
                               e.stopPropagation()
-                              onPayGroup?.(unpaidItems.map(wo => wo.id))
+                              if (isSingleItem) {
+                                onPaySingle?.(unpaidItems[0].id)
+                              } else {
+                                onPayGroup?.(unpaidItems.map(wo => wo.id))
+                              }
                             }}
                           >
                             <CreditCard className="h-3 w-3 mr-1" />
-                            Pay All ({unpaidItems.length})
+                            {isSingleItem ? 'Pay' : `Pay All (${unpaidItems.length})`}
                           </Button>
                         )}
                       </div>
@@ -326,7 +330,7 @@ export function BillingWorkOrdersDisplay({
                                 </span>
                                 
                                 {/* Action buttons */}
-                                {wo.paymentStatus === 'UNPAID' && userRole === 'CLIENT' && !isPayAllMode && (
+                                {(!wo.paymentStatus || wo.paymentStatus === 'UNPAID') && userRole === 'CLIENT' && !isPayAllMode && (
                                   <Button
                                     size="sm"
                                     variant="outline"
