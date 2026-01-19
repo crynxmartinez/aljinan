@@ -130,7 +130,7 @@ interface WorkOrdersGroupedViewContractorProps {
   onSave: (workOrderId: string) => void
   onCancel: () => void
   onEditChange: (field: 'price' | 'scheduledDate', value: string) => void
-  onSaveGroupPrice: (groupName: string, price: string, scheduledDate: string, workOrderIds: string[]) => void
+  onSaveGroupPrice: (groupName: string, price: string, scheduledDate: string, workOrderIds: string[]) => Promise<void>
 }
 
 function WorkOrdersGroupedViewContractor({
@@ -172,9 +172,10 @@ function WorkOrdersGroupedViewContractor({
     setGroupDate(firstDate ? new Date(firstDate).toISOString().split('T')[0] : '')
   }
 
-  const saveGroupPrice = (groupName: string, items: WorkOrder[]) => {
+  const saveGroupPrice = async (groupName: string, items: WorkOrder[]) => {
     const ids = items.map(wo => wo.id)
-    onSaveGroupPrice(groupName, groupPrice, groupDate, ids)
+    await onSaveGroupPrice(groupName, groupPrice, groupDate, ids)
+    // Clear state after save completes
     setEditingGroup(null)
     setGroupPrice('')
     setGroupDate('')
