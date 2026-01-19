@@ -105,7 +105,7 @@ export async function PATCH(
 
     const { branchId } = await params
     const body = await request.json()
-    const { action, workOrderIds, paymentProofUrl, paymentProofType, paymentProofFileName } = body
+    const { action, workOrderIds, paymentProofUrl, paymentProofType, paymentProofFileName, signature } = body
 
     const hasAccess = await verifyBranchAccess(branchId, session.user.id, session.user.role)
     if (!hasAccess) {
@@ -203,13 +203,19 @@ export async function PATCH(
         return NextResponse.json({ error: 'Only contractors can verify payments' }, { status: 403 })
       }
 
-      // Update all work orders as paid
+      // Signature is required for verification
+      if (!signature) {
+        return NextResponse.json({ error: 'Signature is required to verify payment' }, { status: 400 })
+      }
+
+      // Update all work orders as paid with signature
       await prisma.checklistItem.updateMany({
         where: { id: { in: workOrderIds } },
         data: {
           paymentStatus: 'PAID',
           paymentVerifiedAt: new Date(),
           paymentVerifiedById: session.user.id,
+          paymentVerifiedSignature: signature,
         }
       })
 

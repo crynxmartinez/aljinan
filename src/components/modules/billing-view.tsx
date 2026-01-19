@@ -54,7 +54,7 @@ export function BillingView({ branchId, projectId, userRole }: BillingViewProps)
 
   // Work order verify dialog state
   const [woVerifyDialogOpen, setWoVerifyDialogOpen] = useState(false)
-  const [verifyWorkOrder, setVerifyWorkOrder] = useState<WorkOrder | null>(null)
+  const [verifyWorkOrders, setVerifyWorkOrders] = useState<WorkOrder[]>([])
 
   const fetchData = async () => {
     try {
@@ -112,7 +112,15 @@ export function BillingView({ branchId, projectId, userRole }: BillingViewProps)
   const handleVerifyPayment = (workOrderId: string) => {
     const wo = workOrders.find(w => w.id === workOrderId)
     if (wo) {
-      setVerifyWorkOrder(wo)
+      // Find all work orders with the same payment proof (paid together)
+      // They will have the same paymentSubmittedAt timestamp
+      const relatedWorkOrders = wo.paymentSubmittedAt
+        ? workOrders.filter(w => 
+            w.paymentStatus === 'PENDING_VERIFICATION' && 
+            w.paymentSubmittedAt === wo.paymentSubmittedAt
+          )
+        : [wo]
+      setVerifyWorkOrders(relatedWorkOrders)
       setWoVerifyDialogOpen(true)
     }
   }
@@ -121,7 +129,14 @@ export function BillingView({ branchId, projectId, userRole }: BillingViewProps)
     // Find the full WorkOrder from our state
     const fullWo = workOrders.find(w => w.id === wo.id)
     if (fullWo) {
-      setVerifyWorkOrder(fullWo)
+      // Find all work orders with the same payment proof (paid together)
+      const relatedWorkOrders = fullWo.paymentSubmittedAt
+        ? workOrders.filter(w => 
+            w.paymentStatus === 'PENDING_VERIFICATION' && 
+            w.paymentSubmittedAt === fullWo.paymentSubmittedAt
+          )
+        : [fullWo]
+      setVerifyWorkOrders(relatedWorkOrders)
       setWoVerifyDialogOpen(true)
     }
   }
@@ -254,7 +269,7 @@ export function BillingView({ branchId, projectId, userRole }: BillingViewProps)
       <PaymentVerifyDialog
         open={woVerifyDialogOpen}
         onOpenChange={setWoVerifyDialogOpen}
-        workOrder={verifyWorkOrder}
+        workOrders={verifyWorkOrders}
         branchId={branchId}
         onSuccess={() => {
           fetchData()

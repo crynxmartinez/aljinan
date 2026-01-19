@@ -432,14 +432,15 @@ model ChecklistItem {
   order           Int                @default(0)
   
   // Payment tracking
-  paymentStatus        PaymentStatus  @default(UNPAID)
-  paymentProofUrl      String?        // URL to uploaded image/PDF or external link
-  paymentProofType     String?        // 'file' or 'link'
-  paymentProofFileName String?        // Original filename if file upload
-  paymentSubmittedAt   DateTime?      // When client submitted payment proof
-  paymentSubmittedById String?        // User ID who submitted payment
-  paymentVerifiedAt    DateTime?      // When contractor verified payment
-  paymentVerifiedById  String?        // User ID who verified payment
+  paymentStatus           PaymentStatus  @default(UNPAID)
+  paymentProofUrl         String?        // URL to uploaded image/PDF or external link
+  paymentProofType        String?        // 'file' or 'link'
+  paymentProofFileName    String?        // Original filename if file upload
+  paymentSubmittedAt      DateTime?      // When client submitted payment proof
+  paymentSubmittedById    String?        // User ID who submitted payment
+  paymentVerifiedAt       DateTime?      // When contractor verified payment
+  paymentVerifiedById     String?        // User ID who verified payment
+  paymentVerifiedSignature String?       // Contractor signature (base64 image) for verification
   
   createdAt       DateTime           @default(now())
   updatedAt       DateTime           @updatedAt
