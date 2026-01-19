@@ -136,7 +136,7 @@ export function PaymentSubmitDialog({
       if (!isOpen) resetForm()
       onOpenChange(isOpen)
     }}>
-      <DialogContent className="sm:max-w-md">
+      <DialogContent className="sm:max-w-xl">
         <DialogHeader>
           <DialogTitle className="flex items-center gap-2">
             <CreditCard className="h-5 w-5" />
