@@ -38,6 +38,7 @@ interface ClientProjectFilterProps {
   selectedProjectId: string | null
   onProjectChange: (projectId: string | null) => void
   onProjectsLoaded?: (projects: Project[]) => void
+  onLoadingChange?: (loading: boolean) => void
   refreshTrigger?: number // Increment this to trigger a refresh
 }
 
@@ -62,10 +63,16 @@ export function ClientProjectFilter({
   selectedProjectId, 
   onProjectChange,
   onProjectsLoaded,
+  onLoadingChange,
   refreshTrigger 
 }: ClientProjectFilterProps) {
   const [projects, setProjects] = useState<Project[]>([])
   const [loading, setLoading] = useState(true)
+
+  // Notify parent of loading state changes
+  useEffect(() => {
+    onLoadingChange?.(loading)
+  }, [loading, onLoadingChange])
 
   const fetchProjects = async () => {
     try {
