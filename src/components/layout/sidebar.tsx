@@ -14,6 +14,7 @@ import {
   ChevronRight,
   MapPin,
   Bell,
+  UserCog,
 } from 'lucide-react'
 import { cn } from '@/lib/utils'
 import { Button } from '@/components/ui/button'
@@ -39,6 +40,8 @@ interface Client {
 
 interface SidebarProps {
   clients?: Client[]
+  userRole?: string
+  teamMemberRole?: string
 }
 
 const mainNavItems = [
@@ -57,6 +60,11 @@ const mainNavItems = [
     href: '/dashboard/company',
     icon: Building2,
   },
+  {
+    title: 'Team',
+    href: '/dashboard/team',
+    icon: UserCog,
+  },
 ]
 
 const bottomNavItems = [
@@ -72,7 +80,9 @@ const bottomNavItems = [
   },
 ]
 
-export function Sidebar({ clients = [] }: SidebarProps) {
+export function Sidebar({ clients = [], userRole, teamMemberRole }: SidebarProps) {
+  const isTeamMember = userRole === 'TEAM_MEMBER'
+  const isTechnician = teamMemberRole === 'TECHNICIAN'
   const pathname = usePathname()
   const { data: session } = useSession()
   const [expandedClients, setExpandedClients] = useState<string[]>([])
@@ -110,7 +120,15 @@ export function Sidebar({ clients = [] }: SidebarProps) {
       <ScrollArea className="flex-1 px-3 py-4">
         {/* Main Navigation */}
         <div className="space-y-1">
-          {mainNavItems.map((item) => (
+          {mainNavItems
+            .filter(item => {
+              // Hide Team page for team members (they can't manage other team members)
+              if (item.href === '/dashboard/team' && isTeamMember) return false
+              // Hide Company Profile for team members
+              if (item.href === '/dashboard/company' && isTeamMember) return false
+              return true
+            })
+            .map((item) => (
             <Link
               key={item.href}
               href={item.href}
@@ -133,24 +151,30 @@ export function Sidebar({ clients = [] }: SidebarProps) {
         <div className="space-y-1">
           <div className="flex items-center justify-between px-3 py-2">
             <span className="text-xs font-semibold uppercase text-sidebar-foreground/50">
-              Clients
+              {isTeamMember ? 'Assigned Branches' : 'Clients'}
             </span>
-            <Link href="/dashboard/clients">
-              <Button variant="ghost" size="sm" className="h-6 px-2 text-xs">
-                View All
-              </Button>
-            </Link>
+            {!isTeamMember && (
+              <Link href="/dashboard/clients">
+                <Button variant="ghost" size="sm" className="h-6 px-2 text-xs">
+                  View All
+                </Button>
+              </Link>
+            )}
           </div>
 
           {clients.length === 0 ? (
             <div className="px-3 py-4 text-center">
-              <p className="text-sm text-sidebar-foreground/50">No clients yet</p>
-              <Link href="/dashboard/clients">
-                <Button variant="outline" size="sm" className="mt-2">
-                  <Users className="mr-2 h-4 w-4" />
-                  Add Client
-                </Button>
-              </Link>
+              <p className="text-sm text-sidebar-foreground/50">
+                {isTeamMember ? 'No branches assigned' : 'No clients yet'}
+              </p>
+              {!isTeamMember && (
+                <Link href="/dashboard/clients">
+                  <Button variant="outline" size="sm" className="mt-2">
+                    <Users className="mr-2 h-4 w-4" />
+                    Add Client
+                  </Button>
+                </Link>
+              )}
             </div>
           ) : (
             clients.map((client) => (

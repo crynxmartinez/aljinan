@@ -165,7 +165,7 @@ export async function PATCH(
               type: 'STATUS_CHANGE',
               content: 'Project closed - invoice payment confirmed',
               createdById: session.user.id,
-              createdByRole: session.user.role as 'CONTRACTOR' | 'CLIENT',
+              createdByRole: session.user.role as 'CONTRACTOR' | 'CLIENT' | 'TEAM_MEMBER',
             }
           })
         }
@@ -240,7 +240,7 @@ export async function PATCH(
                 type: 'STATUS_CHANGE',
                 content: 'Project closed - invoice payment received',
                 createdById: session.user.id,
-                createdByRole: session.user.role as 'CONTRACTOR' | 'CLIENT',
+                createdByRole: session.user.role as 'CONTRACTOR' | 'CLIENT' | 'TEAM_MEMBER',
               }
             })
           }

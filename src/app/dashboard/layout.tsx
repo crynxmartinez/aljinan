@@ -4,7 +4,7 @@ import { authOptions } from '@/lib/auth'
 import { prisma } from '@/lib/prisma'
 import { Sidebar } from '@/components/layout/sidebar'
 
-async function getClients(userId: string) {
+async function getClientsForContractor(userId: string) {
   const contractor = await prisma.contractor.findUnique({
     where: { userId },
     include: {
@@ -36,6 +36,56 @@ async function getClients(userId: string) {
   })) || []
 }
 
+async function getClientsForTeamMember(assignedBranchIds: string[]) {
+  // Get branches the team member has access to
+  const branches = await prisma.branch.findMany({
+    where: {
+      id: { in: assignedBranchIds },
+      isActive: true
+    },
+    include: {
+      client: {
+        include: {
+          user: {
+            select: { status: true }
+          }
+        }
+      }
+    },
+    orderBy: { createdAt: 'asc' }
+  })
+
+  // Group branches by client
+  const clientMap = new Map<string, {
+    id: string
+    companyName: string
+    branches: { id: string; name: string; address: string }[]
+  }>()
+
+  branches.forEach(branch => {
+    // Skip if client is archived
+    if (branch.client.user.status === 'ARCHIVED') return
+
+    if (!clientMap.has(branch.client.id)) {
+      clientMap.set(branch.client.id, {
+        id: branch.client.id,
+        companyName: branch.client.companyName,
+        branches: []
+      })
+    }
+    clientMap.get(branch.client.id)!.branches.push({
+      id: branch.id,
+      name: branch.name,
+      address: branch.address
+    })
+  })
+
+  // Sort clients by company name
+  return Array.from(clientMap.values()).sort((a, b) => 
+    a.companyName.localeCompare(b.companyName)
+  )
+}
+
 export default async function DashboardLayout({
   children,
 }: {
@@ -52,11 +102,21 @@ export default async function DashboardLayout({
     redirect('/portal')
   }
 
-  const clients = await getClients(session.user.id)
+  // Get clients based on user role
+  let clients
+  if (session.user.role === 'TEAM_MEMBER' && session.user.assignedBranchIds) {
+    clients = await getClientsForTeamMember(session.user.assignedBranchIds)
+  } else {
+    clients = await getClientsForContractor(session.user.id)
+  }
 
   return (
     <div className="flex h-screen overflow-hidden">
-      <Sidebar clients={clients} />
+      <Sidebar 
+        clients={clients} 
+        userRole={session.user.role}
+        teamMemberRole={session.user.teamMemberRole}
+      />
       <main className="flex-1 overflow-auto bg-background">
         {children}
       </main>

@@ -58,9 +58,12 @@ interface BranchWorkspaceProps {
   clientId: string
   branchId: string
   branch: Branch
+  userRole?: string
+  teamMemberRole?: string
 }
 
-export function BranchWorkspace({ clientId, branchId, branch }: BranchWorkspaceProps) {
+export function BranchWorkspace({ clientId, branchId, branch, userRole, teamMemberRole }: BranchWorkspaceProps) {
+  const isTechnician = userRole === 'TEAM_MEMBER' && teamMemberRole === 'TECHNICIAN'
   const [activeTab, setActiveTab] = useState('dashboard')
   const [selectedProjectId, setSelectedProjectId] = useState<string | null>(null)
   const [activityPanelOpen, setActivityPanelOpen] = useState(false)
@@ -89,14 +92,19 @@ export function BranchWorkspace({ clientId, branchId, branch }: BranchWorkspaceP
     fetchCounts()
   }, [branchId])
 
-  const modules = [
+  // Filter modules based on role - technicians can't see billing/contracts
+  const allModules = [
     { id: 'dashboard', label: 'Dashboard', icon: LayoutDashboard },
     { id: 'checklists', label: 'Checklist', icon: ClipboardList },
     { id: 'requests', label: 'Requests', icon: FileText },
     { id: 'calendar', label: 'Calendar', icon: Calendar },
-    { id: 'billing', label: 'Billing', icon: DollarSign },
-    { id: 'contracts', label: 'Contracts', icon: FileCheck },
+    { id: 'billing', label: 'Billing', icon: DollarSign, restrictedForTechnician: true },
+    { id: 'contracts', label: 'Contracts', icon: FileCheck, restrictedForTechnician: true },
   ]
+  
+  const modules = isTechnician 
+    ? allModules.filter(m => !m.restrictedForTechnician)
+    : allModules
 
   return (
     <>

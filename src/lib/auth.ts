@@ -21,6 +21,15 @@ export const authOptions: NextAuthOptions = {
           include: {
             contractor: true,
             client: true,
+            teamMember: {
+              include: {
+                branchAccess: {
+                  select: {
+                    branchId: true
+                  }
+                }
+              }
+            },
           },
         })
 
@@ -49,12 +58,30 @@ export const authOptions: NextAuthOptions = {
           })
         }
 
-        return {
+        // Build user object with team member info if applicable
+        const userResponse: {
+          id: string
+          email: string
+          name: string | null
+          role: string
+          teamMemberRole?: string
+          assignedBranchIds?: string[]
+          contractorId?: string
+        } = {
           id: user.id,
           email: user.email,
           name: user.name,
           role: user.role,
         }
+
+        // Add team member specific data
+        if (user.role === 'TEAM_MEMBER' && user.teamMember) {
+          userResponse.teamMemberRole = user.teamMember.teamRole
+          userResponse.assignedBranchIds = user.teamMember.branchAccess.map(ba => ba.branchId)
+          userResponse.contractorId = user.teamMember.contractorId
+        }
+
+        return userResponse
       },
     }),
   ],
@@ -66,6 +93,16 @@ export const authOptions: NextAuthOptions = {
       if (user) {
         token.id = user.id
         token.role = user.role
+        // Store team member specific data in token
+        if ('teamMemberRole' in user) {
+          token.teamMemberRole = user.teamMemberRole
+        }
+        if ('assignedBranchIds' in user) {
+          token.assignedBranchIds = user.assignedBranchIds
+        }
+        if ('contractorId' in user) {
+          token.contractorId = user.contractorId
+        }
       }
       return token
     },
@@ -73,6 +110,16 @@ export const authOptions: NextAuthOptions = {
       if (session.user) {
         session.user.id = token.id as string
         session.user.role = token.role as string
+        // Add team member specific data to session
+        if (token.teamMemberRole) {
+          session.user.teamMemberRole = token.teamMemberRole as string
+        }
+        if (token.assignedBranchIds) {
+          session.user.assignedBranchIds = token.assignedBranchIds as string[]
+        }
+        if (token.contractorId) {
+          session.user.contractorId = token.contractorId as string
+        }
       }
       return session
     },

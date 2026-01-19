@@ -129,7 +129,7 @@ export async function PATCH(
           type: 'UPDATED',
           content: `Price set for work order "${workOrder.description}": $${price}`,
           createdById: session.user.id,
-          createdByRole: session.user.role as 'CONTRACTOR' | 'CLIENT',
+          createdByRole: session.user.role as 'CONTRACTOR' | 'CLIENT' | 'TEAM_MEMBER',
         }
       })
     }
@@ -142,7 +142,7 @@ export async function PATCH(
           type: 'STATUS_CHANGE',
           content: `Work order "${workOrder.description}" moved to ${stage}`,
           createdById: session.user.id,
-          createdByRole: session.user.role as 'CONTRACTOR' | 'CLIENT',
+          createdByRole: session.user.role as 'CONTRACTOR' | 'CLIENT' | 'TEAM_MEMBER',
         }
       })
 
@@ -234,7 +234,7 @@ export async function DELETE(
         type: 'UPDATED',
         content: `Work order removed: ${workOrder.description}`,
         createdById: session.user.id,
-        createdByRole: session.user.role as 'CONTRACTOR' | 'CLIENT',
+        createdByRole: session.user.role as 'CONTRACTOR' | 'CLIENT' | 'TEAM_MEMBER',
       }
     })
 

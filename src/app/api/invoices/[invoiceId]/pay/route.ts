@@ -65,7 +65,7 @@ export async function POST(
             type: 'STATUS_CHANGE',
             content: `Invoice paid. Project closed.`,
             createdById: session.user.id,
-            createdByRole: session.user.role as 'CONTRACTOR' | 'CLIENT',
+            createdByRole: session.user.role as 'CONTRACTOR' | 'CLIENT' | 'TEAM_MEMBER',
           }
         })
       } else if (invoice.projectId) {
@@ -76,7 +76,7 @@ export async function POST(
             type: 'UPDATED',
             content: `Invoice marked as paid.`,
             createdById: session.user.id,
-            createdByRole: session.user.role as 'CONTRACTOR' | 'CLIENT',
+            createdByRole: session.user.role as 'CONTRACTOR' | 'CLIENT' | 'TEAM_MEMBER',
           }
         })
       }

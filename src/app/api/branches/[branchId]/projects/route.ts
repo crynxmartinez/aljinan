@@ -200,7 +200,7 @@ export async function POST(
         endDate: endDate ? new Date(endDate) : null,
         autoRenew: autoRenew || false,
         createdById: session.user.id,
-        createdByRole: session.user.role as 'CONTRACTOR' | 'CLIENT',
+        createdByRole: session.user.role as 'CONTRACTOR' | 'CLIENT' | 'TEAM_MEMBER',
       },
       include: {
         _count: {
@@ -263,7 +263,7 @@ export async function POST(
           type: 'CREATED',
           content: `Project created from request`,
           createdById: session.user.id,
-          createdByRole: session.user.role as 'CONTRACTOR' | 'CLIENT',
+          createdByRole: session.user.role as 'CONTRACTOR' | 'CLIENT' | 'TEAM_MEMBER',
         }
       })
     } else {
@@ -277,7 +277,7 @@ export async function POST(
           priority: 'MEDIUM',
           status: 'OPEN',
           createdById: session.user.id,
-          createdByRole: session.user.role as 'CONTRACTOR' | 'CLIENT',
+          createdByRole: session.user.role as 'CONTRACTOR' | 'CLIENT' | 'TEAM_MEMBER',
         }
       })
 
@@ -288,7 +288,7 @@ export async function POST(
           type: 'CREATED',
           content: `Project created with ${generatedWorkOrders.length} work orders. Total value: $${totalValue.toFixed(2)}`,
           createdById: session.user.id,
-          createdByRole: session.user.role as 'CONTRACTOR' | 'CLIENT',
+          createdByRole: session.user.role as 'CONTRACTOR' | 'CLIENT' | 'TEAM_MEMBER',
         }
       })
     }

@@ -6,7 +6,7 @@ import Link from 'next/link'
 import { ArrowLeft, MapPin } from 'lucide-react'
 import { BranchWorkspace } from './branch-workspace'
 
-async function getBranch(clientId: string, branchId: string, userId: string) {
+async function getBranchForContractor(clientId: string, branchId: string, userId: string) {
   const contractor = await prisma.contractor.findUnique({
     where: { userId }
   })
@@ -36,6 +36,36 @@ async function getBranch(clientId: string, branchId: string, userId: string) {
   }
 }
 
+async function getBranchForTeamMember(clientId: string, branchId: string, assignedBranchIds: string[]) {
+  // Check if team member has access to this branch
+  if (!assignedBranchIds.includes(branchId)) return null
+
+  const branch = await prisma.branch.findFirst({
+    where: {
+      id: branchId,
+      clientId: clientId,
+    },
+    include: {
+      client: {
+        select: {
+          id: true,
+          companyName: true,
+        }
+      }
+    }
+  })
+
+  if (!branch) return null
+
+  return {
+    client: {
+      id: branch.client.id,
+      companyName: branch.client.companyName,
+    },
+    branch: branch,
+  }
+}
+
 export default async function BranchPage({
   params,
 }: {
@@ -48,7 +78,14 @@ export default async function BranchPage({
   }
 
   const { clientId, branchId } = await params
-  const data = await getBranch(clientId, branchId, session.user.id)
+  
+  // Get branch data based on user role
+  let data
+  if (session.user.role === 'TEAM_MEMBER' && session.user.assignedBranchIds) {
+    data = await getBranchForTeamMember(clientId, branchId, session.user.assignedBranchIds)
+  } else {
+    data = await getBranchForContractor(clientId, branchId, session.user.id)
+  }
 
   if (!data) {
     notFound()
@@ -81,7 +118,13 @@ export default async function BranchPage({
         </div>
       </div>
 
-      <BranchWorkspace clientId={clientId} branchId={branchId} branch={branch} />
+      <BranchWorkspace 
+        clientId={clientId} 
+        branchId={branchId} 
+        branch={branch}
+        userRole={session.user.role}
+        teamMemberRole={session.user.teamMemberRole}
+      />
     </div>
   )
 }

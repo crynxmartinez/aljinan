@@ -49,7 +49,7 @@ export async function POST(
         type: 'STATUS_CHANGE',
         content: `Project marked as DONE. Awaiting invoice payment.`,
         createdById: session.user.id,
-        createdByRole: session.user.role as 'CONTRACTOR' | 'CLIENT',
+        createdByRole: session.user.role as 'CONTRACTOR' | 'CLIENT' | 'TEAM_MEMBER',
       }
     })
 

@@ -145,7 +145,7 @@ export async function POST(
           type: 'APPROVED',
           content: `Project approved by client. Contract signed, invoice created.`,
           createdById: session.user.id,
-          createdByRole: session.user.role as 'CONTRACTOR' | 'CLIENT',
+          createdByRole: session.user.role as 'CONTRACTOR' | 'CLIENT' | 'TEAM_MEMBER',
         }
       })
 

@@ -77,7 +77,7 @@ export async function POST(
         description,
         priority: priority || 'MEDIUM',
         createdById: session.user.id,
-        createdByRole: session.user.role as 'CONTRACTOR' | 'CLIENT',
+        createdByRole: session.user.role as 'CONTRACTOR' | 'CLIENT' | 'TEAM_MEMBER',
         dueDate: dueDate ? new Date(dueDate) : null,
       }
     })

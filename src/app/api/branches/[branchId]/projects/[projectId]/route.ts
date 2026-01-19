@@ -98,7 +98,7 @@ export async function PATCH(
             type: 'STATUS_CHANGE',
             content: `Status changed from ${currentProject.status} to ${status}`,
             createdById: session.user.id,
-            createdByRole: session.user.role as 'CONTRACTOR' | 'CLIENT',
+            createdByRole: session.user.role as 'CONTRACTOR' | 'CLIENT' | 'TEAM_MEMBER',
           }
         })
       }

@@ -9,6 +9,12 @@ datasource db {
 enum UserRole {
   CONTRACTOR
   CLIENT
+  TEAM_MEMBER
+}
+
+enum TeamMemberRole {
+  SUPERVISOR
+  TECHNICIAN
 }
 
 enum UserStatus {
@@ -33,6 +39,9 @@ model User {
   
   // Client-specific relations
   client         Client?
+
+  // Team member-specific relations
+  teamMember     TeamMember?
 }
 
 model Contractor {
@@ -49,6 +58,7 @@ model Contractor {
 
   // Relations
   clients       Client[]
+  teamMembers   TeamMember[]
 }
 
 model Client {
@@ -94,6 +104,9 @@ model Branch {
   invoices     Invoice[]
   contracts    Contract[]
   checklists   Checklist[]
+
+  // Team member access
+  teamMemberAccess TeamMemberBranch[]
 }
 
 // Project statuses - simplified for contract lifecycle
@@ -525,4 +538,33 @@ model Notification {
   
   @@index([userId, isRead])
   @@index([userId, createdAt])
+}
+
+// Team Member - contractor's staff (supervisors and technicians)
+model TeamMember {
+  id            String          @id @default(cuid())
+  userId        String          @unique
+  user          User            @relation(fields: [userId], references: [id], onDelete: Cascade)
+  contractorId  String
+  contractor    Contractor      @relation(fields: [contractorId], references: [id], onDelete: Cascade)
+  teamRole      TeamMemberRole
+  jobTitle      String?
+  phone         String?
+  createdAt     DateTime        @default(now())
+  updatedAt     DateTime        @updatedAt
+
+  // Which branches this team member can access
+  branchAccess  TeamMemberBranch[]
+}
+
+// Junction table for TeamMember <-> Branch many-to-many relationship
+model TeamMemberBranch {
+  id            String      @id @default(cuid())
+  teamMemberId  String
+  teamMember    TeamMember  @relation(fields: [teamMemberId], references: [id], onDelete: Cascade)
+  branchId      String
+  branch        Branch      @relation(fields: [branchId], references: [id], onDelete: Cascade)
+  createdAt     DateTime    @default(now())
+
+  @@unique([teamMemberId, branchId])
 }
