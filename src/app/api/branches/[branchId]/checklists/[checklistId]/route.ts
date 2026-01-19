@@ -171,6 +171,14 @@ async function verifyBranchAccess(branchId: string, userId: string, role: string
       include: { branches: { where: { id: branchId } } }
     })
     return (client?.branches.length || 0) > 0
+  } else if (role === 'TEAM_MEMBER') {
+    const teamMember = await prisma.teamMember.findUnique({
+      where: { userId },
+      include: {
+        branchAccess: { where: { branchId } }
+      }
+    })
+    return (teamMember?.branchAccess.length || 0) > 0
   }
   return false
 }
