@@ -42,6 +42,7 @@ interface ProjectFilterProps {
   branchId: string
   selectedProjectId: string | null
   onProjectChange: (projectId: string | null) => void
+  autoSelectActive?: boolean // Auto-select active project on initial load
 }
 
 const statusColors: Record<string, string> = {
@@ -56,7 +57,7 @@ const statusColors: Record<string, string> = {
   CANCELLED: 'bg-red-100 text-red-700',
 }
 
-export function ProjectFilter({ branchId, selectedProjectId, onProjectChange }: ProjectFilterProps) {
+export function ProjectFilter({ branchId, selectedProjectId, onProjectChange, autoSelectActive = true }: ProjectFilterProps) {
   const router = useRouter()
   const [projects, setProjects] = useState<Project[]>([])
   const [loading, setLoading] = useState(true)
@@ -68,12 +69,26 @@ export function ProjectFilter({ branchId, selectedProjectId, onProjectChange }: 
     description: '',
   })
 
-  const fetchProjects = async () => {
+  const fetchProjects = async (isInitialLoad = false) => {
     try {
       const response = await fetch(`/api/branches/${branchId}/projects`)
       if (response.ok) {
         const data = await response.json()
         setProjects(data)
+        
+        // Auto-select active project on initial load if enabled
+        if (isInitialLoad && autoSelectActive && data.length > 0 && !selectedProjectId) {
+          const activeProject = data.find((p: Project) => p.status === 'ACTIVE')
+          if (activeProject) {
+            onProjectChange(activeProject.id)
+          } else {
+            // Fallback to pending project if no active
+            const pendingProject = data.find((p: Project) => p.status === 'PENDING')
+            if (pendingProject) {
+              onProjectChange(pendingProject.id)
+            }
+          }
+        }
       }
     } catch (err) {
       console.error('Failed to fetch projects:', err)
@@ -83,7 +98,7 @@ export function ProjectFilter({ branchId, selectedProjectId, onProjectChange }: 
   }
 
   useEffect(() => {
-    fetchProjects()
+    fetchProjects(true) // Pass true for initial load
   }, [branchId])
 
   const handleCreateProject = async (e: React.FormEvent) => {

@@ -80,12 +80,26 @@ export function ClientBranchWorkspace({ branchId, branch }: ClientBranchWorkspac
   }
 
   // Fetch projects directly in parent
-  const fetchProjects = async () => {
+  const fetchProjects = async (isInitialLoad = false) => {
     try {
       const response = await fetch(`/api/branches/${branchId}/projects`)
       if (response.ok) {
         const data = await response.json()
         setProjects(data)
+        
+        // Auto-select active project on initial load
+        if (isInitialLoad && data.length > 0) {
+          const activeProject = data.find((p: Project) => p.status === 'ACTIVE')
+          if (activeProject) {
+            setSelectedProjectId(activeProject.id)
+          } else {
+            // Fallback to pending project if no active
+            const pendingProject = data.find((p: Project) => p.status === 'PENDING')
+            if (pendingProject) {
+              setSelectedProjectId(pendingProject.id)
+            }
+          }
+        }
       }
     } catch (err) {
       console.error('Failed to fetch projects:', err)
@@ -109,7 +123,7 @@ export function ClientBranchWorkspace({ branchId, branch }: ClientBranchWorkspac
 
   // Initial data fetch
   useEffect(() => {
-    fetchProjects()
+    fetchProjects(true) // Pass true for initial load to auto-select active project
     fetchRequestsCount()
   }, [branchId])
 
