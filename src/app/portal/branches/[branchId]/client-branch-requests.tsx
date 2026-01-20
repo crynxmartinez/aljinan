@@ -320,8 +320,8 @@ export function ClientBranchRequests({ branchId, projectId, onDataChange }: Clie
       const response = await fetch(`/api/branches/${branchId}/requests`)
       if (response.ok) {
         const data = await response.json()
-        // Filter out COMPLETED requests - they should appear in Quotations/Contracts instead
-        let filtered = data.filter((r: Request) => r.status !== 'COMPLETED')
+        // Filter out COMPLETED and CANCELLED requests
+        let filtered = data.filter((r: Request) => r.status !== 'COMPLETED' && r.status !== 'CANCELLED')
         // Note: Don't filter by projectId - show all requests for this branch
         // Requests without a projectId are standalone service requests
         setRequests(filtered)
