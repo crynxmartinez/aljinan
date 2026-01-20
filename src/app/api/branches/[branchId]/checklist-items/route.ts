@@ -253,6 +253,29 @@ export async function PATCH(
       return NextResponse.json(updatedWorkOrder)
     }
 
+    // Handle client signature (accepting completed work)
+    if (action === 'client_sign') {
+      if (!workOrderId || !signature) {
+        return NextResponse.json({ error: 'Work order ID and signature required' }, { status: 400 })
+      }
+
+      // Only clients can sign as client
+      if (session.user.role !== 'CLIENT') {
+        return NextResponse.json({ error: 'Only clients can sign' }, { status: 403 })
+      }
+
+      const updatedWorkOrder = await prisma.checklistItem.update({
+        where: { id: workOrderId },
+        data: {
+          clientSignature: signature,
+          clientSignedAt: new Date(),
+          clientSignedById: session.user.id
+        }
+      })
+
+      return NextResponse.json(updatedWorkOrder)
+    }
+
     // For bulk payment actions, require workOrderIds array
     if (!workOrderIds || !Array.isArray(workOrderIds) || workOrderIds.length === 0) {
       return NextResponse.json({ error: 'Work order IDs required' }, { status: 400 })
@@ -387,6 +410,62 @@ export async function PATCH(
               link: `/portal/branches/${branchId}?tab=billing`,
             }
           })
+        }
+
+        // Check if all work orders in the contract are now paid - auto-complete contract
+        if (verifyContract.projectId) {
+          const allProjectWorkOrders = await prisma.checklistItem.findMany({
+            where: {
+              checklist: { projectId: verifyContract.projectId }
+            }
+          })
+
+          const allPaid = allProjectWorkOrders.every(wo => wo.paymentStatus === 'PAID')
+          const allCompleted = allProjectWorkOrders.every(wo => wo.stage === 'COMPLETED')
+
+          if (allPaid && allCompleted && verifyContract.status !== 'SIGNED') {
+            // Auto-complete the contract
+            await prisma.contract.update({
+              where: { id: verifyContract.id },
+              data: { 
+                status: 'SIGNED',
+                endSignedAt: new Date()
+              }
+            })
+
+            // Also complete the project
+            await prisma.project.update({
+              where: { id: verifyContract.projectId },
+              data: { 
+                status: 'CLOSED',
+                completedAt: new Date()
+              }
+            })
+
+            // Create activity for contract completion
+            await prisma.activity.create({
+              data: {
+                projectId: verifyContract.projectId,
+                type: 'STATUS_CHANGE',
+                content: `Contract "${verifyContract.title}" auto-completed - all work orders paid`,
+                createdById: session.user.id,
+                createdByRole: session.user.role as 'CONTRACTOR' | 'CLIENT' | 'TEAM_MEMBER',
+              }
+            })
+
+            // Notify client
+            if (branch?.client?.userId) {
+              await prisma.notification.create({
+                data: {
+                  userId: branch.client.userId,
+                  type: 'CONTRACT_SIGNED',
+                  title: 'Contract Completed',
+                  message: `Contract "${verifyContract.title}" has been completed. All work orders are paid.`,
+                  link: `/portal/branches/${branchId}?tab=contracts`,
+                }
+              })
+            }
+          }
         }
       }
 

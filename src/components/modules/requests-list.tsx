@@ -121,9 +121,10 @@ interface Request {
   createdAt: string
   updatedAt: string
   projectId?: string
-  // New fields
-  issueType?: string | null
+  // Service request fields
   workOrderType?: 'SERVICE' | 'INSPECTION' | 'MAINTENANCE' | 'INSTALLATION' | null
+  recurringType?: 'ONCE' | 'MONTHLY' | 'QUARTERLY'
+  needsCertificate?: boolean
   preferredDate?: string | null
   preferredTimeSlot?: string | null
   quotedPrice?: number | null
@@ -720,15 +721,6 @@ export function RequestsList({ branchId, userRole, projectId }: RequestsListProp
     }
   }
 
-  // Format issue type for display
-  const formatIssueType = (issueType: string | null | undefined): string => {
-    if (!issueType) return 'General'
-    return issueType
-      .replace(/_/g, ' ')
-      .toLowerCase()
-      .replace(/\b\w/g, c => c.toUpperCase())
-  }
-
   // Format work order type for display
   const formatWorkOrderType = (type: string | null | undefined): string => {
     if (!type) return 'Service'
@@ -1007,11 +999,14 @@ export function RequestsList({ branchId, userRole, projectId }: RequestsListProp
               <div className="flex items-center gap-2 flex-wrap">
                 {getPriorityBadge(selectedRequest.priority)}
                 {getStatusBadge(selectedRequest.status)}
-                {selectedRequest.issueType && (
-                  <Badge variant="secondary">{selectedRequest.issueType.replace(/_/g, ' ')}</Badge>
-                )}
                 {selectedRequest.workOrderType && (
                   <Badge variant="outline">{selectedRequest.workOrderType}</Badge>
+                )}
+                {selectedRequest.recurringType && selectedRequest.recurringType !== 'ONCE' && (
+                  <Badge variant="secondary">{selectedRequest.recurringType === 'MONTHLY' ? 'Monthly' : 'Quarterly'}</Badge>
+                )}
+                {selectedRequest.needsCertificate && (
+                  <Badge variant="outline" className="text-green-600">Certificate Required</Badge>
                 )}
               </div>
               
@@ -1325,11 +1320,14 @@ export function RequestsList({ branchId, userRole, projectId }: RequestsListProp
                   <div className="flex items-center gap-2 mt-2">
                     {getPriorityBadge(quoteRequest.priority)}
                     {getStatusBadge(quoteRequest.status)}
-                    {quoteRequest.issueType && (
-                      <Badge variant="outline">{formatIssueType(quoteRequest.issueType)}</Badge>
-                    )}
                     {quoteRequest.workOrderType && (
                       <Badge variant="secondary">{formatWorkOrderType(quoteRequest.workOrderType)}</Badge>
+                    )}
+                    {quoteRequest.recurringType && quoteRequest.recurringType !== 'ONCE' && (
+                      <Badge variant="outline">{quoteRequest.recurringType === 'MONTHLY' ? 'Monthly' : 'Quarterly'}</Badge>
+                    )}
+                    {quoteRequest.needsCertificate && (
+                      <Badge variant="outline" className="text-green-600">Certificate</Badge>
                     )}
                   </div>
                 </div>
@@ -1407,7 +1405,11 @@ export function RequestsList({ branchId, userRole, projectId }: RequestsListProp
                 <div className="space-y-4">
                   <div className="grid grid-cols-2 gap-4">
                     <div className="space-y-2">
-                      <Label htmlFor="quotedPrice">Price (SAR) *</Label>
+                      <Label htmlFor="quotedPrice">
+                        {quoteRequest.recurringType && quoteRequest.recurringType !== 'ONCE' 
+                          ? 'Price per Occurrence (SAR) *' 
+                          : 'Price (SAR) *'}
+                      </Label>
                       <div className="relative">
                         <DollarSign className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
                         <Input
@@ -1424,7 +1426,11 @@ export function RequestsList({ branchId, userRole, projectId }: RequestsListProp
                       </div>
                     </div>
                     <div className="space-y-2">
-                      <Label htmlFor="quotedDate">Scheduled Date *</Label>
+                      <Label htmlFor="quotedDate">
+                        {quoteRequest.recurringType && quoteRequest.recurringType !== 'ONCE' 
+                          ? 'First Scheduled Date *' 
+                          : 'Scheduled Date *'}
+                      </Label>
                       <Input
                         id="quotedDate"
                         type="date"
@@ -1435,6 +1441,48 @@ export function RequestsList({ branchId, userRole, projectId }: RequestsListProp
                       />
                     </div>
                   </div>
+
+                  {/* Recurring Work Orders Preview */}
+                  {quoteRequest.recurringType && quoteRequest.recurringType !== 'ONCE' && quoteData.quotedDate && quoteData.quotedPrice && (
+                    <div className="p-4 bg-blue-50 border border-blue-200 rounded-lg">
+                      <h5 className="font-medium text-blue-800 mb-3">
+                        Work Orders Preview ({quoteRequest.recurringType === 'MONTHLY' ? 'Monthly' : 'Quarterly'})
+                      </h5>
+                      <div className="space-y-2 text-sm">
+                        {(() => {
+                          const startDate = new Date(quoteData.quotedDate)
+                          const interval = quoteRequest.recurringType === 'MONTHLY' ? 1 : 3
+                          const occurrences = quoteRequest.recurringType === 'MONTHLY' ? 12 : 4
+                          const price = parseFloat(quoteData.quotedPrice) || 0
+                          const dates = []
+                          for (let i = 0; i < occurrences; i++) {
+                            const date = new Date(startDate)
+                            date.setMonth(date.getMonth() + (i * interval))
+                            dates.push(date)
+                          }
+                          return (
+                            <>
+                              {dates.slice(0, 4).map((date, idx) => (
+                                <div key={idx} className="flex justify-between items-center py-1 border-b border-blue-100 last:border-0">
+                                  <span className="text-blue-700">
+                                    └ {quoteRequest.recurringType === 'MONTHLY' ? `Month ${idx + 1}` : `Q${idx + 1}`}: {date.toLocaleDateString()}
+                                  </span>
+                                  <span className="font-medium text-blue-800">SAR {price.toLocaleString()}</span>
+                                </div>
+                              ))}
+                              {dates.length > 4 && (
+                                <p className="text-blue-600 text-xs mt-2">... and {dates.length - 4} more occurrences</p>
+                              )}
+                              <div className="flex justify-between items-center pt-3 mt-2 border-t border-blue-300 font-semibold">
+                                <span className="text-blue-800">Total ({dates.length} work orders)</span>
+                                <span className="text-blue-900">SAR {(price * dates.length).toLocaleString()}</span>
+                              </div>
+                            </>
+                          )
+                        })()}
+                      </div>
+                    </div>
+                  )}
 
                   <div className="space-y-2">
                     <Label htmlFor="assignedTo">Assign Technician (Optional)</Label>
@@ -1458,7 +1506,9 @@ export function RequestsList({ branchId, userRole, projectId }: RequestsListProp
               <div className="p-4 bg-amber-50 border border-amber-200 rounded-lg">
                 <p className="text-sm text-amber-800">
                   <strong>Note:</strong> Once you submit this quote, the client will be notified and can accept or reject it.
-                  If accepted, a work order will be automatically created.
+                  {quoteRequest.recurringType && quoteRequest.recurringType !== 'ONCE' 
+                    ? ` If accepted, ${quoteRequest.recurringType === 'MONTHLY' ? '12 monthly' : '4 quarterly'} work orders will be automatically created.`
+                    : ' If accepted, a work order will be automatically created.'}
                 </p>
               </div>
             </div>

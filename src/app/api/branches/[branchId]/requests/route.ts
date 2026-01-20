@@ -61,8 +61,9 @@ export async function POST(
       description, 
       priority, 
       dueDate,
-      issueType,
       workOrderType,
+      recurringType,
+      needsCertificate,
       preferredDate,
       preferredTimeSlot,
       photoUrls // Array of photo URLs already uploaded
@@ -92,8 +93,9 @@ export async function POST(
         createdById: session.user.id,
         createdByRole: session.user.role as 'CONTRACTOR' | 'CLIENT' | 'TEAM_MEMBER',
         dueDate: dueDate ? new Date(dueDate) : null,
-        issueType: issueType || null,
         workOrderType: workOrderType || null,
+        recurringType: recurringType || 'ONCE',
+        needsCertificate: needsCertificate || false,
         preferredDate: preferredDate ? new Date(preferredDate) : null,
         preferredTimeSlot: preferredTimeSlot || null,
         photos: photoUrls && photoUrls.length > 0 ? {

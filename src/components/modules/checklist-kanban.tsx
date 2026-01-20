@@ -31,6 +31,7 @@ import {
   Image as ImageIcon,
   PenTool,
   ClipboardCheck,
+  Award,
 } from 'lucide-react'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
@@ -84,15 +85,19 @@ interface ChecklistItem {
   technicianSignedAt?: string | null
   supervisorSignature?: string | null
   supervisorSignedAt?: string | null
+  clientSignature?: string | null
+  clientSignedAt?: string | null
   reportGeneratedAt?: string | null
   reportUrl?: string | null
   photos?: InspectionPhoto[]
+  certificateId?: string | null
 }
 
 interface ChecklistKanbanProps {
   branchId: string
   projectId?: string | null
   readOnly?: boolean // For client view
+  userRole?: 'CONTRACTOR' | 'CLIENT' | 'TEAM_MEMBER'
 }
 
 const STAGES: { id: ChecklistItemStage; label: string; color: string; bgColor: string; icon: typeof Clock }[] = [
@@ -363,7 +368,7 @@ function sortByPriority(items: ChecklistItem[]): ChecklistItem[] {
   })
 }
 
-export function ChecklistKanban({ branchId, projectId, readOnly = false }: ChecklistKanbanProps) {
+export function ChecklistKanban({ branchId, projectId, readOnly = false, userRole }: ChecklistKanbanProps) {
   const router = useRouter()
   const [items, setItems] = useState<ChecklistItem[]>([])
   const [loading, setLoading] = useState(true)
@@ -513,6 +518,68 @@ export function ChecklistKanban({ branchId, projectId, readOnly = false }: Check
           action: 'technician_sign',
           itemId: selectedItem.id,
           signature: 'signed', // In real app, this would be actual signature data
+        }),
+      })
+
+      if (response.ok) {
+        fetchItems()
+        // Refresh selected item
+        const updatedItems = await fetch(`/api/branches/${branchId}/checklist-items`).then(r => r.json())
+        const updated = updatedItems.find((i: ChecklistItem) => i.id === selectedItem.id)
+        if (updated) setSelectedItem(updated)
+        router.refresh()
+      }
+    } catch (error) {
+      console.error('Failed to sign:', error)
+    } finally {
+      setUpdating(false)
+    }
+  }
+
+  // Supervisor sign
+  const handleSupervisorSign = async () => {
+    if (!selectedItem) return
+    setUpdating(true)
+    
+    try {
+      const response = await fetch(`/api/branches/${branchId}/checklist-items`, {
+        method: 'PATCH',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          action: 'supervisor_sign',
+          itemId: selectedItem.id,
+          signature: 'signed',
+        }),
+      })
+
+      if (response.ok) {
+        fetchItems()
+        // Refresh selected item
+        const updatedItems = await fetch(`/api/branches/${branchId}/checklist-items`).then(r => r.json())
+        const updated = updatedItems.find((i: ChecklistItem) => i.id === selectedItem.id)
+        if (updated) setSelectedItem(updated)
+        router.refresh()
+      }
+    } catch (error) {
+      console.error('Failed to sign:', error)
+    } finally {
+      setUpdating(false)
+    }
+  }
+
+  // Client sign (accepting completed work)
+  const handleClientSign = async () => {
+    if (!selectedItem) return
+    setUpdating(true)
+    
+    try {
+      const response = await fetch(`/api/branches/${branchId}/checklist-items`, {
+        method: 'PATCH',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          action: 'client_sign',
+          itemId: selectedItem.id,
+          signature: 'signed',
         }),
       })
 
@@ -997,9 +1064,9 @@ export function ChecklistKanban({ branchId, projectId, readOnly = false }: Check
                   )}
 
                   {/* Signatures */}
-                  <div className="grid grid-cols-2 gap-4 pt-4 border-t">
+                  <div className="grid grid-cols-3 gap-4 pt-4 border-t">
                     <div>
-                      <p className="text-sm text-muted-foreground">Technician Signature</p>
+                      <p className="text-sm text-muted-foreground">Technician</p>
                       {selectedItem.technicianSignature ? (
                         <div className="flex items-center gap-2 text-green-700">
                           <CheckCircle className="h-4 w-4" />
@@ -1015,12 +1082,33 @@ export function ChecklistKanban({ branchId, projectId, readOnly = false }: Check
                       )}
                     </div>
                     <div>
-                      <p className="text-sm text-muted-foreground">Supervisor Signature</p>
+                      <p className="text-sm text-muted-foreground">Supervisor</p>
                       {selectedItem.supervisorSignature ? (
                         <div className="flex items-center gap-2 text-green-700">
                           <CheckCircle className="h-4 w-4" />
                           <span className="text-sm">Signed {selectedItem.supervisorSignedAt && new Date(selectedItem.supervisorSignedAt).toLocaleDateString()}</span>
                         </div>
+                      ) : !readOnly && (selectedItem.stage === 'FOR_REVIEW' || selectedItem.stage === 'COMPLETED') ? (
+                        <Button size="sm" variant="outline" onClick={handleSupervisorSign} disabled={updating}>
+                          {updating ? <Loader2 className="mr-2 h-3 w-3 animate-spin" /> : <PenTool className="mr-2 h-3 w-3" />}
+                          Sign
+                        </Button>
+                      ) : (
+                        <span className="text-sm text-muted-foreground">Not signed</span>
+                      )}
+                    </div>
+                    <div>
+                      <p className="text-sm text-muted-foreground">Client Acceptance</p>
+                      {selectedItem.clientSignature ? (
+                        <div className="flex items-center gap-2 text-green-700">
+                          <CheckCircle className="h-4 w-4" />
+                          <span className="text-sm">Signed {selectedItem.clientSignedAt && new Date(selectedItem.clientSignedAt).toLocaleDateString()}</span>
+                        </div>
+                      ) : userRole === 'CLIENT' && (selectedItem.stage === 'FOR_REVIEW' || selectedItem.stage === 'COMPLETED') ? (
+                        <Button size="sm" variant="outline" onClick={handleClientSign} disabled={updating}>
+                          {updating ? <Loader2 className="mr-2 h-3 w-3 animate-spin" /> : <PenTool className="mr-2 h-3 w-3" />}
+                          Accept & Sign
+                        </Button>
                       ) : (
                         <span className="text-sm text-muted-foreground">Not signed</span>
                       )}
@@ -1034,6 +1122,23 @@ export function ChecklistKanban({ branchId, projectId, readOnly = false }: Check
                 <div className="border-t pt-4">
                   <p className="text-sm text-muted-foreground">Notes</p>
                   <p className="text-sm">{selectedItem.notes}</p>
+                </div>
+              )}
+
+              {/* View Certificate Button - Show for completed work orders with certificate */}
+              {selectedItem.stage === 'COMPLETED' && selectedItem.certificateId && (
+                <div className="border-t pt-4">
+                  <Button
+                    variant="outline"
+                    className="w-full text-green-700 border-green-300 hover:bg-green-50"
+                    onClick={() => {
+                      // Navigate to certificates tab or open certificate
+                      window.open(`/dashboard/clients/${branchId.split('/')[0]}/branches/${branchId}?tab=certificates`, '_blank')
+                    }}
+                  >
+                    <Award className="mr-2 h-4 w-4" />
+                    View Certificate
+                  </Button>
                 </div>
               )}
             </div>

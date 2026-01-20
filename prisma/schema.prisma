@@ -324,10 +324,11 @@ model Request {
   updatedAt     DateTime        @updatedAt
   
   // New fields for improved request flow
-  issueType           IssueType?      // Type of issue (alarm fault, leak, etc.)
   workOrderType       WorkOrderType?  // Service, Inspection, Maintenance, etc.
   preferredDate       DateTime?       // Client's preferred date
   preferredTimeSlot   String?         // "Morning", "Afternoon", "Evening"
+  recurringType       RecurringType   @default(ONCE)  // Once, Monthly, Quarterly
+  needsCertificate    Boolean         @default(false) // Auto-generate certificate on completion
   
   // Contractor quote fields
   quotedPrice         Float?          // Price quoted by contractor
@@ -631,6 +632,9 @@ model ChecklistItem {
   supervisorSignature   String?       // URL to supervisor signature image
   supervisorSignedAt    DateTime?     // When supervisor signed
   supervisorSignedById  String?       // Supervisor user ID
+  clientSignature       String?       // URL to client signature image (accepting work)
+  clientSignedAt        DateTime?     // When client signed
+  clientSignedById      String?       // Client user ID who signed
   
   // Report generation
   reportGeneratedAt     DateTime?     // When PDF report was generated

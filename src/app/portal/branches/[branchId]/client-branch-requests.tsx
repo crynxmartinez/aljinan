@@ -51,7 +51,9 @@ import {
   Image as ImageIcon,
   ThumbsUp,
   ThumbsDown,
+  PenTool,
 } from 'lucide-react'
+import { SignaturePad } from '@/components/ui/signature-pad'
 
 interface WorkOrder {
   id: string
@@ -93,9 +95,10 @@ interface Request {
   updatedAt: string
   projectId?: string
   project?: Project
-  // New fields
-  issueType?: string | null
+  // Service request fields
   workOrderType?: 'SERVICE' | 'INSPECTION' | 'MAINTENANCE' | 'INSTALLATION' | null
+  recurringType?: 'ONCE' | 'MONTHLY' | 'QUARTERLY'
+  needsCertificate?: boolean
   preferredDate?: string | null
   preferredTimeSlot?: string | null
   quotedPrice?: number | null
@@ -271,16 +274,18 @@ export function ClientBranchRequests({ branchId, projectId, onDataChange }: Clie
     title: string
     description: string
     priority: 'LOW' | 'MEDIUM' | 'HIGH' | 'URGENT'
-    issueType: string
     workOrderType: 'SERVICE' | 'INSPECTION' | 'MAINTENANCE' | 'INSTALLATION'
+    recurringType: 'ONCE' | 'MONTHLY' | 'QUARTERLY'
+    needsCertificate: boolean
     preferredDate: string
     preferredTimeSlot: string
   }>({
     title: '',
     description: '',
     priority: 'MEDIUM',
-    issueType: '',
     workOrderType: 'SERVICE',
+    recurringType: 'ONCE',
+    needsCertificate: false,
     preferredDate: '',
     preferredTimeSlot: '',
   })
@@ -295,6 +300,8 @@ export function ClientBranchRequests({ branchId, projectId, onDataChange }: Clie
   const [respondingToQuote, setRespondingToQuote] = useState(false)
   const [rejectionReason, setRejectionReason] = useState('')
   const [showRejectionForm, setShowRejectionForm] = useState(false)
+  const [showSignatureForm, setShowSignatureForm] = useState(false)
+  const [clientSignature, setClientSignature] = useState<string | null>(null)
 
   const fetchRequests = async () => {
     try {
@@ -444,12 +451,18 @@ export function ClientBranchRequests({ branchId, projectId, onDataChange }: Clie
     setQuoteResponseRequest(request)
     setQuoteResponseDialogOpen(true)
     setShowRejectionForm(false)
+    setShowSignatureForm(false)
+    setClientSignature(null)
     setRejectionReason('')
   }
 
-  // Accept quote
+  // Accept quote with signature
   const handleAcceptQuote = async () => {
     if (!quoteResponseRequest) return
+    if (!clientSignature) {
+      setError('Please sign to accept the quote')
+      return
+    }
     setRespondingToQuote(true)
     setError('')
 
@@ -457,7 +470,10 @@ export function ClientBranchRequests({ branchId, projectId, onDataChange }: Clie
       const response = await fetch(`/api/branches/${branchId}/requests/${quoteResponseRequest.id}`, {
         method: 'PATCH',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ action: 'accept' }),
+        body: JSON.stringify({ 
+          action: 'accept',
+          clientSignature: clientSignature 
+        }),
       })
 
       if (!response.ok) {
@@ -467,6 +483,8 @@ export function ClientBranchRequests({ branchId, projectId, onDataChange }: Clie
 
       setQuoteResponseDialogOpen(false)
       setQuoteResponseRequest(null)
+      setShowSignatureForm(false)
+      setClientSignature(null)
       fetchRequests()
       router.refresh()
     } catch (err) {
@@ -510,15 +528,6 @@ export function ClientBranchRequests({ branchId, projectId, onDataChange }: Clie
     }
   }
 
-  // Format issue type for display
-  const formatIssueType = (issueType: string | null | undefined): string => {
-    if (!issueType) return 'General'
-    return issueType
-      .replace(/_/g, ' ')
-      .toLowerCase()
-      .replace(/\b\w/g, c => c.toUpperCase())
-  }
-
   // Format work order type for display
   const formatWorkOrderType = (type: string | null | undefined): string => {
     if (!type) return 'Service'
@@ -546,7 +555,7 @@ export function ClientBranchRequests({ branchId, projectId, onDataChange }: Clie
       }
 
       setCreateDialogOpen(false)
-      setNewRequest({ title: '', description: '', priority: 'MEDIUM', issueType: '', workOrderType: 'SERVICE', preferredDate: '', preferredTimeSlot: '' })
+      setNewRequest({ title: '', description: '', priority: 'MEDIUM', workOrderType: 'SERVICE', recurringType: 'ONCE', needsCertificate: false, preferredDate: '', preferredTimeSlot: '' })
       setUploadedPhotos([])
       fetchRequests()
       router.refresh()
@@ -656,8 +665,11 @@ export function ClientBranchRequests({ branchId, projectId, onDataChange }: Clie
                       {request.createdByRole === 'CLIENT' && (
                         <Badge variant="outline" className="text-xs">Submitted by you</Badge>
                       )}
-                      {request.issueType && (
-                        <Badge variant="secondary" className="text-xs">{formatIssueType(request.issueType)}</Badge>
+                      {request.recurringType && request.recurringType !== 'ONCE' && (
+                        <Badge variant="secondary" className="text-xs">{request.recurringType === 'MONTHLY' ? 'Monthly' : 'Quarterly'}</Badge>
+                      )}
+                      {request.needsCertificate && (
+                        <Badge variant="outline" className="text-xs text-green-600">Certificate</Badge>
                       )}
                     </div>
                     {request.description && !request.title.startsWith('Project Proposal:') && (
@@ -727,31 +739,24 @@ export function ClientBranchRequests({ branchId, projectId, onDataChange }: Clie
               </div>
             )}
             <div className="space-y-4">
-              {/* Issue Type */}
+              {/* Service Type - At Top */}
               <div className="space-y-2">
-                <Label htmlFor="issueType">Type of Issue *</Label>
+                <Label htmlFor="workOrderType">Service Type *</Label>
                 <Select
-                  value={newRequest.issueType}
-                  onValueChange={(value) => setNewRequest({ ...newRequest, issueType: value })}
+                  value={newRequest.workOrderType}
+                  onValueChange={(value: 'SERVICE' | 'INSPECTION' | 'MAINTENANCE' | 'INSTALLATION') => {
+                    const needsCert = ['INSPECTION', 'MAINTENANCE', 'INSTALLATION'].includes(value)
+                    setNewRequest({ ...newRequest, workOrderType: value, needsCertificate: needsCert })
+                  }}
                 >
                   <SelectTrigger>
-                    <SelectValue placeholder="Select the type of issue" />
+                    <SelectValue />
                   </SelectTrigger>
                   <SelectContent>
-                    <SelectItem value="FIRE_ALARM_MALFUNCTION">🔥 Fire Alarm Malfunction</SelectItem>
-                    <SelectItem value="SMOKE_DETECTOR_ISSUE">💨 Smoke Detector Issue</SelectItem>
-                    <SelectItem value="SPRINKLER_LEAK">💧 Sprinkler Leak</SelectItem>
-                    <SelectItem value="EXTINGUISHER_EXPIRED">🧯 Fire Extinguisher Expired</SelectItem>
-                    <SelectItem value="EMERGENCY_LIGHT_OUT">💡 Emergency Light Out</SelectItem>
-                    <SelectItem value="EXIT_SIGN_ISSUE">🚪 Exit Sign Issue</SelectItem>
-                    <SelectItem value="FIRE_DOOR_PROBLEM">🚧 Fire Door Problem</SelectItem>
-                    <SelectItem value="PANEL_ERROR">⚠️ Fire Panel Error</SelectItem>
-                    <SelectItem value="SCHEDULED_INSPECTION">📋 Scheduled Inspection</SelectItem>
-                    <SelectItem value="CERTIFICATION_RENEWAL">📜 Certification Renewal</SelectItem>
-                    <SelectItem value="NEW_INSTALLATION">🔧 New Installation</SelectItem>
-                    <SelectItem value="SYSTEM_UPGRADE">⬆️ System Upgrade</SelectItem>
-                    <SelectItem value="PREVENTIVE_MAINTENANCE">🛠️ Preventive Maintenance</SelectItem>
-                    <SelectItem value="OTHER">📝 Other</SelectItem>
+                    <SelectItem value="SERVICE">🔧 Repair/Service</SelectItem>
+                    <SelectItem value="INSPECTION">🔍 Inspection</SelectItem>
+                    <SelectItem value="MAINTENANCE">🛠️ Maintenance</SelectItem>
+                    <SelectItem value="INSTALLATION">📦 Installation</SelectItem>
                   </SelectContent>
                 </Select>
               </div>
@@ -780,25 +785,8 @@ export function ClientBranchRequests({ branchId, projectId, onDataChange }: Clie
                 />
               </div>
 
-              {/* Work Order Type & Priority Row */}
+              {/* Priority & Frequency Row */}
               <div className="grid grid-cols-2 gap-4">
-                <div className="space-y-2">
-                  <Label htmlFor="workOrderType">Service Type</Label>
-                  <Select
-                    value={newRequest.workOrderType}
-                    onValueChange={(value: 'SERVICE' | 'INSPECTION' | 'MAINTENANCE' | 'INSTALLATION') => setNewRequest({ ...newRequest, workOrderType: value })}
-                  >
-                    <SelectTrigger>
-                      <SelectValue />
-                    </SelectTrigger>
-                    <SelectContent>
-                      <SelectItem value="SERVICE">🔧 Repair/Service</SelectItem>
-                      <SelectItem value="INSPECTION">🔍 Inspection</SelectItem>
-                      <SelectItem value="MAINTENANCE">🛠️ Maintenance</SelectItem>
-                      <SelectItem value="INSTALLATION">📦 Installation</SelectItem>
-                    </SelectContent>
-                  </Select>
-                </div>
                 <div className="space-y-2">
                   <Label htmlFor="priority">Priority</Label>
                   <Select
@@ -816,6 +804,37 @@ export function ClientBranchRequests({ branchId, projectId, onDataChange }: Clie
                     </SelectContent>
                   </Select>
                 </div>
+                <div className="space-y-2">
+                  <Label htmlFor="recurringType">Frequency</Label>
+                  <Select
+                    value={newRequest.recurringType}
+                    onValueChange={(value: 'ONCE' | 'MONTHLY' | 'QUARTERLY') => setNewRequest({ ...newRequest, recurringType: value })}
+                  >
+                    <SelectTrigger>
+                      <SelectValue />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="ONCE">One-time</SelectItem>
+                      <SelectItem value="MONTHLY">Monthly</SelectItem>
+                      <SelectItem value="QUARTERLY">Quarterly</SelectItem>
+                    </SelectContent>
+                  </Select>
+                </div>
+              </div>
+
+              {/* Certificate Checkbox */}
+              <div className="flex items-center space-x-2 p-3 bg-muted/50 rounded-lg">
+                <input
+                  type="checkbox"
+                  id="needsCertificate"
+                  checked={newRequest.needsCertificate}
+                  onChange={(e) => setNewRequest({ ...newRequest, needsCertificate: e.target.checked })}
+                  className="h-4 w-4 rounded border-gray-300"
+                />
+                <Label htmlFor="needsCertificate" className="text-sm font-normal cursor-pointer">
+                  Certificate Required
+                  <span className="text-muted-foreground ml-1">(auto-generated on completion)</span>
+                </Label>
               </div>
 
               {/* Preferred Date & Time Row */}
@@ -929,11 +948,14 @@ export function ClientBranchRequests({ branchId, projectId, onDataChange }: Clie
               <div className="flex items-center gap-2 flex-wrap">
                 {getPriorityBadge(selectedRequest.priority)}
                 {getStatusBadge(selectedRequest.status)}
-                {selectedRequest.issueType && (
-                  <Badge variant="secondary">{formatIssueType(selectedRequest.issueType)}</Badge>
-                )}
                 {selectedRequest.workOrderType && (
                   <Badge variant="outline">{selectedRequest.workOrderType}</Badge>
+                )}
+                {selectedRequest.recurringType && selectedRequest.recurringType !== 'ONCE' && (
+                  <Badge variant="secondary">{selectedRequest.recurringType === 'MONTHLY' ? 'Monthly' : 'Quarterly'}</Badge>
+                )}
+                {selectedRequest.needsCertificate && (
+                  <Badge variant="outline" className="text-green-600">Certificate Required</Badge>
                 )}
               </div>
               
@@ -1319,11 +1341,11 @@ export function ClientBranchRequests({ branchId, projectId, onDataChange }: Clie
                 <h3 className="font-semibold">{quoteResponseRequest.title}</h3>
                 <div className="flex items-center gap-2 flex-wrap">
                   {getPriorityBadge(quoteResponseRequest.priority)}
-                  {quoteResponseRequest.issueType && (
-                    <Badge variant="outline">{formatIssueType(quoteResponseRequest.issueType)}</Badge>
-                  )}
                   {quoteResponseRequest.workOrderType && (
                     <Badge variant="secondary">{formatWorkOrderType(quoteResponseRequest.workOrderType)}</Badge>
+                  )}
+                  {quoteResponseRequest.recurringType && quoteResponseRequest.recurringType !== 'ONCE' && (
+                    <Badge variant="outline">{quoteResponseRequest.recurringType === 'MONTHLY' ? 'Monthly' : 'Quarterly'}</Badge>
                   )}
                 </div>
                 {quoteResponseRequest.description && (
@@ -1336,13 +1358,21 @@ export function ClientBranchRequests({ branchId, projectId, onDataChange }: Clie
                 <h4 className="font-semibold text-purple-800">Contractor&apos;s Quote</h4>
                 <div className="grid grid-cols-2 gap-4">
                   <div>
-                    <p className="text-xs text-purple-600 mb-1">Price</p>
+                    <p className="text-xs text-purple-600 mb-1">
+                      {quoteResponseRequest.recurringType && quoteResponseRequest.recurringType !== 'ONCE' 
+                        ? 'Price per Occurrence' 
+                        : 'Price'}
+                    </p>
                     <p className="text-2xl font-bold text-purple-800">
                       SAR {quoteResponseRequest.quotedPrice?.toLocaleString('en-US', { minimumFractionDigits: 2 })}
                     </p>
                   </div>
                   <div>
-                    <p className="text-xs text-purple-600 mb-1">Scheduled Date</p>
+                    <p className="text-xs text-purple-600 mb-1">
+                      {quoteResponseRequest.recurringType && quoteResponseRequest.recurringType !== 'ONCE' 
+                        ? 'First Scheduled Date' 
+                        : 'Scheduled Date'}
+                    </p>
                     <p className="text-lg font-semibold text-purple-800">
                       {quoteResponseRequest.quotedDate ? new Date(quoteResponseRequest.quotedDate).toLocaleDateString() : 'TBD'}
                     </p>
@@ -1355,6 +1385,48 @@ export function ClientBranchRequests({ branchId, projectId, onDataChange }: Clie
                   </div>
                 )}
               </div>
+
+              {/* Recurring Work Orders Tree */}
+              {quoteResponseRequest.recurringType && quoteResponseRequest.recurringType !== 'ONCE' && quoteResponseRequest.quotedDate && quoteResponseRequest.quotedPrice && (
+                <div className="p-4 bg-blue-50 border border-blue-200 rounded-lg">
+                  <h5 className="font-medium text-blue-800 mb-3">
+                    Work Orders ({quoteResponseRequest.recurringType === 'MONTHLY' ? 'Monthly' : 'Quarterly'})
+                  </h5>
+                  <div className="space-y-1 text-sm">
+                    {(() => {
+                      const startDate = new Date(quoteResponseRequest.quotedDate)
+                      const interval = quoteResponseRequest.recurringType === 'MONTHLY' ? 1 : 3
+                      const occurrences = quoteResponseRequest.recurringType === 'MONTHLY' ? 12 : 4
+                      const price = quoteResponseRequest.quotedPrice || 0
+                      const dates = []
+                      for (let i = 0; i < occurrences; i++) {
+                        const date = new Date(startDate)
+                        date.setMonth(date.getMonth() + (i * interval))
+                        dates.push(date)
+                      }
+                      return (
+                        <>
+                          {dates.slice(0, 4).map((date, idx) => (
+                            <div key={idx} className="flex justify-between items-center py-1 border-b border-blue-100 last:border-0">
+                              <span className="text-blue-700">
+                                └ {quoteResponseRequest.recurringType === 'MONTHLY' ? `Month ${idx + 1}` : `Q${idx + 1}`}: {date.toLocaleDateString()}
+                              </span>
+                              <span className="font-medium text-blue-800">SAR {price.toLocaleString()}</span>
+                            </div>
+                          ))}
+                          {dates.length > 4 && (
+                            <p className="text-blue-600 text-xs mt-2">... and {dates.length - 4} more work orders</p>
+                          )}
+                          <div className="flex justify-between items-center pt-3 mt-2 border-t border-blue-300 font-semibold">
+                            <span className="text-blue-800">Total ({dates.length} work orders)</span>
+                            <span className="text-blue-900 text-lg">SAR {(price * dates.length).toLocaleString()}</span>
+                          </div>
+                        </>
+                      )
+                    })()}
+                  </div>
+                </div>
+              )}
 
               {/* Rejection Form */}
               {showRejectionForm ? (
@@ -1387,12 +1459,62 @@ export function ClientBranchRequests({ branchId, projectId, onDataChange }: Clie
                     </Button>
                   </div>
                 </div>
-              ) : (
-                <>
+              ) : showSignatureForm ? (
+                <div className="space-y-4">
                   <div className="p-4 bg-blue-50 border border-blue-200 rounded-lg">
                     <p className="text-sm text-blue-800">
-                      <strong>What happens next?</strong> If you accept, a work order will be created and your contractor will schedule the service. 
-                      If you reject, the contractor will be notified and may provide a revised quote.
+                      <strong>Sign to Accept</strong> - By signing below, you agree to the quoted price and schedule.
+                      {quoteResponseRequest.recurringType && quoteResponseRequest.recurringType !== 'ONCE' 
+                        ? ` ${quoteResponseRequest.recurringType === 'MONTHLY' ? '12 monthly' : '4 quarterly'} work orders will be created.`
+                        : ''}
+                    </p>
+                  </div>
+                  
+                  <div className="space-y-2">
+                    <Label className="flex items-center gap-2">
+                      <PenTool className="h-4 w-4" />
+                      Your Signature
+                    </Label>
+                    <div className="border rounded-lg p-2 bg-white">
+                      <SignaturePad 
+                        onSignatureChange={(sig) => setClientSignature(sig)}
+                        width={380}
+                        height={120}
+                      />
+                    </div>
+                  </div>
+
+                  <div className="flex gap-3">
+                    <Button 
+                      variant="outline"
+                      onClick={() => {
+                        setShowSignatureForm(false)
+                        setClientSignature(null)
+                      }}
+                      className="flex-1"
+                    >
+                      Back
+                    </Button>
+                    <Button 
+                      onClick={handleAcceptQuote}
+                      disabled={respondingToQuote || !clientSignature}
+                      className="flex-1 bg-green-600 hover:bg-green-700"
+                    >
+                      {respondingToQuote && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
+                      <CheckCircle className="mr-2 h-4 w-4" />
+                      Confirm & Accept
+                    </Button>
+                  </div>
+                </div>
+              ) : (
+                <>
+                  <div className="p-4 bg-green-50 border border-green-200 rounded-lg">
+                    <p className="text-sm text-green-800">
+                      <strong>What happens next?</strong> If you accept, 
+                      {quoteResponseRequest.recurringType && quoteResponseRequest.recurringType !== 'ONCE' 
+                        ? ` ${quoteResponseRequest.recurringType === 'MONTHLY' ? '12 monthly' : '4 quarterly'} work orders will be created and scheduled automatically.`
+                        : ' a work order will be created and your contractor will schedule the service.'}
+                      {' '}If you reject, the contractor will be notified and may provide a revised quote.
                     </p>
                   </div>
 
@@ -1406,13 +1528,11 @@ export function ClientBranchRequests({ branchId, projectId, onDataChange }: Clie
                       Reject
                     </Button>
                     <Button 
-                      onClick={handleAcceptQuote}
-                      disabled={respondingToQuote}
+                      onClick={() => setShowSignatureForm(true)}
                       className="flex-1 bg-green-600 hover:bg-green-700"
                     >
-                      {respondingToQuote && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
-                      <ThumbsUp className="mr-2 h-4 w-4" />
-                      Accept Quote
+                      <PenTool className="mr-2 h-4 w-4" />
+                      Accept & Sign
                     </Button>
                   </div>
                 </>

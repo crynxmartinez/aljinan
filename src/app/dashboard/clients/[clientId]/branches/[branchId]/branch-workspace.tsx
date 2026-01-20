@@ -27,6 +27,7 @@ import { AppointmentsList } from '@/components/modules/appointments-list'
 import { BillingView } from '@/components/modules/billing-view'
 import { ContractsList } from '@/components/modules/contracts-list'
 import { ChecklistsList } from '@/components/modules/checklists-list'
+import { CertificatesList } from '@/components/modules/certificates-list'
 import { ProjectFilter } from '@/components/modules/project-filter'
 import { ActivityPanel } from '@/components/modules/activity-panel'
 import { ProjectsTable } from '@/components/modules/projects-table'
@@ -42,6 +43,7 @@ import {
   Plus,
   Trash2,
   Settings,
+  Award,
 } from 'lucide-react'
 import { BranchProfileCard } from '@/components/branches/branch-profile-card'
 
@@ -149,6 +151,7 @@ export function BranchWorkspace({ clientId, branchId, branch, userRole, teamMemb
     { id: 'calendar', label: 'Calendar', icon: Calendar },
     { id: 'billing', label: 'Billing', icon: DollarSign, restrictedForTechnician: true },
     { id: 'contracts', label: 'Contracts', icon: FileCheck, restrictedForTechnician: true },
+    { id: 'certificates', label: 'Certificates', icon: Award, restrictedForTechnician: true },
     { id: 'settings', label: 'Settings', icon: Settings, restrictedForTechnician: true },
   ]
   
@@ -222,6 +225,10 @@ export function BranchWorkspace({ clientId, branchId, branch, userRole, teamMemb
 
         <TabsContent value="contracts" className="mt-0">
           <ContractsList branchId={branchId} projectId={selectedProjectId} />
+        </TabsContent>
+
+        <TabsContent value="certificates" className="mt-0">
+          <CertificatesList branchId={branchId} userRole="CONTRACTOR" />
         </TabsContent>
 
         <TabsContent value="settings" className="mt-0">
