@@ -990,57 +990,132 @@ export function RequestsList({ branchId, userRole, projectId }: RequestsListProp
         </DialogContent>
       </Dialog>
 
-      {/* Request Detail Dialog */}
+      {/* Request Detail Dialog - Enhanced for Contractor */}
       <Dialog open={detailDialogOpen} onOpenChange={setDetailDialogOpen}>
-        <DialogContent className="max-w-lg">
+        <DialogContent className="max-w-2xl max-h-[90vh] overflow-y-auto">
           <DialogHeader>
             <DialogTitle className="flex items-center gap-2">
               {selectedRequest?.title}
             </DialogTitle>
             <DialogDescription>
-              Request Details
+              Service Request from Client
             </DialogDescription>
           </DialogHeader>
           {selectedRequest && (
             <div className="space-y-4">
-              <div className="flex items-center gap-2">
+              {/* Status and Priority Badges */}
+              <div className="flex items-center gap-2 flex-wrap">
                 {getPriorityBadge(selectedRequest.priority)}
                 {getStatusBadge(selectedRequest.status)}
+                {selectedRequest.issueType && (
+                  <Badge variant="secondary">{selectedRequest.issueType.replace(/_/g, ' ')}</Badge>
+                )}
+                {selectedRequest.workOrderType && (
+                  <Badge variant="outline">{selectedRequest.workOrderType}</Badge>
+                )}
               </div>
               
+              {/* Description */}
               {selectedRequest.description && (
-                <div>
+                <div className="bg-muted/50 p-3 rounded-lg">
                   <p className="text-sm font-medium text-muted-foreground mb-1">Description</p>
                   <p className="text-sm">{selectedRequest.description}</p>
                 </div>
               )}
 
-              <div className="grid grid-cols-2 gap-4 text-sm">
+              {/* Request Details Grid */}
+              <div className="grid grid-cols-2 md:grid-cols-3 gap-4 text-sm">
                 <div>
                   <p className="font-medium text-muted-foreground">Created</p>
                   <p>{new Date(selectedRequest.createdAt).toLocaleDateString()}</p>
                 </div>
-                {selectedRequest.dueDate && (
+                {selectedRequest.preferredDate && (
                   <div>
-                    <p className="font-medium text-muted-foreground">Due Date</p>
-                    <p>{new Date(selectedRequest.dueDate).toLocaleDateString()}</p>
+                    <p className="font-medium text-muted-foreground">Preferred Date</p>
+                    <p>{new Date(selectedRequest.preferredDate).toLocaleDateString()}</p>
+                  </div>
+                )}
+                {selectedRequest.preferredTimeSlot && (
+                  <div>
+                    <p className="font-medium text-muted-foreground">Preferred Time</p>
+                    <p>{selectedRequest.preferredTimeSlot}</p>
                   </div>
                 )}
                 <div>
                   <p className="font-medium text-muted-foreground">Created By</p>
                   <p className="capitalize">{selectedRequest.createdByRole.toLowerCase()}</p>
                 </div>
-                {selectedRequest.completedAt && (
-                  <div>
-                    <p className="font-medium text-muted-foreground">Completed</p>
-                    <p>{new Date(selectedRequest.completedAt).toLocaleDateString()}</p>
-                  </div>
-                )}
               </div>
 
+              {/* Photos */}
+              {selectedRequest.photos && selectedRequest.photos.length > 0 && (
+                <div>
+                  <p className="text-sm font-medium text-muted-foreground mb-2">Attached Photos</p>
+                  <div className="grid grid-cols-3 gap-2">
+                    {selectedRequest.photos.map((photo, idx) => (
+                      <img 
+                        key={idx} 
+                        src={photo.url} 
+                        alt={`Request photo ${idx + 1}`}
+                        className="w-full h-24 object-cover rounded-lg cursor-pointer hover:opacity-80"
+                        onClick={() => window.open(photo.url, '_blank')}
+                      />
+                    ))}
+                  </div>
+                </div>
+              )}
+
+              {/* Quote Info (if already quoted) */}
+              {selectedRequest.quotedPrice && (
+                <div className="bg-purple-50 border border-purple-200 p-4 rounded-lg">
+                  <p className="text-sm font-medium text-purple-800 mb-2">Quote Sent</p>
+                  <div className="grid grid-cols-2 gap-2 text-sm">
+                    <div>
+                      <p className="text-purple-600">Price</p>
+                      <p className="font-semibold">${selectedRequest.quotedPrice.toLocaleString()}</p>
+                    </div>
+                    {selectedRequest.quotedDate && (
+                      <div>
+                        <p className="text-purple-600">Scheduled Date</p>
+                        <p className="font-semibold">{new Date(selectedRequest.quotedDate).toLocaleDateString()}</p>
+                      </div>
+                    )}
+                  </div>
+                  {selectedRequest.status === 'QUOTED' && (
+                    <p className="text-xs text-purple-600 mt-2">Waiting for client approval...</p>
+                  )}
+                </div>
+              )}
+
+              {/* Contractor Actions */}
               {userRole === 'CONTRACTOR' && (
-                <div className="flex gap-2 pt-4 border-t">
+                <div className="flex gap-2 pt-4 border-t flex-wrap">
                   {selectedRequest.status === 'REQUESTED' && (
+                    <>
+                      <Button 
+                        onClick={() => {
+                          setQuoteRequest(selectedRequest)
+                          setQuoteDialogOpen(true)
+                          setDetailDialogOpen(false)
+                        }}
+                        className="flex-1"
+                      >
+                        <DollarSign className="mr-2 h-4 w-4" />
+                        Send Quote
+                      </Button>
+                      <Button 
+                        variant="outline"
+                        onClick={() => {
+                          handleUpdateStatus(selectedRequest.id, 'IN_PROGRESS')
+                          setDetailDialogOpen(false)
+                        }}
+                      >
+                        <CheckCircle className="mr-2 h-4 w-4" />
+                        Start Immediately
+                      </Button>
+                    </>
+                  )}
+                  {selectedRequest.status === 'SCHEDULED' && (
                     <Button 
                       onClick={() => {
                         handleUpdateStatus(selectedRequest.id, 'IN_PROGRESS')
@@ -1064,7 +1139,7 @@ export function RequestsList({ branchId, userRole, projectId }: RequestsListProp
                       Mark Complete
                     </Button>
                   )}
-                  {selectedRequest.status !== 'CANCELLED' && selectedRequest.status !== 'COMPLETED' && (
+                  {!['CANCELLED', 'COMPLETED', 'CLOSED'].includes(selectedRequest.status) && (
                     <Button 
                       variant="outline"
                       onClick={() => {
