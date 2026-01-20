@@ -51,7 +51,8 @@ export async function GET(
               }
             }
           }
-        }
+        },
+        photos: true
       },
       orderBy: [
         { stage: 'asc' },
@@ -67,12 +68,27 @@ export async function GET(
       notes: item.notes,
       stage: item.stage,
       type: item.type,
+      workOrderType: item.workOrderType,
       scheduledDate: item.scheduledDate?.toISOString() || null,
       price: item.price,
       isCompleted: item.isCompleted,
       checklistId: item.checklistId,
       checklistTitle: item.checklist.title,
       projectTitle: item.checklist.project?.title || null,
+      linkedRequestId: item.linkedRequestId,
+      // Inspection fields
+      inspectionDate: item.inspectionDate?.toISOString() || null,
+      systemsChecked: item.systemsChecked,
+      findings: item.findings,
+      deficiencies: item.deficiencies,
+      recommendations: item.recommendations,
+      technicianSignature: item.technicianSignature,
+      technicianSignedAt: item.technicianSignedAt?.toISOString() || null,
+      supervisorSignature: item.supervisorSignature,
+      supervisorSignedAt: item.supervisorSignedAt?.toISOString() || null,
+      reportGeneratedAt: item.reportGeneratedAt?.toISOString() || null,
+      reportUrl: item.reportUrl,
+      photos: item.photos,
       // Payment fields
       paymentStatus: item.paymentStatus,
       paymentProofUrl: item.paymentProofUrl,
@@ -105,13 +121,139 @@ export async function PATCH(
 
     const { branchId } = await params
     const body = await request.json()
-    const { action, workOrderIds, paymentProofUrl, paymentProofType, paymentProofFileName, signature } = body
+    const { 
+      action, 
+      workOrderIds, 
+      workOrderId, // Single work order for inspection updates
+      paymentProofUrl, 
+      paymentProofType, 
+      paymentProofFileName, 
+      signature,
+      // Inspection fields
+      inspectionDate,
+      systemsChecked,
+      findings,
+      deficiencies,
+      recommendations,
+      // Photo management
+      photoUrls,
+      removePhotoIds
+    } = body
 
     const hasAccess = await verifyBranchAccess(branchId, session.user.id, session.user.role)
     if (!hasAccess) {
       return NextResponse.json({ error: 'Access denied' }, { status: 403 })
     }
 
+    // Handle inspection update for single work order
+    if (action === 'update_inspection') {
+      if (!workOrderId) {
+        return NextResponse.json({ error: 'Work order ID required' }, { status: 400 })
+      }
+
+      // Verify work order belongs to this branch
+      const workOrder = await prisma.checklistItem.findFirst({
+        where: {
+          id: workOrderId,
+          checklist: { branchId }
+        }
+      })
+
+      if (!workOrder) {
+        return NextResponse.json({ error: 'Work order not found' }, { status: 404 })
+      }
+
+      // Build update data
+      const updateData: Record<string, unknown> = {}
+      if (inspectionDate !== undefined) updateData.inspectionDate = inspectionDate ? new Date(inspectionDate) : null
+      if (systemsChecked !== undefined) updateData.systemsChecked = systemsChecked
+      if (findings !== undefined) updateData.findings = findings
+      if (deficiencies !== undefined) updateData.deficiencies = deficiencies
+      if (recommendations !== undefined) updateData.recommendations = recommendations
+
+      // Update work order
+      const updatedWorkOrder = await prisma.checklistItem.update({
+        where: { id: workOrderId },
+        data: updateData,
+        include: { photos: true }
+      })
+
+      // Add new photos if provided
+      if (photoUrls && photoUrls.length > 0) {
+        await prisma.inspectionPhoto.createMany({
+          data: photoUrls.map((photo: { url: string; caption?: string; photoType?: string }) => ({
+            checklistItemId: workOrderId,
+            url: photo.url,
+            caption: photo.caption || null,
+            photoType: photo.photoType || null
+          }))
+        })
+      }
+
+      // Remove photos if specified
+      if (removePhotoIds && removePhotoIds.length > 0) {
+        await prisma.inspectionPhoto.deleteMany({
+          where: { id: { in: removePhotoIds } }
+        })
+      }
+
+      // Fetch updated work order with photos
+      const finalWorkOrder = await prisma.checklistItem.findUnique({
+        where: { id: workOrderId },
+        include: { photos: true }
+      })
+
+      return NextResponse.json(finalWorkOrder)
+    }
+
+    // Handle technician signature
+    if (action === 'technician_sign') {
+      if (!workOrderId || !signature) {
+        return NextResponse.json({ error: 'Work order ID and signature required' }, { status: 400 })
+      }
+
+      const updatedWorkOrder = await prisma.checklistItem.update({
+        where: { id: workOrderId },
+        data: {
+          technicianSignature: signature,
+          technicianSignedAt: new Date(),
+          technicianSignedById: session.user.id
+        }
+      })
+
+      return NextResponse.json(updatedWorkOrder)
+    }
+
+    // Handle supervisor signature
+    if (action === 'supervisor_sign') {
+      if (!workOrderId || !signature) {
+        return NextResponse.json({ error: 'Work order ID and signature required' }, { status: 400 })
+      }
+
+      // Only supervisors or contractors can sign as supervisor
+      if (session.user.role !== 'CONTRACTOR') {
+        // Check if team member is a supervisor
+        const teamMember = await prisma.teamMember.findUnique({
+          where: { userId: session.user.id }
+        })
+        if (!teamMember || teamMember.teamRole !== 'SUPERVISOR') {
+          return NextResponse.json({ error: 'Only supervisors can sign' }, { status: 403 })
+        }
+      }
+
+      const updatedWorkOrder = await prisma.checklistItem.update({
+        where: { id: workOrderId },
+        data: {
+          supervisorSignature: signature,
+          supervisorSignedAt: new Date(),
+          supervisorSignedById: session.user.id
+        }
+      })
+
+      return NextResponse.json(updatedWorkOrder)
+    }
+
+    // For bulk payment actions, require workOrderIds array
     if (!workOrderIds || !Array.isArray(workOrderIds) || workOrderIds.length === 0) {
       return NextResponse.json({ error: 'Work order IDs required' }, { status: 400 })
     }

@@ -23,7 +23,11 @@ export async function GET(
     }
 
     const req = await prisma.request.findFirst({
-      where: { id: requestId, branchId }
+      where: { id: requestId, branchId },
+      include: {
+        photos: true,
+        project: { select: { id: true, title: true, status: true } }
+      }
     })
 
     if (!req) {
@@ -54,7 +58,20 @@ export async function PATCH(
 
     const { branchId, requestId } = await params
     const body = await request.json()
-    const { title, description, priority, status, assignedTo, dueDate } = body
+    const { 
+      title, 
+      description, 
+      priority, 
+      status, 
+      assignedTo, 
+      dueDate,
+      // New quote fields (contractor sets these)
+      quotedPrice,
+      quotedDate,
+      // Action fields
+      action, // 'quote', 'accept', 'reject'
+      rejectionNote
+    } = body
 
     const hasAccess = await verifyBranchAccess(branchId, session.user.id, session.user.role)
     if (!hasAccess) {
@@ -75,61 +92,114 @@ export async function PATCH(
     if (title !== undefined) updateData.title = title
     if (description !== undefined) updateData.description = description
     if (priority !== undefined) updateData.priority = priority
-    if (status !== undefined) {
+    if (assignedTo !== undefined) updateData.assignedTo = assignedTo
+    if (dueDate !== undefined) updateData.dueDate = dueDate ? new Date(dueDate) : null
+
+    // Handle specific actions
+    let workOrderCreated = false
+    let workOrderId: string | null = null
+
+    // ACTION: Contractor sends quote
+    if (action === 'quote') {
+      if (session.user.role !== 'CONTRACTOR') {
+        return NextResponse.json({ error: 'Only contractors can quote' }, { status: 403 })
+      }
+      if (!quotedPrice || !quotedDate) {
+        return NextResponse.json({ error: 'Price and date are required for quote' }, { status: 400 })
+      }
+      updateData.status = 'QUOTED'
+      updateData.quotedPrice = quotedPrice
+      updateData.quotedDate = new Date(quotedDate)
+      updateData.quotedById = session.user.id
+      updateData.quotedAt = new Date()
+    }
+    // ACTION: Client accepts quote
+    else if (action === 'accept') {
+      if (session.user.role !== 'CLIENT') {
+        return NextResponse.json({ error: 'Only clients can accept quotes' }, { status: 403 })
+      }
+      if (currentRequest.status !== 'QUOTED') {
+        return NextResponse.json({ error: 'Can only accept quoted requests' }, { status: 400 })
+      }
+      updateData.status = 'SCHEDULED'
+      updateData.acceptedAt = new Date()
+      updateData.acceptedById = session.user.id
+
+      // Create work order (ChecklistItem) from accepted request
+      // First, find or create a checklist for this branch
+      let checklist = await prisma.checklist.findFirst({
+        where: { 
+          branchId,
+          projectId: currentRequest.projectId,
+          status: 'IN_PROGRESS'
+        }
+      })
+
+      if (!checklist) {
+        checklist = await prisma.checklist.create({
+          data: {
+            branchId,
+            projectId: currentRequest.projectId,
+            title: 'Service Requests',
+            description: 'Work orders from client requests',
+            status: 'IN_PROGRESS',
+            createdById: session.user.id,
+          }
+        })
+      }
+
+      // Create the work order
+      const workOrder = await prisma.checklistItem.create({
+        data: {
+          checklistId: checklist.id,
+          description: currentRequest.title,
+          notes: currentRequest.description,
+          stage: 'SCHEDULED',
+          type: 'ADHOC',
+          workOrderType: currentRequest.workOrderType,
+          scheduledDate: currentRequest.quotedDate,
+          price: currentRequest.quotedPrice,
+          linkedRequestId: requestId,
+        }
+      })
+
+      workOrderCreated = true
+      workOrderId = workOrder.id
+      updateData.workOrderId = workOrder.id
+    }
+    // ACTION: Client rejects quote
+    else if (action === 'reject') {
+      if (session.user.role !== 'CLIENT') {
+        return NextResponse.json({ error: 'Only clients can reject quotes' }, { status: 403 })
+      }
+      if (currentRequest.status !== 'QUOTED') {
+        return NextResponse.json({ error: 'Can only reject quoted requests' }, { status: 400 })
+      }
+      updateData.status = 'REJECTED'
+      updateData.rejectedAt = new Date()
+      updateData.rejectedById = session.user.id
+      updateData.rejectionNote = rejectionNote || null
+    }
+    // Regular status update
+    else if (status !== undefined) {
       updateData.status = status
       if (status === 'COMPLETED') {
         updateData.completedAt = new Date()
       }
     }
-    if (assignedTo !== undefined) updateData.assignedTo = assignedTo
-    if (dueDate !== undefined) updateData.dueDate = dueDate ? new Date(dueDate) : null
-
-    // Auto-create project when contractor approves/starts work on request
-    // Only create if: status changing to IN_PROGRESS, request has no project, and user is contractor
-    const shouldCreateProject = 
-      status === 'IN_PROGRESS' && 
-      !currentRequest.projectId && 
-      session.user.role === 'CONTRACTOR'
-
-    let projectId: string | null = null
-
-    if (shouldCreateProject) {
-      // Create a new project from this request
-      const project = await prisma.project.create({
-        data: {
-          branchId,
-          title: currentRequest.title,
-          description: currentRequest.description,
-          priority: currentRequest.priority,
-          status: 'PENDING',
-          createdById: session.user.id,
-          createdByRole: 'CONTRACTOR',
-        }
-      })
-      projectId = project.id
-      updateData.projectId = projectId
-
-      // Add activity to the new project
-      await prisma.activity.create({
-        data: {
-          projectId: project.id,
-          type: 'CREATED',
-          content: `Project created from request: ${currentRequest.title}`,
-          createdById: session.user.id,
-          createdByRole: 'CONTRACTOR',
-        }
-      })
-    }
 
     const updatedRequest = await prisma.request.update({
       where: { id: requestId },
-      data: updateData
+      data: updateData,
+      include: {
+        photos: true
+      }
     })
 
     return NextResponse.json({ 
       ...updatedRequest, 
-      projectCreated: shouldCreateProject,
-      projectId: projectId || updatedRequest.projectId 
+      workOrderCreated,
+      workOrderId
     })
   } catch (error) {
     console.error('Error updating request:', error)

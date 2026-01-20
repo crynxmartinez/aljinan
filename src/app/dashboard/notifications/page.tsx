@@ -158,7 +158,7 @@ async function getPendingCounts(userId: string) {
     prisma.request.count({
       where: {
         branch: { clientId: { in: clientIds } },
-        status: 'OPEN'
+        status: 'REQUESTED'
       }
     }),
     prisma.quotation.count({

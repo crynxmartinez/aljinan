@@ -275,7 +275,7 @@ export async function POST(
           title: `Project Proposal: ${title}`,
           description: description || `New project proposal for review.`,
           priority: 'MEDIUM',
-          status: 'OPEN',
+          status: 'REQUESTED',
           createdById: session.user.id,
           createdByRole: session.user.role as 'CONTRACTOR' | 'CLIENT' | 'TEAM_MEMBER',
         }

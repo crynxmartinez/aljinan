@@ -106,7 +106,7 @@ export async function POST(
           title: `Project Renewal: ${newProject.title}`,
           description: `Renewal of previous contract. Please review the work orders and pricing.`,
           priority: templateProject.priority,
-          status: 'OPEN',
+          status: 'REQUESTED',
           createdById: session.user.id,
           createdByRole: session.user.role as 'CONTRACTOR' | 'CLIENT' | 'TEAM_MEMBER',
         }

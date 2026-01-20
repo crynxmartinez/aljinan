@@ -130,7 +130,7 @@ export async function POST(
         await tx.request.updateMany({
           where: {
             projectId,
-            status: 'OPEN'
+            status: 'REQUESTED'
           },
           data: {
             status: 'COMPLETED'

@@ -3,7 +3,7 @@ import { NextResponse } from 'next/server'
 import { authOptions } from '@/lib/auth'
 import { prisma } from '@/lib/prisma'
 
-// GET - Fetch all requests for a branch
+// GET - Fetch all certificates for a branch
 export async function GET(
   request: Request,
   { params }: { params: Promise<{ branchId: string }> }
@@ -17,32 +17,30 @@ export async function GET(
 
     const { branchId } = await params
 
-    // Verify user has access to this branch
     const hasAccess = await verifyBranchAccess(branchId, session.user.id, session.user.role)
     if (!hasAccess) {
       return NextResponse.json({ error: 'Access denied' }, { status: 403 })
     }
 
-    const requests = await prisma.request.findMany({
+    const certificates = await prisma.certificate.findMany({
       where: { branchId },
       include: {
-        project: { select: { id: true, title: true, status: true } },
-        photos: true
+        project: { select: { id: true, title: true } }
       },
       orderBy: { createdAt: 'desc' }
     })
 
-    return NextResponse.json(requests)
+    return NextResponse.json(certificates)
   } catch (error) {
-    console.error('Error fetching requests:', error)
+    console.error('Error fetching certificates:', error)
     return NextResponse.json(
-      { error: 'Failed to fetch requests' },
+      { error: 'Failed to fetch certificates' },
       { status: 500 }
     )
   }
 }
 
-// POST - Create a new request
+// POST - Create/upload a certificate
 export async function POST(
   request: Request,
   { params }: { params: Promise<{ branchId: string }> }
@@ -57,59 +55,60 @@ export async function POST(
     const { branchId } = await params
     const body = await request.json()
     const { 
+      type, 
       title, 
       description, 
-      priority, 
-      dueDate,
-      issueType,
-      workOrderType,
-      preferredDate,
-      preferredTimeSlot,
-      photoUrls // Array of photo URLs already uploaded
+      fileUrl, 
+      issueDate, 
+      expiryDate, 
+      issuedBy,
+      projectId,
+      workOrderId,
+      notes
     } = body
 
-    if (!title) {
+    if (!type || !title || !fileUrl || !issueDate) {
       return NextResponse.json(
-        { error: 'Title is required' },
+        { error: 'Type, title, file URL, and issue date are required' },
         { status: 400 }
       )
     }
 
-    // Verify user has access to this branch
     const hasAccess = await verifyBranchAccess(branchId, session.user.id, session.user.role)
     if (!hasAccess) {
       return NextResponse.json({ error: 'Access denied' }, { status: 403 })
     }
 
-    // Create request with photos
-    const newRequest = await prisma.request.create({
+    // Only contractors can create certificates
+    if (session.user.role !== 'CONTRACTOR') {
+      return NextResponse.json({ error: 'Only contractors can create certificates' }, { status: 403 })
+    }
+
+    const certificate = await prisma.certificate.create({
       data: {
         branchId,
+        type,
         title,
-        description,
-        priority: priority || 'MEDIUM',
-        status: 'REQUESTED',
-        createdById: session.user.id,
-        createdByRole: session.user.role as 'CONTRACTOR' | 'CLIENT' | 'TEAM_MEMBER',
-        dueDate: dueDate ? new Date(dueDate) : null,
-        issueType: issueType || null,
-        workOrderType: workOrderType || null,
-        preferredDate: preferredDate ? new Date(preferredDate) : null,
-        preferredTimeSlot: preferredTimeSlot || null,
-        photos: photoUrls && photoUrls.length > 0 ? {
-          create: photoUrls.map((url: string) => ({ url }))
-        } : undefined
+        description: description || null,
+        fileUrl,
+        issueDate: new Date(issueDate),
+        expiryDate: expiryDate ? new Date(expiryDate) : null,
+        issuedBy: issuedBy || null,
+        issuedById: session.user.id,
+        projectId: projectId || null,
+        workOrderId: workOrderId || null,
+        notes: notes || null,
       },
       include: {
-        photos: true
+        project: { select: { id: true, title: true } }
       }
     })
 
-    return NextResponse.json(newRequest, { status: 201 })
+    return NextResponse.json(certificate, { status: 201 })
   } catch (error) {
-    console.error('Error creating request:', error)
+    console.error('Error creating certificate:', error)
     return NextResponse.json(
-      { error: 'Failed to create request' },
+      { error: 'Failed to create certificate' },
       { status: 500 }
     )
   }
@@ -118,29 +117,21 @@ export async function POST(
 // Helper function to verify branch access
 async function verifyBranchAccess(branchId: string, userId: string, role: string): Promise<boolean> {
   if (role === 'CONTRACTOR') {
-    // Contractor can access branches of their clients
     const contractor = await prisma.contractor.findUnique({
       where: { userId },
       include: {
         clients: {
           include: {
-            branches: {
-              where: { id: branchId }
-            }
+            branches: { where: { id: branchId } }
           }
         }
       }
     })
     return contractor?.clients.some(client => client.branches.length > 0) || false
   } else if (role === 'CLIENT') {
-    // Client can only access their own branches
     const client = await prisma.client.findUnique({
       where: { userId },
-      include: {
-        branches: {
-          where: { id: branchId }
-        }
-      }
+      include: { branches: { where: { id: branchId } } }
     })
     return (client?.branches.length || 0) > 0
   } else if (role === 'TEAM_MEMBER') {

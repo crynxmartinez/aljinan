@@ -34,6 +34,71 @@ enum BusinessType {
   OTHER
 }
 
+// Issue types for service requests
+enum IssueType {
+  // Fire Alarm
+  ALARM_FAULT
+  FALSE_ALARM
+  PANEL_ERROR
+  ZONE_FAULT
+  BATTERY_ISSUE
+  
+  // Suppression
+  SPRINKLER_LEAK
+  SPRINKLER_DAMAGE
+  PIPE_LEAK
+  VALVE_ISSUE
+  PUMP_PROBLEM
+  
+  // Extinguishers
+  EXTINGUISHER_REFILL
+  EXTINGUISHER_REPLACEMENT
+  EXTINGUISHER_EXPIRED
+  EXTINGUISHER_MISSING
+  
+  // Detection
+  SMOKE_DETECTOR_FAULT
+  HEAT_DETECTOR_FAULT
+  GAS_DETECTOR_ISSUE
+  DETECTOR_REPLACEMENT
+  
+  // Emergency Systems
+  EMERGENCY_LIGHT_FAULT
+  EXIT_SIGN_FAULT
+  FIRE_DOOR_ISSUE
+  EMERGENCY_EXIT_BLOCKED
+  
+  // Maintenance & Inspection
+  SCHEDULED_INSPECTION
+  PREVENTIVE_MAINTENANCE
+  ANNUAL_CERTIFICATION
+  SYSTEM_TESTING
+  
+  // Other
+  GENERAL_INQUIRY
+  QUOTE_REQUEST
+  NEW_INSTALLATION
+  OTHER
+}
+
+// Work order types
+enum WorkOrderType {
+  SERVICE           // Repair, fix issues
+  INSPECTION        // Check systems, compliance
+  MAINTENANCE       // Preventive maintenance
+  INSTALLATION      // New equipment
+  OTHER
+}
+
+// Certificate types
+enum CertificateType {
+  PREVENTIVE_MAINTENANCE
+  COMPLETION
+  COMPLIANCE
+  INSPECTION
+  CIVIL_DEFENSE     // Uploaded external
+}
+
 enum BuildingType {
   OFFICE
   RETAIL
@@ -173,6 +238,7 @@ model Branch {
   invoices     Invoice[]
   contracts    Contract[]
   checklists   Checklist[]
+  certificates Certificate[]
 
   // Team member access
   teamMemberAccess TeamMemberBranch[]
@@ -214,6 +280,7 @@ model Project {
   contracts    Contract[]
   checklists   Checklist[]
   activities   Activity[]
+  certificates Certificate[]
 }
 
 // Request priorities and statuses
@@ -225,10 +292,16 @@ enum RequestPriority {
 }
 
 enum RequestStatus {
-  OPEN
-  IN_PROGRESS
-  COMPLETED
-  CANCELLED
+  REQUESTED           // Client submitted, waiting for contractor
+  QUOTED              // Contractor set date & price, waiting for client
+  SCHEDULED           // Client accepted, work order created
+  IN_PROGRESS         // Technician working
+  FOR_REVIEW          // Work done, pending supervisor review
+  PENDING_APPROVAL    // Waiting final client approval
+  COMPLETED           // Done
+  CLOSED              // Archived
+  REJECTED            // Client rejected quote
+  CANCELLED           // Cancelled by either party
 }
 
 // Service Request - created by contractor or client for a branch
@@ -241,7 +314,7 @@ model Request {
   title         String
   description   String?
   priority      RequestPriority @default(MEDIUM)
-  status        RequestStatus   @default(OPEN)
+  status        RequestStatus   @default(REQUESTED)
   createdById   String
   createdByRole UserRole
   assignedTo    String?
@@ -249,6 +322,41 @@ model Request {
   completedAt   DateTime?
   createdAt     DateTime        @default(now())
   updatedAt     DateTime        @updatedAt
+  
+  // New fields for improved request flow
+  issueType           IssueType?      // Type of issue (alarm fault, leak, etc.)
+  workOrderType       WorkOrderType?  // Service, Inspection, Maintenance, etc.
+  preferredDate       DateTime?       // Client's preferred date
+  preferredTimeSlot   String?         // "Morning", "Afternoon", "Evening"
+  
+  // Contractor quote fields
+  quotedPrice         Float?          // Price quoted by contractor
+  quotedDate          DateTime?       // Date set by contractor
+  quotedById          String?         // Contractor who quoted
+  quotedAt            DateTime?       // When quote was sent
+  
+  // Client response
+  acceptedAt          DateTime?       // When client accepted
+  acceptedById        String?         // Client who accepted
+  rejectedAt          DateTime?       // When client rejected
+  rejectedById        String?         // Client who rejected
+  rejectionNote       String?         // Reason for rejection
+  
+  // Link to created work order
+  workOrderId         String?         // ChecklistItem ID once accepted
+  
+  // Photos
+  photos              RequestPhoto[]
+}
+
+// Photos attached to service requests
+model RequestPhoto {
+  id          String   @id @default(cuid())
+  requestId   String
+  request     Request  @relation(fields: [requestId], references: [id], onDelete: Cascade)
+  url         String
+  caption     String?
+  createdAt   DateTime @default(now())
 }
 
 // Quotation statuses
@@ -497,6 +605,7 @@ model ChecklistItem {
   notes           String?
   stage           ChecklistItemStage @default(SCHEDULED)
   type            ChecklistItemType  @default(SCHEDULED)
+  workOrderType   WorkOrderType?     // Service, Inspection, Maintenance, etc.
   recurringType   RecurringType      @default(ONCE)
   parentItemId    String?            // For recurring: links to original work order
   occurrenceIndex Int?               // For recurring: which occurrence (1, 2, 3...)
@@ -504,6 +613,31 @@ model ChecklistItem {
   price           Float?
   isCompleted     Boolean            @default(false)
   order           Int                @default(0)
+  
+  // Link to original request (if created from request)
+  linkedRequestId String?            // Request ID that created this work order
+  
+  // Inspection Report Fields
+  inspectionDate        DateTime?     // When inspection was performed
+  systemsChecked        Json?         // Array of systems inspected ["Fire Alarm", "Sprinklers", ...]
+  findings              String?       // What was observed
+  deficiencies          String?       // Problems found
+  recommendations       String?       // What should be done
+  
+  // Signatures
+  technicianSignature   String?       // URL to technician signature image
+  technicianSignedAt    DateTime?     // When technician signed
+  technicianSignedById  String?       // Technician user ID
+  supervisorSignature   String?       // URL to supervisor signature image
+  supervisorSignedAt    DateTime?     // When supervisor signed
+  supervisorSignedById  String?       // Supervisor user ID
+  
+  // Report generation
+  reportGeneratedAt     DateTime?     // When PDF report was generated
+  reportUrl             String?       // URL to generated report PDF
+  
+  // Photos
+  photos                InspectionPhoto[]
   
   // Payment tracking
   paymentStatus           PaymentStatus  @default(UNPAID)
@@ -518,6 +652,38 @@ model ChecklistItem {
   
   createdAt       DateTime           @default(now())
   updatedAt       DateTime           @updatedAt
+}
+
+// Photos attached to work order inspections
+model InspectionPhoto {
+  id              String        @id @default(cuid())
+  checklistItemId String
+  checklistItem   ChecklistItem @relation(fields: [checklistItemId], references: [id], onDelete: Cascade)
+  url             String
+  caption         String?
+  photoType       String?       // "before", "during", "after"
+  createdAt       DateTime      @default(now())
+}
+
+// Certificates - auto-generated or uploaded
+model Certificate {
+  id          String          @id @default(cuid())
+  branchId    String
+  branch      Branch          @relation(fields: [branchId], references: [id], onDelete: Cascade)
+  projectId   String?
+  project     Project?        @relation(fields: [projectId], references: [id], onDelete: SetNull)
+  workOrderId String?         // Link to specific work order if applicable
+  type        CertificateType
+  title       String
+  description String?
+  fileUrl     String          // URL to certificate PDF
+  issueDate   DateTime
+  expiryDate  DateTime?
+  issuedBy    String?         // Who issued (contractor name or "Civil Defense")
+  issuedById  String?         // User ID who created/uploaded
+  notes       String?
+  createdAt   DateTime        @default(now())
+  updatedAt   DateTime        @updatedAt
 }
 
 // Activity types for tracking

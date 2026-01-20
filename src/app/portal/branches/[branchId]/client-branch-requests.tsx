@@ -72,7 +72,7 @@ interface Request {
   title: string
   description: string | null
   priority: 'LOW' | 'MEDIUM' | 'HIGH' | 'URGENT'
-  status: 'OPEN' | 'IN_PROGRESS' | 'COMPLETED' | 'CANCELLED'
+  status: 'REQUESTED' | 'QUOTED' | 'SCHEDULED' | 'IN_PROGRESS' | 'FOR_REVIEW' | 'PENDING_APPROVAL' | 'COMPLETED' | 'CLOSED' | 'REJECTED' | 'CANCELLED'
   createdById: string
   createdByRole: string
   assignedTo: string | null
@@ -401,10 +401,16 @@ export function ClientBranchRequests({ branchId, projectId, onDataChange }: Clie
   }
 
   const getStatusBadge = (status: Request['status']) => {
-    const config = {
-      OPEN: { style: 'bg-yellow-100 text-yellow-700', icon: Clock },
+    const config: Record<Request['status'], { style: string; icon: typeof Clock }> = {
+      REQUESTED: { style: 'bg-yellow-100 text-yellow-700', icon: Clock },
+      QUOTED: { style: 'bg-purple-100 text-purple-700', icon: Clock },
+      SCHEDULED: { style: 'bg-blue-100 text-blue-700', icon: Clock },
       IN_PROGRESS: { style: 'bg-blue-100 text-blue-700', icon: AlertCircle },
+      FOR_REVIEW: { style: 'bg-orange-100 text-orange-700', icon: AlertCircle },
+      PENDING_APPROVAL: { style: 'bg-amber-100 text-amber-700', icon: Clock },
       COMPLETED: { style: 'bg-green-100 text-green-700', icon: CheckCircle },
+      CLOSED: { style: 'bg-gray-100 text-gray-700', icon: CheckCircle },
+      REJECTED: { style: 'bg-red-100 text-red-700', icon: XCircle },
       CANCELLED: { style: 'bg-gray-100 text-gray-700', icon: XCircle },
     }
     const { style, icon: Icon } = config[status]
