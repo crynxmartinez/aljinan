@@ -17,6 +17,16 @@ import {
   DialogTitle,
 } from '@/components/ui/dialog'
 import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+} from '@/components/ui/alert-dialog'
+import {
   Table,
   TableBody,
   TableCell,
@@ -302,6 +312,8 @@ export function ClientBranchRequests({ branchId, projectId, onDataChange }: Clie
   const [showRejectionForm, setShowRejectionForm] = useState(false)
   const [showSignatureForm, setShowSignatureForm] = useState(false)
   const [clientSignature, setClientSignature] = useState<string | null>(null)
+  const [cancelDialogOpen, setCancelDialogOpen] = useState(false)
+  const [cancelling, setCancelling] = useState(false)
 
   const fetchRequests = async () => {
     try {
@@ -1085,21 +1097,7 @@ export function ClientBranchRequests({ branchId, projectId, onDataChange }: Clie
               <Button 
                 variant="destructive"
                 size="sm"
-                onClick={async () => {
-                  if (confirm('Are you sure you want to cancel this request?')) {
-                    try {
-                      await fetch(`/api/branches/${branchId}/requests/${selectedRequest.id}`, {
-                        method: 'PATCH',
-                        headers: { 'Content-Type': 'application/json' },
-                        body: JSON.stringify({ status: 'CANCELLED' }),
-                      })
-                      setSelectedRequest(null)
-                      fetchRequests()
-                    } catch (err) {
-                      console.error('Failed to cancel request:', err)
-                    }
-                  }
-                }}
+                onClick={() => setCancelDialogOpen(true)}
               >
                 Cancel Request
               </Button>
@@ -1110,6 +1108,58 @@ export function ClientBranchRequests({ branchId, projectId, onDataChange }: Clie
           </DialogFooter>
         </DialogContent>
       </Dialog>
+
+      {/* Cancel Request Confirmation Dialog */}
+      <AlertDialog open={cancelDialogOpen} onOpenChange={setCancelDialogOpen}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>Cancel Request</AlertDialogTitle>
+            <AlertDialogDescription>
+              Are you sure you want to cancel this request? This action cannot be undone.
+              {selectedRequest && (
+                <span className="block mt-2 font-medium text-foreground">
+                  &quot;{selectedRequest.title}&quot;
+                </span>
+              )}
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel disabled={cancelling}>Keep Request</AlertDialogCancel>
+            <AlertDialogAction
+              disabled={cancelling}
+              className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
+              onClick={async (e) => {
+                e.preventDefault()
+                if (!selectedRequest) return
+                setCancelling(true)
+                try {
+                  await fetch(`/api/branches/${branchId}/requests/${selectedRequest.id}`, {
+                    method: 'PATCH',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ status: 'CANCELLED' }),
+                  })
+                  setCancelDialogOpen(false)
+                  setSelectedRequest(null)
+                  fetchRequests()
+                } catch (err) {
+                  console.error('Failed to cancel request:', err)
+                } finally {
+                  setCancelling(false)
+                }
+              }}
+            >
+              {cancelling ? (
+                <>
+                  <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                  Cancelling...
+                </>
+              ) : (
+                'Yes, Cancel Request'
+              )}
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
 
       {/* Project Proposal Dialog - With work orders */}
       <Dialog open={!!selectedProject} onOpenChange={(open) => { if (!open) { setSelectedProject(null); setSelectedRequest(null); } }}>
