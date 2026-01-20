@@ -472,10 +472,10 @@ export function RequestsList({ branchId, userRole, projectId }: RequestsListProp
     }
   }
 
-  // Filter requests based on showCompleted toggle
-  const filteredRequests = showCompleted 
-    ? requests 
-    : requests.filter(r => r.status !== 'COMPLETED')
+  // Filter requests - always hide CANCELLED, optionally hide COMPLETED
+  const filteredRequests = requests
+    .filter(r => r.status !== 'CANCELLED')
+    .filter(r => showCompleted || r.status !== 'COMPLETED')
 
   const fetchProjects = async () => {
     try {
