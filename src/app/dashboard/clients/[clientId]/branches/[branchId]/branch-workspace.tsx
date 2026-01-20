@@ -217,15 +217,17 @@ export function BranchWorkspace({ clientId, branchId, branch, userRole, teamMemb
         </TabsContent>
 
         <TabsContent value="settings" className="mt-0">
-          <div className="max-w-2xl">
-            <BranchProfileCard 
-              branch={{
-                ...branch,
-                cdCertificateExpiry: branch.cdCertificateExpiry ? new Date(branch.cdCertificateExpiry).toISOString() : null,
-              }}
-              activeProject={activeProject}
-              canEdit={true} 
-            />
+          <div className="flex justify-center">
+            <div className="w-full max-w-2xl">
+              <BranchProfileCard 
+                branch={{
+                  ...branch,
+                  cdCertificateExpiry: branch.cdCertificateExpiry ? new Date(branch.cdCertificateExpiry).toISOString() : null,
+                }}
+                activeProject={activeProject}
+                canEdit={true} 
+              />
+            </div>
           </div>
         </TabsContent>
       </div>

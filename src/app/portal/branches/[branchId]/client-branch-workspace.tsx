@@ -489,16 +489,18 @@ export function ClientBranchWorkspace({ branchId, branch }: ClientBranchWorkspac
 
           {/* Settings Tab */}
           <TabsContent value="settings" className="mt-0">
-            <div className="max-w-2xl">
-              <BranchProfileCard 
-                branch={branch}
-                activeProject={activeProjects.length > 0 ? {
-                  title: activeProjects[0].title,
-                  startDate: activeProjects[0].startDate || null,
-                  endDate: activeProjects[0].endDate || null,
-                } : null}
-                canEdit={true} 
-              />
+            <div className="flex justify-center">
+              <div className="w-full max-w-2xl">
+                <BranchProfileCard 
+                  branch={branch}
+                  activeProject={activeProjects.length > 0 ? {
+                    title: activeProjects[0].title,
+                    startDate: activeProjects[0].startDate || null,
+                    endDate: activeProjects[0].endDate || null,
+                  } : null}
+                  canEdit={true} 
+                />
+              </div>
             </div>
           </TabsContent>
         </div>
