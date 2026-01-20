@@ -2,7 +2,7 @@ import { getServerSession } from 'next-auth'
 import { redirect } from 'next/navigation'
 import { authOptions } from '@/lib/auth'
 import { prisma } from '@/lib/prisma'
-import { CompanyProfileForm } from './company-profile-form'
+import { ContractorProfileCard } from '@/components/contractors/contractor-profile-card'
 
 async function getContractorProfile(userId: string) {
   const contractor = await prisma.contractor.findUnique({
@@ -42,7 +42,18 @@ export default async function CompanyProfilePage() {
         </p>
       </div>
 
-      <CompanyProfileForm contractor={contractor} />
+      <div className="flex justify-center">
+        <div className="w-full max-w-2xl">
+          <ContractorProfileCard 
+            contractor={{
+              ...contractor,
+              licenseExpiry: contractor.licenseExpiry?.toISOString() || null,
+              insuranceExpiry: contractor.insuranceExpiry?.toISOString() || null,
+              serviceAreas: contractor.serviceAreas as string[] | null,
+            }} 
+          />
+        </div>
+      </div>
     </div>
   )
 }

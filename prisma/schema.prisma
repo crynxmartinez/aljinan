@@ -23,6 +23,17 @@ enum UserStatus {
   ARCHIVED
 }
 
+enum BusinessType {
+  LLC
+  CORPORATION
+  SOLE_PROPRIETOR
+  PARTNERSHIP
+  JOINT_VENTURE
+  GOVERNMENT
+  NON_PROFIT
+  OTHER
+}
+
 enum BuildingType {
   OFFICE
   RETAIL
@@ -75,6 +86,27 @@ model Contractor {
   isVerified    Boolean  @default(false)
   createdAt     DateTime @default(now())
   updatedAt     DateTime @updatedAt
+
+  // Company Profile Fields
+  logoUrl           String?       // Company logo
+  website           String?       // Company website
+  businessType      BusinessType? // LLC, Corporation, etc.
+  yearEstablished   Int?          // Year company was founded
+  
+  // Registration & Licensing (KSA: CR, US: Business License)
+  crNumber          String?       // Commercial Registration (KSA) / Business License (US)
+  vatNumber         String?       // VAT Number (KSA) / EIN (US)
+  
+  // Civil Defense / State License
+  licenseNumber     String?       // Civil Defense License (KSA) / State Contractor License (US)
+  licenseExpiry     DateTime?     // License expiration date
+  
+  // Insurance
+  insuranceCertUrl  String?       // Insurance certificate document URL
+  insuranceExpiry   DateTime?     // Insurance expiration date
+  
+  // Service Areas
+  serviceAreas      Json?         // Array of cities/regions served
 
   // Relations
   clients       Client[]

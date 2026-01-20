@@ -12,16 +12,45 @@ export async function PUT(request: Request) {
     }
 
     const body = await request.json()
-    const { companyName, companyPhone, companyEmail, companyAddress } = body
+    const { 
+      companyName, 
+      companyPhone, 
+      companyEmail, 
+      companyAddress,
+      logoUrl,
+      website,
+      businessType,
+      yearEstablished,
+      crNumber,
+      vatNumber,
+      licenseNumber,
+      licenseExpiry,
+      insuranceCertUrl,
+      insuranceExpiry,
+      serviceAreas
+    } = body
+
+    // Build update data object
+    const updateData: Record<string, unknown> = {}
+    if (companyName !== undefined) updateData.companyName = companyName
+    if (companyPhone !== undefined) updateData.companyPhone = companyPhone
+    if (companyEmail !== undefined) updateData.companyEmail = companyEmail
+    if (companyAddress !== undefined) updateData.companyAddress = companyAddress
+    if (logoUrl !== undefined) updateData.logoUrl = logoUrl
+    if (website !== undefined) updateData.website = website
+    if (businessType !== undefined) updateData.businessType = businessType
+    if (yearEstablished !== undefined) updateData.yearEstablished = yearEstablished ? parseInt(yearEstablished) : null
+    if (crNumber !== undefined) updateData.crNumber = crNumber
+    if (vatNumber !== undefined) updateData.vatNumber = vatNumber
+    if (licenseNumber !== undefined) updateData.licenseNumber = licenseNumber
+    if (licenseExpiry !== undefined) updateData.licenseExpiry = licenseExpiry ? new Date(licenseExpiry) : null
+    if (insuranceCertUrl !== undefined) updateData.insuranceCertUrl = insuranceCertUrl
+    if (insuranceExpiry !== undefined) updateData.insuranceExpiry = insuranceExpiry ? new Date(insuranceExpiry) : null
+    if (serviceAreas !== undefined) updateData.serviceAreas = serviceAreas
 
     const contractor = await prisma.contractor.update({
       where: { userId: session.user.id },
-      data: {
-        companyName,
-        companyPhone,
-        companyEmail,
-        companyAddress,
-      },
+      data: updateData,
     })
 
     return NextResponse.json(contractor)
