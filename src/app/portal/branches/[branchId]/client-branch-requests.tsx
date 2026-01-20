@@ -307,9 +307,13 @@ export function ClientBranchRequests({ branchId, projectId, onDataChange }: Clie
           filtered = filtered.filter((r: Request & { projectId?: string }) => r.projectId === projectId)
         }
         setRequests(filtered)
+        setError('')
+      } else {
+        const errorData = await response.json()
+        setError(`Failed to load requests: ${errorData.error || response.statusText}`)
       }
     } catch (err) {
-      console.error('Failed to fetch requests:', err)
+      setError('Failed to fetch requests. Please try again.')
     } finally {
       setLoading(false)
     }
@@ -612,6 +616,11 @@ export function ClientBranchRequests({ branchId, projectId, onDataChange }: Clie
           </Button>
         </CardHeader>
         <CardContent>
+          {error && (
+            <div className="bg-destructive/10 text-destructive p-3 rounded-lg text-sm mb-4">
+              {error}
+            </div>
+          )}
           {requests.length === 0 ? (
             <div className="flex flex-col items-center justify-center py-12 text-center">
               <FileText className="h-12 w-12 text-muted-foreground/30 mb-4" />
