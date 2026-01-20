@@ -49,6 +49,8 @@ import {
   Upload,
   X,
   Image as ImageIcon,
+  ThumbsUp,
+  ThumbsDown,
 } from 'lucide-react'
 
 interface WorkOrder {
@@ -70,6 +72,12 @@ interface Project {
   workOrders: WorkOrder[]
 }
 
+interface RequestPhoto {
+  id: string
+  url: string
+  caption: string | null
+}
+
 interface Request {
   id: string
   title: string
@@ -85,6 +93,19 @@ interface Request {
   updatedAt: string
   projectId?: string
   project?: Project
+  // New fields
+  issueType?: string | null
+  workOrderType?: 'SERVICE' | 'INSPECTION' | 'MAINTENANCE' | 'INSTALLATION' | null
+  preferredDate?: string | null
+  preferredTimeSlot?: string | null
+  quotedPrice?: number | null
+  quotedDate?: string | null
+  quotedBy?: string | null
+  clientAccepted?: boolean | null
+  clientAcceptedAt?: string | null
+  clientRejectedAt?: string | null
+  clientRejectionReason?: string | null
+  photos?: RequestPhoto[]
 }
 
 interface ClientBranchRequestsProps {
@@ -267,6 +288,13 @@ export function ClientBranchRequests({ branchId, projectId, onDataChange }: Clie
   const [uploading, setUploading] = useState(false)
   const [selectedRequest, setSelectedRequest] = useState<Request | null>(null)
   const [selectedProject, setSelectedProject] = useState<Project | null>(null)
+  
+  // Quote response state
+  const [quoteResponseDialogOpen, setQuoteResponseDialogOpen] = useState(false)
+  const [quoteResponseRequest, setQuoteResponseRequest] = useState<Request | null>(null)
+  const [respondingToQuote, setRespondingToQuote] = useState(false)
+  const [rejectionReason, setRejectionReason] = useState('')
+  const [showRejectionForm, setShowRejectionForm] = useState(false)
 
   const fetchRequests = async () => {
     try {
@@ -408,6 +436,92 @@ export function ClientBranchRequests({ branchId, projectId, onDataChange }: Clie
     setUploadedPhotos(prev => prev.filter(p => p.url !== url))
   }
 
+  // Open quote response dialog
+  const openQuoteResponseDialog = (request: Request) => {
+    setQuoteResponseRequest(request)
+    setQuoteResponseDialogOpen(true)
+    setShowRejectionForm(false)
+    setRejectionReason('')
+  }
+
+  // Accept quote
+  const handleAcceptQuote = async () => {
+    if (!quoteResponseRequest) return
+    setRespondingToQuote(true)
+    setError('')
+
+    try {
+      const response = await fetch(`/api/branches/${branchId}/requests/${quoteResponseRequest.id}`, {
+        method: 'PATCH',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ action: 'accept' }),
+      })
+
+      if (!response.ok) {
+        const data = await response.json()
+        throw new Error(data.error || 'Failed to accept quote')
+      }
+
+      setQuoteResponseDialogOpen(false)
+      setQuoteResponseRequest(null)
+      fetchRequests()
+      router.refresh()
+    } catch (err) {
+      setError(err instanceof Error ? err.message : 'An error occurred')
+    } finally {
+      setRespondingToQuote(false)
+    }
+  }
+
+  // Reject quote
+  const handleRejectQuote = async () => {
+    if (!quoteResponseRequest) return
+    setRespondingToQuote(true)
+    setError('')
+
+    try {
+      const response = await fetch(`/api/branches/${branchId}/requests/${quoteResponseRequest.id}`, {
+        method: 'PATCH',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ 
+          action: 'reject',
+          rejectionReason: rejectionReason || 'No reason provided'
+        }),
+      })
+
+      if (!response.ok) {
+        const data = await response.json()
+        throw new Error(data.error || 'Failed to reject quote')
+      }
+
+      setQuoteResponseDialogOpen(false)
+      setQuoteResponseRequest(null)
+      setRejectionReason('')
+      setShowRejectionForm(false)
+      fetchRequests()
+      router.refresh()
+    } catch (err) {
+      setError(err instanceof Error ? err.message : 'An error occurred')
+    } finally {
+      setRespondingToQuote(false)
+    }
+  }
+
+  // Format issue type for display
+  const formatIssueType = (issueType: string | null | undefined): string => {
+    if (!issueType) return 'General'
+    return issueType
+      .replace(/_/g, ' ')
+      .toLowerCase()
+      .replace(/\b\w/g, c => c.toUpperCase())
+  }
+
+  // Format work order type for display
+  const formatWorkOrderType = (type: string | null | undefined): string => {
+    if (!type) return 'Service'
+    return type.charAt(0) + type.slice(1).toLowerCase()
+  }
+
   const handleCreateRequest = async (e: React.FormEvent) => {
     e.preventDefault()
     setCreating(true)
@@ -515,22 +629,27 @@ export function ClientBranchRequests({ branchId, projectId, onDataChange }: Clie
               {requests.map((request) => (
                 <div
                   key={request.id}
-                  className="p-4 border rounded-lg hover:bg-muted/50 cursor-pointer transition-colors"
-                  onClick={() => {
-                    const project = getProjectForRequest(request)
-                    if (project && request.createdByRole === 'CONTRACTOR') {
-                      setSelectedProject(project)
-                    }
-                    setSelectedRequest(request)
-                  }}
+                  className={`p-4 border rounded-lg transition-colors ${request.status === 'QUOTED' ? 'border-purple-300 bg-purple-50/50' : 'hover:bg-muted/50'}`}
                 >
-                  <div className="space-y-2">
+                  <div 
+                    className="space-y-2 cursor-pointer"
+                    onClick={() => {
+                      const project = getProjectForRequest(request)
+                      if (project && request.createdByRole === 'CONTRACTOR') {
+                        setSelectedProject(project)
+                      }
+                      setSelectedRequest(request)
+                    }}
+                  >
                     <div className="flex items-center gap-2 flex-wrap">
                       <h4 className="font-medium">{request.title}</h4>
                       {getPriorityBadge(request.priority)}
                       {getStatusBadge(request.status)}
                       {request.createdByRole === 'CLIENT' && (
                         <Badge variant="outline" className="text-xs">Submitted by you</Badge>
+                      )}
+                      {request.issueType && (
+                        <Badge variant="secondary" className="text-xs">{formatIssueType(request.issueType)}</Badge>
                       )}
                     </div>
                     {request.description && !request.title.startsWith('Project Proposal:') && (
@@ -548,6 +667,35 @@ export function ClientBranchRequests({ branchId, projectId, onDataChange }: Clie
                       )}
                     </p>
                   </div>
+                  
+                  {/* Show quote info and action buttons for QUOTED requests */}
+                  {request.status === 'QUOTED' && request.quotedPrice && (
+                    <div className="mt-3 pt-3 border-t border-purple-200">
+                      <div className="flex items-center justify-between">
+                        <div className="flex items-center gap-4 text-sm">
+                          <div className="flex items-center gap-1">
+                            <DollarSign className="h-4 w-4 text-purple-600" />
+                            <span className="font-semibold text-purple-700">
+                              SAR {request.quotedPrice.toLocaleString('en-US', { minimumFractionDigits: 2 })}
+                            </span>
+                          </div>
+                          {request.quotedDate && (
+                            <div className="flex items-center gap-1 text-muted-foreground">
+                              <Calendar className="h-4 w-4" />
+                              <span>{new Date(request.quotedDate).toLocaleDateString()}</span>
+                            </div>
+                          )}
+                        </div>
+                        <Button 
+                          size="sm" 
+                          onClick={(e) => { e.stopPropagation(); openQuoteResponseDialog(request); }}
+                          className="bg-purple-600 hover:bg-purple-700"
+                        >
+                          Review Quote
+                        </Button>
+                      </div>
+                    </div>
+                  )}
                 </div>
               ))}
             </div>
@@ -1006,6 +1154,132 @@ export function ClientBranchRequests({ branchId, projectId, onDataChange }: Clie
               )}
             </Button>
           </DialogFooter>
+        </DialogContent>
+      </Dialog>
+
+      {/* Quote Response Dialog - For clients to accept or reject quotes */}
+      <Dialog open={quoteResponseDialogOpen} onOpenChange={(open) => { if (!open) { setQuoteResponseDialogOpen(false); setQuoteResponseRequest(null); setShowRejectionForm(false); setRejectionReason(''); setError(''); } }}>
+        <DialogContent className="sm:max-w-[500px]">
+          <DialogHeader>
+            <DialogTitle>Review Quote</DialogTitle>
+            <DialogDescription>
+              Your contractor has provided a quote for your request
+            </DialogDescription>
+          </DialogHeader>
+
+          {error && (
+            <div className="bg-destructive/10 text-destructive p-3 rounded-lg text-sm">
+              {error}
+            </div>
+          )}
+
+          {quoteResponseRequest && (
+            <div className="space-y-6">
+              {/* Request Summary */}
+              <div className="space-y-3">
+                <h3 className="font-semibold">{quoteResponseRequest.title}</h3>
+                <div className="flex items-center gap-2 flex-wrap">
+                  {getPriorityBadge(quoteResponseRequest.priority)}
+                  {quoteResponseRequest.issueType && (
+                    <Badge variant="outline">{formatIssueType(quoteResponseRequest.issueType)}</Badge>
+                  )}
+                  {quoteResponseRequest.workOrderType && (
+                    <Badge variant="secondary">{formatWorkOrderType(quoteResponseRequest.workOrderType)}</Badge>
+                  )}
+                </div>
+                {quoteResponseRequest.description && (
+                  <p className="text-sm text-muted-foreground">{quoteResponseRequest.description}</p>
+                )}
+              </div>
+
+              {/* Quote Details */}
+              <div className="p-4 bg-purple-50 border border-purple-200 rounded-lg space-y-3">
+                <h4 className="font-semibold text-purple-800">Contractor&apos;s Quote</h4>
+                <div className="grid grid-cols-2 gap-4">
+                  <div>
+                    <p className="text-xs text-purple-600 mb-1">Price</p>
+                    <p className="text-2xl font-bold text-purple-800">
+                      SAR {quoteResponseRequest.quotedPrice?.toLocaleString('en-US', { minimumFractionDigits: 2 })}
+                    </p>
+                  </div>
+                  <div>
+                    <p className="text-xs text-purple-600 mb-1">Scheduled Date</p>
+                    <p className="text-lg font-semibold text-purple-800">
+                      {quoteResponseRequest.quotedDate ? new Date(quoteResponseRequest.quotedDate).toLocaleDateString() : 'TBD'}
+                    </p>
+                  </div>
+                </div>
+                {quoteResponseRequest.assignedTo && (
+                  <div>
+                    <p className="text-xs text-purple-600 mb-1">Assigned Technician</p>
+                    <p className="text-sm font-medium text-purple-800">{quoteResponseRequest.assignedTo}</p>
+                  </div>
+                )}
+              </div>
+
+              {/* Rejection Form */}
+              {showRejectionForm ? (
+                <div className="space-y-3">
+                  <Label htmlFor="rejectionReason">Reason for rejection (optional)</Label>
+                  <Textarea
+                    id="rejectionReason"
+                    value={rejectionReason}
+                    onChange={(e) => setRejectionReason(e.target.value)}
+                    placeholder="Let the contractor know why you're rejecting this quote..."
+                    rows={3}
+                  />
+                  <div className="flex gap-2">
+                    <Button 
+                      variant="outline" 
+                      onClick={() => setShowRejectionForm(false)}
+                      className="flex-1"
+                    >
+                      Back
+                    </Button>
+                    <Button 
+                      variant="destructive"
+                      onClick={handleRejectQuote}
+                      disabled={respondingToQuote}
+                      className="flex-1"
+                    >
+                      {respondingToQuote && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
+                      <ThumbsDown className="mr-2 h-4 w-4" />
+                      Confirm Rejection
+                    </Button>
+                  </div>
+                </div>
+              ) : (
+                <>
+                  <div className="p-4 bg-blue-50 border border-blue-200 rounded-lg">
+                    <p className="text-sm text-blue-800">
+                      <strong>What happens next?</strong> If you accept, a work order will be created and your contractor will schedule the service. 
+                      If you reject, the contractor will be notified and may provide a revised quote.
+                    </p>
+                  </div>
+
+                  <div className="flex gap-3">
+                    <Button 
+                      variant="outline"
+                      onClick={() => setShowRejectionForm(true)}
+                      className="flex-1"
+                    >
+                      <ThumbsDown className="mr-2 h-4 w-4" />
+                      Reject
+                    </Button>
+                    <Button 
+                      onClick={handleAcceptQuote}
+                      disabled={respondingToQuote}
+                      className="flex-1 bg-green-600 hover:bg-green-700"
+                    >
+                      {respondingToQuote && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
+                      <ThumbsUp className="mr-2 h-4 w-4" />
+                      Accept Quote
+                    </Button>
+                  </div>
+                </>
+              )}
+            </div>
+          )}
         </DialogContent>
       </Dialog>
     </>
