@@ -766,7 +766,7 @@ export function ChecklistKanban({ branchId, projectId, readOnly = false, userRol
                           key={item.id}
                           item={item}
                           onClick={() => handleItemClick(item)}
-                          disabled={readOnly && item.stage !== 'FOR_REVIEW'}
+                          disabled={readOnly}
                         />
                       ))}
                       
