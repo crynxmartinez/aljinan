@@ -914,9 +914,9 @@ export function ClientBranchRequests({ branchId, projectId, onDataChange }: Clie
         </DialogContent>
       </Dialog>
 
-      {/* View Request Dialog - Simple requests */}
+      {/* View Request Dialog - Enhanced for Client */}
       <Dialog open={!!selectedRequest && !selectedProject} onOpenChange={(open) => !open && setSelectedRequest(null)}>
-        <DialogContent className="sm:max-w-[600px]">
+        <DialogContent className="sm:max-w-[700px] max-h-[90vh] overflow-y-auto">
           <DialogHeader>
             <DialogTitle>{selectedRequest?.title}</DialogTitle>
             <DialogDescription>
@@ -925,32 +925,163 @@ export function ClientBranchRequests({ branchId, projectId, onDataChange }: Clie
           </DialogHeader>
           {selectedRequest && (
             <div className="space-y-4">
+              {/* Status and Type Badges */}
               <div className="flex items-center gap-2 flex-wrap">
                 {getPriorityBadge(selectedRequest.priority)}
                 {getStatusBadge(selectedRequest.status)}
+                {selectedRequest.issueType && (
+                  <Badge variant="secondary">{formatIssueType(selectedRequest.issueType)}</Badge>
+                )}
+                {selectedRequest.workOrderType && (
+                  <Badge variant="outline">{selectedRequest.workOrderType}</Badge>
+                )}
               </div>
               
+              {/* Description */}
               {selectedRequest.description && (
                 <div className="p-4 bg-muted/50 rounded-lg">
+                  <p className="text-sm font-medium text-muted-foreground mb-1">Description</p>
                   <p className="text-sm whitespace-pre-wrap">{selectedRequest.description}</p>
                 </div>
               )}
 
-              <div className="grid grid-cols-2 gap-4 text-sm">
+              {/* Request Details Grid */}
+              <div className="grid grid-cols-2 md:grid-cols-3 gap-4 text-sm">
                 <div>
                   <p className="text-muted-foreground">Created</p>
                   <p className="font-medium">{new Date(selectedRequest.createdAt).toLocaleDateString()}</p>
                 </div>
-                {selectedRequest.dueDate && (
+                {selectedRequest.preferredDate && (
                   <div>
-                    <p className="text-muted-foreground">Due Date</p>
-                    <p className="font-medium">{new Date(selectedRequest.dueDate).toLocaleDateString()}</p>
+                    <p className="text-muted-foreground">Preferred Date</p>
+                    <p className="font-medium">{new Date(selectedRequest.preferredDate).toLocaleDateString()}</p>
+                  </div>
+                )}
+                {selectedRequest.preferredTimeSlot && (
+                  <div>
+                    <p className="text-muted-foreground">Preferred Time</p>
+                    <p className="font-medium">{selectedRequest.preferredTimeSlot}</p>
                   </div>
                 )}
               </div>
+
+              {/* Photos */}
+              {selectedRequest.photos && selectedRequest.photos.length > 0 && (
+                <div>
+                  <p className="text-sm font-medium text-muted-foreground mb-2">Attached Photos</p>
+                  <div className="grid grid-cols-3 gap-2">
+                    {selectedRequest.photos.map((photo, idx) => (
+                      <img 
+                        key={idx} 
+                        src={photo.url} 
+                        alt={`Request photo ${idx + 1}`}
+                        className="w-full h-24 object-cover rounded-lg cursor-pointer hover:opacity-80"
+                        onClick={() => window.open(photo.url, '_blank')}
+                      />
+                    ))}
+                  </div>
+                </div>
+              )}
+
+              {/* Quote Response Section - If contractor has quoted */}
+              {selectedRequest.status === 'QUOTED' && selectedRequest.quotedPrice && (
+                <div className="bg-purple-50 border border-purple-200 p-4 rounded-lg">
+                  <p className="text-sm font-medium text-purple-800 mb-2">Quote from Contractor</p>
+                  <div className="grid grid-cols-2 gap-4 text-sm mb-3">
+                    <div>
+                      <p className="text-purple-600">Quoted Price</p>
+                      <p className="font-bold text-lg">${selectedRequest.quotedPrice.toLocaleString()}</p>
+                    </div>
+                    {selectedRequest.quotedDate && (
+                      <div>
+                        <p className="text-purple-600">Scheduled Date</p>
+                        <p className="font-semibold">{new Date(selectedRequest.quotedDate).toLocaleDateString()}</p>
+                      </div>
+                    )}
+                  </div>
+                  <div className="flex gap-2">
+                    <Button 
+                      size="sm"
+                      onClick={() => {
+                        openQuoteResponseDialog(selectedRequest)
+                        setSelectedRequest(null)
+                      }}
+                      className="bg-green-600 hover:bg-green-700"
+                    >
+                      <ThumbsUp className="mr-2 h-4 w-4" />
+                      Accept Quote
+                    </Button>
+                    <Button 
+                      size="sm"
+                      variant="outline"
+                      onClick={() => {
+                        openQuoteResponseDialog(selectedRequest)
+                        setSelectedRequest(null)
+                      }}
+                      className="border-red-300 text-red-600 hover:bg-red-50"
+                    >
+                      <ThumbsDown className="mr-2 h-4 w-4" />
+                      Reject Quote
+                    </Button>
+                  </div>
+                </div>
+              )}
+
+              {/* Status Messages */}
+              {selectedRequest.status === 'REQUESTED' && (
+                <div className="bg-yellow-50 border border-yellow-200 p-3 rounded-lg">
+                  <p className="text-sm text-yellow-800">
+                    ⏳ Waiting for contractor to review your request...
+                  </p>
+                </div>
+              )}
+              {selectedRequest.status === 'SCHEDULED' && (
+                <div className="bg-blue-50 border border-blue-200 p-3 rounded-lg">
+                  <p className="text-sm text-blue-800">
+                    📅 Your request has been scheduled. The contractor will begin work soon.
+                  </p>
+                </div>
+              )}
+              {selectedRequest.status === 'IN_PROGRESS' && (
+                <div className="bg-blue-50 border border-blue-200 p-3 rounded-lg">
+                  <p className="text-sm text-blue-800">
+                    🔧 Work is currently in progress...
+                  </p>
+                </div>
+              )}
+              {selectedRequest.status === 'COMPLETED' && (
+                <div className="bg-green-50 border border-green-200 p-3 rounded-lg">
+                  <p className="text-sm text-green-800">
+                    ✅ This request has been completed.
+                  </p>
+                </div>
+              )}
             </div>
           )}
-          <DialogFooter>
+          <DialogFooter className="flex gap-2">
+            {selectedRequest?.status === 'REQUESTED' && selectedRequest?.createdByRole === 'CLIENT' && (
+              <Button 
+                variant="destructive"
+                size="sm"
+                onClick={async () => {
+                  if (confirm('Are you sure you want to cancel this request?')) {
+                    try {
+                      await fetch(`/api/branches/${branchId}/requests/${selectedRequest.id}`, {
+                        method: 'PATCH',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify({ status: 'CANCELLED' }),
+                      })
+                      setSelectedRequest(null)
+                      fetchRequests()
+                    } catch (err) {
+                      console.error('Failed to cancel request:', err)
+                    }
+                  }
+                }}
+              >
+                Cancel Request
+              </Button>
+            )}
             <Button variant="outline" onClick={() => setSelectedRequest(null)}>
               Close
             </Button>
