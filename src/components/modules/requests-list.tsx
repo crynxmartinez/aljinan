@@ -55,6 +55,9 @@ import {
   ChevronDown,
   ChevronRight,
   CornerDownRight,
+  Send,
+  Image as ImageIcon,
+  User,
 } from 'lucide-react'
 
 // Helper function to extract base name from work order title (removes Q1, Q2, Month1, etc.)
@@ -98,6 +101,12 @@ interface Project {
   workOrders: WorkOrder[]
 }
 
+interface RequestPhoto {
+  id: string
+  url: string
+  caption: string | null
+}
+
 interface Request {
   id: string
   title: string
@@ -112,6 +121,19 @@ interface Request {
   createdAt: string
   updatedAt: string
   projectId?: string
+  // New fields
+  issueType?: string | null
+  workOrderType?: 'SERVICE' | 'INSPECTION' | 'MAINTENANCE' | 'INSTALLATION' | null
+  preferredDate?: string | null
+  preferredTimeSlot?: string | null
+  quotedPrice?: number | null
+  quotedDate?: string | null
+  quotedBy?: string | null
+  clientAccepted?: boolean | null
+  clientAcceptedAt?: string | null
+  clientRejectedAt?: string | null
+  clientRejectionReason?: string | null
+  photos?: RequestPhoto[]
 }
 
 interface RequestsListProps {
@@ -424,6 +446,16 @@ export function RequestsList({ branchId, userRole, projectId }: RequestsListProp
     dueDate: '',
   })
 
+  // Quote dialog state
+  const [quoteDialogOpen, setQuoteDialogOpen] = useState(false)
+  const [quoteRequest, setQuoteRequest] = useState<Request | null>(null)
+  const [quoteData, setQuoteData] = useState({
+    quotedPrice: '',
+    quotedDate: '',
+    assignedTo: '',
+  })
+  const [submittingQuote, setSubmittingQuote] = useState(false)
+
   const fetchRequests = async () => {
     try {
       const response = await fetch(`/api/branches/${branchId}/requests`)
@@ -636,6 +668,74 @@ export function RequestsList({ branchId, userRole, projectId }: RequestsListProp
     }
   }
 
+  // Open quote dialog for a request
+  const openQuoteDialog = (request: Request) => {
+    setQuoteRequest(request)
+    setQuoteData({
+      quotedPrice: request.quotedPrice?.toString() || '',
+      quotedDate: request.quotedDate ? new Date(request.quotedDate).toISOString().split('T')[0] : '',
+      assignedTo: request.assignedTo || '',
+    })
+    setQuoteDialogOpen(true)
+  }
+
+  // Submit quote for a request
+  const handleSubmitQuote = async () => {
+    if (!quoteRequest) return
+    if (!quoteData.quotedPrice || !quoteData.quotedDate) {
+      setError('Please provide both price and scheduled date')
+      return
+    }
+
+    setSubmittingQuote(true)
+    setError('')
+
+    try {
+      const response = await fetch(`/api/branches/${branchId}/requests/${quoteRequest.id}`, {
+        method: 'PATCH',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          action: 'quote',
+          quotedPrice: parseFloat(quoteData.quotedPrice),
+          quotedDate: quoteData.quotedDate,
+          assignedTo: quoteData.assignedTo || null,
+        }),
+      })
+
+      if (!response.ok) {
+        const data = await response.json()
+        throw new Error(data.error || 'Failed to submit quote')
+      }
+
+      setQuoteDialogOpen(false)
+      setQuoteRequest(null)
+      setQuoteData({ quotedPrice: '', quotedDate: '', assignedTo: '' })
+      setSuccessMessage('Quote sent to client for approval')
+      setTimeout(() => setSuccessMessage(''), 3000)
+      fetchRequests()
+      router.refresh()
+    } catch (err) {
+      setError(err instanceof Error ? err.message : 'An error occurred')
+    } finally {
+      setSubmittingQuote(false)
+    }
+  }
+
+  // Format issue type for display
+  const formatIssueType = (issueType: string | null | undefined): string => {
+    if (!issueType) return 'General'
+    return issueType
+      .replace(/_/g, ' ')
+      .toLowerCase()
+      .replace(/\b\w/g, c => c.toUpperCase())
+  }
+
+  // Format work order type for display
+  const formatWorkOrderType = (type: string | null | undefined): string => {
+    if (!type) return 'Service'
+    return type.charAt(0) + type.slice(1).toLowerCase()
+  }
+
   const getPriorityBadge = (priority: Request['priority']) => {
     const styles = {
       LOW: 'bg-gray-100 text-gray-700',
@@ -775,6 +875,12 @@ export function RequestsList({ branchId, userRole, projectId }: RequestsListProp
                       </Button>
                     </DropdownMenuTrigger>
                     <DropdownMenuContent align="end">
+                      {userRole === 'CONTRACTOR' && request.status === 'REQUESTED' && request.createdByRole === 'CLIENT' && (
+                        <DropdownMenuItem onClick={(e) => { e.stopPropagation(); openQuoteDialog(request); }}>
+                          <Send className="mr-2 h-4 w-4" />
+                          Review & Quote
+                        </DropdownMenuItem>
+                      )}
                       {request.status === 'REQUESTED' && (
                         <DropdownMenuItem onClick={() => handleUpdateStatus(request.id, 'IN_PROGRESS')}>
                           Mark In Progress
@@ -1116,6 +1222,186 @@ export function RequestsList({ branchId, userRole, projectId }: RequestsListProp
                 Send to Client
               </Button>
             )}
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
+
+      {/* Quote Dialog - For contractors to review and quote client requests */}
+      <Dialog open={quoteDialogOpen} onOpenChange={(open) => { if (!open) { setQuoteDialogOpen(false); setQuoteRequest(null); setError(''); } }}>
+        <DialogContent className="sm:max-w-[600px] max-h-[90vh] overflow-y-auto">
+          <DialogHeader>
+            <DialogTitle>Review & Quote Request</DialogTitle>
+            <DialogDescription>
+              Review the client&apos;s request and provide a quote
+            </DialogDescription>
+          </DialogHeader>
+
+          {error && (
+            <div className="bg-destructive/10 text-destructive p-3 rounded-lg text-sm">
+              {error}
+            </div>
+          )}
+
+          {quoteRequest && (
+            <div className="space-y-6">
+              {/* Request Details */}
+              <div className="space-y-4">
+                <div>
+                  <h3 className="font-semibold text-lg">{quoteRequest.title}</h3>
+                  <div className="flex items-center gap-2 mt-2">
+                    {getPriorityBadge(quoteRequest.priority)}
+                    {getStatusBadge(quoteRequest.status)}
+                    {quoteRequest.issueType && (
+                      <Badge variant="outline">{formatIssueType(quoteRequest.issueType)}</Badge>
+                    )}
+                    {quoteRequest.workOrderType && (
+                      <Badge variant="secondary">{formatWorkOrderType(quoteRequest.workOrderType)}</Badge>
+                    )}
+                  </div>
+                </div>
+
+                {quoteRequest.description && (
+                  <div className="p-4 bg-muted/50 rounded-lg">
+                    <p className="text-sm font-medium text-muted-foreground mb-1">Description</p>
+                    <p className="text-sm whitespace-pre-wrap">{quoteRequest.description}</p>
+                  </div>
+                )}
+
+                {/* Client Preferences */}
+                {(quoteRequest.preferredDate || quoteRequest.preferredTimeSlot) && (
+                  <div className="p-4 bg-blue-50 border border-blue-200 rounded-lg">
+                    <p className="text-sm font-medium text-blue-800 mb-2">Client Preferences</p>
+                    <div className="flex gap-4 text-sm">
+                      {quoteRequest.preferredDate && (
+                        <div className="flex items-center gap-1">
+                          <Calendar className="h-4 w-4 text-blue-600" />
+                          <span>{new Date(quoteRequest.preferredDate).toLocaleDateString()}</span>
+                        </div>
+                      )}
+                      {quoteRequest.preferredTimeSlot && (
+                        <div className="flex items-center gap-1">
+                          <Clock className="h-4 w-4 text-blue-600" />
+                          <span className="capitalize">{quoteRequest.preferredTimeSlot.toLowerCase().replace('_', ' ')}</span>
+                        </div>
+                      )}
+                    </div>
+                  </div>
+                )}
+
+                {/* Photos */}
+                {quoteRequest.photos && quoteRequest.photos.length > 0 && (
+                  <div>
+                    <p className="text-sm font-medium text-muted-foreground mb-2 flex items-center gap-1">
+                      <ImageIcon className="h-4 w-4" />
+                      Attached Photos ({quoteRequest.photos.length})
+                    </p>
+                    <div className="flex flex-wrap gap-2">
+                      {quoteRequest.photos.map((photo) => (
+                        <a
+                          key={photo.id}
+                          href={photo.url}
+                          target="_blank"
+                          rel="noopener noreferrer"
+                          className="block"
+                        >
+                          <img
+                            src={photo.url}
+                            alt={photo.caption || 'Request photo'}
+                            className="h-20 w-20 object-cover rounded-lg border hover:opacity-80 transition-opacity"
+                          />
+                        </a>
+                      ))}
+                    </div>
+                  </div>
+                )}
+
+                <div className="grid grid-cols-2 gap-4 text-sm">
+                  <div>
+                    <p className="text-muted-foreground">Submitted</p>
+                    <p className="font-medium">{new Date(quoteRequest.createdAt).toLocaleDateString()}</p>
+                  </div>
+                  <div>
+                    <p className="text-muted-foreground">Created By</p>
+                    <p className="font-medium capitalize">{quoteRequest.createdByRole.toLowerCase()}</p>
+                  </div>
+                </div>
+              </div>
+
+              {/* Quote Form */}
+              <div className="border-t pt-6">
+                <h4 className="font-semibold mb-4">Your Quote</h4>
+                <div className="space-y-4">
+                  <div className="grid grid-cols-2 gap-4">
+                    <div className="space-y-2">
+                      <Label htmlFor="quotedPrice">Price (SAR) *</Label>
+                      <div className="relative">
+                        <DollarSign className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+                        <Input
+                          id="quotedPrice"
+                          type="number"
+                          step="0.01"
+                          min="0"
+                          value={quoteData.quotedPrice}
+                          onChange={(e) => setQuoteData({ ...quoteData, quotedPrice: e.target.value })}
+                          placeholder="0.00"
+                          className="pl-9"
+                          required
+                        />
+                      </div>
+                    </div>
+                    <div className="space-y-2">
+                      <Label htmlFor="quotedDate">Scheduled Date *</Label>
+                      <Input
+                        id="quotedDate"
+                        type="date"
+                        value={quoteData.quotedDate}
+                        onChange={(e) => setQuoteData({ ...quoteData, quotedDate: e.target.value })}
+                        min={new Date().toISOString().split('T')[0]}
+                        required
+                      />
+                    </div>
+                  </div>
+
+                  <div className="space-y-2">
+                    <Label htmlFor="assignedTo">Assign Technician (Optional)</Label>
+                    <div className="relative">
+                      <User className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+                      <Input
+                        id="assignedTo"
+                        value={quoteData.assignedTo}
+                        onChange={(e) => setQuoteData({ ...quoteData, assignedTo: e.target.value })}
+                        placeholder="Technician name or ID"
+                        className="pl-9"
+                      />
+                    </div>
+                    <p className="text-xs text-muted-foreground">
+                      You can assign a team member to handle this request
+                    </p>
+                  </div>
+                </div>
+              </div>
+
+              <div className="p-4 bg-amber-50 border border-amber-200 rounded-lg">
+                <p className="text-sm text-amber-800">
+                  <strong>Note:</strong> Once you submit this quote, the client will be notified and can accept or reject it.
+                  If accepted, a work order will be automatically created.
+                </p>
+              </div>
+            </div>
+          )}
+
+          <DialogFooter className="flex gap-2">
+            <Button variant="outline" onClick={() => { setQuoteDialogOpen(false); setQuoteRequest(null); setError(''); }}>
+              Cancel
+            </Button>
+            <Button 
+              onClick={handleSubmitQuote} 
+              disabled={submittingQuote || !quoteData.quotedPrice || !quoteData.quotedDate}
+            >
+              {submittingQuote && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
+              <Send className="mr-2 h-4 w-4" />
+              Send Quote to Client
+            </Button>
           </DialogFooter>
         </DialogContent>
       </Dialog>
