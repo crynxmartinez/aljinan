@@ -461,10 +461,9 @@ export function RequestsList({ branchId, userRole, projectId }: RequestsListProp
       const response = await fetch(`/api/branches/${branchId}/requests`)
       if (response.ok) {
         const data = await response.json()
-        let filtered = projectId 
-          ? data.filter((r: Request & { projectId?: string }) => r.projectId === projectId)
-          : data
-        setRequests(filtered)
+        // Show all requests for this branch - don't filter by projectId
+        // Standalone service requests have no projectId
+        setRequests(data)
       }
     } catch (err) {
       console.error('Failed to fetch requests:', err)

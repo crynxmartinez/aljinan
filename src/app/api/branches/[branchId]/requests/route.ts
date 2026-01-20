@@ -118,28 +118,22 @@ export async function POST(
 // Helper function to verify branch access
 async function verifyBranchAccess(branchId: string, userId: string, role: string): Promise<boolean> {
   if (role === 'CONTRACTOR') {
-    // Contractor can access branches of their clients
     const contractor = await prisma.contractor.findUnique({
       where: { userId },
       include: {
         clients: {
           include: {
-            branches: {
-              where: { id: branchId }
-            }
+            branches: { where: { id: branchId } }
           }
         }
       }
     })
     return contractor?.clients.some(client => client.branches.length > 0) || false
   } else if (role === 'CLIENT') {
-    // Client can only access their own branches
     const client = await prisma.client.findUnique({
       where: { userId },
       include: {
-        branches: {
-          where: { id: branchId }
-        }
+        branches: { where: { id: branchId } }
       }
     })
     return (client?.branches.length || 0) > 0
