@@ -7,7 +7,7 @@ import { Button } from '@/components/ui/button'
 import { Badge } from '@/components/ui/badge'
 import { 
   MapPin, Calendar, DollarSign, Receipt, Building2, Phone, Mail, 
-  ArrowRight, ChevronRight, Edit, AlertTriangle
+  ChevronRight, Edit
 } from 'lucide-react'
 import Link from 'next/link'
 import { BranchRequestForm } from './branch-request-form'
@@ -45,28 +45,6 @@ export default async function PortalDashboardPage() {
     redirect('/login')
   }
 
-  const isContractExpiringSoon = () => {
-    if (!client.contractExpiryDate) return false
-    const expiry = new Date(client.contractExpiryDate)
-    const now = new Date()
-    const daysUntilExpiry = Math.ceil((expiry.getTime() - now.getTime()) / (1000 * 60 * 60 * 24))
-    return daysUntilExpiry <= 30 && daysUntilExpiry > 0
-  }
-
-  const isContractExpired = () => {
-    if (!client.contractExpiryDate) return false
-    return new Date(client.contractExpiryDate) < new Date()
-  }
-
-  const formatDate = (date: Date | null) => {
-    if (!date) return null
-    return new Date(date).toLocaleDateString('en-US', {
-      year: 'numeric',
-      month: 'short',
-      day: 'numeric'
-    })
-  }
-
   return (
     <div className="p-8 max-w-7xl mx-auto">
       {/* Header */}
@@ -83,28 +61,6 @@ export default async function PortalDashboardPage() {
           </div>
         </div>
       </div>
-
-      {/* Contract Expiry Alert */}
-      {(isContractExpired() || isContractExpiringSoon()) && (
-        <div className={`mb-6 p-4 rounded-lg flex items-center gap-3 ${
-          isContractExpired() 
-            ? 'bg-red-50 border border-red-200' 
-            : 'bg-amber-50 border border-amber-200'
-        }`}>
-          <AlertTriangle className={`h-5 w-5 ${isContractExpired() ? 'text-red-600' : 'text-amber-600'}`} />
-          <div className="flex-1">
-            <p className={`font-medium ${isContractExpired() ? 'text-red-800' : 'text-amber-800'}`}>
-              {isContractExpired() ? 'Contract Expired' : 'Contract Expiring Soon'}
-            </p>
-            <p className={`text-sm ${isContractExpired() ? 'text-red-600' : 'text-amber-600'}`}>
-              {isContractExpired() 
-                ? `Your contract expired on ${formatDate(client.contractExpiryDate)}. Please contact your contractor.`
-                : `Your contract expires on ${formatDate(client.contractExpiryDate)}.`
-              }
-            </p>
-          </div>
-        </div>
-      )}
 
       {/* Stats Grid */}
       <div className="grid gap-4 md:grid-cols-4 mb-8">
@@ -228,37 +184,15 @@ export default async function PortalDashboardPage() {
               </Link>
             </CardHeader>
             <CardContent className="space-y-3">
-              {client.crNumber && (
-                <div>
-                  <p className="text-xs text-muted-foreground">CR Number</p>
-                  <p className="text-sm font-medium">{client.crNumber}</p>
-                </div>
-              )}
-              {client.vatNumber && (
-                <div>
-                  <p className="text-xs text-muted-foreground">VAT Number</p>
-                  <p className="text-sm font-medium">{client.vatNumber}</p>
-                </div>
-              )}
-              {client.contractStartDate && client.contractExpiryDate && (
-                <div>
-                  <p className="text-xs text-muted-foreground">Contract Period</p>
-                  <p className="text-sm font-medium">
-                    {formatDate(client.contractStartDate)} - {formatDate(client.contractExpiryDate)}
-                  </p>
-                </div>
-              )}
-              {!client.crNumber && !client.vatNumber && !client.contractStartDate && (
-                <div className="text-center py-4">
-                  <p className="text-sm text-muted-foreground mb-2">Profile not complete</p>
-                  <Link href="/portal/settings">
-                    <Button variant="outline" size="sm">
-                      <Edit className="h-4 w-4 mr-1" />
-                      Edit Profile
-                    </Button>
-                  </Link>
-                </div>
-              )}
+              <p className="text-sm text-muted-foreground">
+                View and manage your company information
+              </p>
+              <Link href="/portal/settings">
+                <Button variant="outline" size="sm" className="w-full">
+                  <Edit className="h-4 w-4 mr-1" />
+                  View Profile
+                </Button>
+              </Link>
             </CardContent>
           </Card>
 

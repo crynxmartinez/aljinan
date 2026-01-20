@@ -50,10 +50,15 @@ interface BranchProfileCardProps {
     cdCertificateExpiry: string | null
     cdCertificateUrl: string | null
   }
+  activeProject?: {
+    title: string
+    startDate: string | null
+    endDate: string | null
+  } | null
   canEdit: boolean
 }
 
-export function BranchProfileCard({ branch, canEdit }: BranchProfileCardProps) {
+export function BranchProfileCard({ branch, activeProject, canEdit }: BranchProfileCardProps) {
   const [editOpen, setEditOpen] = useState(false)
 
   const formatDate = (dateString: string | null) => {
@@ -226,6 +231,30 @@ export function BranchProfileCard({ branch, canEdit }: BranchProfileCardProps) {
                   </div>
                 </div>
               )}
+            </div>
+          )}
+
+          {/* Active Project / Contract Period */}
+          {activeProject && (
+            <div className="pt-4 border-t space-y-3">
+              <h4 className="text-sm font-semibold text-muted-foreground uppercase tracking-wide">
+                Active Contract
+              </h4>
+              <div className="flex items-start gap-3">
+                <Calendar className="h-4 w-4 text-muted-foreground mt-0.5" />
+                <div>
+                  <p className="font-medium text-sm">{activeProject.title}</p>
+                  <p className="text-sm text-muted-foreground">
+                    {activeProject.startDate || activeProject.endDate ? (
+                      <>
+                        {formatDate(activeProject.startDate) || 'Not set'} → {formatDate(activeProject.endDate) || 'Not set'}
+                      </>
+                    ) : (
+                      'No dates set'
+                    )}
+                  </p>
+                </div>
+              </div>
             </div>
           )}
 

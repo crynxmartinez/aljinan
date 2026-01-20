@@ -5,7 +5,7 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
 import { Badge } from '@/components/ui/badge'
 import { 
-  Mail, Phone, Building2, FileText, Calendar, Users, Edit,
+  Mail, Phone, Building2, FileText, Users, Edit,
   AlertTriangle
 } from 'lucide-react'
 import { ClientProfileForm } from './client-profile-form'
@@ -26,8 +26,6 @@ interface ClientProfileCardProps {
     crNumber: string | null
     vatNumber: string | null
     billingAddress: string | null
-    contractStartDate: string | null
-    contractExpiryDate: string | null
     contacts: ContactPerson[] | null
     user: {
       email: string
@@ -39,28 +37,6 @@ interface ClientProfileCardProps {
 
 export function ClientProfileCard({ client, canEdit }: ClientProfileCardProps) {
   const [editOpen, setEditOpen] = useState(false)
-
-  const formatDate = (dateString: string | null) => {
-    if (!dateString) return null
-    return new Date(dateString).toLocaleDateString('en-US', {
-      year: 'numeric',
-      month: 'short',
-      day: 'numeric'
-    })
-  }
-
-  const isContractExpiringSoon = () => {
-    if (!client.contractExpiryDate) return false
-    const expiry = new Date(client.contractExpiryDate)
-    const now = new Date()
-    const daysUntilExpiry = Math.ceil((expiry.getTime() - now.getTime()) / (1000 * 60 * 60 * 24))
-    return daysUntilExpiry <= 30 && daysUntilExpiry > 0
-  }
-
-  const isContractExpired = () => {
-    if (!client.contractExpiryDate) return false
-    return new Date(client.contractExpiryDate) < new Date()
-  }
 
   const contacts = client.contacts as ContactPerson[] | null
 
@@ -129,38 +105,6 @@ export function ClientProfileCard({ client, canEdit }: ClientProfileCardProps) {
             </div>
           </div>
 
-          {/* Contract Period */}
-          <div className="pt-4 border-t space-y-3">
-            <h4 className="text-sm font-semibold text-muted-foreground uppercase tracking-wide">
-              Contract Period
-            </h4>
-            <div className="flex items-center gap-3">
-              <Calendar className="h-4 w-4 text-muted-foreground" />
-              <div className="flex-1">
-                <div className="flex items-center gap-2 flex-wrap">
-                  <span className={`text-sm ${(client.contractStartDate || client.contractExpiryDate) ? '' : 'text-muted-foreground italic'}`}>
-                    {(client.contractStartDate || client.contractExpiryDate) 
-                      ? `${formatDate(client.contractStartDate) || 'Not set'} → ${formatDate(client.contractExpiryDate) || 'Not set'}`
-                      : 'Not set'
-                    }
-                  </span>
-                  {isContractExpired() && (
-                    <Badge variant="destructive" className="text-xs">
-                      <AlertTriangle className="h-3 w-3 mr-1" />
-                      Expired
-                    </Badge>
-                  )}
-                  {isContractExpiringSoon() && (
-                    <Badge className="bg-yellow-100 text-yellow-700 hover:bg-yellow-100 text-xs">
-                      <AlertTriangle className="h-3 w-3 mr-1" />
-                      Expiring Soon
-                    </Badge>
-                  )}
-                </div>
-              </div>
-            </div>
-          </div>
-
           {/* Contact Persons */}
           <div className="pt-4 border-t space-y-3">
             <h4 className="text-sm font-semibold text-muted-foreground uppercase tracking-wide flex items-center gap-2">
@@ -186,7 +130,7 @@ export function ClientProfileCard({ client, canEdit }: ClientProfileCardProps) {
           </div>
 
           {/* Edit prompt if profile is incomplete */}
-          {canEdit && (!client.crNumber || !client.vatNumber || !client.billingAddress || !client.contractStartDate) && (
+          {canEdit && (!client.crNumber || !client.vatNumber || !client.billingAddress) && (
             <div className="pt-4 border-t">
               <div className="bg-amber-50 border border-amber-200 rounded-lg p-4 flex items-start gap-3">
                 <AlertTriangle className="h-5 w-5 text-amber-600 flex-shrink-0 mt-0.5" />

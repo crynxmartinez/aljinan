@@ -95,8 +95,6 @@ model Client {
   crNumber            String?    // Commercial Registration number
   vatNumber           String?    // VAT registration number
   billingAddress      String?    // Billing/invoice address
-  contractStartDate   DateTime?  // Contract start date with contractor
-  contractExpiryDate  DateTime?  // Contract expiry date
   contacts            Json?      // Array of contact persons: [{name, phone, email, whatsapp}]
   
   createdAt     DateTime   @default(now())

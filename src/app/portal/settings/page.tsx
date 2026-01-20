@@ -45,8 +45,6 @@ export default async function ClientSettingsPage() {
         <ClientProfileCard 
           client={{
             ...client,
-            contractStartDate: client.contractStartDate?.toISOString() || null,
-            contractExpiryDate: client.contractExpiryDate?.toISOString() || null,
             contacts: client.contacts as { name: string; phone: string; email: string; whatsapp: string }[] | null,
           }} 
           canEdit={true} 

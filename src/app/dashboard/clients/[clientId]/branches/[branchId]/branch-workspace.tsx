@@ -78,6 +78,7 @@ export function BranchWorkspace({ clientId, branchId, branch, userRole, teamMemb
   const isTechnician = userRole === 'TEAM_MEMBER' && teamMemberRole === 'TECHNICIAN'
   const [activeTab, setActiveTab] = useState('dashboard')
   const [selectedProjectId, setSelectedProjectId] = useState<string | null>(null)
+  const [activeProject, setActiveProject] = useState<{ title: string; startDate: string | null; endDate: string | null } | null>(null)
   const [activityPanelOpen, setActivityPanelOpen] = useState(false)
   const [pendingRequestsCount, setPendingRequestsCount] = useState(0)
   const [pendingPaymentsCount, setPendingPaymentsCount] = useState(0)
@@ -103,6 +104,34 @@ export function BranchWorkspace({ clientId, branchId, branch, userRole, teamMemb
     }
     fetchCounts()
   }, [branchId])
+
+  // Fetch active project details when selectedProjectId changes
+  useEffect(() => {
+    const fetchActiveProject = async () => {
+      if (!selectedProjectId) {
+        setActiveProject(null)
+        return
+      }
+      try {
+        const response = await fetch(`/api/branches/${branchId}/projects/${selectedProjectId}`)
+        if (response.ok) {
+          const project = await response.json()
+          if (project.status === 'ACTIVE') {
+            setActiveProject({
+              title: project.title,
+              startDate: project.startDate || null,
+              endDate: project.endDate || null,
+            })
+          } else {
+            setActiveProject(null)
+          }
+        }
+      } catch (err) {
+        console.error('Failed to fetch active project:', err)
+      }
+    }
+    fetchActiveProject()
+  }, [branchId, selectedProjectId])
 
   // Filter modules based on role - technicians can't see billing/contracts/settings
   const allModules = [
@@ -193,7 +222,8 @@ export function BranchWorkspace({ clientId, branchId, branch, userRole, teamMemb
               branch={{
                 ...branch,
                 cdCertificateExpiry: branch.cdCertificateExpiry ? new Date(branch.cdCertificateExpiry).toISOString() : null,
-              }} 
+              }}
+              activeProject={activeProject}
               canEdit={true} 
             />
           </div>

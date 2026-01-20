@@ -85,8 +85,6 @@ export async function PATCH(
       crNumber,
       vatNumber,
       billingAddress,
-      contractStartDate,
-      contractExpiryDate,
       contacts
     } = body
 
@@ -99,8 +97,6 @@ export async function PATCH(
     if (crNumber !== undefined) updateData.crNumber = crNumber
     if (vatNumber !== undefined) updateData.vatNumber = vatNumber
     if (billingAddress !== undefined) updateData.billingAddress = billingAddress
-    if (contractStartDate !== undefined) updateData.contractStartDate = contractStartDate ? new Date(contractStartDate) : null
-    if (contractExpiryDate !== undefined) updateData.contractExpiryDate = contractExpiryDate ? new Date(contractExpiryDate) : null
     if (contacts !== undefined) updateData.contacts = contacts
 
     const updated = await prisma.client.update({

@@ -32,8 +32,6 @@ interface ClientProfileFormProps {
     crNumber: string | null
     vatNumber: string | null
     billingAddress: string | null
-    contractStartDate: string | null
-    contractExpiryDate: string | null
     contacts: ContactPerson[] | null
   }
   open: boolean
@@ -50,8 +48,6 @@ export function ClientProfileForm({ client, open, onOpenChange }: ClientProfileF
     crNumber: client.crNumber || '',
     vatNumber: client.vatNumber || '',
     billingAddress: client.billingAddress || '',
-    contractStartDate: client.contractStartDate ? client.contractStartDate.split('T')[0] : '',
-    contractExpiryDate: client.contractExpiryDate ? client.contractExpiryDate.split('T')[0] : '',
   })
   const [contacts, setContacts] = useState<ContactPerson[]>(
     client.contacts || []
@@ -67,8 +63,6 @@ export function ClientProfileForm({ client, open, onOpenChange }: ClientProfileF
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
           ...formData,
-          contractStartDate: formData.contractStartDate || null,
-          contractExpiryDate: formData.contractExpiryDate || null,
           contacts: contacts.length > 0 ? contacts : null,
         }),
       })
@@ -169,26 +163,6 @@ export function ClientProfileForm({ client, open, onOpenChange }: ClientProfileF
               />
             </div>
 
-            <div className="grid grid-cols-2 gap-4">
-              <div className="space-y-2">
-                <Label htmlFor="contractStartDate">Contract Start Date</Label>
-                <Input
-                  id="contractStartDate"
-                  type="date"
-                  value={formData.contractStartDate}
-                  onChange={(e) => setFormData({ ...formData, contractStartDate: e.target.value })}
-                />
-              </div>
-              <div className="space-y-2">
-                <Label htmlFor="contractExpiryDate">Contract Expiry Date</Label>
-                <Input
-                  id="contractExpiryDate"
-                  type="date"
-                  value={formData.contractExpiryDate}
-                  onChange={(e) => setFormData({ ...formData, contractExpiryDate: e.target.value })}
-                />
-              </div>
-            </div>
           </div>
 
           <div className="space-y-4">
