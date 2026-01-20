@@ -1370,7 +1370,7 @@ export function ClientBranchRequests({ branchId, projectId, onDataChange }: Clie
 
       {/* Quote Response Dialog - For clients to accept or reject quotes */}
       <Dialog open={quoteResponseDialogOpen} onOpenChange={(open) => { if (!open) { setQuoteResponseDialogOpen(false); setQuoteResponseRequest(null); setShowRejectionForm(false); setRejectionReason(''); setError(''); } }}>
-        <DialogContent className="sm:max-w-[500px]">
+        <DialogContent className="sm:max-w-[500px] max-h-[90vh] overflow-y-auto">
           <DialogHeader>
             <DialogTitle>Review Quote</DialogTitle>
             <DialogDescription>
