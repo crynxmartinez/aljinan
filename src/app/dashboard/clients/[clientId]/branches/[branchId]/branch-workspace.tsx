@@ -83,19 +83,27 @@ export function BranchWorkspace({ clientId, branchId, branch, userRole, teamMemb
   const [pendingRequestsCount, setPendingRequestsCount] = useState(0)
   const [pendingPaymentsCount, setPendingPaymentsCount] = useState(0)
 
-  // Fetch count of pending client requests (ADHOC work orders with REQUESTED stage)
-  // and pending payment verifications
+  // Fetch count of pending requests and pending payment verifications
   useEffect(() => {
     const fetchCounts = async () => {
       try {
-        const response = await fetch(`/api/branches/${branchId}/checklist-items`)
-        if (response.ok) {
-          const data = await response.json()
-          // Count pending requests
-          const pendingRequests = data.filter((item: { stage: string }) => item.stage === 'REQUESTED')
-          setPendingRequestsCount(pendingRequests.length)
+        // Fetch requests count
+        const requestsResponse = await fetch(`/api/branches/${branchId}/requests`)
+        if (requestsResponse.ok) {
+          const requestsData = await requestsResponse.json()
+          // Count requests that are not completed/closed/cancelled
+          const openRequests = requestsData.filter((r: { status: string }) => 
+            !['COMPLETED', 'CLOSED', 'CANCELLED'].includes(r.status)
+          )
+          setPendingRequestsCount(openRequests.length)
+        }
+        
+        // Fetch checklist items for payment count
+        const checklistResponse = await fetch(`/api/branches/${branchId}/checklist-items`)
+        if (checklistResponse.ok) {
+          const checklistData = await checklistResponse.json()
           // Count pending payment verifications
-          const pendingPayments = data.filter((item: { paymentStatus: string }) => item.paymentStatus === 'PENDING_VERIFICATION')
+          const pendingPayments = checklistData.filter((item: { paymentStatus: string }) => item.paymentStatus === 'PENDING_VERIFICATION')
           setPendingPaymentsCount(pendingPayments.length)
         }
       } catch (err) {

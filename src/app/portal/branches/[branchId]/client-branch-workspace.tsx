@@ -126,7 +126,10 @@ export function ClientBranchWorkspace({ branchId, branch }: ClientBranchWorkspac
       const response = await fetch(`/api/branches/${branchId}/requests`)
       if (response.ok) {
         const data = await response.json()
-        const openCount = data.filter((r: { status: string }) => r.status === 'OPEN').length
+        // Count requests that are not completed/closed/cancelled
+        const openCount = data.filter((r: { status: string }) => 
+          !['COMPLETED', 'CLOSED', 'CANCELLED'].includes(r.status)
+        ).length
         setOpenRequestsCount(openCount)
       }
     } catch (err) {
