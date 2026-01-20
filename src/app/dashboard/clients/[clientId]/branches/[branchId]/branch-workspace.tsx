@@ -93,9 +93,10 @@ export function BranchWorkspace({ clientId, branchId, branch, userRole, teamMemb
         const requestsResponse = await fetch(`/api/branches/${branchId}/requests`)
         if (requestsResponse.ok) {
           const requestsData = await requestsResponse.json()
-          // Count requests that are not completed/closed/cancelled
+          // Count only REQUESTED and QUOTED requests (pending action)
+          const activeRequestStatuses = ['REQUESTED', 'QUOTED']
           const openRequests = requestsData.filter((r: { status: string }) => 
-            !['COMPLETED', 'CLOSED', 'CANCELLED'].includes(r.status)
+            activeRequestStatuses.includes(r.status)
           )
           setPendingRequestsCount(openRequests.length)
         }
