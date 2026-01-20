@@ -246,13 +246,6 @@ export function ClientBranchWorkspace({ branchId, branch }: ClientBranchWorkspac
             <LayoutDashboard className="h-4 w-4" />
             Dashboard
           </TabsTrigger>
-          {/* Only show Checklist when there's an active project */}
-          {hasActiveProject && (
-            <TabsTrigger value="checklist" className="flex items-center gap-2">
-              <ClipboardList className="h-4 w-4" />
-              Checklist
-            </TabsTrigger>
-          )}
           <TabsTrigger value="requests" className="flex items-center gap-2">
             <FileText className="h-4 w-4" />
             Requests
@@ -262,6 +255,13 @@ export function ClientBranchWorkspace({ branchId, branch }: ClientBranchWorkspac
               </Badge>
             )}
           </TabsTrigger>
+          {/* Only show Checklist when there's an active project */}
+          {hasActiveProject && (
+            <TabsTrigger value="checklist" className="flex items-center gap-2">
+              <ClipboardList className="h-4 w-4" />
+              Checklist
+            </TabsTrigger>
+          )}
           {/* Only show these tabs when there's an active project */}
           {hasActiveProject && (
             <>

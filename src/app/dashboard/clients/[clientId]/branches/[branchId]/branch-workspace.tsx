@@ -147,8 +147,8 @@ export function BranchWorkspace({ clientId, branchId, branch, userRole, teamMemb
   // Filter modules based on role - technicians can't see billing/contracts/settings
   const allModules = [
     { id: 'dashboard', label: 'Dashboard', icon: LayoutDashboard },
-    { id: 'checklists', label: 'Checklist', icon: ClipboardList },
     { id: 'requests', label: 'Requests', icon: FileText },
+    { id: 'checklists', label: 'Checklist', icon: ClipboardList },
     { id: 'calendar', label: 'Calendar', icon: Calendar },
     { id: 'billing', label: 'Billing', icon: DollarSign, restrictedForTechnician: true },
     { id: 'contracts', label: 'Contracts', icon: FileCheck, restrictedForTechnician: true },
