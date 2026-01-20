@@ -58,7 +58,26 @@ import {
   Send,
   Image as ImageIcon,
   User,
+  Users,
+  Check,
+  X,
 } from 'lucide-react'
+import { Checkbox } from '@/components/ui/checkbox'
+import {
+  Popover,
+  PopoverContent,
+  PopoverTrigger,
+} from '@/components/ui/popover'
+
+interface TeamMember {
+  id: string
+  userId: string
+  role: string
+  user: {
+    name: string | null
+    email: string
+  }
+}
 
 // Helper function to extract base name from work order title (removes Q1, Q2, Month1, etc.)
 function getBaseWorkOrderName(title: string): string {
@@ -453,9 +472,24 @@ export function RequestsList({ branchId, userRole, projectId }: RequestsListProp
   const [quoteData, setQuoteData] = useState({
     quotedPrice: '',
     quotedDate: '',
-    assignedTo: '',
+    assignedToIds: [] as string[],
   })
   const [submittingQuote, setSubmittingQuote] = useState(false)
+  const [teamMembers, setTeamMembers] = useState<TeamMember[]>([])
+  const [technicianDropdownOpen, setTechnicianDropdownOpen] = useState(false)
+
+  const fetchTeamMembers = async () => {
+    try {
+      const response = await fetch('/api/team-members')
+      if (response.ok) {
+        const data = await response.json()
+        // Filter to only show technicians (TEAM_MEMBER role)
+        setTeamMembers(data.filter((tm: TeamMember) => tm.role === 'TECHNICIAN' || tm.role === 'SUPERVISOR'))
+      }
+    } catch (err) {
+      console.error('Failed to fetch team members:', err)
+    }
+  }
 
   const fetchRequests = async () => {
     try {
@@ -493,6 +527,7 @@ export function RequestsList({ branchId, userRole, projectId }: RequestsListProp
   useEffect(() => {
     fetchRequests()
     fetchProjects()
+    fetchTeamMembers()
   }, [branchId, projectId])
 
   // Get project for a request
@@ -674,7 +709,7 @@ export function RequestsList({ branchId, userRole, projectId }: RequestsListProp
     setQuoteData({
       quotedPrice: request.quotedPrice?.toString() || '',
       quotedDate: request.quotedDate ? new Date(request.quotedDate).toISOString().split('T')[0] : '',
-      assignedTo: request.assignedTo || '',
+      assignedToIds: request.assignedTo ? request.assignedTo.split(',').filter(Boolean) : [],
     })
     setQuoteDialogOpen(true)
   }
@@ -698,7 +733,7 @@ export function RequestsList({ branchId, userRole, projectId }: RequestsListProp
           action: 'quote',
           quotedPrice: parseFloat(quoteData.quotedPrice),
           quotedDate: quoteData.quotedDate,
-          assignedTo: quoteData.assignedTo || null,
+          assignedTo: quoteData.assignedToIds.length > 0 ? quoteData.assignedToIds.join(',') : null,
         }),
       })
 
@@ -709,7 +744,7 @@ export function RequestsList({ branchId, userRole, projectId }: RequestsListProp
 
       setQuoteDialogOpen(false)
       setQuoteRequest(null)
-      setQuoteData({ quotedPrice: '', quotedDate: '', assignedTo: '' })
+      setQuoteData({ quotedPrice: '', quotedDate: '', assignedToIds: [] })
       setSuccessMessage('Quote sent to client for approval')
       setTimeout(() => setSuccessMessage(''), 3000)
       fetchRequests()
@@ -1485,19 +1520,103 @@ export function RequestsList({ branchId, userRole, projectId }: RequestsListProp
                   )}
 
                   <div className="space-y-2">
-                    <Label htmlFor="assignedTo">Assign Technician (Optional)</Label>
-                    <div className="relative">
-                      <User className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
-                      <Input
-                        id="assignedTo"
-                        value={quoteData.assignedTo}
-                        onChange={(e) => setQuoteData({ ...quoteData, assignedTo: e.target.value })}
-                        placeholder="Technician name or ID"
-                        className="pl-9"
-                      />
-                    </div>
+                    <Label>Assign Technicians (Optional)</Label>
+                    <Popover open={technicianDropdownOpen} onOpenChange={setTechnicianDropdownOpen}>
+                      <PopoverTrigger asChild>
+                        <Button
+                          variant="outline"
+                          role="combobox"
+                          className="w-full justify-between font-normal"
+                        >
+                          <div className="flex items-center gap-2">
+                            <Users className="h-4 w-4 text-muted-foreground" />
+                            {quoteData.assignedToIds.length === 0 ? (
+                              <span className="text-muted-foreground">Select technicians...</span>
+                            ) : (
+                              <span>
+                                {quoteData.assignedToIds.length} technician{quoteData.assignedToIds.length > 1 ? 's' : ''} selected
+                              </span>
+                            )}
+                          </div>
+                          <ChevronDown className="ml-2 h-4 w-4 shrink-0 opacity-50" />
+                        </Button>
+                      </PopoverTrigger>
+                      <PopoverContent className="w-full p-0" align="start">
+                        <div className="max-h-60 overflow-y-auto">
+                          {teamMembers.length === 0 ? (
+                            <div className="p-4 text-center text-sm text-muted-foreground">
+                              No technicians found. Add team members in the Team section.
+                            </div>
+                          ) : (
+                            <div className="p-2">
+                              {teamMembers.map((member) => {
+                                const isSelected = quoteData.assignedToIds.includes(member.id)
+                                return (
+                                  <div
+                                    key={member.id}
+                                    className={`flex items-center gap-3 p-2 rounded-md cursor-pointer hover:bg-muted ${isSelected ? 'bg-muted' : ''}`}
+                                    onClick={() => {
+                                      if (isSelected) {
+                                        setQuoteData({
+                                          ...quoteData,
+                                          assignedToIds: quoteData.assignedToIds.filter(id => id !== member.id)
+                                        })
+                                      } else {
+                                        setQuoteData({
+                                          ...quoteData,
+                                          assignedToIds: [...quoteData.assignedToIds, member.id]
+                                        })
+                                      }
+                                    }}
+                                  >
+                                    <Checkbox checked={isSelected} />
+                                    <div className="flex-1">
+                                      <p className="text-sm font-medium">{member.user.name || member.user.email}</p>
+                                      <p className="text-xs text-muted-foreground">{member.role}</p>
+                                    </div>
+                                  </div>
+                                )
+                              })}
+                            </div>
+                          )}
+                        </div>
+                        {quoteData.assignedToIds.length > 0 && (
+                          <div className="border-t p-2">
+                            <Button
+                              variant="ghost"
+                              size="sm"
+                              className="w-full text-muted-foreground"
+                              onClick={() => setQuoteData({ ...quoteData, assignedToIds: [] })}
+                            >
+                              <X className="mr-2 h-3 w-3" />
+                              Clear selection
+                            </Button>
+                          </div>
+                        )}
+                      </PopoverContent>
+                    </Popover>
+                    {quoteData.assignedToIds.length > 0 && (
+                      <div className="flex flex-wrap gap-1 mt-2">
+                        {quoteData.assignedToIds.map(id => {
+                          const member = teamMembers.find(m => m.id === id)
+                          if (!member) return null
+                          return (
+                            <Badge key={id} variant="secondary" className="flex items-center gap-1">
+                              {member.user.name || member.user.email}
+                              <X
+                                className="h-3 w-3 cursor-pointer hover:text-destructive"
+                                onClick={() => setQuoteData({
+                                  ...quoteData,
+                                  assignedToIds: quoteData.assignedToIds.filter(i => i !== id)
+                                })}
+                              />
+                            </Badge>
+                          )
+                        })}
+                      </div>
+                    )}
                     <p className="text-xs text-muted-foreground">
-                      You can assign a team member to handle this request
+                      You can assign one or more team members to handle this request
                     </p>
                   </div>
                 </div>
