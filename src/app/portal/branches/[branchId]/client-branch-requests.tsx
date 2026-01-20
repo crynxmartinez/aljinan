@@ -320,10 +320,10 @@ export function ClientBranchRequests({ branchId, projectId, onDataChange }: Clie
       const response = await fetch(`/api/branches/${branchId}/requests`)
       if (response.ok) {
         const data = await response.json()
-        // Filter out COMPLETED and CANCELLED requests
-        let filtered = data.filter((r: Request) => r.status !== 'COMPLETED' && r.status !== 'CANCELLED')
-        // Note: Don't filter by projectId - show all requests for this branch
-        // Requests without a projectId are standalone service requests
+        // Only show requests still in request phase (REQUESTED, QUOTED)
+        // Once accepted (SCHEDULED+), they become work orders and appear in Kanban
+        const activeRequestStatuses = ['REQUESTED', 'QUOTED']
+        let filtered = data.filter((r: Request) => activeRequestStatuses.includes(r.status))
         setRequests(filtered)
         setError('')
       } else {

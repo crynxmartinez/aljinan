@@ -426,8 +426,7 @@ export function RequestsList({ branchId, userRole, projectId }: RequestsListProp
   const [saving, setSaving] = useState(false)
   const [error, setError] = useState('')
   const [successMessage, setSuccessMessage] = useState('')
-  const [showCompleted, setShowCompleted] = useState(false) // Toggle to show/hide completed requests
-  
+    
   // Work order editing state
   const [editingWorkOrderId, setEditingWorkOrderId] = useState<string | null>(null)
   const [editWorkOrder, setEditWorkOrder] = useState<{
@@ -472,10 +471,10 @@ export function RequestsList({ branchId, userRole, projectId }: RequestsListProp
     }
   }
 
-  // Filter requests - always hide CANCELLED, optionally hide COMPLETED
-  const filteredRequests = requests
-    .filter(r => r.status !== 'CANCELLED')
-    .filter(r => showCompleted || r.status !== 'COMPLETED')
+  // Only show requests still in request phase (REQUESTED, QUOTED)
+  // Once accepted (SCHEDULED+), they become work orders and appear in Kanban
+  const activeRequestStatuses = ['REQUESTED', 'QUOTED']
+  const filteredRequests = requests.filter(r => activeRequestStatuses.includes(r.status))
 
   const fetchProjects = async () => {
     try {
@@ -779,19 +778,6 @@ export function RequestsList({ branchId, userRole, projectId }: RequestsListProp
             </CardDescription>
           </div>
           <div className="flex items-center gap-2">
-            {userRole === 'CONTRACTOR' && (
-              <Button
-                variant="outline"
-                size="sm"
-                onClick={() => setShowCompleted(!showCompleted)}
-              >
-                {showCompleted ? (
-                  <><EyeOff className="mr-2 h-4 w-4" />Hide Completed</>
-                ) : (
-                  <><Eye className="mr-2 h-4 w-4" />Show Completed</>
-                )}
-              </Button>
-            )}
             {userRole !== 'CONTRACTOR' && (
               <Button onClick={() => setCreateDialogOpen(true)}>
                 <Plus className="mr-2 h-4 w-4" />
@@ -805,14 +791,12 @@ export function RequestsList({ branchId, userRole, projectId }: RequestsListProp
             <div className="flex flex-col items-center justify-center py-12 text-center">
               <FileText className="h-12 w-12 text-muted-foreground/30 mb-4" />
               <h3 className="text-lg font-semibold mb-2">
-                {requests.length > 0 && !showCompleted ? 'No active requests' : 'No requests yet'}
+                No pending requests
               </h3>
               <p className="text-muted-foreground max-w-md mb-4">
-                {requests.length > 0 && !showCompleted
-                  ? 'All requests have been completed. Toggle "Show Completed" to view them.'
-                  : userRole === 'CONTRACTOR'
-                    ? 'No service requests from the client yet.'
-                    : 'Submit a service request to get started.'}
+                {userRole === 'CONTRACTOR'
+                  ? 'No service requests awaiting your review. Accepted requests appear in the Checklist tab.'
+                  : 'Submit a service request to get started. Accepted requests appear in the Checklist tab.'}
               </p>
               {userRole !== 'CONTRACTOR' && requests.length === 0 && (
                 <Button onClick={() => setCreateDialogOpen(true)}>
