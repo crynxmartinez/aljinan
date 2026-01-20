@@ -26,7 +26,15 @@ import {
   Send,
   Loader2,
   GripVertical,
+  Upload,
+  X,
+  Image as ImageIcon,
+  PenTool,
+  ClipboardCheck,
 } from 'lucide-react'
+import { Input } from '@/components/ui/input'
+import { Label } from '@/components/ui/label'
+import { Textarea } from '@/components/ui/textarea'
 import { cn } from '@/lib/utils'
 import {
   DndContext,
@@ -45,6 +53,13 @@ import { useDraggable, useDroppable } from '@dnd-kit/core'
 type ChecklistItemStage = 'REQUESTED' | 'SCHEDULED' | 'IN_PROGRESS' | 'FOR_REVIEW' | 'COMPLETED'
 type ChecklistItemType = 'SCHEDULED' | 'ADHOC'
 
+interface InspectionPhoto {
+  id: string
+  url: string
+  caption: string | null
+  photoType: string
+}
+
 interface ChecklistItem {
   id: string
   description: string
@@ -57,6 +72,21 @@ interface ChecklistItem {
   checklistId: string
   checklistTitle: string
   projectTitle: string | null
+  // Inspection fields
+  workOrderType?: 'SERVICE' | 'INSPECTION' | 'MAINTENANCE' | 'INSTALLATION' | null
+  linkedRequestId?: string | null
+  inspectionDate?: string | null
+  systemsChecked?: string | null
+  findings?: string | null
+  deficiencies?: string | null
+  recommendations?: string | null
+  technicianSignature?: string | null
+  technicianSignedAt?: string | null
+  supervisorSignature?: string | null
+  supervisorSignedAt?: string | null
+  reportGeneratedAt?: string | null
+  reportUrl?: string | null
+  photos?: InspectionPhoto[]
 }
 
 interface ChecklistKanbanProps {
@@ -342,6 +372,19 @@ export function ChecklistKanban({ branchId, projectId, readOnly = false }: Check
   const [updating, setUpdating] = useState(false)
   const [activeId, setActiveId] = useState<string | null>(null)
   const [overId, setOverId] = useState<string | null>(null)
+  
+  // Inspection form state
+  const [inspectionMode, setInspectionMode] = useState(false)
+  const [inspectionData, setInspectionData] = useState({
+    inspectionDate: '',
+    systemsChecked: '',
+    findings: '',
+    deficiencies: '',
+    recommendations: '',
+  })
+  const [inspectionPhotos, setInspectionPhotos] = useState<{ url: string; name: string; type: string }[]>([])
+  const [uploadingPhoto, setUploadingPhoto] = useState(false)
+  const [savingInspection, setSavingInspection] = useState(false)
 
   // DnD sensors
   const sensors = useSensors(
@@ -381,7 +424,111 @@ export function ChecklistKanban({ branchId, projectId, readOnly = false }: Check
 
   const handleItemClick = (item: ChecklistItem) => {
     setSelectedItem(item)
+    // Pre-populate inspection data if exists
+    setInspectionData({
+      inspectionDate: item.inspectionDate ? new Date(item.inspectionDate).toISOString().split('T')[0] : new Date().toISOString().split('T')[0],
+      systemsChecked: item.systemsChecked || '',
+      findings: item.findings || '',
+      deficiencies: item.deficiencies || '',
+      recommendations: item.recommendations || '',
+    })
+    setInspectionPhotos(item.photos?.map(p => ({ url: p.url, name: p.caption || 'Photo', type: p.photoType })) || [])
+    setInspectionMode(false)
     setDetailsOpen(true)
+  }
+
+  // Photo upload handler
+  const handleInspectionPhotoUpload = async (e: React.ChangeEvent<HTMLInputElement>, photoType: string) => {
+    const files = e.target.files
+    if (!files || files.length === 0) return
+
+    setUploadingPhoto(true)
+    try {
+      for (const file of Array.from(files)) {
+        const formData = new FormData()
+        formData.append('file', file)
+        formData.append('type', 'photo')
+        formData.append('folder', 'inspection-photos')
+
+        const response = await fetch('/api/upload', {
+          method: 'POST',
+          body: formData,
+        })
+
+        if (response.ok) {
+          const data = await response.json()
+          setInspectionPhotos(prev => [...prev, { url: data.url, name: file.name, type: photoType }])
+        }
+      }
+    } catch (err) {
+      console.error('Upload failed:', err)
+    } finally {
+      setUploadingPhoto(false)
+    }
+  }
+
+  const removeInspectionPhoto = (url: string) => {
+    setInspectionPhotos(prev => prev.filter(p => p.url !== url))
+  }
+
+  // Save inspection data
+  const handleSaveInspection = async () => {
+    if (!selectedItem) return
+    setSavingInspection(true)
+    
+    try {
+      const response = await fetch(`/api/branches/${branchId}/checklist-items`, {
+        method: 'PATCH',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          action: 'update_inspection',
+          itemId: selectedItem.id,
+          ...inspectionData,
+          photoUrls: inspectionPhotos.map(p => ({ url: p.url, type: p.type })),
+        }),
+      })
+
+      if (response.ok) {
+        fetchItems()
+        setInspectionMode(false)
+        router.refresh()
+      }
+    } catch (error) {
+      console.error('Failed to save inspection:', error)
+    } finally {
+      setSavingInspection(false)
+    }
+  }
+
+  // Technician sign
+  const handleTechnicianSign = async () => {
+    if (!selectedItem) return
+    setUpdating(true)
+    
+    try {
+      const response = await fetch(`/api/branches/${branchId}/checklist-items`, {
+        method: 'PATCH',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          action: 'technician_sign',
+          itemId: selectedItem.id,
+          signature: 'signed', // In real app, this would be actual signature data
+        }),
+      })
+
+      if (response.ok) {
+        fetchItems()
+        // Refresh selected item
+        const updatedItems = await fetch(`/api/branches/${branchId}/checklist-items`).then(r => r.json())
+        const updated = updatedItems.find((i: ChecklistItem) => i.id === selectedItem.id)
+        if (updated) setSelectedItem(updated)
+        router.refresh()
+      }
+    } catch (error) {
+      console.error('Failed to sign:', error)
+    } finally {
+      setUpdating(false)
+    }
   }
 
   const handleSendToReview = async (itemId: string) => {
@@ -582,95 +729,312 @@ export function ChecklistKanban({ branchId, projectId, readOnly = false }: Check
       </Card>
 
       {/* Item Details Dialog */}
-      <Dialog open={detailsOpen} onOpenChange={setDetailsOpen}>
-        <DialogContent className="max-w-lg">
+      <Dialog open={detailsOpen} onOpenChange={(open) => { if (!open) { setDetailsOpen(false); setInspectionMode(false); } }}>
+        <DialogContent className="sm:max-w-[700px] max-h-[90vh] overflow-y-auto">
           <DialogHeader>
-            <DialogTitle>Work Order Details</DialogTitle>
+            <DialogTitle className="flex items-center gap-2">
+              <ClipboardCheck className="h-5 w-5" />
+              Work Order Details
+            </DialogTitle>
             <DialogDescription>
-              View details for this work order
+              {inspectionMode ? 'Fill in the inspection report details' : 'View and manage this work order'}
             </DialogDescription>
           </DialogHeader>
           
           {selectedItem && (
             <div className="space-y-4">
-              <div>
-                <h4 className="text-sm font-medium text-muted-foreground mb-1">Description</h4>
-                <p className="text-sm">{selectedItem.description}</p>
-              </div>
-              
-              {selectedItem.notes && (
-                <div>
-                  <h4 className="text-sm font-medium text-muted-foreground mb-1">Notes</h4>
-                  <p className="text-sm">{selectedItem.notes}</p>
-                </div>
-              )}
-              
-              <div className="grid grid-cols-2 gap-4">
-                <div>
-                  <h4 className="text-sm font-medium text-muted-foreground mb-1">Stage</h4>
+              {/* Basic Info */}
+              <div className="p-4 bg-muted/50 rounded-lg">
+                <h4 className="font-medium mb-2">{selectedItem.description}</h4>
+                <div className="flex items-center gap-2 flex-wrap">
                   <Badge className={cn(
                     STAGES.find(s => s.id === selectedItem.stage)?.bgColor,
                     STAGES.find(s => s.id === selectedItem.stage)?.color
                   )}>
                     {STAGES.find(s => s.id === selectedItem.stage)?.label}
                   </Badge>
-                </div>
-                
-                <div>
-                  <h4 className="text-sm font-medium text-muted-foreground mb-1">Type</h4>
                   <Badge variant="outline">
                     {selectedItem.type === 'ADHOC' ? 'Ad-hoc' : 'Scheduled'}
                   </Badge>
+                  {selectedItem.workOrderType && (
+                    <Badge variant="secondary">
+                      {selectedItem.workOrderType.charAt(0) + selectedItem.workOrderType.slice(1).toLowerCase()}
+                    </Badge>
+                  )}
                 </div>
               </div>
-              
-              {selectedItem.scheduledDate && (
-                <div>
-                  <h4 className="text-sm font-medium text-muted-foreground mb-1">Scheduled Date</h4>
-                  <p className="text-sm flex items-center gap-2">
-                    <Calendar className="h-4 w-4" />
-                    {new Date(selectedItem.scheduledDate).toLocaleDateString('en-US', {
-                      weekday: 'long',
-                      year: 'numeric',
-                      month: 'long',
-                      day: 'numeric'
-                    })}
-                  </p>
-                </div>
+
+              {/* Schedule & Price Info */}
+              <div className="grid grid-cols-2 md:grid-cols-3 gap-4 text-sm">
+                {selectedItem.scheduledDate && (
+                  <div>
+                    <p className="text-muted-foreground">Scheduled</p>
+                    <p className="font-medium flex items-center gap-1">
+                      <Calendar className="h-4 w-4" />
+                      {new Date(selectedItem.scheduledDate).toLocaleDateString()}
+                    </p>
+                  </div>
+                )}
+                {selectedItem.price && (
+                  <div>
+                    <p className="text-muted-foreground">Price</p>
+                    <p className="font-semibold text-green-700">{formatCurrency(selectedItem.price)}</p>
+                  </div>
+                )}
+                {selectedItem.projectTitle && (
+                  <div>
+                    <p className="text-muted-foreground">Project</p>
+                    <p className="font-medium">{selectedItem.projectTitle}</p>
+                  </div>
+                )}
+              </div>
+
+              {/* Inspection Form (for IN_PROGRESS stage, contractor only) */}
+              {!readOnly && selectedItem.stage === 'IN_PROGRESS' && (
+                <>
+                  {inspectionMode ? (
+                    <div className="space-y-4 border-t pt-4">
+                      <h4 className="font-semibold flex items-center gap-2">
+                        <FileText className="h-4 w-4" />
+                        Inspection Report
+                      </h4>
+                      
+                      <div className="grid grid-cols-2 gap-4">
+                        <div className="space-y-2">
+                          <Label htmlFor="inspectionDate">Inspection Date</Label>
+                          <Input
+                            id="inspectionDate"
+                            type="date"
+                            value={inspectionData.inspectionDate}
+                            onChange={(e) => setInspectionData({ ...inspectionData, inspectionDate: e.target.value })}
+                          />
+                        </div>
+                        <div className="space-y-2">
+                          <Label htmlFor="systemsChecked">Systems Checked</Label>
+                          <Input
+                            id="systemsChecked"
+                            value={inspectionData.systemsChecked}
+                            onChange={(e) => setInspectionData({ ...inspectionData, systemsChecked: e.target.value })}
+                            placeholder="e.g., Fire alarm, Sprinklers"
+                          />
+                        </div>
+                      </div>
+
+                      <div className="space-y-2">
+                        <Label htmlFor="findings">Findings</Label>
+                        <Textarea
+                          id="findings"
+                          value={inspectionData.findings}
+                          onChange={(e) => setInspectionData({ ...inspectionData, findings: e.target.value })}
+                          placeholder="Describe what was found during inspection..."
+                          rows={3}
+                        />
+                      </div>
+
+                      <div className="space-y-2">
+                        <Label htmlFor="deficiencies">Deficiencies</Label>
+                        <Textarea
+                          id="deficiencies"
+                          value={inspectionData.deficiencies}
+                          onChange={(e) => setInspectionData({ ...inspectionData, deficiencies: e.target.value })}
+                          placeholder="List any deficiencies found..."
+                          rows={2}
+                        />
+                      </div>
+
+                      <div className="space-y-2">
+                        <Label htmlFor="recommendations">Recommendations</Label>
+                        <Textarea
+                          id="recommendations"
+                          value={inspectionData.recommendations}
+                          onChange={(e) => setInspectionData({ ...inspectionData, recommendations: e.target.value })}
+                          placeholder="Recommendations for the client..."
+                          rows={2}
+                        />
+                      </div>
+
+                      {/* Photo Upload */}
+                      <div className="space-y-2">
+                        <Label>Photos</Label>
+                        <div className="border-2 border-dashed rounded-lg p-4">
+                          <input
+                            type="file"
+                            accept="image/*"
+                            multiple
+                            onChange={(e) => handleInspectionPhotoUpload(e, 'INSPECTION')}
+                            className="hidden"
+                            id="inspection-photo-upload"
+                            disabled={uploadingPhoto}
+                          />
+                          <label
+                            htmlFor="inspection-photo-upload"
+                            className="flex flex-col items-center justify-center cursor-pointer"
+                          >
+                            {uploadingPhoto ? (
+                              <Loader2 className="h-6 w-6 animate-spin text-muted-foreground" />
+                            ) : (
+                              <>
+                                <Upload className="h-6 w-6 text-muted-foreground mb-1" />
+                                <span className="text-sm text-muted-foreground">Upload photos</span>
+                              </>
+                            )}
+                          </label>
+                        </div>
+                        {inspectionPhotos.length > 0 && (
+                          <div className="flex flex-wrap gap-2 mt-2">
+                            {inspectionPhotos.map((photo, index) => (
+                              <div key={index} className="relative group">
+                                <img
+                                  src={photo.url}
+                                  alt={photo.name}
+                                  className="h-16 w-16 object-cover rounded-lg border"
+                                />
+                                <button
+                                  type="button"
+                                  onClick={() => removeInspectionPhoto(photo.url)}
+                                  className="absolute -top-2 -right-2 bg-destructive text-destructive-foreground rounded-full p-1 opacity-0 group-hover:opacity-100 transition-opacity"
+                                >
+                                  <X className="h-3 w-3" />
+                                </button>
+                              </div>
+                            ))}
+                          </div>
+                        )}
+                      </div>
+
+                      <div className="flex gap-2 pt-4">
+                        <Button variant="outline" onClick={() => setInspectionMode(false)} className="flex-1">
+                          Cancel
+                        </Button>
+                        <Button onClick={handleSaveInspection} disabled={savingInspection} className="flex-1">
+                          {savingInspection && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
+                          Save Inspection
+                        </Button>
+                      </div>
+                    </div>
+                  ) : (
+                    <div className="flex gap-2 pt-4 border-t">
+                      <Button variant="outline" onClick={() => setInspectionMode(true)} className="flex-1">
+                        <FileText className="mr-2 h-4 w-4" />
+                        Fill Inspection Report
+                      </Button>
+                      <Button
+                        onClick={() => handleSendToReview(selectedItem.id)}
+                        disabled={updating}
+                        className="flex-1 bg-purple-600 hover:bg-purple-700"
+                      >
+                        {updating ? (
+                          <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                        ) : (
+                          <Send className="mr-2 h-4 w-4" />
+                        )}
+                        Send to Review
+                      </Button>
+                    </div>
+                  )}
+                </>
               )}
-              
-              {selectedItem.price && (
-                <div>
-                  <h4 className="text-sm font-medium text-muted-foreground mb-1">Price</h4>
-                  <p className="text-lg font-semibold text-green-700">
-                    {formatCurrency(selectedItem.price)}
-                  </p>
-                </div>
-              )}
-              
-              {selectedItem.projectTitle && (
-                <div>
-                  <h4 className="text-sm font-medium text-muted-foreground mb-1">Project</h4>
-                  <p className="text-sm">{selectedItem.projectTitle}</p>
+
+              {/* Show existing inspection data (for FOR_REVIEW and COMPLETED stages) */}
+              {(selectedItem.stage === 'FOR_REVIEW' || selectedItem.stage === 'COMPLETED') && selectedItem.findings && (
+                <div className="space-y-4 border-t pt-4">
+                  <h4 className="font-semibold flex items-center gap-2">
+                    <FileText className="h-4 w-4" />
+                    Inspection Report
+                  </h4>
+                  
+                  {selectedItem.inspectionDate && (
+                    <div>
+                      <p className="text-sm text-muted-foreground">Inspection Date</p>
+                      <p className="text-sm">{new Date(selectedItem.inspectionDate).toLocaleDateString()}</p>
+                    </div>
+                  )}
+                  
+                  {selectedItem.systemsChecked && (
+                    <div>
+                      <p className="text-sm text-muted-foreground">Systems Checked</p>
+                      <p className="text-sm">{selectedItem.systemsChecked}</p>
+                    </div>
+                  )}
+                  
+                  {selectedItem.findings && (
+                    <div>
+                      <p className="text-sm text-muted-foreground">Findings</p>
+                      <p className="text-sm whitespace-pre-wrap">{selectedItem.findings}</p>
+                    </div>
+                  )}
+                  
+                  {selectedItem.deficiencies && (
+                    <div>
+                      <p className="text-sm text-muted-foreground">Deficiencies</p>
+                      <p className="text-sm whitespace-pre-wrap text-orange-700">{selectedItem.deficiencies}</p>
+                    </div>
+                  )}
+                  
+                  {selectedItem.recommendations && (
+                    <div>
+                      <p className="text-sm text-muted-foreground">Recommendations</p>
+                      <p className="text-sm whitespace-pre-wrap">{selectedItem.recommendations}</p>
+                    </div>
+                  )}
+
+                  {/* Photos */}
+                  {selectedItem.photos && selectedItem.photos.length > 0 && (
+                    <div>
+                      <p className="text-sm text-muted-foreground mb-2">Photos ({selectedItem.photos.length})</p>
+                      <div className="flex flex-wrap gap-2">
+                        {selectedItem.photos.map((photo) => (
+                          <a key={photo.id} href={photo.url} target="_blank" rel="noopener noreferrer">
+                            <img
+                              src={photo.url}
+                              alt={photo.caption || 'Inspection photo'}
+                              className="h-20 w-20 object-cover rounded-lg border hover:opacity-80"
+                            />
+                          </a>
+                        ))}
+                      </div>
+                    </div>
+                  )}
+
+                  {/* Signatures */}
+                  <div className="grid grid-cols-2 gap-4 pt-4 border-t">
+                    <div>
+                      <p className="text-sm text-muted-foreground">Technician Signature</p>
+                      {selectedItem.technicianSignature ? (
+                        <div className="flex items-center gap-2 text-green-700">
+                          <CheckCircle className="h-4 w-4" />
+                          <span className="text-sm">Signed {selectedItem.technicianSignedAt && new Date(selectedItem.technicianSignedAt).toLocaleDateString()}</span>
+                        </div>
+                      ) : !readOnly && selectedItem.stage === 'FOR_REVIEW' ? (
+                        <Button size="sm" variant="outline" onClick={handleTechnicianSign} disabled={updating}>
+                          {updating ? <Loader2 className="mr-2 h-3 w-3 animate-spin" /> : <PenTool className="mr-2 h-3 w-3" />}
+                          Sign
+                        </Button>
+                      ) : (
+                        <span className="text-sm text-muted-foreground">Not signed</span>
+                      )}
+                    </div>
+                    <div>
+                      <p className="text-sm text-muted-foreground">Supervisor Signature</p>
+                      {selectedItem.supervisorSignature ? (
+                        <div className="flex items-center gap-2 text-green-700">
+                          <CheckCircle className="h-4 w-4" />
+                          <span className="text-sm">Signed {selectedItem.supervisorSignedAt && new Date(selectedItem.supervisorSignedAt).toLocaleDateString()}</span>
+                        </div>
+                      ) : (
+                        <span className="text-sm text-muted-foreground">Not signed</span>
+                      )}
+                    </div>
+                  </div>
                 </div>
               )}
 
-              {/* Send to Review button for IN_PROGRESS items (contractor only) */}
-              {!readOnly && selectedItem.stage === 'IN_PROGRESS' && (
-                <DialogFooter className="mt-4 pt-4 border-t">
-                  <Button
-                    onClick={() => handleSendToReview(selectedItem.id)}
-                    disabled={updating}
-                    className="w-full bg-purple-600 hover:bg-purple-700"
-                  >
-                    {updating ? (
-                      <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                    ) : (
-                      <Send className="mr-2 h-4 w-4" />
-                    )}
-                    Send to Review
-                  </Button>
-                </DialogFooter>
+              {/* Notes */}
+              {selectedItem.notes && (
+                <div className="border-t pt-4">
+                  <p className="text-sm text-muted-foreground">Notes</p>
+                  <p className="text-sm">{selectedItem.notes}</p>
+                </div>
               )}
             </div>
           )}
