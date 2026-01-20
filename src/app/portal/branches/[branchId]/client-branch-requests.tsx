@@ -46,6 +46,9 @@ import {
   ChevronDown,
   ChevronRight,
   CornerDownRight,
+  Upload,
+  X,
+  Image as ImageIcon,
 } from 'lucide-react'
 
 interface WorkOrder {
@@ -247,11 +250,21 @@ export function ClientBranchRequests({ branchId, projectId, onDataChange }: Clie
     title: string
     description: string
     priority: 'LOW' | 'MEDIUM' | 'HIGH' | 'URGENT'
+    issueType: string
+    workOrderType: 'SERVICE' | 'INSPECTION' | 'MAINTENANCE' | 'INSTALLATION'
+    preferredDate: string
+    preferredTimeSlot: string
   }>({
     title: '',
     description: '',
     priority: 'MEDIUM',
+    issueType: '',
+    workOrderType: 'SERVICE',
+    preferredDate: '',
+    preferredTimeSlot: '',
   })
+  const [uploadedPhotos, setUploadedPhotos] = useState<{ url: string; name: string }[]>([])
+  const [uploading, setUploading] = useState(false)
   const [selectedRequest, setSelectedRequest] = useState<Request | null>(null)
   const [selectedProject, setSelectedProject] = useState<Project | null>(null)
 
@@ -362,6 +375,39 @@ export function ClientBranchRequests({ branchId, projectId, onDataChange }: Clie
     return undefined
   }
 
+  const handlePhotoUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const files = e.target.files
+    if (!files || files.length === 0) return
+
+    setUploading(true)
+    try {
+      for (const file of Array.from(files)) {
+        const formData = new FormData()
+        formData.append('file', file)
+        formData.append('type', 'photo')
+        formData.append('folder', 'request-photos')
+
+        const response = await fetch('/api/upload', {
+          method: 'POST',
+          body: formData,
+        })
+
+        if (response.ok) {
+          const data = await response.json()
+          setUploadedPhotos(prev => [...prev, { url: data.url, name: file.name }])
+        }
+      }
+    } catch (err) {
+      console.error('Upload failed:', err)
+    } finally {
+      setUploading(false)
+    }
+  }
+
+  const removePhoto = (url: string) => {
+    setUploadedPhotos(prev => prev.filter(p => p.url !== url))
+  }
+
   const handleCreateRequest = async (e: React.FormEvent) => {
     e.preventDefault()
     setCreating(true)
@@ -371,7 +417,10 @@ export function ClientBranchRequests({ branchId, projectId, onDataChange }: Clie
       const response = await fetch(`/api/branches/${branchId}/requests`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(newRequest),
+        body: JSON.stringify({
+          ...newRequest,
+          photoUrls: uploadedPhotos.map(p => p.url),
+        }),
       })
 
       if (!response.ok) {
@@ -380,7 +429,8 @@ export function ClientBranchRequests({ branchId, projectId, onDataChange }: Clie
       }
 
       setCreateDialogOpen(false)
-      setNewRequest({ title: '', description: '', priority: 'MEDIUM' })
+      setNewRequest({ title: '', description: '', priority: 'MEDIUM', issueType: '', workOrderType: 'SERVICE', preferredDate: '', preferredTimeSlot: '' })
+      setUploadedPhotos([])
       fetchRequests()
       router.refresh()
     } catch (err) {
@@ -507,7 +557,7 @@ export function ClientBranchRequests({ branchId, projectId, onDataChange }: Clie
 
       {/* Create Request Dialog */}
       <Dialog open={createDialogOpen} onOpenChange={setCreateDialogOpen}>
-        <DialogContent>
+        <DialogContent className="sm:max-w-[600px] max-h-[90vh] overflow-y-auto">
           <DialogHeader>
             <DialogTitle>Submit Service Request</DialogTitle>
             <DialogDescription>
@@ -521,49 +571,185 @@ export function ClientBranchRequests({ branchId, projectId, onDataChange }: Clie
               </div>
             )}
             <div className="space-y-4">
+              {/* Issue Type */}
               <div className="space-y-2">
-                <Label htmlFor="title">What do you need? *</Label>
+                <Label htmlFor="issueType">Type of Issue *</Label>
+                <Select
+                  value={newRequest.issueType}
+                  onValueChange={(value) => setNewRequest({ ...newRequest, issueType: value })}
+                >
+                  <SelectTrigger>
+                    <SelectValue placeholder="Select the type of issue" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="FIRE_ALARM_MALFUNCTION">🔥 Fire Alarm Malfunction</SelectItem>
+                    <SelectItem value="SMOKE_DETECTOR_ISSUE">💨 Smoke Detector Issue</SelectItem>
+                    <SelectItem value="SPRINKLER_LEAK">💧 Sprinkler Leak</SelectItem>
+                    <SelectItem value="EXTINGUISHER_EXPIRED">🧯 Fire Extinguisher Expired</SelectItem>
+                    <SelectItem value="EMERGENCY_LIGHT_OUT">💡 Emergency Light Out</SelectItem>
+                    <SelectItem value="EXIT_SIGN_ISSUE">🚪 Exit Sign Issue</SelectItem>
+                    <SelectItem value="FIRE_DOOR_PROBLEM">🚧 Fire Door Problem</SelectItem>
+                    <SelectItem value="PANEL_ERROR">⚠️ Fire Panel Error</SelectItem>
+                    <SelectItem value="SCHEDULED_INSPECTION">📋 Scheduled Inspection</SelectItem>
+                    <SelectItem value="CERTIFICATION_RENEWAL">📜 Certification Renewal</SelectItem>
+                    <SelectItem value="NEW_INSTALLATION">🔧 New Installation</SelectItem>
+                    <SelectItem value="SYSTEM_UPGRADE">⬆️ System Upgrade</SelectItem>
+                    <SelectItem value="PREVENTIVE_MAINTENANCE">🛠️ Preventive Maintenance</SelectItem>
+                    <SelectItem value="OTHER">📝 Other</SelectItem>
+                  </SelectContent>
+                </Select>
+              </div>
+
+              {/* Title */}
+              <div className="space-y-2">
+                <Label htmlFor="title">Brief Description *</Label>
                 <Input
                   id="title"
                   value={newRequest.title}
                   onChange={(e) => setNewRequest({ ...newRequest, title: e.target.value })}
-                  placeholder="Brief description of the service needed"
+                  placeholder="e.g., Fire alarm beeping in 3rd floor office"
                   required
                 />
               </div>
+
+              {/* Details */}
               <div className="space-y-2">
-                <Label htmlFor="description">Details</Label>
+                <Label htmlFor="description">Additional Details</Label>
                 <Textarea
                   id="description"
                   value={newRequest.description}
                   onChange={(e) => setNewRequest({ ...newRequest, description: e.target.value })}
-                  placeholder="Provide more details about your request"
+                  placeholder="Provide more details: location, when it started, any error codes, etc."
                   rows={3}
                 />
               </div>
+
+              {/* Work Order Type & Priority Row */}
+              <div className="grid grid-cols-2 gap-4">
+                <div className="space-y-2">
+                  <Label htmlFor="workOrderType">Service Type</Label>
+                  <Select
+                    value={newRequest.workOrderType}
+                    onValueChange={(value: 'SERVICE' | 'INSPECTION' | 'MAINTENANCE' | 'INSTALLATION') => setNewRequest({ ...newRequest, workOrderType: value })}
+                  >
+                    <SelectTrigger>
+                      <SelectValue />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="SERVICE">🔧 Repair/Service</SelectItem>
+                      <SelectItem value="INSPECTION">🔍 Inspection</SelectItem>
+                      <SelectItem value="MAINTENANCE">🛠️ Maintenance</SelectItem>
+                      <SelectItem value="INSTALLATION">📦 Installation</SelectItem>
+                    </SelectContent>
+                  </Select>
+                </div>
+                <div className="space-y-2">
+                  <Label htmlFor="priority">Priority</Label>
+                  <Select
+                    value={newRequest.priority}
+                    onValueChange={(value: 'LOW' | 'MEDIUM' | 'HIGH' | 'URGENT') => setNewRequest({ ...newRequest, priority: value })}
+                  >
+                    <SelectTrigger>
+                      <SelectValue />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="LOW">Low</SelectItem>
+                      <SelectItem value="MEDIUM">Medium</SelectItem>
+                      <SelectItem value="HIGH">High</SelectItem>
+                      <SelectItem value="URGENT">🚨 Urgent</SelectItem>
+                    </SelectContent>
+                  </Select>
+                </div>
+              </div>
+
+              {/* Preferred Date & Time Row */}
+              <div className="grid grid-cols-2 gap-4">
+                <div className="space-y-2">
+                  <Label htmlFor="preferredDate">Preferred Date</Label>
+                  <Input
+                    id="preferredDate"
+                    type="date"
+                    value={newRequest.preferredDate}
+                    onChange={(e) => setNewRequest({ ...newRequest, preferredDate: e.target.value })}
+                    min={new Date().toISOString().split('T')[0]}
+                  />
+                </div>
+                <div className="space-y-2">
+                  <Label htmlFor="preferredTimeSlot">Preferred Time</Label>
+                  <Select
+                    value={newRequest.preferredTimeSlot}
+                    onValueChange={(value) => setNewRequest({ ...newRequest, preferredTimeSlot: value })}
+                  >
+                    <SelectTrigger>
+                      <SelectValue placeholder="Any time" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="MORNING">Morning (8AM-12PM)</SelectItem>
+                      <SelectItem value="AFTERNOON">Afternoon (12PM-5PM)</SelectItem>
+                      <SelectItem value="EVENING">Evening (5PM-8PM)</SelectItem>
+                      <SelectItem value="ANYTIME">Any time</SelectItem>
+                    </SelectContent>
+                  </Select>
+                </div>
+              </div>
+
+              {/* Photo Upload */}
               <div className="space-y-2">
-                <Label htmlFor="priority">Priority</Label>
-                <Select
-                  value={newRequest.priority}
-                  onValueChange={(value: 'LOW' | 'MEDIUM' | 'HIGH' | 'URGENT') => setNewRequest({ ...newRequest, priority: value })}
-                >
-                  <SelectTrigger>
-                    <SelectValue />
-                  </SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value="LOW">Low - Not urgent</SelectItem>
-                    <SelectItem value="MEDIUM">Medium - Normal priority</SelectItem>
-                    <SelectItem value="HIGH">High - Needs attention soon</SelectItem>
-                    <SelectItem value="URGENT">Urgent - Immediate attention needed</SelectItem>
-                  </SelectContent>
-                </Select>
+                <Label>Photos (Optional)</Label>
+                <p className="text-xs text-muted-foreground mb-2">
+                  Upload photos of the issue to help the technician understand the problem
+                </p>
+                <div className="border-2 border-dashed rounded-lg p-4">
+                  <input
+                    type="file"
+                    accept="image/*"
+                    multiple
+                    onChange={handlePhotoUpload}
+                    className="hidden"
+                    id="photo-upload"
+                    disabled={uploading}
+                  />
+                  <label
+                    htmlFor="photo-upload"
+                    className="flex flex-col items-center justify-center cursor-pointer"
+                  >
+                    {uploading ? (
+                      <Loader2 className="h-8 w-8 animate-spin text-muted-foreground" />
+                    ) : (
+                      <>
+                        <Upload className="h-8 w-8 text-muted-foreground mb-2" />
+                        <span className="text-sm text-muted-foreground">Click to upload photos</span>
+                      </>
+                    )}
+                  </label>
+                </div>
+                {uploadedPhotos.length > 0 && (
+                  <div className="flex flex-wrap gap-2 mt-2">
+                    {uploadedPhotos.map((photo, index) => (
+                      <div key={index} className="relative group">
+                        <img
+                          src={photo.url}
+                          alt={photo.name}
+                          className="h-16 w-16 object-cover rounded-lg border"
+                        />
+                        <button
+                          type="button"
+                          onClick={() => removePhoto(photo.url)}
+                          className="absolute -top-2 -right-2 bg-destructive text-destructive-foreground rounded-full p-1 opacity-0 group-hover:opacity-100 transition-opacity"
+                        >
+                          <X className="h-3 w-3" />
+                        </button>
+                      </div>
+                    ))}
+                  </div>
+                )}
               </div>
             </div>
             <DialogFooter className="mt-6">
               <Button type="button" variant="outline" onClick={() => setCreateDialogOpen(false)}>
                 Cancel
               </Button>
-              <Button type="submit" disabled={creating}>
+              <Button type="submit" disabled={creating || uploading}>
                 {creating && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
                 Submit Request
               </Button>
