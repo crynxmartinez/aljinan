@@ -94,6 +94,8 @@ export async function GET(
       technicianSignedAt: item.technicianSignedAt?.toISOString() || null,
       supervisorSignature: item.supervisorSignature,
       supervisorSignedAt: item.supervisorSignedAt?.toISOString() || null,
+      clientSignature: item.clientSignature,
+      clientSignedAt: item.clientSignedAt?.toISOString() || null,
       reportGeneratedAt: item.reportGeneratedAt?.toISOString() || null,
       reportUrl: item.reportUrl,
       photos: item.photos,
