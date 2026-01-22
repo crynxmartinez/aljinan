@@ -26,6 +26,7 @@ export async function GET(
     }
 
     // Build the where clause
+    // When projectId is provided, show items for that project OR items with no project (standalone requests)
     const whereClause: Record<string, unknown> = {
       checklist: {
         branchId,
@@ -33,7 +34,14 @@ export async function GET(
     }
 
     if (projectId) {
-      (whereClause.checklist as Record<string, string>).projectId = projectId
+      // Include items from the selected project OR standalone items (null projectId)
+      whereClause.checklist = {
+        branchId,
+        OR: [
+          { projectId: projectId },
+          { projectId: null }
+        ]
+      }
     }
 
     if (stage) {

@@ -91,8 +91,9 @@ export function ChecklistsList({ branchId, projectId }: ChecklistsListProps) {
       const response = await fetch(`/api/branches/${branchId}/checklists`)
       if (response.ok) {
         const data = await response.json()
+        // Include checklists for the selected project OR standalone checklists (null projectId)
         const filtered = projectId 
-          ? data.filter((c: Checklist & { projectId?: string }) => c.projectId === projectId)
+          ? data.filter((c: Checklist & { projectId?: string | null }) => c.projectId === projectId || c.projectId === null)
           : data
         setChecklists(filtered)
       }

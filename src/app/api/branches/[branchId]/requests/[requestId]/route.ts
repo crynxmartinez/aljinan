@@ -70,7 +70,8 @@ export async function PATCH(
       quotedDate,
       // Action fields
       action, // 'quote', 'accept', 'reject'
-      rejectionNote
+      rejectionNote,
+      clientSignature, // Client signature when accepting quote
     } = body
 
     const hasAccess = await verifyBranchAccess(branchId, session.user.id, session.user.role)
@@ -148,7 +149,7 @@ export async function PATCH(
         })
       }
 
-      // Create the work order
+      // Create the work order with client signature
       const workOrder = await prisma.checklistItem.create({
         data: {
           checklistId: checklist.id,
@@ -160,6 +161,10 @@ export async function PATCH(
           scheduledDate: currentRequest.quotedDate,
           price: currentRequest.quotedPrice,
           linkedRequestId: requestId,
+          // Save client signature from quote acceptance
+          clientSignature: clientSignature || null,
+          clientSignedAt: clientSignature ? new Date() : null,
+          clientSignedById: clientSignature ? session.user.id : null,
         }
       })
 
