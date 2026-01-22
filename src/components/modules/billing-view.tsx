@@ -62,6 +62,11 @@ export function BillingView({ branchId, projectId, userRole }: BillingViewProps)
   const [woVerifyDialogOpen, setWoVerifyDialogOpen] = useState(false)
   const [verifyWorkOrders, setVerifyWorkOrders] = useState<WorkOrder[]>([])
 
+  // Collapsible states - must be at top level before any conditional returns
+  const [contractsExpanded, setContractsExpanded] = useState(true)
+  const [standaloneExpanded, setStandaloneExpanded] = useState(true)
+  const [expandedProjects, setExpandedProjects] = useState<string[]>([])
+
   const fetchData = async () => {
     try {
       // Fetch work orders
@@ -90,6 +95,12 @@ export function BillingView({ branchId, projectId, userRole }: BillingViewProps)
   useEffect(() => {
     fetchData()
   }, [branchId, projectId])
+
+  // Initialize expanded projects when work orders load
+  useEffect(() => {
+    const projectTitles = [...new Set(workOrders.filter(wo => wo.projectTitle).map(wo => wo.projectTitle as string))]
+    setExpandedProjects(projectTitles)
+  }, [workOrders])
 
   const formatCurrency = (amount: number | null) => {
     if (amount === null) return '-'
@@ -188,11 +199,6 @@ export function BillingView({ branchId, projectId, userRole }: BillingViewProps)
   const totalPaidValue = contractPaidValue + standalonePaidValue
   const totalPendingValue = contractPendingValue + standalonePendingValue
   const totalUnpaidValue = contractUnpaidValue + standaloneUnpaidValue
-
-  // Collapsible states
-  const [contractsExpanded, setContractsExpanded] = useState(true)
-  const [standaloneExpanded, setStandaloneExpanded] = useState(true)
-  const [expandedProjects, setExpandedProjects] = useState<string[]>(Object.keys(workOrdersByProject))
 
   const toggleProject = (projectTitle: string) => {
     setExpandedProjects(prev => 
