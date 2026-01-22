@@ -136,8 +136,10 @@ export function ContractsList({ branchId, projectId }: ContractsListProps) {
   })
 
   // Standalone work orders state
-  const [standaloneWorkOrders, setStandaloneWorkOrders] = useState<{ id: string; description: string; scheduledDate: string | null; stage: string; price: number | null }[]>([])
+  const [standaloneWorkOrders, setStandaloneWorkOrders] = useState<{ id: string; description: string; scheduledDate: string | null; stage: string; price: number | null; workOrderType: string | null }[]>([])
+  const [stickerInspections, setStickerInspections] = useState<{ id: string; description: string; scheduledDate: string | null; stage: string; price: number | null; workOrderType: string | null }[]>([])
   const [standaloneExpanded, setStandaloneExpanded] = useState(true)
+  const [stickerInspectionsExpanded, setStickerInspectionsExpanded] = useState(true)
 
   const fetchContracts = async () => {
     try {
@@ -161,9 +163,16 @@ export function ContractsList({ branchId, projectId }: ContractsListProps) {
       const response = await fetch(`/api/branches/${branchId}/checklist-items`)
       if (response.ok) {
         const data = await response.json()
-        // Filter for standalone work orders (projectTitle is null)
-        const standalone = data.filter((wo: { projectTitle: string | null }) => wo.projectTitle === null)
+        // Filter for standalone work orders (projectTitle is null) - excludes sticker inspections
+        const standalone = data.filter((wo: { projectTitle: string | null; workOrderType: string | null }) => 
+          wo.projectTitle === null && wo.workOrderType !== 'STICKER_INSPECTION'
+        )
         setStandaloneWorkOrders(standalone)
+        // Filter for sticker inspections
+        const stickers = data.filter((wo: { projectTitle: string | null; workOrderType: string | null }) => 
+          wo.projectTitle === null && wo.workOrderType === 'STICKER_INSPECTION'
+        )
+        setStickerInspections(stickers)
       }
     } catch (err) {
       console.error('Failed to fetch standalone work orders:', err)
@@ -557,6 +566,76 @@ export function ContractsList({ branchId, projectId }: ContractsListProps) {
                   <CheckCircle className="h-4 w-4 text-blue-600" />
                   <p className="text-sm text-blue-700">
                     These work orders were approved when the client accepted the quote. No additional signature is required.
+                  </p>
+                </div>
+              </CardContent>
+            </CollapsibleContent>
+          </Card>
+        </Collapsible>
+      )}
+
+      {/* Sticker Inspections Section - Read-only, no signatures needed */}
+      {stickerInspections.length > 0 && (
+        <Collapsible open={stickerInspectionsExpanded} onOpenChange={setStickerInspectionsExpanded}>
+          <Card className="border-amber-200 bg-amber-50/30 mt-6">
+            <CollapsibleTrigger className="w-full">
+              <CardHeader className="cursor-pointer hover:bg-amber-50/50 transition-colors">
+                <div className="flex items-center justify-between">
+                  <div className="flex items-center gap-2">
+                    {stickerInspectionsExpanded ? <ChevronDown className="h-5 w-5 text-amber-600" /> : <ChevronRight className="h-5 w-5 text-amber-600" />}
+                    <CardTitle className="flex items-center gap-2 text-amber-700">
+                      <ClipboardList className="h-5 w-5" />
+                      Sticker Inspections
+                    </CardTitle>
+                    <Badge className="bg-amber-100 text-amber-700">Equipment</Badge>
+                    <Badge variant="secondary">{stickerInspections.length}</Badge>
+                  </div>
+                  <div className="text-right">
+                    <p className="font-semibold text-amber-700">
+                      SAR {stickerInspections.reduce((sum, wo) => sum + (wo.price || 0), 0).toLocaleString('en-US', { minimumFractionDigits: 2 })}
+                    </p>
+                    <p className="text-xs text-amber-600">Total Value</p>
+                  </div>
+                </div>
+                <CardDescription className="text-amber-600 text-left mt-2">
+                  Equipment sticker inspections. No contract signature required.
+                </CardDescription>
+              </CardHeader>
+            </CollapsibleTrigger>
+            <CollapsibleContent>
+              <CardContent className="pt-0">
+                <div className="space-y-2">
+                  {stickerInspections.map((wo) => (
+                    <div
+                      key={wo.id}
+                      className="flex items-center justify-between p-3 bg-white rounded-lg border border-amber-200"
+                    >
+                      <div className="space-y-1">
+                        <span className="font-medium">{wo.description}</span>
+                        <div className="flex items-center gap-3 text-sm text-muted-foreground">
+                          {wo.scheduledDate && (
+                            <span className="flex items-center gap-1">
+                              <Calendar className="h-3 w-3" />
+                              {new Date(wo.scheduledDate).toLocaleDateString()}
+                            </span>
+                          )}
+                          <Badge variant="outline" className="text-xs">
+                            {wo.stage}
+                          </Badge>
+                        </div>
+                      </div>
+                      {wo.price && (
+                        <span className="font-semibold text-amber-700">
+                          SAR {wo.price.toLocaleString('en-US', { minimumFractionDigits: 2 })}
+                        </span>
+                      )}
+                    </div>
+                  ))}
+                </div>
+                <div className="flex items-center gap-2 mt-4 p-3 bg-amber-100/50 rounded-lg border border-amber-200">
+                  <CheckCircle className="h-4 w-4 text-amber-600" />
+                  <p className="text-sm text-amber-700">
+                    These equipment inspections were approved when the client accepted the quote. No additional signature is required.
                   </p>
                 </div>
               </CardContent>

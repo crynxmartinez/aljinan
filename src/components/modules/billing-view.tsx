@@ -20,6 +20,7 @@ interface WorkOrder {
   notes: string | null
   stage: string
   type: string
+  workOrderType: string | null
   scheduledDate: string | null
   price: number | null
   isCompleted: boolean
@@ -65,6 +66,7 @@ export function BillingView({ branchId, projectId, userRole }: BillingViewProps)
   // Collapsible states - must be at top level before any conditional returns
   const [contractsExpanded, setContractsExpanded] = useState(true)
   const [standaloneExpanded, setStandaloneExpanded] = useState(true)
+  const [stickerInspectionsExpanded, setStickerInspectionsExpanded] = useState(true)
   const [expandedProjects, setExpandedProjects] = useState<string[]>([])
 
   const fetchData = async () => {
@@ -168,9 +170,10 @@ export function BillingView({ branchId, projectId, userRole }: BillingViewProps)
     )
   }
 
-  // Separate work orders into contract (project-based) and standalone (ad-hoc)
+  // Separate work orders into contract (project-based), standalone (ad-hoc), and sticker inspections
   const contractWorkOrders = workOrders.filter(wo => wo.projectTitle !== null)
-  const standaloneWorkOrders = workOrders.filter(wo => wo.projectTitle === null)
+  const standaloneWorkOrders = workOrders.filter(wo => wo.projectTitle === null && wo.workOrderType !== 'STICKER_INSPECTION')
+  const stickerInspectionWorkOrders = workOrders.filter(wo => wo.projectTitle === null && wo.workOrderType === 'STICKER_INSPECTION')
 
   // Group contract work orders by project
   const workOrdersByProject = contractWorkOrders.reduce((acc, wo) => {
@@ -194,11 +197,17 @@ export function BillingView({ branchId, projectId, userRole }: BillingViewProps)
   const standalonePendingValue = standaloneWorkOrders.filter(wo => wo.paymentStatus === 'PENDING_VERIFICATION').reduce((sum, wo) => sum + (wo.price || 0), 0)
   const standaloneUnpaidValue = standaloneTotalValue - standalonePaidValue - standalonePendingValue
 
+  // Calculate sticker inspection totals
+  const stickerTotalValue = stickerInspectionWorkOrders.reduce((sum, wo) => sum + (wo.price || 0), 0)
+  const stickerPaidValue = stickerInspectionWorkOrders.filter(wo => wo.paymentStatus === 'PAID').reduce((sum, wo) => sum + (wo.price || 0), 0)
+  const stickerPendingValue = stickerInspectionWorkOrders.filter(wo => wo.paymentStatus === 'PENDING_VERIFICATION').reduce((sum, wo) => sum + (wo.price || 0), 0)
+  const stickerUnpaidValue = stickerTotalValue - stickerPaidValue - stickerPendingValue
+
   // Combined totals
-  const totalValue = contractTotalValue + standaloneTotalValue
-  const totalPaidValue = contractPaidValue + standalonePaidValue
-  const totalPendingValue = contractPendingValue + standalonePendingValue
-  const totalUnpaidValue = contractUnpaidValue + standaloneUnpaidValue
+  const totalValue = contractTotalValue + standaloneTotalValue + stickerTotalValue
+  const totalPaidValue = contractPaidValue + standalonePaidValue + stickerPaidValue
+  const totalPendingValue = contractPendingValue + standalonePendingValue + stickerPendingValue
+  const totalUnpaidValue = contractUnpaidValue + standaloneUnpaidValue + stickerUnpaidValue
 
   const toggleProject = (projectTitle: string) => {
     setExpandedProjects(prev => 
@@ -368,8 +377,49 @@ export function BillingView({ branchId, projectId, userRole }: BillingViewProps)
         </Collapsible>
       )}
 
+      {/* Sticker Inspections Section */}
+      {stickerInspectionWorkOrders.length > 0 && (
+        <Collapsible open={stickerInspectionsExpanded} onOpenChange={setStickerInspectionsExpanded}>
+          <Card className="border-amber-200 bg-amber-50/30">
+            <CollapsibleTrigger className="w-full">
+              <CardHeader className="cursor-pointer hover:bg-amber-50/50 transition-colors">
+                <div className="flex items-center justify-between">
+                  <div className="flex items-center gap-2">
+                    {stickerInspectionsExpanded ? <ChevronDown className="h-5 w-5 text-amber-600" /> : <ChevronRight className="h-5 w-5 text-amber-600" />}
+                    <CardTitle className="flex items-center gap-2 text-amber-700">
+                      <ClipboardList className="h-5 w-5" />
+                      Sticker Inspections
+                    </CardTitle>
+                    <Badge className="bg-amber-100 text-amber-700">Equipment</Badge>
+                    <Badge variant="secondary">{stickerInspectionWorkOrders.length}</Badge>
+                  </div>
+                  <div className="text-right">
+                    <p className="font-semibold text-amber-700">{formatCurrency(stickerTotalValue)}</p>
+                    <p className="text-xs text-amber-600">
+                      {stickerUnpaidValue > 0 ? `${formatCurrency(stickerUnpaidValue)} unpaid` : 'All paid'}
+                    </p>
+                  </div>
+                </div>
+              </CardHeader>
+            </CollapsibleTrigger>
+            <CollapsibleContent>
+              <CardContent className="pt-0">
+                <BillingWorkOrdersDisplay
+                  workOrders={stickerInspectionWorkOrders}
+                  userRole={userRole}
+                  onPaySingle={handlePaySingle}
+                  onPayGroup={handlePayGroup}
+                  onVerifyPayment={handleVerifyPayment}
+                  onViewProof={handleViewWorkOrderProof}
+                />
+              </CardContent>
+            </CollapsibleContent>
+          </Card>
+        </Collapsible>
+      )}
+
       {/* Empty State */}
-      {contractWorkOrders.length === 0 && standaloneWorkOrders.length === 0 && (
+      {contractWorkOrders.length === 0 && standaloneWorkOrders.length === 0 && stickerInspectionWorkOrders.length === 0 && (
         <Card>
           <CardContent className="flex flex-col items-center justify-center py-12 text-center">
             <DollarSign className="h-12 w-12 text-muted-foreground/30 mb-4" />
