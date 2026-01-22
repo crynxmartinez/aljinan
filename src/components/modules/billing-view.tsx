@@ -3,7 +3,13 @@
 import { useState, useEffect } from 'react'
 import { useRouter } from 'next/navigation'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
-import { Loader2, FileText, DollarSign } from 'lucide-react'
+import { Badge } from '@/components/ui/badge'
+import {
+  Collapsible,
+  CollapsibleContent,
+  CollapsibleTrigger,
+} from '@/components/ui/collapsible'
+import { Loader2, FileText, DollarSign, ChevronDown, ChevronRight, ClipboardList } from 'lucide-react'
 import { BillingWorkOrdersDisplay, BillingWorkOrder } from './billing-work-orders-display'
 import { PaymentSubmitDialog } from './payment-submit-dialog'
 import { PaymentVerifyDialog } from './payment-verify-dialog'
@@ -151,105 +157,223 @@ export function BillingView({ branchId, projectId, userRole }: BillingViewProps)
     )
   }
 
-  // Get active project
-  const activeProject = projectId 
-    ? projects.find(p => p.id === projectId)
-    : projects.find(p => p.status === 'ACTIVE')
+  // Separate work orders into contract (project-based) and standalone (ad-hoc)
+  const contractWorkOrders = workOrders.filter(wo => wo.projectTitle !== null)
+  const standaloneWorkOrders = workOrders.filter(wo => wo.projectTitle === null)
 
-  // Filter work orders for active project (include standalone work orders with null projectTitle)
-  const activeWorkOrders = activeProject
-    ? workOrders.filter(wo => wo.projectTitle === activeProject.title || wo.projectTitle === null)
-    : workOrders
+  // Group contract work orders by project
+  const workOrdersByProject = contractWorkOrders.reduce((acc, wo) => {
+    const projectTitle = wo.projectTitle || 'Unknown Project'
+    if (!acc[projectTitle]) {
+      acc[projectTitle] = []
+    }
+    acc[projectTitle].push(wo)
+    return acc
+  }, {} as Record<string, WorkOrder[]>)
 
-  // Calculate totals
-  const totalWorkOrderValue = activeWorkOrders.reduce((sum, wo) => sum + (wo.price || 0), 0)
-  const completedWorkOrders = activeWorkOrders.filter(wo => wo.stage === 'COMPLETED')
-  const completedValue = completedWorkOrders.reduce((sum, wo) => sum + (wo.price || 0), 0)
-  
-  // Payment totals
-  const paidWorkOrders = activeWorkOrders.filter(wo => wo.paymentStatus === 'PAID')
-  const paidValue = paidWorkOrders.reduce((sum, wo) => sum + (wo.price || 0), 0)
-  const pendingPaymentWorkOrders = activeWorkOrders.filter(wo => wo.paymentStatus === 'PENDING_VERIFICATION')
-  const pendingValue = pendingPaymentWorkOrders.reduce((sum, wo) => sum + (wo.price || 0), 0)
-  const unpaidValue = totalWorkOrderValue - paidValue - pendingValue
+  // Calculate contract totals
+  const contractTotalValue = contractWorkOrders.reduce((sum, wo) => sum + (wo.price || 0), 0)
+  const contractPaidValue = contractWorkOrders.filter(wo => wo.paymentStatus === 'PAID').reduce((sum, wo) => sum + (wo.price || 0), 0)
+  const contractPendingValue = contractWorkOrders.filter(wo => wo.paymentStatus === 'PENDING_VERIFICATION').reduce((sum, wo) => sum + (wo.price || 0), 0)
+  const contractUnpaidValue = contractTotalValue - contractPaidValue - contractPendingValue
+
+  // Calculate standalone totals
+  const standaloneTotalValue = standaloneWorkOrders.reduce((sum, wo) => sum + (wo.price || 0), 0)
+  const standalonePaidValue = standaloneWorkOrders.filter(wo => wo.paymentStatus === 'PAID').reduce((sum, wo) => sum + (wo.price || 0), 0)
+  const standalonePendingValue = standaloneWorkOrders.filter(wo => wo.paymentStatus === 'PENDING_VERIFICATION').reduce((sum, wo) => sum + (wo.price || 0), 0)
+  const standaloneUnpaidValue = standaloneTotalValue - standalonePaidValue - standalonePendingValue
+
+  // Combined totals
+  const totalValue = contractTotalValue + standaloneTotalValue
+  const totalPaidValue = contractPaidValue + standalonePaidValue
+  const totalPendingValue = contractPendingValue + standalonePendingValue
+  const totalUnpaidValue = contractUnpaidValue + standaloneUnpaidValue
+
+  // Collapsible states
+  const [contractsExpanded, setContractsExpanded] = useState(true)
+  const [standaloneExpanded, setStandaloneExpanded] = useState(true)
+  const [expandedProjects, setExpandedProjects] = useState<string[]>(Object.keys(workOrdersByProject))
+
+  const toggleProject = (projectTitle: string) => {
+    setExpandedProjects(prev => 
+      prev.includes(projectTitle) 
+        ? prev.filter(p => p !== projectTitle)
+        : [...prev, projectTitle]
+    )
+  }
 
   return (
     <div className="space-y-6">
       {/* Summary Cards */}
-      <div className="grid gap-4 md:grid-cols-3">
+      <div className="grid gap-4 md:grid-cols-4">
         <Card>
           <CardHeader className="pb-2">
-            <CardTitle className="text-sm font-medium text-muted-foreground">Total Project Value</CardTitle>
+            <CardTitle className="text-sm font-medium text-muted-foreground">Contract Value</CardTitle>
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold">{formatCurrency(totalWorkOrderValue)}</div>
+            <div className="text-2xl font-bold">{formatCurrency(contractTotalValue)}</div>
             <p className="text-xs text-muted-foreground mt-1">
-              {activeWorkOrders.length} work order{activeWorkOrders.length !== 1 ? 's' : ''}
+              {contractWorkOrders.length} work order{contractWorkOrders.length !== 1 ? 's' : ''}
+            </p>
+          </CardContent>
+        </Card>
+
+        <Card className="border-blue-200 bg-blue-50/30">
+          <CardHeader className="pb-2">
+            <CardTitle className="text-sm font-medium text-blue-600">Service Requests</CardTitle>
+          </CardHeader>
+          <CardContent>
+            <div className="text-2xl font-bold text-blue-700">{formatCurrency(standaloneTotalValue)}</div>
+            <p className="text-xs text-blue-600 mt-1">
+              {standaloneWorkOrders.length} ad-hoc work order{standaloneWorkOrders.length !== 1 ? 's' : ''}
             </p>
           </CardContent>
         </Card>
 
         <Card>
           <CardHeader className="pb-2">
-            <CardTitle className="text-sm font-medium text-muted-foreground">Completed Work</CardTitle>
+            <CardTitle className="text-sm font-medium text-muted-foreground">Total Paid</CardTitle>
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold text-green-600">{formatCurrency(completedValue)}</div>
+            <div className="text-2xl font-bold text-green-600">{formatCurrency(totalPaidValue)}</div>
             <p className="text-xs text-muted-foreground mt-1">
-              {completedWorkOrders.length} of {activeWorkOrders.length} completed
+              {totalPendingValue > 0 ? `${formatCurrency(totalPendingValue)} pending` : 'Verified'}
             </p>
           </CardContent>
         </Card>
 
-        <Card className={unpaidValue > 0 ? 'border-amber-200 bg-amber-50/50' : 'border-green-200 bg-green-50/50'}>
+        <Card className={totalUnpaidValue > 0 ? 'border-amber-200 bg-amber-50/50' : 'border-green-200 bg-green-50/50'}>
           <CardHeader className="pb-2">
-            <CardTitle className="text-sm font-medium text-muted-foreground">Outstanding Balance</CardTitle>
+            <CardTitle className="text-sm font-medium text-muted-foreground">Outstanding</CardTitle>
           </CardHeader>
           <CardContent>
-            <div className={`text-2xl font-bold ${unpaidValue > 0 ? 'text-amber-600' : 'text-green-600'}`}>
-              {formatCurrency(unpaidValue)}
+            <div className={`text-2xl font-bold ${totalUnpaidValue > 0 ? 'text-amber-600' : 'text-green-600'}`}>
+              {formatCurrency(totalUnpaidValue)}
             </div>
             <p className="text-xs text-muted-foreground mt-1">
-              {pendingPaymentWorkOrders.length > 0 
-                ? `${pendingPaymentWorkOrders.length} pending verification`
-                : unpaidValue > 0 
-                  ? 'Awaiting payment'
-                  : 'All paid'
-              }
+              {totalUnpaidValue > 0 ? 'Awaiting payment' : 'All paid'}
             </p>
           </CardContent>
         </Card>
       </div>
 
-      {/* Work Orders Section */}
-      <Card>
-        <CardHeader>
-          <CardTitle className="flex items-center gap-2">
-            <FileText className="h-5 w-5" />
-            Work Orders
-          </CardTitle>
-          <CardDescription>
-            {activeProject ? `Work orders for ${activeProject.title}` : 'All work orders'}
-          </CardDescription>
-        </CardHeader>
-        <CardContent>
-          {activeWorkOrders.length === 0 ? (
-            <div className="flex flex-col items-center justify-center py-8 text-center">
-              <FileText className="h-12 w-12 text-muted-foreground/30 mb-4" />
-              <p className="text-muted-foreground">No work orders yet</p>
-            </div>
-          ) : (
-            <BillingWorkOrdersDisplay
-              workOrders={activeWorkOrders}
-              userRole={userRole}
-              onPaySingle={handlePaySingle}
-              onPayGroup={handlePayGroup}
-              onVerifyPayment={handleVerifyPayment}
-              onViewProof={handleViewWorkOrderProof}
-            />
-          )}
-        </CardContent>
-      </Card>
+      {/* Contract Work Orders Section */}
+      {contractWorkOrders.length > 0 && (
+        <Collapsible open={contractsExpanded} onOpenChange={setContractsExpanded}>
+          <Card>
+            <CollapsibleTrigger className="w-full">
+              <CardHeader className="cursor-pointer hover:bg-muted/50 transition-colors">
+                <div className="flex items-center justify-between">
+                  <div className="flex items-center gap-2">
+                    {contractsExpanded ? <ChevronDown className="h-5 w-5" /> : <ChevronRight className="h-5 w-5" />}
+                    <CardTitle className="flex items-center gap-2">
+                      <FileText className="h-5 w-5" />
+                      Contract Work Orders
+                    </CardTitle>
+                    <Badge variant="secondary">{contractWorkOrders.length}</Badge>
+                  </div>
+                  <div className="text-right">
+                    <p className="font-semibold">{formatCurrency(contractTotalValue)}</p>
+                    <p className="text-xs text-muted-foreground">
+                      {contractUnpaidValue > 0 ? `${formatCurrency(contractUnpaidValue)} unpaid` : 'All paid'}
+                    </p>
+                  </div>
+                </div>
+              </CardHeader>
+            </CollapsibleTrigger>
+            <CollapsibleContent>
+              <CardContent className="pt-0 space-y-4">
+                {Object.entries(workOrdersByProject).map(([projectTitle, projectWorkOrders]) => (
+                  <Collapsible 
+                    key={projectTitle} 
+                    open={expandedProjects.includes(projectTitle)}
+                    onOpenChange={() => toggleProject(projectTitle)}
+                  >
+                    <div className="border rounded-lg">
+                      <CollapsibleTrigger className="w-full p-3 flex items-center justify-between hover:bg-muted/50 transition-colors">
+                        <div className="flex items-center gap-2">
+                          {expandedProjects.includes(projectTitle) ? <ChevronDown className="h-4 w-4" /> : <ChevronRight className="h-4 w-4" />}
+                          <span className="font-medium">{projectTitle}</span>
+                          <Badge variant="outline">{projectWorkOrders.length} work orders</Badge>
+                        </div>
+                        <span className="font-semibold">
+                          {formatCurrency(projectWorkOrders.reduce((sum, wo) => sum + (wo.price || 0), 0))}
+                        </span>
+                      </CollapsibleTrigger>
+                      <CollapsibleContent>
+                        <div className="border-t p-3">
+                          <BillingWorkOrdersDisplay
+                            workOrders={projectWorkOrders}
+                            userRole={userRole}
+                            onPaySingle={handlePaySingle}
+                            onPayGroup={handlePayGroup}
+                            onVerifyPayment={handleVerifyPayment}
+                            onViewProof={handleViewWorkOrderProof}
+                          />
+                        </div>
+                      </CollapsibleContent>
+                    </div>
+                  </Collapsible>
+                ))}
+              </CardContent>
+            </CollapsibleContent>
+          </Card>
+        </Collapsible>
+      )}
+
+      {/* Service Requests Section */}
+      {standaloneWorkOrders.length > 0 && (
+        <Collapsible open={standaloneExpanded} onOpenChange={setStandaloneExpanded}>
+          <Card className="border-blue-200 bg-blue-50/30">
+            <CollapsibleTrigger className="w-full">
+              <CardHeader className="cursor-pointer hover:bg-blue-50/50 transition-colors">
+                <div className="flex items-center justify-between">
+                  <div className="flex items-center gap-2">
+                    {standaloneExpanded ? <ChevronDown className="h-5 w-5 text-blue-600" /> : <ChevronRight className="h-5 w-5 text-blue-600" />}
+                    <CardTitle className="flex items-center gap-2 text-blue-700">
+                      <ClipboardList className="h-5 w-5" />
+                      Service Requests
+                    </CardTitle>
+                    <Badge className="bg-blue-100 text-blue-700">Ad-hoc</Badge>
+                    <Badge variant="secondary">{standaloneWorkOrders.length}</Badge>
+                  </div>
+                  <div className="text-right">
+                    <p className="font-semibold text-blue-700">{formatCurrency(standaloneTotalValue)}</p>
+                    <p className="text-xs text-blue-600">
+                      {standaloneUnpaidValue > 0 ? `${formatCurrency(standaloneUnpaidValue)} unpaid` : 'All paid'}
+                    </p>
+                  </div>
+                </div>
+              </CardHeader>
+            </CollapsibleTrigger>
+            <CollapsibleContent>
+              <CardContent className="pt-0">
+                <BillingWorkOrdersDisplay
+                  workOrders={standaloneWorkOrders}
+                  userRole={userRole}
+                  onPaySingle={handlePaySingle}
+                  onPayGroup={handlePayGroup}
+                  onVerifyPayment={handleVerifyPayment}
+                  onViewProof={handleViewWorkOrderProof}
+                />
+              </CardContent>
+            </CollapsibleContent>
+          </Card>
+        </Collapsible>
+      )}
+
+      {/* Empty State */}
+      {contractWorkOrders.length === 0 && standaloneWorkOrders.length === 0 && (
+        <Card>
+          <CardContent className="flex flex-col items-center justify-center py-12 text-center">
+            <DollarSign className="h-12 w-12 text-muted-foreground/30 mb-4" />
+            <p className="text-muted-foreground">No work orders yet</p>
+            <p className="text-sm text-muted-foreground mt-1">
+              Work orders will appear here once created
+            </p>
+          </CardContent>
+        </Card>
+      )}
 
       {/* Work Order Payment Submit Dialog */}
       <PaymentSubmitDialog
