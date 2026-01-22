@@ -76,6 +76,7 @@ export function ClientBranchWorkspace({ branchId, branch }: ClientBranchWorkspac
   const [activityPanelOpen, setActivityPanelOpen] = useState(false)
   const [openRequestsCount, setOpenRequestsCount] = useState(0)
   const [projects, setProjects] = useState<Project[]>([])
+  const [standaloneWorkOrders, setStandaloneWorkOrders] = useState<{ id: string; description: string; scheduledDate: string | null; stage: string; price: number | null }[]>([])
   const [activeTab, setActiveTab] = useState('dashboard')
   const [refreshTrigger, setRefreshTrigger] = useState(0)
   const [isLoading, setIsLoading] = useState(true)
@@ -138,10 +139,25 @@ export function ClientBranchWorkspace({ branchId, branch }: ClientBranchWorkspac
     }
   }
 
+  const fetchStandaloneWorkOrders = async () => {
+    try {
+      const response = await fetch(`/api/branches/${branchId}/checklist-items`)
+      if (response.ok) {
+        const data = await response.json()
+        // Filter for standalone work orders (projectTitle is null)
+        const standalone = data.filter((wo: { projectTitle: string | null }) => wo.projectTitle === null)
+        setStandaloneWorkOrders(standalone)
+      }
+    } catch (err) {
+      console.error('Failed to fetch standalone work orders:', err)
+    }
+  }
+
   // Initial data fetch
   useEffect(() => {
     fetchProjects(true) // Pass true for initial load to auto-select active project
     fetchRequestsCount()
+    fetchStandaloneWorkOrders()
   }, [branchId])
 
   // Refetch projects when refreshTrigger changes
@@ -370,6 +386,56 @@ export function ClientBranchWorkspace({ branchId, branch }: ClientBranchWorkspac
                         </Button>
                       </div>
                     ))}
+                  </CardContent>
+                </Card>
+              )}
+
+              {/* Standalone Work Orders from Service Requests */}
+              {standaloneWorkOrders.length > 0 && (
+                <Card className="border-blue-200 bg-blue-50/30">
+                  <CardHeader>
+                    <div className="flex items-center gap-2">
+                      <ClipboardList className="h-5 w-5 text-blue-600" />
+                      <CardTitle className="text-blue-700">Service Requests</CardTitle>
+                      <Badge className="bg-blue-100 text-blue-700">Ad-hoc</Badge>
+                    </div>
+                    <CardDescription className="text-blue-600">
+                      Work orders from your service requests
+                    </CardDescription>
+                  </CardHeader>
+                  <CardContent className="space-y-2">
+                    {standaloneWorkOrders.map((wo) => (
+                      <div
+                        key={wo.id}
+                        className="flex items-center justify-between p-3 bg-white rounded-lg border border-blue-200"
+                      >
+                        <div className="space-y-1">
+                          <span className="font-medium">{wo.description}</span>
+                          <div className="flex items-center gap-3 text-sm text-muted-foreground">
+                            {wo.scheduledDate && (
+                              <span className="flex items-center gap-1">
+                                <Calendar className="h-3 w-3" />
+                                {new Date(wo.scheduledDate).toLocaleDateString()}
+                              </span>
+                            )}
+                            <Badge variant="outline" className="text-xs">
+                              {wo.stage}
+                            </Badge>
+                          </div>
+                        </div>
+                        {wo.price && (
+                          <span className="font-semibold text-blue-700">
+                            ${wo.price.toLocaleString('en-US', { minimumFractionDigits: 2 })}
+                          </span>
+                        )}
+                      </div>
+                    ))}
+                    <div className="flex justify-between items-center pt-2 border-t border-blue-200 mt-2">
+                      <span className="text-sm text-muted-foreground">Total Value</span>
+                      <span className="font-bold text-blue-700">
+                        ${standaloneWorkOrders.reduce((sum, wo) => sum + (wo.price || 0), 0).toLocaleString('en-US', { minimumFractionDigits: 2 })}
+                      </span>
+                    </div>
                   </CardContent>
                 </Card>
               )}
