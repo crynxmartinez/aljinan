@@ -149,28 +149,52 @@ export async function PATCH(
         })
       }
 
-      // Create the work order with client signature
-      const workOrder = await prisma.checklistItem.create({
-        data: {
-          checklistId: checklist.id,
-          description: currentRequest.title,
-          notes: currentRequest.description,
-          stage: 'SCHEDULED',
-          type: 'ADHOC',
-          workOrderType: currentRequest.workOrderType,
-          scheduledDate: currentRequest.quotedDate,
-          price: currentRequest.quotedPrice,
-          linkedRequestId: requestId,
-          // Save client signature from quote acceptance
-          clientSignature: clientSignature || null,
-          clientSignedAt: clientSignature ? new Date() : null,
-          clientSignedById: clientSignature ? session.user.id : null,
+      // Determine number of work orders to create based on recurring type
+      const recurringType = currentRequest.recurringType || 'ONCE'
+      let occurrenceCount = 1
+      if (recurringType === 'MONTHLY') occurrenceCount = 12
+      else if (recurringType === 'QUARTERLY') occurrenceCount = 4
+
+      const startDate = currentRequest.quotedDate ? new Date(currentRequest.quotedDate) : new Date()
+      const createdWorkOrders: string[] = []
+
+      // Create work orders for each occurrence
+      for (let i = 0; i < occurrenceCount; i++) {
+        // Calculate scheduled date for this occurrence
+        const scheduledDate = new Date(startDate)
+        if (recurringType === 'MONTHLY') {
+          scheduledDate.setMonth(scheduledDate.getMonth() + i)
+        } else if (recurringType === 'QUARTERLY') {
+          scheduledDate.setMonth(scheduledDate.getMonth() + (i * 3))
         }
-      })
+
+        const workOrder = await prisma.checklistItem.create({
+          data: {
+            checklistId: checklist.id,
+            description: recurringType !== 'ONCE' 
+              ? `${currentRequest.title} (${i + 1}/${occurrenceCount})`
+              : currentRequest.title,
+            notes: currentRequest.description,
+            stage: 'SCHEDULED',
+            type: 'ADHOC',
+            workOrderType: currentRequest.workOrderType,
+            recurringType: recurringType,
+            occurrenceIndex: i + 1,
+            scheduledDate: scheduledDate,
+            price: currentRequest.quotedPrice,
+            linkedRequestId: requestId,
+            // Save client signature from quote acceptance
+            clientSignature: clientSignature || null,
+            clientSignedAt: clientSignature ? new Date() : null,
+            clientSignedById: clientSignature ? session.user.id : null,
+          }
+        })
+        createdWorkOrders.push(workOrder.id)
+      }
 
       workOrderCreated = true
-      workOrderId = workOrder.id
-      updateData.workOrderId = workOrder.id
+      workOrderId = createdWorkOrders[0] // First work order ID
+      updateData.workOrderId = createdWorkOrders[0]
     }
     // ACTION: Client rejects quote
     else if (action === 'reject') {
