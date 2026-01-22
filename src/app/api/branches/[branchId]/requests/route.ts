@@ -27,7 +27,8 @@ export async function GET(
       where: { branchId },
       include: {
         project: { select: { id: true, title: true, status: true } },
-        photos: true
+        photos: true,
+        equipment: true
       },
       orderBy: { createdAt: 'desc' }
     })
@@ -71,6 +72,8 @@ export async function POST(
       quotedPrice,
       quotedDate,
       status, // Can be 'QUOTED' for contractor-created requests
+      // Equipment for sticker inspections
+      equipment,
     } = body
 
     if (!title) {
@@ -89,7 +92,7 @@ export async function POST(
     // Determine if this is a contractor-created request (already quoted)
     const isContractorCreated = session.user.role === 'CONTRACTOR' && status === 'QUOTED' && quotedPrice && quotedDate
 
-    // Create request with photos
+    // Create request with photos and equipment
     const newRequest = await prisma.request.create({
       data: {
         branchId,
@@ -112,10 +115,22 @@ export async function POST(
         quotedAt: isContractorCreated ? new Date() : null,
         photos: photoUrls && photoUrls.length > 0 ? {
           create: photoUrls.map((url: string) => ({ url }))
+        } : undefined,
+        // Equipment for sticker inspections
+        equipment: equipment && equipment.length > 0 ? {
+          create: equipment.map((eq: { equipmentNumber: string; equipmentType: string; location?: string; dateAdded?: string; expectedExpiry?: string; notes?: string }) => ({
+            equipmentNumber: eq.equipmentNumber,
+            equipmentType: eq.equipmentType as 'FIRE_EXTINGUISHER' | 'FIRE_ALARM_PANEL' | 'SPRINKLER_SYSTEM' | 'EMERGENCY_LIGHTING' | 'EXIT_SIGN' | 'FIRE_DOOR' | 'SMOKE_DETECTOR' | 'HEAT_DETECTOR' | 'GAS_DETECTOR' | 'KITCHEN_HOOD_SUPPRESSION' | 'FIRE_PUMP' | 'FIRE_HOSE_REEL' | 'OTHER',
+            location: eq.location || null,
+            dateAdded: eq.dateAdded ? new Date(eq.dateAdded) : new Date(),
+            expectedExpiry: eq.expectedExpiry ? new Date(eq.expectedExpiry) : null,
+            notes: eq.notes || null,
+          }))
         } : undefined
       },
       include: {
-        photos: true
+        photos: true,
+        equipment: true
       }
     })
 

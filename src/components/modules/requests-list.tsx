@@ -108,6 +108,18 @@ interface RequestPhoto {
   caption: string | null
 }
 
+interface Equipment {
+  id: string
+  equipmentNumber: string
+  equipmentType: string
+  location: string | null
+  dateAdded: string
+  expectedExpiry: string | null
+  lastInspected: string | null
+  isInspected: boolean
+  notes: string | null
+}
+
 interface Request {
   id: string
   title: string
@@ -123,8 +135,8 @@ interface Request {
   updatedAt: string
   projectId?: string
   // Service request fields
-  workOrderType?: 'SERVICE' | 'INSPECTION' | 'MAINTENANCE' | 'INSTALLATION' | null
-  recurringType?: 'ONCE' | 'MONTHLY' | 'QUARTERLY'
+  workOrderType?: 'SERVICE' | 'INSPECTION' | 'MAINTENANCE' | 'INSTALLATION' | 'STICKER_INSPECTION' | null
+  recurringType?: 'ONCE' | 'MONTHLY' | 'QUARTERLY' | 'SEMI_ANNUALLY' | 'ANNUALLY'
   needsCertificate?: boolean
   preferredDate?: string | null
   preferredTimeSlot?: string | null
@@ -136,6 +148,7 @@ interface Request {
   clientRejectedAt?: string | null
   clientRejectionReason?: string | null
   photos?: RequestPhoto[]
+  equipment?: Equipment[]
 }
 
 interface RequestsListProps {
@@ -1271,6 +1284,39 @@ export function RequestsList({ branchId, userRole, projectId, userId }: Requests
                         onClick={() => window.open(photo.url, '_blank')}
                       />
                     ))}
+                  </div>
+                </div>
+              )}
+
+              {/* Equipment List - For Sticker Inspections */}
+              {selectedRequest.workOrderType === 'STICKER_INSPECTION' && selectedRequest.equipment && selectedRequest.equipment.length > 0 && (
+                <div className="space-y-2 p-4 bg-amber-50 border border-amber-200 rounded-lg">
+                  <p className="text-sm font-medium text-amber-800">Equipment for Inspection ({selectedRequest.equipment.length} items)</p>
+                  <div className="border border-amber-200 rounded-lg overflow-hidden">
+                    <table className="w-full text-sm">
+                      <thead className="bg-amber-100">
+                        <tr>
+                          <th className="px-3 py-2 text-left text-amber-800">Equipment #</th>
+                          <th className="px-3 py-2 text-left text-amber-800">Type</th>
+                          <th className="px-3 py-2 text-left text-amber-800">Location</th>
+                          <th className="px-3 py-2 text-left text-amber-800">Expiry</th>
+                        </tr>
+                      </thead>
+                      <tbody className="bg-white divide-y divide-amber-100">
+                        {selectedRequest.equipment.map((eq) => (
+                          <tr key={eq.id}>
+                            <td className="px-3 py-2 font-medium">{eq.equipmentNumber}</td>
+                            <td className="px-3 py-2 text-muted-foreground">
+                              {eq.equipmentType.replace(/_/g, ' ').toLowerCase().replace(/\b\w/g, l => l.toUpperCase())}
+                            </td>
+                            <td className="px-3 py-2 text-muted-foreground">{eq.location || '-'}</td>
+                            <td className="px-3 py-2 text-muted-foreground">
+                              {eq.expectedExpiry ? new Date(eq.expectedExpiry).toLocaleDateString() : '-'}
+                            </td>
+                          </tr>
+                        ))}
+                      </tbody>
+                    </table>
                   </div>
                 </div>
               )}

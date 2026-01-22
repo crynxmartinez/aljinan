@@ -91,6 +91,18 @@ interface RequestPhoto {
   caption: string | null
 }
 
+interface Equipment {
+  id: string
+  equipmentNumber: string
+  equipmentType: string
+  location: string | null
+  dateAdded: string
+  expectedExpiry: string | null
+  lastInspected: string | null
+  isInspected: boolean
+  notes: string | null
+}
+
 interface Request {
   id: string
   title: string
@@ -107,8 +119,8 @@ interface Request {
   projectId?: string
   project?: Project
   // Service request fields
-  workOrderType?: 'SERVICE' | 'INSPECTION' | 'MAINTENANCE' | 'INSTALLATION' | null
-  recurringType?: 'ONCE' | 'MONTHLY' | 'QUARTERLY'
+  workOrderType?: 'SERVICE' | 'INSPECTION' | 'MAINTENANCE' | 'INSTALLATION' | 'STICKER_INSPECTION' | null
+  recurringType?: 'ONCE' | 'MONTHLY' | 'QUARTERLY' | 'SEMI_ANNUALLY' | 'ANNUALLY'
   needsCertificate?: boolean
   preferredDate?: string | null
   preferredTimeSlot?: string | null
@@ -120,6 +132,7 @@ interface Request {
   clientRejectedAt?: string | null
   clientRejectionReason?: string | null
   photos?: RequestPhoto[]
+  equipment?: Equipment[]
 }
 
 interface ClientBranchRequestsProps {
@@ -279,15 +292,15 @@ export function ClientBranchRequests({ branchId, projectId, onDataChange, userId
   const [approving, setApproving] = useState(false)
   const [error, setError] = useState('')
   const [addWorkOrderOpen, setAddWorkOrderOpen] = useState(false)
-  const [newWorkOrder, setNewWorkOrder] = useState({ name: '', description: '', recurringType: 'ONCE' as 'ONCE' | 'MONTHLY' | 'QUARTERLY' })
+  const [newWorkOrder, setNewWorkOrder] = useState({ name: '', description: '', recurringType: 'ONCE' as 'ONCE' | 'MONTHLY' | 'QUARTERLY' | 'SEMI_ANNUALLY' | 'ANNUALLY' })
   const [addingWorkOrder, setAddingWorkOrder] = useState(false)
 
   const [newRequest, setNewRequest] = useState<{
     title: string
     description: string
     priority: 'LOW' | 'MEDIUM' | 'HIGH' | 'URGENT'
-    workOrderType: 'SERVICE' | 'INSPECTION' | 'MAINTENANCE' | 'INSTALLATION'
-    recurringType: 'ONCE' | 'MONTHLY' | 'QUARTERLY'
+    workOrderType: 'SERVICE' | 'INSPECTION' | 'MAINTENANCE' | 'INSTALLATION' | 'STICKER_INSPECTION'
+    recurringType: 'ONCE' | 'MONTHLY' | 'QUARTERLY' | 'SEMI_ANNUALLY' | 'ANNUALLY'
     needsCertificate: boolean
     preferredDate: string
     preferredTimeSlot: string
@@ -300,6 +313,25 @@ export function ClientBranchRequests({ branchId, projectId, onDataChange, userId
     needsCertificate: false,
     preferredDate: '',
     preferredTimeSlot: '',
+  })
+  
+  // Equipment state for sticker inspections
+  const [equipment, setEquipment] = useState<{
+    equipmentNumber: string
+    equipmentType: string
+    location: string
+    dateAdded: string
+    expectedExpiry: string
+    notes: string
+  }[]>([])
+  const [showEquipmentForm, setShowEquipmentForm] = useState(false)
+  const [newEquipment, setNewEquipment] = useState({
+    equipmentNumber: '',
+    equipmentType: 'FIRE_EXTINGUISHER',
+    location: '',
+    dateAdded: new Date().toISOString().split('T')[0],
+    expectedExpiry: '',
+    notes: '',
   })
   const [uploadedPhotos, setUploadedPhotos] = useState<{ url: string; name: string }[]>([])
   const [uploading, setUploading] = useState(false)
@@ -560,6 +592,8 @@ export function ClientBranchRequests({ branchId, projectId, onDataChange, userId
         body: JSON.stringify({
           ...newRequest,
           photoUrls: uploadedPhotos.map(p => p.url),
+          // Include equipment for sticker inspections
+          equipment: newRequest.workOrderType === 'STICKER_INSPECTION' ? equipment : undefined,
         }),
       })
 
@@ -571,6 +605,8 @@ export function ClientBranchRequests({ branchId, projectId, onDataChange, userId
       setCreateDialogOpen(false)
       setNewRequest({ title: '', description: '', priority: 'MEDIUM', workOrderType: 'SERVICE', recurringType: 'ONCE', needsCertificate: false, preferredDate: '', preferredTimeSlot: '' })
       setUploadedPhotos([])
+      setEquipment([])
+      setShowEquipmentForm(false)
       fetchRequests()
       router.refresh()
     } catch (err) {
@@ -758,9 +794,15 @@ export function ClientBranchRequests({ branchId, projectId, onDataChange, userId
                 <Label htmlFor="workOrderType">Service Type *</Label>
                 <Select
                   value={newRequest.workOrderType}
-                  onValueChange={(value: 'SERVICE' | 'INSPECTION' | 'MAINTENANCE' | 'INSTALLATION') => {
-                    const needsCert = ['INSPECTION', 'MAINTENANCE', 'INSTALLATION'].includes(value)
-                    setNewRequest({ ...newRequest, workOrderType: value, needsCertificate: needsCert })
+                  onValueChange={(value: 'SERVICE' | 'INSPECTION' | 'MAINTENANCE' | 'INSTALLATION' | 'STICKER_INSPECTION') => {
+                    const needsCert = ['INSPECTION', 'MAINTENANCE', 'INSTALLATION', 'STICKER_INSPECTION'].includes(value)
+                    const defaultRecurring = value === 'STICKER_INSPECTION' ? 'ANNUALLY' : newRequest.recurringType
+                    setNewRequest({ ...newRequest, workOrderType: value, needsCertificate: needsCert, recurringType: defaultRecurring })
+                    // Clear equipment if switching away from sticker inspection
+                    if (value !== 'STICKER_INSPECTION') {
+                      setEquipment([])
+                      setShowEquipmentForm(false)
+                    }
                   }}
                 >
                   <SelectTrigger>
@@ -771,6 +813,7 @@ export function ClientBranchRequests({ branchId, projectId, onDataChange, userId
                     <SelectItem value="INSPECTION">🔍 Inspection</SelectItem>
                     <SelectItem value="MAINTENANCE">🛠️ Maintenance</SelectItem>
                     <SelectItem value="INSTALLATION">📦 Installation</SelectItem>
+                    <SelectItem value="STICKER_INSPECTION">🏷️ Sticker Inspection</SelectItem>
                   </SelectContent>
                 </Select>
               </div>
@@ -822,7 +865,7 @@ export function ClientBranchRequests({ branchId, projectId, onDataChange, userId
                   <Label htmlFor="recurringType">Frequency</Label>
                   <Select
                     value={newRequest.recurringType}
-                    onValueChange={(value: 'ONCE' | 'MONTHLY' | 'QUARTERLY') => setNewRequest({ ...newRequest, recurringType: value })}
+                    onValueChange={(value: 'ONCE' | 'MONTHLY' | 'QUARTERLY' | 'SEMI_ANNUALLY' | 'ANNUALLY') => setNewRequest({ ...newRequest, recurringType: value })}
                   >
                     <SelectTrigger>
                       <SelectValue />
@@ -831,6 +874,8 @@ export function ClientBranchRequests({ branchId, projectId, onDataChange, userId
                       <SelectItem value="ONCE">One-time</SelectItem>
                       <SelectItem value="MONTHLY">Monthly</SelectItem>
                       <SelectItem value="QUARTERLY">Quarterly</SelectItem>
+                      <SelectItem value="SEMI_ANNUALLY">Semi-Annually</SelectItem>
+                      <SelectItem value="ANNUALLY">Annually</SelectItem>
                     </SelectContent>
                   </Select>
                 </div>
@@ -850,6 +895,196 @@ export function ClientBranchRequests({ branchId, projectId, onDataChange, userId
                   <span className="text-muted-foreground ml-1">(auto-generated on completion)</span>
                 </Label>
               </div>
+
+              {/* Equipment List - Only for Sticker Inspection */}
+              {newRequest.workOrderType === 'STICKER_INSPECTION' && (
+                <div className="space-y-3 p-4 bg-amber-50 border border-amber-200 rounded-lg">
+                  <div className="flex items-center justify-between">
+                    <div>
+                      <Label className="text-amber-800 font-medium">Equipment List</Label>
+                      <p className="text-xs text-amber-600 mt-1">Add equipment items that need sticker inspection</p>
+                    </div>
+                    <Button
+                      type="button"
+                      size="sm"
+                      variant="outline"
+                      className="border-amber-300 text-amber-700 hover:bg-amber-100"
+                      onClick={() => setShowEquipmentForm(true)}
+                    >
+                      <Plus className="h-4 w-4 mr-1" />
+                      Add Equipment
+                    </Button>
+                  </div>
+
+                  {/* Equipment Form */}
+                  {showEquipmentForm && (
+                    <div className="space-y-3 p-3 bg-white rounded-lg border border-amber-200">
+                      <div className="grid grid-cols-2 gap-3">
+                        <div className="space-y-1">
+                          <Label className="text-xs">Equipment # *</Label>
+                          <Input
+                            placeholder="e.g., FE-001"
+                            value={newEquipment.equipmentNumber}
+                            onChange={(e) => setNewEquipment({ ...newEquipment, equipmentNumber: e.target.value })}
+                          />
+                        </div>
+                        <div className="space-y-1">
+                          <Label className="text-xs">Type *</Label>
+                          <Select
+                            value={newEquipment.equipmentType}
+                            onValueChange={(value) => setNewEquipment({ ...newEquipment, equipmentType: value })}
+                          >
+                            <SelectTrigger>
+                              <SelectValue />
+                            </SelectTrigger>
+                            <SelectContent>
+                              <SelectItem value="FIRE_EXTINGUISHER">Fire Extinguisher</SelectItem>
+                              <SelectItem value="FIRE_ALARM_PANEL">Fire Alarm Panel</SelectItem>
+                              <SelectItem value="SPRINKLER_SYSTEM">Sprinkler System</SelectItem>
+                              <SelectItem value="EMERGENCY_LIGHTING">Emergency Lighting</SelectItem>
+                              <SelectItem value="EXIT_SIGN">Exit Sign</SelectItem>
+                              <SelectItem value="FIRE_DOOR">Fire Door</SelectItem>
+                              <SelectItem value="SMOKE_DETECTOR">Smoke Detector</SelectItem>
+                              <SelectItem value="HEAT_DETECTOR">Heat Detector</SelectItem>
+                              <SelectItem value="GAS_DETECTOR">Gas Detector</SelectItem>
+                              <SelectItem value="KITCHEN_HOOD_SUPPRESSION">Kitchen Hood Suppression</SelectItem>
+                              <SelectItem value="FIRE_PUMP">Fire Pump</SelectItem>
+                              <SelectItem value="FIRE_HOSE_REEL">Fire Hose Reel</SelectItem>
+                              <SelectItem value="OTHER">Other</SelectItem>
+                            </SelectContent>
+                          </Select>
+                        </div>
+                      </div>
+                      <div className="space-y-1">
+                        <Label className="text-xs">Location</Label>
+                        <Input
+                          placeholder="e.g., Floor 1, Lobby"
+                          value={newEquipment.location}
+                          onChange={(e) => setNewEquipment({ ...newEquipment, location: e.target.value })}
+                        />
+                      </div>
+                      <div className="grid grid-cols-2 gap-3">
+                        <div className="space-y-1">
+                          <Label className="text-xs">Date Added</Label>
+                          <Input
+                            type="date"
+                            value={newEquipment.dateAdded}
+                            onChange={(e) => setNewEquipment({ ...newEquipment, dateAdded: e.target.value })}
+                          />
+                        </div>
+                        <div className="space-y-1">
+                          <Label className="text-xs">Expected Expiry</Label>
+                          <Input
+                            type="date"
+                            value={newEquipment.expectedExpiry}
+                            onChange={(e) => setNewEquipment({ ...newEquipment, expectedExpiry: e.target.value })}
+                          />
+                        </div>
+                      </div>
+                      <div className="space-y-1">
+                        <Label className="text-xs">Notes (Optional)</Label>
+                        <Input
+                          placeholder="Any additional notes..."
+                          value={newEquipment.notes}
+                          onChange={(e) => setNewEquipment({ ...newEquipment, notes: e.target.value })}
+                        />
+                      </div>
+                      <div className="flex gap-2 justify-end">
+                        <Button
+                          type="button"
+                          size="sm"
+                          variant="outline"
+                          onClick={() => {
+                            setShowEquipmentForm(false)
+                            setNewEquipment({
+                              equipmentNumber: '',
+                              equipmentType: 'FIRE_EXTINGUISHER',
+                              location: '',
+                              dateAdded: new Date().toISOString().split('T')[0],
+                              expectedExpiry: '',
+                              notes: '',
+                            })
+                          }}
+                        >
+                          Cancel
+                        </Button>
+                        <Button
+                          type="button"
+                          size="sm"
+                          className="bg-amber-600 hover:bg-amber-700"
+                          onClick={() => {
+                            if (!newEquipment.equipmentNumber.trim()) {
+                              setError('Equipment number is required')
+                              return
+                            }
+                            setEquipment([...equipment, { ...newEquipment }])
+                            setShowEquipmentForm(false)
+                            setNewEquipment({
+                              equipmentNumber: '',
+                              equipmentType: 'FIRE_EXTINGUISHER',
+                              location: '',
+                              dateAdded: new Date().toISOString().split('T')[0],
+                              expectedExpiry: '',
+                              notes: '',
+                            })
+                            setError('')
+                          }}
+                        >
+                          Add
+                        </Button>
+                      </div>
+                    </div>
+                  )}
+
+                  {/* Equipment List Table */}
+                  {equipment.length > 0 && (
+                    <div className="border border-amber-200 rounded-lg overflow-hidden">
+                      <table className="w-full text-sm">
+                        <thead className="bg-amber-100">
+                          <tr>
+                            <th className="px-3 py-2 text-left text-amber-800">Equipment #</th>
+                            <th className="px-3 py-2 text-left text-amber-800">Type</th>
+                            <th className="px-3 py-2 text-left text-amber-800">Location</th>
+                            <th className="px-3 py-2 text-left text-amber-800">Expiry</th>
+                            <th className="px-3 py-2 text-right text-amber-800">Action</th>
+                          </tr>
+                        </thead>
+                        <tbody className="bg-white divide-y divide-amber-100">
+                          {equipment.map((eq, idx) => (
+                            <tr key={idx}>
+                              <td className="px-3 py-2 font-medium">{eq.equipmentNumber}</td>
+                              <td className="px-3 py-2 text-muted-foreground">
+                                {eq.equipmentType.replace(/_/g, ' ').toLowerCase().replace(/\b\w/g, l => l.toUpperCase())}
+                              </td>
+                              <td className="px-3 py-2 text-muted-foreground">{eq.location || '-'}</td>
+                              <td className="px-3 py-2 text-muted-foreground">
+                                {eq.expectedExpiry ? new Date(eq.expectedExpiry).toLocaleDateString() : '-'}
+                              </td>
+                              <td className="px-3 py-2 text-right">
+                                <Button
+                                  type="button"
+                                  size="sm"
+                                  variant="ghost"
+                                  className="h-7 w-7 p-0 text-red-500 hover:text-red-700 hover:bg-red-50"
+                                  onClick={() => setEquipment(equipment.filter((_, i) => i !== idx))}
+                                >
+                                  <X className="h-4 w-4" />
+                                </Button>
+                              </td>
+                            </tr>
+                          ))}
+                        </tbody>
+                      </table>
+                    </div>
+                  )}
+
+                  {equipment.length === 0 && !showEquipmentForm && (
+                    <p className="text-sm text-amber-600 text-center py-4">
+                      No equipment added yet. Click &quot;Add Equipment&quot; to start.
+                    </p>
+                  )}
+                </div>
+              )}
 
               {/* Preferred Date & Time Row */}
               <div className="grid grid-cols-2 gap-4">
@@ -1015,6 +1250,39 @@ export function ClientBranchRequests({ branchId, projectId, onDataChange, userId
                         onClick={() => window.open(photo.url, '_blank')}
                       />
                     ))}
+                  </div>
+                </div>
+              )}
+
+              {/* Equipment List - For Sticker Inspections */}
+              {selectedRequest.workOrderType === 'STICKER_INSPECTION' && selectedRequest.equipment && selectedRequest.equipment.length > 0 && (
+                <div className="space-y-2 p-4 bg-amber-50 border border-amber-200 rounded-lg">
+                  <p className="text-sm font-medium text-amber-800">Equipment for Inspection ({selectedRequest.equipment.length} items)</p>
+                  <div className="border border-amber-200 rounded-lg overflow-hidden">
+                    <table className="w-full text-sm">
+                      <thead className="bg-amber-100">
+                        <tr>
+                          <th className="px-3 py-2 text-left text-amber-800">Equipment #</th>
+                          <th className="px-3 py-2 text-left text-amber-800">Type</th>
+                          <th className="px-3 py-2 text-left text-amber-800">Location</th>
+                          <th className="px-3 py-2 text-left text-amber-800">Expiry</th>
+                        </tr>
+                      </thead>
+                      <tbody className="bg-white divide-y divide-amber-100">
+                        {selectedRequest.equipment.map((eq) => (
+                          <tr key={eq.id}>
+                            <td className="px-3 py-2 font-medium">{eq.equipmentNumber}</td>
+                            <td className="px-3 py-2 text-muted-foreground">
+                              {eq.equipmentType.replace(/_/g, ' ').toLowerCase().replace(/\b\w/g, l => l.toUpperCase())}
+                            </td>
+                            <td className="px-3 py-2 text-muted-foreground">{eq.location || '-'}</td>
+                            <td className="px-3 py-2 text-muted-foreground">
+                              {eq.expectedExpiry ? new Date(eq.expectedExpiry).toLocaleDateString() : '-'}
+                            </td>
+                          </tr>
+                        ))}
+                      </tbody>
+                    </table>
                   </div>
                 </div>
               )}

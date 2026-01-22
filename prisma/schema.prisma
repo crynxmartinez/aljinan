@@ -83,10 +83,11 @@ enum IssueType {
 
 // Work order types
 enum WorkOrderType {
-  SERVICE           // Repair, fix issues
-  INSPECTION        // Check systems, compliance
-  MAINTENANCE       // Preventive maintenance
-  INSTALLATION      // New equipment
+  SERVICE              // Repair, fix issues
+  INSPECTION           // Check systems, compliance
+  MAINTENANCE          // Preventive maintenance
+  INSTALLATION         // New equipment
+  STICKER_INSPECTION   // Equipment sticker/compliance inspection
   OTHER
 }
 
@@ -354,6 +355,9 @@ model Request {
   
   // Comments
   comments            RequestComment[]
+  
+  // Equipment for sticker inspections
+  equipment           Equipment[]
 }
 
 // Photos attached to service requests
@@ -377,6 +381,41 @@ model RequestComment {
   createdAt   DateTime @default(now())
   updatedAt   DateTime @updatedAt
   isEdited    Boolean  @default(false)
+}
+
+// Equipment types for sticker inspections
+enum EquipmentType {
+  FIRE_EXTINGUISHER
+  FIRE_ALARM_PANEL
+  SPRINKLER_SYSTEM
+  EMERGENCY_LIGHTING
+  EXIT_SIGN
+  FIRE_DOOR
+  SMOKE_DETECTOR
+  HEAT_DETECTOR
+  GAS_DETECTOR
+  KITCHEN_HOOD_SUPPRESSION
+  FIRE_PUMP
+  FIRE_HOSE_REEL
+  OTHER
+}
+
+// Equipment tracked for sticker inspections
+model Equipment {
+  id              String        @id @default(cuid())
+  requestId       String?
+  request         Request?      @relation(fields: [requestId], references: [id], onDelete: Cascade)
+  workOrderId     String?       // ChecklistItem ID - for equipment added during inspection
+  equipmentNumber String        // Serial/ID number
+  equipmentType   EquipmentType
+  location        String?       // Where in the branch
+  dateAdded       DateTime      @default(now())
+  expectedExpiry  DateTime?     // Next inspection due date
+  lastInspected   DateTime?     // When last inspected
+  isInspected     Boolean       @default(false) // Marked during inspection
+  notes           String?
+  createdAt       DateTime      @default(now())
+  updatedAt       DateTime      @updatedAt
 }
 
 // Quotation statuses
@@ -595,6 +634,8 @@ enum RecurringType {
   ONCE           // One-time work order
   MONTHLY        // Repeats every month
   QUARTERLY      // Repeats every 3 months
+  SEMI_ANNUALLY  // Repeats every 6 months
+  ANNUALLY       // Repeats every 12 months
 }
 
 // Checklist - inspection checklists created by contractor
