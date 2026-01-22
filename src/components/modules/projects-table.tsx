@@ -33,6 +33,42 @@ interface WorkOrder {
   recurringType?: 'ONCE' | 'MONTHLY' | 'QUARTERLY'
 }
 
+// Calculate urgency based on scheduled date and status
+function getUrgency(scheduledDate: string | null, status: string): 'overdue' | 'due-today' | 'upcoming' | null {
+  if (!scheduledDate) return null
+  // Don't show urgency for completed or for_review items
+  if (status === 'COMPLETED' || status === 'FOR_REVIEW') return null
+  
+  const today = new Date()
+  today.setHours(0, 0, 0, 0)
+  const scheduled = new Date(scheduledDate)
+  scheduled.setHours(0, 0, 0, 0)
+  
+  const diffDays = Math.floor((scheduled.getTime() - today.getTime()) / (1000 * 60 * 60 * 24))
+  
+  if (diffDays < 0) return 'overdue'
+  if (diffDays === 0) return 'due-today'
+  return 'upcoming'
+}
+
+// Get urgency badge
+function getUrgencyBadge(urgency: 'overdue' | 'due-today' | 'upcoming' | null) {
+  if (urgency === 'overdue') {
+    return <Badge variant="destructive" className="text-xs">Overdue</Badge>
+  }
+  if (urgency === 'due-today') {
+    return <Badge className="bg-amber-100 text-amber-700 hover:bg-amber-100 text-xs">Due Today</Badge>
+  }
+  return null
+}
+
+// Get urgency border class
+function getUrgencyBorderClass(urgency: 'overdue' | 'due-today' | 'upcoming' | null) {
+  if (urgency === 'overdue') return 'border-l-4 border-l-red-500 bg-red-50/50'
+  if (urgency === 'due-today') return 'border-l-4 border-l-amber-500 bg-amber-50/50'
+  return ''
+}
+
 // Helper function to extract base name from work order title (removes Q1, Q2, Month1, etc.)
 function getBaseWorkOrderName(title: string): string {
   return title.replace(/\s*\((Q\d+|Month\d+)\)\s*$/i, '').trim()
@@ -69,6 +105,16 @@ function WorkOrdersGroupedView({ workOrders }: { workOrders: WorkOrder[] }) {
       return next
     })
   }
+
+  // Check if any item in a group has urgency
+  const getGroupUrgency = (items: WorkOrder[]): 'overdue' | 'due-today' | 'upcoming' | null => {
+    for (const item of items) {
+      const urgency = getUrgency(item.scheduledDate, item.status)
+      if (urgency === 'overdue') return 'overdue'
+      if (urgency === 'due-today') return 'due-today'
+    }
+    return null
+  }
   
   return (
     <div className="space-y-1">
@@ -77,9 +123,18 @@ function WorkOrdersGroupedView({ workOrders }: { workOrders: WorkOrder[] }) {
         const groupTotal = items.reduce((sum, wo) => sum + (wo.price || 0), 0)
         const isSingleItem = items.length === 1
         const hasAdhoc = items.some(wo => wo.type === 'adhoc')
+        const singleItemUrgency = isSingleItem ? getUrgency(items[0].scheduledDate, items[0].status) : null
+        const groupUrgency = !isSingleItem ? getGroupUrgency(items) : null
         
         return (
-          <div key={groupName} className="rounded-lg bg-background border">
+          <div 
+            key={groupName} 
+            className={cn(
+              "rounded-lg bg-background border",
+              isSingleItem && getUrgencyBorderClass(singleItemUrgency),
+              !isSingleItem && getUrgencyBorderClass(groupUrgency)
+            )}
+          >
             {/* Group Header */}
             <button
               onClick={() => !isSingleItem && toggleGroup(groupName)}
@@ -101,7 +156,7 @@ function WorkOrdersGroupedView({ workOrders }: { workOrders: WorkOrder[] }) {
                   <FileText className="h-4 w-4 text-muted-foreground" />
                 )}
                 <div className="flex-1">
-                  <div className="flex items-center gap-2">
+                  <div className="flex items-center gap-2 flex-wrap">
                     <span className="font-medium text-sm">{groupName}</span>
                     {!isSingleItem && (
                       <Badge variant="secondary" className="text-xs">
@@ -113,6 +168,8 @@ function WorkOrdersGroupedView({ workOrders }: { workOrders: WorkOrder[] }) {
                         Client Added
                       </Badge>
                     )}
+                    {isSingleItem && getUrgencyBadge(singleItemUrgency)}
+                    {!isSingleItem && getUrgencyBadge(groupUrgency)}
                   </div>
                   {items[0].description && (
                     <p className="text-xs text-muted-foreground mt-0.5">
@@ -144,26 +201,36 @@ function WorkOrdersGroupedView({ workOrders }: { workOrders: WorkOrder[] }) {
             {/* Expanded Items */}
             {!isSingleItem && isExpanded && (
               <div className="border-t bg-muted/30">
-                {items.map((wo, idx) => (
-                  <div key={wo.id} className="flex items-center justify-between px-3 py-2 border-b last:border-b-0">
-                    <div className="flex items-center gap-2 text-sm">
-                      <CornerDownRight className="h-3 w-3 text-muted-foreground ml-2" />
-                      <span className="text-muted-foreground">
-                        {wo.title.match(/\((Q\d+|Month\d+)\)/i)?.[1] || `#${idx + 1}`}:
+                {items.map((wo, idx) => {
+                  const itemUrgency = getUrgency(wo.scheduledDate, wo.status)
+                  return (
+                    <div 
+                      key={wo.id} 
+                      className={cn(
+                        "flex items-center justify-between px-3 py-2 border-b last:border-b-0",
+                        getUrgencyBorderClass(itemUrgency)
+                      )}
+                    >
+                      <div className="flex items-center gap-2 text-sm flex-wrap">
+                        <CornerDownRight className="h-3 w-3 text-muted-foreground ml-2" />
+                        <span className="text-muted-foreground">
+                          {wo.title.match(/\((Q\d+|Month\d+)\)/i)?.[1] || `#${idx + 1}`}:
+                        </span>
+                        <span className="flex items-center gap-1 text-xs">
+                          <Calendar className="h-3 w-3" />
+                          {formatDate(wo.scheduledDate)}
+                        </span>
+                        <Badge variant="secondary" className="text-xs">
+                          {wo.status.replace('_', ' ')}
+                        </Badge>
+                        {getUrgencyBadge(itemUrgency)}
+                      </div>
+                      <span className="text-sm font-medium">
+                        {wo.price ? formatCurrency(wo.price) : '-'}
                       </span>
-                      <span className="flex items-center gap-1 text-xs">
-                        <Calendar className="h-3 w-3" />
-                        {formatDate(wo.scheduledDate)}
-                      </span>
-                      <Badge variant="secondary" className="text-xs">
-                        {wo.status.replace('_', ' ')}
-                      </Badge>
                     </div>
-                    <span className="text-sm font-medium">
-                      {wo.price ? formatCurrency(wo.price) : '-'}
-                    </span>
-                  </div>
-                ))}
+                  )
+                })}
               </div>
             )}
           </div>
