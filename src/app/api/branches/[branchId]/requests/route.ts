@@ -66,7 +66,11 @@ export async function POST(
       needsCertificate,
       preferredDate,
       preferredTimeSlot,
-      photoUrls // Array of photo URLs already uploaded
+      photoUrls, // Array of photo URLs already uploaded
+      // Contractor-created request fields (already quoted)
+      quotedPrice,
+      quotedDate,
+      status, // Can be 'QUOTED' for contractor-created requests
     } = body
 
     if (!title) {
@@ -82,6 +86,9 @@ export async function POST(
       return NextResponse.json({ error: 'Access denied' }, { status: 403 })
     }
 
+    // Determine if this is a contractor-created request (already quoted)
+    const isContractorCreated = session.user.role === 'CONTRACTOR' && status === 'QUOTED' && quotedPrice && quotedDate
+
     // Create request with photos
     const newRequest = await prisma.request.create({
       data: {
@@ -89,7 +96,7 @@ export async function POST(
         title,
         description,
         priority: priority || 'MEDIUM',
-        status: 'REQUESTED',
+        status: isContractorCreated ? 'QUOTED' : 'REQUESTED',
         createdById: session.user.id,
         createdByRole: session.user.role as 'CONTRACTOR' | 'CLIENT' | 'TEAM_MEMBER',
         dueDate: dueDate ? new Date(dueDate) : null,
@@ -98,6 +105,11 @@ export async function POST(
         needsCertificate: needsCertificate || false,
         preferredDate: preferredDate ? new Date(preferredDate) : null,
         preferredTimeSlot: preferredTimeSlot || null,
+        // Contractor quote fields (for contractor-created requests)
+        quotedPrice: isContractorCreated ? quotedPrice : null,
+        quotedDate: isContractorCreated ? new Date(quotedDate) : null,
+        quotedById: isContractorCreated ? session.user.id : null,
+        quotedAt: isContractorCreated ? new Date() : null,
         photos: photoUrls && photoUrls.length > 0 ? {
           create: photoUrls.map((url: string) => ({ url }))
         } : undefined

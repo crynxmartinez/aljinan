@@ -59,6 +59,7 @@ import {
   Image as ImageIcon,
   User,
 } from 'lucide-react'
+import { RequestComments } from './request-comments'
 
 // Helper function to extract base name from work order title (removes Q1, Q2, Month1, etc.)
 function getBaseWorkOrderName(title: string): string {
@@ -141,6 +142,7 @@ interface RequestsListProps {
   branchId: string
   userRole: 'CONTRACTOR' | 'CLIENT'
   projectId?: string | null
+  userId?: string
 }
 
 // Collapsible Work Orders Grouped View for Contractor (with edit capability)
@@ -412,7 +414,7 @@ function WorkOrdersGroupedViewContractor({
   )
 }
 
-export function RequestsList({ branchId, userRole, projectId }: RequestsListProps) {
+export function RequestsList({ branchId, userRole, projectId, userId }: RequestsListProps) {
   const router = useRouter()
   const [requests, setRequests] = useState<Request[]>([])
   const [projects, setProjects] = useState<Project[]>([])
@@ -454,6 +456,27 @@ export function RequestsList({ branchId, userRole, projectId }: RequestsListProp
     quotedDate: '',
   })
   const [submittingQuote, setSubmittingQuote] = useState(false)
+
+  // Contractor create request dialog state
+  const [contractorCreateDialogOpen, setContractorCreateDialogOpen] = useState(false)
+  const [contractorNewRequest, setContractorNewRequest] = useState<{
+    title: string
+    description: string
+    workOrderType: 'SERVICE' | 'INSPECTION' | 'MAINTENANCE' | 'INSTALLATION'
+    recurringType: 'ONCE' | 'MONTHLY' | 'QUARTERLY'
+    needsCertificate: boolean
+    quotedPrice: string
+    quotedDate: string
+  }>({
+    title: '',
+    description: '',
+    workOrderType: 'SERVICE',
+    recurringType: 'ONCE',
+    needsCertificate: false,
+    quotedPrice: '',
+    quotedDate: '',
+  })
+  const [contractorCreating, setContractorCreating] = useState(false)
 
   const fetchRequests = async () => {
     try {
@@ -638,6 +661,60 @@ export function RequestsList({ branchId, userRole, projectId }: RequestsListProp
     }
   }
 
+  // Contractor creates a work order request (already quoted, goes to client for approval)
+  const handleContractorCreateRequest = async (e: React.FormEvent) => {
+    e.preventDefault()
+    if (!contractorNewRequest.quotedPrice || !contractorNewRequest.quotedDate) {
+      setError('Please provide both price and scheduled date')
+      return
+    }
+    setContractorCreating(true)
+    setError('')
+
+    try {
+      const response = await fetch(`/api/branches/${branchId}/requests`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          title: contractorNewRequest.title,
+          description: contractorNewRequest.description,
+          workOrderType: contractorNewRequest.workOrderType,
+          recurringType: contractorNewRequest.recurringType,
+          needsCertificate: contractorNewRequest.needsCertificate,
+          quotedPrice: parseFloat(contractorNewRequest.quotedPrice),
+          quotedDate: contractorNewRequest.quotedDate,
+          priority: 'MEDIUM',
+          // These fields indicate it's contractor-created and already quoted
+          status: 'QUOTED',
+        }),
+      })
+
+      if (!response.ok) {
+        const data = await response.json()
+        throw new Error(data.error || 'Failed to create request')
+      }
+
+      setContractorCreateDialogOpen(false)
+      setContractorNewRequest({
+        title: '',
+        description: '',
+        workOrderType: 'SERVICE',
+        recurringType: 'ONCE',
+        needsCertificate: false,
+        quotedPrice: '',
+        quotedDate: '',
+      })
+      setSuccessMessage('Work order request sent to client for approval')
+      setTimeout(() => setSuccessMessage(''), 3000)
+      fetchRequests()
+      router.refresh()
+    } catch (err) {
+      setError(err instanceof Error ? err.message : 'An error occurred')
+    } finally {
+      setContractorCreating(false)
+    }
+  }
+
   const handleUpdateStatus = async (requestId: string, status: Request['status']) => {
     try {
       await fetch(`/api/branches/${branchId}/requests/${requestId}`, {
@@ -778,6 +855,12 @@ export function RequestsList({ branchId, userRole, projectId }: RequestsListProp
             </CardDescription>
           </div>
           <div className="flex items-center gap-2">
+            {userRole === 'CONTRACTOR' && (
+              <Button onClick={() => setContractorCreateDialogOpen(true)}>
+                <Plus className="mr-2 h-4 w-4" />
+                Create Work Order Request
+              </Button>
+            )}
             {userRole !== 'CONTRACTOR' && (
               <Button onClick={() => setCreateDialogOpen(true)}>
                 <Plus className="mr-2 h-4 w-4" />
@@ -963,6 +1046,157 @@ export function RequestsList({ branchId, userRole, projectId }: RequestsListProp
         </DialogContent>
       </Dialog>
 
+      {/* Contractor Create Work Order Request Dialog */}
+      <Dialog open={contractorCreateDialogOpen} onOpenChange={setContractorCreateDialogOpen}>
+        <DialogContent className="sm:max-w-[600px] max-h-[90vh] overflow-y-auto">
+          <DialogHeader>
+            <DialogTitle>Create Work Order Request</DialogTitle>
+            <DialogDescription>
+              Create a work order request for the client to approve. They will need to sign to accept.
+            </DialogDescription>
+          </DialogHeader>
+          <form onSubmit={handleContractorCreateRequest}>
+            {error && (
+              <div className="bg-destructive/10 text-destructive p-3 rounded-lg text-sm mb-4">
+                {error}
+              </div>
+            )}
+            <div className="space-y-4">
+              {/* Service Type */}
+              <div className="space-y-2">
+                <Label htmlFor="contractor-workOrderType">Service Type *</Label>
+                <Select
+                  value={contractorNewRequest.workOrderType}
+                  onValueChange={(value: 'SERVICE' | 'INSPECTION' | 'MAINTENANCE' | 'INSTALLATION') => {
+                    const needsCert = ['INSPECTION', 'MAINTENANCE', 'INSTALLATION'].includes(value)
+                    setContractorNewRequest({ ...contractorNewRequest, workOrderType: value, needsCertificate: needsCert })
+                  }}
+                >
+                  <SelectTrigger>
+                    <SelectValue />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="SERVICE">🔧 Repair/Service</SelectItem>
+                    <SelectItem value="INSPECTION">🔍 Inspection</SelectItem>
+                    <SelectItem value="MAINTENANCE">🛠️ Maintenance</SelectItem>
+                    <SelectItem value="INSTALLATION">📦 Installation</SelectItem>
+                  </SelectContent>
+                </Select>
+              </div>
+
+              {/* Title */}
+              <div className="space-y-2">
+                <Label htmlFor="contractor-title">Work Order Title *</Label>
+                <Input
+                  id="contractor-title"
+                  value={contractorNewRequest.title}
+                  onChange={(e) => setContractorNewRequest({ ...contractorNewRequest, title: e.target.value })}
+                  placeholder="e.g., Annual Fire Alarm Inspection"
+                  required
+                />
+              </div>
+
+              {/* Description */}
+              <div className="space-y-2">
+                <Label htmlFor="contractor-description">Description</Label>
+                <Textarea
+                  id="contractor-description"
+                  value={contractorNewRequest.description}
+                  onChange={(e) => setContractorNewRequest({ ...contractorNewRequest, description: e.target.value })}
+                  placeholder="Describe the work to be performed..."
+                  rows={3}
+                />
+              </div>
+
+              {/* Recurring Type */}
+              <div className="space-y-2">
+                <Label htmlFor="contractor-recurringType">Frequency</Label>
+                <Select
+                  value={contractorNewRequest.recurringType}
+                  onValueChange={(value: 'ONCE' | 'MONTHLY' | 'QUARTERLY') => setContractorNewRequest({ ...contractorNewRequest, recurringType: value })}
+                >
+                  <SelectTrigger>
+                    <SelectValue />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="ONCE">One-time</SelectItem>
+                    <SelectItem value="MONTHLY">Monthly (12 work orders)</SelectItem>
+                    <SelectItem value="QUARTERLY">Quarterly (4 work orders)</SelectItem>
+                  </SelectContent>
+                </Select>
+              </div>
+
+              {/* Certificate Checkbox */}
+              <div className="flex items-center space-x-2 p-3 bg-muted/50 rounded-lg">
+                <input
+                  type="checkbox"
+                  id="contractor-needsCertificate"
+                  checked={contractorNewRequest.needsCertificate}
+                  onChange={(e) => setContractorNewRequest({ ...contractorNewRequest, needsCertificate: e.target.checked })}
+                  className="h-4 w-4 rounded border-gray-300"
+                />
+                <Label htmlFor="contractor-needsCertificate" className="text-sm font-normal cursor-pointer">
+                  Certificate Required
+                  <span className="text-muted-foreground ml-1">(auto-generated on completion)</span>
+                </Label>
+              </div>
+
+              {/* Price and Date */}
+              <div className="grid grid-cols-2 gap-4">
+                <div className="space-y-2">
+                  <Label htmlFor="contractor-quotedPrice">
+                    Price (SAR) * {contractorNewRequest.recurringType !== 'ONCE' && <span className="text-xs text-muted-foreground">(per occurrence)</span>}
+                  </Label>
+                  <Input
+                    id="contractor-quotedPrice"
+                    type="number"
+                    step="0.01"
+                    min="0"
+                    value={contractorNewRequest.quotedPrice}
+                    onChange={(e) => setContractorNewRequest({ ...contractorNewRequest, quotedPrice: e.target.value })}
+                    placeholder="0.00"
+                    required
+                  />
+                </div>
+                <div className="space-y-2">
+                  <Label htmlFor="contractor-quotedDate">
+                    {contractorNewRequest.recurringType !== 'ONCE' ? 'Start Date *' : 'Scheduled Date *'}
+                  </Label>
+                  <Input
+                    id="contractor-quotedDate"
+                    type="date"
+                    value={contractorNewRequest.quotedDate}
+                    onChange={(e) => setContractorNewRequest({ ...contractorNewRequest, quotedDate: e.target.value })}
+                    min={new Date().toISOString().split('T')[0]}
+                    required
+                  />
+                </div>
+              </div>
+
+              {/* Total Preview for Recurring */}
+              {contractorNewRequest.recurringType !== 'ONCE' && contractorNewRequest.quotedPrice && (
+                <div className="p-3 bg-blue-50 border border-blue-200 rounded-lg">
+                  <p className="text-sm text-blue-800">
+                    <strong>Total:</strong> SAR {(parseFloat(contractorNewRequest.quotedPrice) * (contractorNewRequest.recurringType === 'MONTHLY' ? 12 : 4)).toLocaleString('en-US', { minimumFractionDigits: 2 })}
+                    {' '}({contractorNewRequest.recurringType === 'MONTHLY' ? '12 monthly' : '4 quarterly'} work orders)
+                  </p>
+                </div>
+              )}
+            </div>
+            <DialogFooter className="mt-6">
+              <Button type="button" variant="outline" onClick={() => setContractorCreateDialogOpen(false)}>
+                Cancel
+              </Button>
+              <Button type="submit" disabled={contractorCreating}>
+                {contractorCreating && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
+                <Send className="mr-2 h-4 w-4" />
+                Send to Client
+              </Button>
+            </DialogFooter>
+          </form>
+        </DialogContent>
+      </Dialog>
+
       {/* Request Detail Dialog - Enhanced for Contractor */}
       <Dialog open={detailDialogOpen} onOpenChange={setDetailDialogOpen}>
         <DialogContent className="max-w-2xl max-h-[90vh] overflow-y-auto">
@@ -1129,6 +1363,15 @@ export function RequestsList({ branchId, userRole, projectId }: RequestsListProp
                   )}
                 </div>
               )}
+
+              {/* Comments Section */}
+              <div className="pt-4 border-t">
+                <RequestComments 
+                  branchId={branchId} 
+                  requestId={selectedRequest.id} 
+                  currentUserId={userId || ''} 
+                />
+              </div>
             </div>
           )}
         </DialogContent>

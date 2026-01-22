@@ -64,6 +64,7 @@ import {
   PenTool,
 } from 'lucide-react'
 import { SignaturePad } from '@/components/ui/signature-pad'
+import { RequestComments } from '@/components/modules/request-comments'
 
 interface WorkOrder {
   id: string
@@ -125,6 +126,7 @@ interface ClientBranchRequestsProps {
   branchId: string
   projectId?: string | null
   onDataChange?: () => void
+  userId?: string
 }
 
 // Helper function to extract base name from work order title (removes Q1, Q2, Month1, etc.)
@@ -267,7 +269,7 @@ function WorkOrdersGroupedView({ workOrders }: { workOrders: WorkOrder[] }) {
   )
 }
 
-export function ClientBranchRequests({ branchId, projectId, onDataChange }: ClientBranchRequestsProps) {
+export function ClientBranchRequests({ branchId, projectId, onDataChange, userId }: ClientBranchRequestsProps) {
   const router = useRouter()
   const [requests, setRequests] = useState<Request[]>([])
   const [projects, setProjects] = useState<Project[]>([])
@@ -1090,6 +1092,15 @@ export function ClientBranchRequests({ branchId, projectId, onDataChange }: Clie
                   </p>
                 </div>
               )}
+
+              {/* Comments Section */}
+              <div className="pt-4 border-t">
+                <RequestComments 
+                  branchId={branchId} 
+                  requestId={selectedRequest.id} 
+                  currentUserId={userId || ''} 
+                />
+              </div>
             </div>
           )}
           <DialogFooter className="flex gap-2">
