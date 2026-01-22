@@ -46,7 +46,14 @@ import {
   ClipboardList,
   Calendar,
   PenTool,
+  ChevronDown,
+  ChevronRight,
 } from 'lucide-react'
+import {
+  Collapsible,
+  CollapsibleContent,
+  CollapsibleTrigger,
+} from '@/components/ui/collapsible'
 import { ContractWorkOrdersDisplay } from './contract-work-orders-display'
 import { ContractAttachmentsSection } from './contract-attachments-section'
 
@@ -128,6 +135,10 @@ export function ContractsList({ branchId, projectId }: ContractsListProps) {
     status: 'DRAFT' as Contract['status'],
   })
 
+  // Standalone work orders state
+  const [standaloneWorkOrders, setStandaloneWorkOrders] = useState<{ id: string; description: string; scheduledDate: string | null; stage: string; price: number | null }[]>([])
+  const [standaloneExpanded, setStandaloneExpanded] = useState(true)
+
   const fetchContracts = async () => {
     try {
       const response = await fetch(`/api/branches/${branchId}/contracts`)
@@ -145,8 +156,23 @@ export function ContractsList({ branchId, projectId }: ContractsListProps) {
     }
   }
 
+  const fetchStandaloneWorkOrders = async () => {
+    try {
+      const response = await fetch(`/api/branches/${branchId}/checklist-items`)
+      if (response.ok) {
+        const data = await response.json()
+        // Filter for standalone work orders (projectTitle is null)
+        const standalone = data.filter((wo: { projectTitle: string | null }) => wo.projectTitle === null)
+        setStandaloneWorkOrders(standalone)
+      }
+    } catch (err) {
+      console.error('Failed to fetch standalone work orders:', err)
+    }
+  }
+
   useEffect(() => {
     fetchContracts()
+    fetchStandaloneWorkOrders()
   }, [branchId, projectId])
 
   const handleCreateContract = async (e: React.FormEvent, activateImmediately: boolean = false) => {
@@ -468,6 +494,76 @@ export function ContractsList({ branchId, projectId }: ContractsListProps) {
           )}
         </CardContent>
       </Card>
+
+      {/* Service Requests Section - Read-only, no signatures needed */}
+      {standaloneWorkOrders.length > 0 && (
+        <Collapsible open={standaloneExpanded} onOpenChange={setStandaloneExpanded}>
+          <Card className="border-blue-200 bg-blue-50/30 mt-6">
+            <CollapsibleTrigger className="w-full">
+              <CardHeader className="cursor-pointer hover:bg-blue-50/50 transition-colors">
+                <div className="flex items-center justify-between">
+                  <div className="flex items-center gap-2">
+                    {standaloneExpanded ? <ChevronDown className="h-5 w-5 text-blue-600" /> : <ChevronRight className="h-5 w-5 text-blue-600" />}
+                    <CardTitle className="flex items-center gap-2 text-blue-700">
+                      <ClipboardList className="h-5 w-5" />
+                      Service Requests
+                    </CardTitle>
+                    <Badge className="bg-blue-100 text-blue-700">Ad-hoc</Badge>
+                    <Badge variant="secondary">{standaloneWorkOrders.length}</Badge>
+                  </div>
+                  <div className="text-right">
+                    <p className="font-semibold text-blue-700">
+                      ${standaloneWorkOrders.reduce((sum, wo) => sum + (wo.price || 0), 0).toLocaleString('en-US', { minimumFractionDigits: 2 })}
+                    </p>
+                    <p className="text-xs text-blue-600">Total Value</p>
+                  </div>
+                </div>
+                <CardDescription className="text-blue-600 text-left mt-2">
+                  Work orders from client service requests. No contract signature required.
+                </CardDescription>
+              </CardHeader>
+            </CollapsibleTrigger>
+            <CollapsibleContent>
+              <CardContent className="pt-0">
+                <div className="space-y-2">
+                  {standaloneWorkOrders.map((wo) => (
+                    <div
+                      key={wo.id}
+                      className="flex items-center justify-between p-3 bg-white rounded-lg border border-blue-200"
+                    >
+                      <div className="space-y-1">
+                        <span className="font-medium">{wo.description}</span>
+                        <div className="flex items-center gap-3 text-sm text-muted-foreground">
+                          {wo.scheduledDate && (
+                            <span className="flex items-center gap-1">
+                              <Calendar className="h-3 w-3" />
+                              {new Date(wo.scheduledDate).toLocaleDateString()}
+                            </span>
+                          )}
+                          <Badge variant="outline" className="text-xs">
+                            {wo.stage}
+                          </Badge>
+                        </div>
+                      </div>
+                      {wo.price && (
+                        <span className="font-semibold text-blue-700">
+                          ${wo.price.toLocaleString('en-US', { minimumFractionDigits: 2 })}
+                        </span>
+                      )}
+                    </div>
+                  ))}
+                </div>
+                <div className="flex items-center gap-2 mt-4 p-3 bg-blue-100/50 rounded-lg border border-blue-200">
+                  <CheckCircle className="h-4 w-4 text-blue-600" />
+                  <p className="text-sm text-blue-700">
+                    These work orders were approved when the client accepted the quote. No additional signature is required.
+                  </p>
+                </div>
+              </CardContent>
+            </CollapsibleContent>
+          </Card>
+        </Collapsible>
+      )}
 
       {/* Create Contract Dialog */}
       <Dialog open={createDialogOpen} onOpenChange={setCreateDialogOpen}>
