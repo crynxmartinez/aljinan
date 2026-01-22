@@ -11,6 +11,7 @@ import {
 } from 'lucide-react'
 import Link from 'next/link'
 import { BranchRequestForm } from './branch-request-form'
+import { ActionCenterTable } from '@/components/dashboard/action-center-table'
 
 async function getClientDashboardData(userId: string) {
   const client = await prisma.client.findUnique({
@@ -116,6 +117,11 @@ export default async function PortalDashboardPage() {
             </div>
           </CardContent>
         </Card>
+      </div>
+
+      {/* Action Center - Delayed Work Orders, Expiring Equipment */}
+      <div className="mb-6">
+        <ActionCenterTable userRole="CLIENT" />
       </div>
 
       <div className="grid gap-6 lg:grid-cols-3">
