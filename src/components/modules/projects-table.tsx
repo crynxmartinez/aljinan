@@ -237,18 +237,21 @@ function formatCurrency(amount: number) {
 
 export function ProjectsTable({ branchId, onCreateProject }: ProjectsTableProps) {
   const [projects, setProjects] = useState<Project[]>([])
+  const [standaloneWorkOrders, setStandaloneWorkOrders] = useState<WorkOrder[]>([])
   const [loading, setLoading] = useState(true)
   const [expandedProjects, setExpandedProjects] = useState<string[]>([])
+  const [standaloneExpanded, setStandaloneExpanded] = useState(true)
 
   useEffect(() => {
-    fetchProjects()
+    fetchData()
   }, [branchId])
 
-  async function fetchProjects() {
+  async function fetchData() {
     try {
-      const response = await fetch(`/api/branches/${branchId}/projects`)
-      if (response.ok) {
-        const data = await response.json()
+      // Fetch projects
+      const projectsResponse = await fetch(`/api/branches/${branchId}/projects`)
+      if (projectsResponse.ok) {
+        const data = await projectsResponse.json()
         setProjects(data)
         // Auto-expand active projects
         const activeProjectIds = data
@@ -256,8 +259,28 @@ export function ProjectsTable({ branchId, onCreateProject }: ProjectsTableProps)
           .map((p: Project) => p.id)
         setExpandedProjects(activeProjectIds)
       }
+
+      // Fetch all checklist items to find standalone work orders (no project)
+      const workOrdersResponse = await fetch(`/api/branches/${branchId}/checklist-items`)
+      if (workOrdersResponse.ok) {
+        const woData = await workOrdersResponse.json()
+        // Filter for standalone work orders (projectTitle is null)
+        const standalone = woData
+          .filter((wo: { projectTitle: string | null }) => wo.projectTitle === null)
+          .map((wo: { id: string; description: string; notes: string | null; scheduledDate: string | null; stage: string; type: string; price: number | null; recurringType?: string }) => ({
+            id: wo.id,
+            title: wo.description,
+            description: wo.notes,
+            scheduledDate: wo.scheduledDate,
+            status: wo.stage,
+            type: wo.type === 'ADHOC' ? 'adhoc' as const : 'scheduled' as const,
+            price: wo.price,
+            recurringType: wo.recurringType || 'ONCE'
+          }))
+        setStandaloneWorkOrders(standalone)
+      }
     } catch (error) {
-      console.error('Failed to fetch projects:', error)
+      console.error('Failed to fetch data:', error)
     } finally {
       setLoading(false)
     }
@@ -362,6 +385,47 @@ export function ProjectsTable({ branchId, onCreateProject }: ProjectsTableProps)
                 </div>
               </Collapsible>
             ))}
+
+            {/* Standalone Work Orders Section */}
+            {standaloneWorkOrders.length > 0 && (
+              <Collapsible
+                open={standaloneExpanded}
+                onOpenChange={() => setStandaloneExpanded(!standaloneExpanded)}
+              >
+                <div className="border rounded-lg border-dashed border-blue-300 bg-blue-50/30">
+                  <CollapsibleTrigger className="flex w-full items-center justify-between p-4 hover:bg-blue-50/50 transition-colors">
+                    <div className="flex items-center gap-3">
+                      {standaloneExpanded ? (
+                        <ChevronDown className="h-5 w-5 text-blue-600" />
+                      ) : (
+                        <ChevronRight className="h-5 w-5 text-blue-600" />
+                      )}
+                      <div className="text-left">
+                        <div className="flex items-center gap-2">
+                          <span className="font-semibold text-blue-700">Service Requests</span>
+                          <Badge className="bg-blue-100 text-blue-700 hover:bg-blue-100">Ad-hoc</Badge>
+                        </div>
+                        <div className="flex items-center gap-4 text-sm text-muted-foreground mt-1">
+                          <span>{standaloneWorkOrders.length} work order{standaloneWorkOrders.length !== 1 ? 's' : ''} from client requests</span>
+                        </div>
+                      </div>
+                    </div>
+                    <div className="text-right">
+                      <p className="font-semibold text-blue-700">
+                        {formatCurrency(standaloneWorkOrders.reduce((sum, wo) => sum + (wo.price || 0), 0))}
+                      </p>
+                      <p className="text-xs text-muted-foreground">Total Value</p>
+                    </div>
+                  </CollapsibleTrigger>
+
+                  <CollapsibleContent>
+                    <div className="border-t border-blue-200 px-4 py-3 bg-blue-50/20">
+                      <WorkOrdersGroupedView workOrders={standaloneWorkOrders} />
+                    </div>
+                  </CollapsibleContent>
+                </div>
+              </Collapsible>
+            )}
           </div>
         )}
       </CardContent>

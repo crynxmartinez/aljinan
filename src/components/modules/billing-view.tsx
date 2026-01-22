@@ -156,9 +156,9 @@ export function BillingView({ branchId, projectId, userRole }: BillingViewProps)
     ? projects.find(p => p.id === projectId)
     : projects.find(p => p.status === 'ACTIVE')
 
-  // Filter work orders for active project
+  // Filter work orders for active project (include standalone work orders with null projectTitle)
   const activeWorkOrders = activeProject
-    ? workOrders.filter(wo => wo.projectTitle === activeProject.title)
+    ? workOrders.filter(wo => wo.projectTitle === activeProject.title || wo.projectTitle === null)
     : workOrders
 
   // Calculate totals
