@@ -116,11 +116,15 @@ export async function POST(
         photos: photoUrls && photoUrls.length > 0 ? {
           create: photoUrls.map((url: string) => ({ url }))
         } : undefined,
-        // Equipment for sticker inspections
+        // Equipment for sticker inspections - linked to branch for permanent records
         equipment: equipment && equipment.length > 0 ? {
-          create: equipment.map((eq: { equipmentNumber: string; equipmentType: string; location?: string; dateAdded?: string; expectedExpiry?: string; notes?: string }) => ({
+          create: equipment.map((eq: { equipmentNumber: string; equipmentType: string; location?: string; dateAdded?: string; expectedExpiry?: string; notes?: string; brand?: string; model?: string; serialNumber?: string }) => ({
+            branchId: branchId, // Link to branch for permanent equipment records
             equipmentNumber: eq.equipmentNumber,
             equipmentType: eq.equipmentType as 'FIRE_EXTINGUISHER' | 'FIRE_ALARM_PANEL' | 'SPRINKLER_SYSTEM' | 'EMERGENCY_LIGHTING' | 'EXIT_SIGN' | 'FIRE_DOOR' | 'SMOKE_DETECTOR' | 'HEAT_DETECTOR' | 'GAS_DETECTOR' | 'KITCHEN_HOOD_SUPPRESSION' | 'FIRE_PUMP' | 'FIRE_HOSE_REEL' | 'OTHER',
+            brand: eq.brand || null,
+            model: eq.model || null,
+            serialNumber: eq.serialNumber || null,
             location: eq.location || null,
             dateAdded: eq.dateAdded ? new Date(eq.dateAdded) : new Date(),
             expectedExpiry: eq.expectedExpiry ? new Date(eq.expectedExpiry) : null,

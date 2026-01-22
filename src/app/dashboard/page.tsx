@@ -5,6 +5,7 @@ import { prisma } from '@/lib/prisma'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
 import { Users, MapPin, FileText, Calendar, AlertCircle, DollarSign } from 'lucide-react'
 import { PendingBranchRequests } from './pending-branch-requests'
+import { ExpiringEquipmentWidget } from '@/components/dashboard/expiring-equipment-widget'
 
 async function getDashboardStats(userId: string) {
   const contractor = await prisma.contractor.findUnique({
@@ -132,6 +133,11 @@ export default async function DashboardPage() {
       {/* Pending Branch Requests */}
       <div className="mt-8">
         <PendingBranchRequests />
+      </div>
+
+      {/* Expiring Equipment Widget */}
+      <div className="mt-8">
+        <ExpiringEquipmentWidget />
       </div>
 
       {stats.totalClients === 0 && (

@@ -243,6 +243,7 @@ model Branch {
   contracts    Contract[]
   checklists   Checklist[]
   certificates Certificate[]
+  equipment    Equipment[]
 
   // Team member access
   teamMemberAccess TeamMemberBranch[]
@@ -400,22 +401,61 @@ enum EquipmentType {
   OTHER
 }
 
+// Equipment status for tracking
+enum EquipmentStatus {
+  ACTIVE           // Equipment is OK, not expired
+  EXPIRING_SOON    // Within 30 days of expiry
+  EXPIRED          // Past expiry date
+  NEEDS_ATTENTION  // Failed inspection or needs repair
+}
+
+// Inspection result for equipment
+enum InspectionResult {
+  PASS          // Equipment passed inspection
+  FAIL          // Equipment failed inspection
+  NEEDS_REPAIR  // Equipment needs repair before passing
+  PENDING       // Not yet inspected
+}
+
 // Equipment tracked for sticker inspections
 model Equipment {
-  id              String        @id @default(cuid())
+  id              String           @id @default(cuid())
+  
+  // Branch link - for permanent equipment records
+  branchId        String
+  branch          Branch           @relation(fields: [branchId], references: [id], onDelete: Cascade)
+  
+  // Optional links to request/work order
   requestId       String?
-  request         Request?      @relation(fields: [requestId], references: [id], onDelete: Cascade)
-  workOrderId     String?       // ChecklistItem ID - for equipment added during inspection
-  equipmentNumber String        // Serial/ID number
+  request         Request?         @relation(fields: [requestId], references: [id], onDelete: SetNull)
+  workOrderId     String?          // ChecklistItem ID - for equipment added during inspection
+  
+  // Equipment identification
+  equipmentNumber String           // Client's tag/ID number (e.g., FE-001)
   equipmentType   EquipmentType
-  location        String?       // Where in the branch
-  dateAdded       DateTime      @default(now())
-  expectedExpiry  DateTime?     // Next inspection due date
-  lastInspected   DateTime?     // When last inspected
-  isInspected     Boolean       @default(false) // Marked during inspection
+  brand           String?          // Brand name
+  model           String?          // Model number
+  serialNumber    String?          // Manufacturer serial number
+  location        String?          // Where in the branch (e.g., "Floor 2, Kitchen")
+  
+  // Dates
+  dateAdded       DateTime         @default(now())  // When equipment was added to system
+  expectedExpiry  DateTime?        // Next inspection due date
+  lastInspected   DateTime?        // When last inspected
+  
+  // Inspection tracking
+  status          EquipmentStatus  @default(ACTIVE)
+  inspectionResult InspectionResult @default(PENDING)
+  isInspected     Boolean          @default(false)  // Marked during current inspection cycle
+  certificateIssued Boolean        @default(false)  // Certificate given for this equipment
+  stickerApplied  Boolean          @default(false)  // Physical sticker placed on equipment
+  
+  // Notes
   notes           String?
-  createdAt       DateTime      @default(now())
-  updatedAt       DateTime      @updatedAt
+  deficiencies    String?          // Issues found during inspection
+  
+  createdAt       DateTime         @default(now())
+  updatedAt       DateTime         @updatedAt
 }
 
 // Quotation statuses
@@ -820,6 +860,8 @@ enum NotificationType {
   PROJECT_APPROVED       // Client approved project
   REQUEST_RECEIVED       // New request from client
   REQUEST_COMMENT        // New comment on a request
+  EQUIPMENT_EXPIRING     // Equipment inspection due soon
+  EQUIPMENT_EXPIRED      // Equipment inspection overdue
   GENERAL                // General notification
 }
 

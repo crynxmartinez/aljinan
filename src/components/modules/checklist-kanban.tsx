@@ -32,7 +32,18 @@ import {
   PenTool,
   ClipboardCheck,
   Award,
+  Tag,
+  Plus,
+  Check,
 } from 'lucide-react'
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from '@/components/ui/select'
+import { Checkbox } from '@/components/ui/checkbox'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
 import { Textarea } from '@/components/ui/textarea'
@@ -61,6 +72,26 @@ interface InspectionPhoto {
   photoType: string
 }
 
+interface Equipment {
+  id: string
+  equipmentNumber: string
+  equipmentType: string
+  brand: string | null
+  model: string | null
+  serialNumber: string | null
+  location: string | null
+  dateAdded: string | null
+  expectedExpiry: string | null
+  lastInspected: string | null
+  status: 'ACTIVE' | 'EXPIRING_SOON' | 'EXPIRED' | 'NEEDS_ATTENTION'
+  inspectionResult: 'PASS' | 'FAIL' | 'NEEDS_REPAIR' | 'PENDING'
+  isInspected: boolean
+  certificateIssued: boolean
+  stickerApplied: boolean
+  notes: string | null
+  deficiencies: string | null
+}
+
 interface ChecklistItem {
   id: string
   description: string
@@ -74,7 +105,7 @@ interface ChecklistItem {
   checklistTitle: string
   projectTitle: string | null
   // Inspection fields
-  workOrderType?: 'SERVICE' | 'INSPECTION' | 'MAINTENANCE' | 'INSTALLATION' | null
+  workOrderType?: 'SERVICE' | 'INSPECTION' | 'MAINTENANCE' | 'INSTALLATION' | 'STICKER_INSPECTION' | null
   linkedRequestId?: string | null
   inspectionDate?: string | null
   systemsChecked?: string | null
@@ -91,6 +122,7 @@ interface ChecklistItem {
   reportUrl?: string | null
   photos?: InspectionPhoto[]
   certificateId?: string | null
+  equipment?: Equipment[]
 }
 
 interface ChecklistKanbanProps {
@@ -968,6 +1000,65 @@ export function ChecklistKanban({ branchId, projectId, readOnly = false, userRol
                           </div>
                         )}
                       </div>
+
+                      {/* Equipment Inspection Section - Only for STICKER_INSPECTION work orders */}
+                      {selectedItem.workOrderType === 'STICKER_INSPECTION' && selectedItem.equipment && selectedItem.equipment.length > 0 && (
+                        <div className="space-y-3 p-4 bg-amber-50 border border-amber-200 rounded-lg">
+                          <div className="flex items-center justify-between">
+                            <h5 className="font-medium text-amber-800 flex items-center gap-2">
+                              <Tag className="h-4 w-4" />
+                              Equipment Inspection ({selectedItem.equipment.length} items)
+                            </h5>
+                          </div>
+                          <div className="space-y-2 max-h-60 overflow-y-auto">
+                            {selectedItem.equipment.map((eq) => (
+                              <div key={eq.id} className="p-3 bg-white rounded-lg border border-amber-200">
+                                <div className="flex items-start justify-between">
+                                  <div className="flex-1">
+                                    <div className="flex items-center gap-2">
+                                      <span className="font-medium text-sm">{eq.equipmentNumber}</span>
+                                      <Badge variant="outline" className="text-xs">
+                                        {eq.equipmentType.replace(/_/g, ' ')}
+                                      </Badge>
+                                    </div>
+                                    {eq.location && (
+                                      <p className="text-xs text-muted-foreground mt-1">{eq.location}</p>
+                                    )}
+                                  </div>
+                                  <Badge 
+                                    variant={eq.isInspected ? 'default' : 'secondary'}
+                                    className={eq.isInspected ? 'bg-green-600' : ''}
+                                  >
+                                    {eq.isInspected ? 'Inspected' : 'Pending'}
+                                  </Badge>
+                                </div>
+                                {eq.isInspected && (
+                                  <div className="mt-2 pt-2 border-t flex items-center gap-4 text-xs">
+                                    {eq.certificateIssued && (
+                                      <span className="flex items-center gap-1 text-green-600">
+                                        <Check className="h-3 w-3" /> Certificate
+                                      </span>
+                                    )}
+                                    {eq.stickerApplied && (
+                                      <span className="flex items-center gap-1 text-green-600">
+                                        <Check className="h-3 w-3" /> Sticker
+                                      </span>
+                                    )}
+                                    {eq.inspectionResult && (
+                                      <Badge variant={eq.inspectionResult === 'PASS' ? 'default' : 'destructive'} className="text-xs">
+                                        {eq.inspectionResult}
+                                      </Badge>
+                                    )}
+                                  </div>
+                                )}
+                              </div>
+                            ))}
+                          </div>
+                          <p className="text-xs text-amber-600">
+                            Equipment inspection details can be updated in the Equipment tab
+                          </p>
+                        </div>
+                      )}
 
                       <div className="flex gap-2 pt-4">
                         <Button variant="outline" onClick={() => setInspectionMode(false)} className="flex-1">

@@ -68,44 +68,86 @@ export async function GET(
         { createdAt: 'desc' }
       ]
     })
+    
+    // Fetch equipment for sticker inspections
+    // 1. Equipment linked to requests (from original request)
+    // 2. Equipment linked directly to work orders (added during inspection)
+    const linkedRequestIds = items.map(item => item.linkedRequestId).filter(Boolean) as string[]
+    const workOrderIds = items.map(item => item.id)
+    
+    const allEquipment = await prisma.equipment.findMany({
+      where: {
+        OR: [
+          { requestId: { in: linkedRequestIds } },
+          { workOrderId: { in: workOrderIds } }
+        ]
+      }
+    })
 
     // Transform to flat structure for Kanban
-    const transformedItems = items.map(item => ({
-      id: item.id,
-      description: item.description,
-      notes: item.notes,
-      stage: item.stage,
-      type: item.type,
-      workOrderType: item.workOrderType,
-      scheduledDate: item.scheduledDate?.toISOString() || null,
-      price: item.price,
-      isCompleted: item.isCompleted,
-      checklistId: item.checklistId,
-      checklistTitle: item.checklist.title,
-      projectTitle: item.checklist.project?.title || null,
-      linkedRequestId: item.linkedRequestId,
-      // Inspection fields
-      inspectionDate: item.inspectionDate?.toISOString() || null,
-      systemsChecked: item.systemsChecked,
-      findings: item.findings,
-      deficiencies: item.deficiencies,
-      recommendations: item.recommendations,
-      technicianSignature: item.technicianSignature,
-      technicianSignedAt: item.technicianSignedAt?.toISOString() || null,
-      supervisorSignature: item.supervisorSignature,
-      supervisorSignedAt: item.supervisorSignedAt?.toISOString() || null,
-      clientSignature: item.clientSignature,
-      clientSignedAt: item.clientSignedAt?.toISOString() || null,
-      reportGeneratedAt: item.reportGeneratedAt?.toISOString() || null,
-      reportUrl: item.reportUrl,
-      photos: item.photos,
-      // Payment fields
-      paymentStatus: item.paymentStatus,
-      paymentProofUrl: item.paymentProofUrl,
-      paymentProofType: item.paymentProofType,
-      paymentProofFileName: item.paymentProofFileName,
-      paymentSubmittedAt: item.paymentSubmittedAt?.toISOString() || null,
-    }))
+    const transformedItems = items.map(item => {
+      // Get equipment for this work order (from linked request or directly linked)
+      const itemEquipment = allEquipment.filter(eq => 
+        eq.requestId === item.linkedRequestId || eq.workOrderId === item.id
+      )
+      
+      return {
+        id: item.id,
+        description: item.description,
+        notes: item.notes,
+        stage: item.stage,
+        type: item.type,
+        workOrderType: item.workOrderType,
+        scheduledDate: item.scheduledDate?.toISOString() || null,
+        price: item.price,
+        isCompleted: item.isCompleted,
+        checklistId: item.checklistId,
+        checklistTitle: item.checklist.title,
+        projectTitle: item.checklist.project?.title || null,
+        linkedRequestId: item.linkedRequestId,
+        // Inspection fields
+        inspectionDate: item.inspectionDate?.toISOString() || null,
+        systemsChecked: item.systemsChecked,
+        findings: item.findings,
+        deficiencies: item.deficiencies,
+        recommendations: item.recommendations,
+        technicianSignature: item.technicianSignature,
+        technicianSignedAt: item.technicianSignedAt?.toISOString() || null,
+        supervisorSignature: item.supervisorSignature,
+        supervisorSignedAt: item.supervisorSignedAt?.toISOString() || null,
+        clientSignature: item.clientSignature,
+        clientSignedAt: item.clientSignedAt?.toISOString() || null,
+        reportGeneratedAt: item.reportGeneratedAt?.toISOString() || null,
+        reportUrl: item.reportUrl,
+        photos: item.photos,
+        // Payment fields
+        paymentStatus: item.paymentStatus,
+        paymentProofUrl: item.paymentProofUrl,
+        paymentProofType: item.paymentProofType,
+        paymentProofFileName: item.paymentProofFileName,
+        paymentSubmittedAt: item.paymentSubmittedAt?.toISOString() || null,
+        // Equipment for sticker inspections
+        equipment: itemEquipment.map(eq => ({
+          id: eq.id,
+          equipmentNumber: eq.equipmentNumber,
+          equipmentType: eq.equipmentType,
+          brand: eq.brand,
+          model: eq.model,
+          serialNumber: eq.serialNumber,
+          location: eq.location,
+          dateAdded: eq.dateAdded?.toISOString() || null,
+          expectedExpiry: eq.expectedExpiry?.toISOString() || null,
+          lastInspected: eq.lastInspected?.toISOString() || null,
+          status: eq.status,
+          inspectionResult: eq.inspectionResult,
+          isInspected: eq.isInspected,
+          certificateIssued: eq.certificateIssued,
+          stickerApplied: eq.stickerApplied,
+          notes: eq.notes,
+          deficiencies: eq.deficiencies,
+        })),
+      }
+    })
 
     return NextResponse.json(transformedItems)
   } catch (error) {

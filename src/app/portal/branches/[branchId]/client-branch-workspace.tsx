@@ -13,6 +13,7 @@ import { BillingView } from '@/components/modules/billing-view'
 import { CalendarView } from '@/components/modules/calendar-view'
 import { ChecklistKanban } from '@/components/modules/checklist-kanban'
 import { CertificatesList } from '@/components/modules/certificates-list'
+import { EquipmentList } from '@/components/modules/equipment-list'
 import {
   LayoutDashboard,
   FileText,
@@ -28,6 +29,7 @@ import {
   ClipboardList,
   Settings,
   Award,
+  Tag,
 } from 'lucide-react'
 import { BranchProfileCard } from '@/components/branches/branch-profile-card'
 import { Skeleton } from '@/components/ui/skeleton'
@@ -295,6 +297,10 @@ export function ClientBranchWorkspace({ branchId, branch }: ClientBranchWorkspac
               </TabsTrigger>
             </>
           )}
+          <TabsTrigger value="equipment" className="flex items-center gap-2">
+            <Tag className="h-4 w-4" />
+            Equipment
+          </TabsTrigger>
           <TabsTrigger value="certificates" className="flex items-center gap-2">
             <Award className="h-4 w-4" />
             Certificates
@@ -562,6 +568,11 @@ export function ClientBranchWorkspace({ branchId, branch }: ClientBranchWorkspac
               <ClientBranchContracts branchId={branchId} projectId={selectedProjectId} />
             </TabsContent>
           )}
+
+          {/* Equipment Tab */}
+          <TabsContent value="equipment" className="mt-0">
+            <EquipmentList branchId={branchId} userRole="CLIENT" />
+          </TabsContent>
 
           {/* Certificates Tab */}
           <TabsContent value="certificates" className="mt-0">
