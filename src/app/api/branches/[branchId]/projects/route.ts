@@ -286,7 +286,7 @@ export async function POST(
         data: {
           projectId: project.id,
           type: 'CREATED',
-          content: `Project created with ${generatedWorkOrders.length} work orders. Total value: $${totalValue.toFixed(2)}`,
+          content: `Project created with ${generatedWorkOrders.length} work orders. Total value: SAR ${totalValue.toFixed(2)}`,
           createdById: session.user.id,
           createdByRole: session.user.role as 'CONTRACTOR' | 'CLIENT' | 'TEAM_MEMBER',
         }

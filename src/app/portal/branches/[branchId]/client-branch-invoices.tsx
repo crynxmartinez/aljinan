@@ -88,7 +88,7 @@ export function ClientBranchInvoices({ branchId, projectId }: ClientBranchInvoic
   }
 
   const formatCurrency = (amount: number) => {
-    return new Intl.NumberFormat('en-US', { style: 'currency', currency: 'USD' }).format(amount)
+    return new Intl.NumberFormat('en-SA', { style: 'currency', currency: 'SAR' }).format(amount)
   }
 
   if (loading) {

@@ -337,7 +337,7 @@ export function ClientBranchWorkspace({ branchId, branch }: ClientBranchWorkspac
                             <Badge className="bg-amber-100 text-amber-700">Pending Review</Badge>
                           </div>
                           <div className="text-sm text-muted-foreground">
-                            Total: ${(project.totalValue || 0).toLocaleString('en-US', { minimumFractionDigits: 2 })}
+                            Total: SAR {(project.totalValue || 0).toLocaleString('en-US', { minimumFractionDigits: 2 })}
                           </div>
                         </div>
                         <Button variant="outline" size="sm" className="gap-2">
@@ -425,7 +425,7 @@ export function ClientBranchWorkspace({ branchId, branch }: ClientBranchWorkspac
                         </div>
                         {wo.price && (
                           <span className="font-semibold text-blue-700">
-                            ${wo.price.toLocaleString('en-US', { minimumFractionDigits: 2 })}
+                            SAR {wo.price.toLocaleString('en-US', { minimumFractionDigits: 2 })}
                           </span>
                         )}
                       </div>
@@ -433,7 +433,7 @@ export function ClientBranchWorkspace({ branchId, branch }: ClientBranchWorkspac
                     <div className="flex justify-between items-center pt-2 border-t border-blue-200 mt-2">
                       <span className="text-sm text-muted-foreground">Total Value</span>
                       <span className="font-bold text-blue-700">
-                        ${standaloneWorkOrders.reduce((sum, wo) => sum + (wo.price || 0), 0).toLocaleString('en-US', { minimumFractionDigits: 2 })}
+                        SAR {standaloneWorkOrders.reduce((sum, wo) => sum + (wo.price || 0), 0).toLocaleString('en-US', { minimumFractionDigits: 2 })}
                       </span>
                     </div>
                   </CardContent>

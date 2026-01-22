@@ -104,7 +104,7 @@ export function BillingView({ branchId, projectId, userRole }: BillingViewProps)
 
   const formatCurrency = (amount: number | null) => {
     if (amount === null) return '-'
-    return new Intl.NumberFormat('en-US', { style: 'currency', currency: 'USD' }).format(amount)
+    return new Intl.NumberFormat('en-SA', { style: 'currency', currency: 'SAR' }).format(amount)
   }
 
   // Work order payment handlers

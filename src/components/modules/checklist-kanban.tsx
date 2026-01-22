@@ -292,9 +292,9 @@ function formatDate(dateString: string | null) {
 }
 
 function formatCurrency(amount: number) {
-  return new Intl.NumberFormat('en-US', {
+  return new Intl.NumberFormat('en-SA', {
     style: 'currency',
-    currency: 'USD'
+    currency: 'SAR'
   }).format(amount)
 }
 

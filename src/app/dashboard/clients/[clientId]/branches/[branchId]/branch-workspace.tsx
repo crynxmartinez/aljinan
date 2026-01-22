@@ -532,7 +532,7 @@ function BranchDashboard({ branch, branchId }: { branch: Branch; branchId: strin
                 <div className="flex items-center justify-between mt-4 p-3 bg-primary/5 rounded-lg border">
                   <span className="font-semibold">Total</span>
                   <span className="text-xl font-bold">
-                    ${calculateTotal().toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
+                    SAR {calculateTotal().toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
                   </span>
                 </div>
               </div>

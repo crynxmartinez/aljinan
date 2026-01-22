@@ -55,9 +55,9 @@ function formatDate(dateString: string | null) {
 
 function formatCurrency(amount: number | null) {
   if (amount === null || amount === undefined) return '-'
-  return new Intl.NumberFormat('en-US', {
+  return new Intl.NumberFormat('en-SA', {
     style: 'currency',
-    currency: 'USD',
+    currency: 'SAR',
     minimumFractionDigits: 2,
   }).format(amount)
 }

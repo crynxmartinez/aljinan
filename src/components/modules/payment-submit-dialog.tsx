@@ -48,9 +48,9 @@ export function PaymentSubmitDialog({
   const fileInputRef = useRef<HTMLInputElement>(null)
 
   const formatCurrency = (amount: number) => {
-    return new Intl.NumberFormat('en-US', {
+    return new Intl.NumberFormat('en-SA', {
       style: 'currency',
-      currency: 'USD',
+      currency: 'SAR',
       minimumFractionDigits: 2,
     }).format(amount)
   }

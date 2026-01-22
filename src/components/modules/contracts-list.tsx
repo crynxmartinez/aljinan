@@ -427,7 +427,7 @@ export function ContractsList({ branchId, projectId }: ContractsListProps) {
                         )}
                         {contract.totalValue && (
                           <span className="font-medium text-primary">
-                            ${contract.totalValue.toLocaleString('en-US', { minimumFractionDigits: 2 })}
+                            SAR {contract.totalValue.toLocaleString('en-US', { minimumFractionDigits: 2 })}
                           </span>
                         )}
                         {workOrderCount > 0 && (
@@ -513,7 +513,7 @@ export function ContractsList({ branchId, projectId }: ContractsListProps) {
                   </div>
                   <div className="text-right">
                     <p className="font-semibold text-blue-700">
-                      ${standaloneWorkOrders.reduce((sum, wo) => sum + (wo.price || 0), 0).toLocaleString('en-US', { minimumFractionDigits: 2 })}
+                      SAR {standaloneWorkOrders.reduce((sum, wo) => sum + (wo.price || 0), 0).toLocaleString('en-US', { minimumFractionDigits: 2 })}
                     </p>
                     <p className="text-xs text-blue-600">Total Value</p>
                   </div>
@@ -547,7 +547,7 @@ export function ContractsList({ branchId, projectId }: ContractsListProps) {
                       </div>
                       {wo.price && (
                         <span className="font-semibold text-blue-700">
-                          ${wo.price.toLocaleString('en-US', { minimumFractionDigits: 2 })}
+                          SAR {wo.price.toLocaleString('en-US', { minimumFractionDigits: 2 })}
                         </span>
                       )}
                     </div>
@@ -711,7 +711,7 @@ export function ContractsList({ branchId, projectId }: ContractsListProps) {
                 <div>
                   <p className="text-xs text-muted-foreground mb-1">Total Value</p>
                   <p className="font-bold text-lg text-primary">
-                    ${(selectedContract.totalValue || 0).toLocaleString('en-US', { minimumFractionDigits: 2 })}
+                    SAR {(selectedContract.totalValue || 0).toLocaleString('en-US', { minimumFractionDigits: 2 })}
                   </p>
                 </div>
                 {selectedContract.startDate && (

@@ -209,7 +209,7 @@ function WorkOrdersGroupedView({ workOrders }: { workOrders: WorkOrder[] }) {
                   <Badge variant="outline" className="text-xs">Pending Price</Badge>
                 ) : (
                   <span className="font-semibold text-primary">
-                    ${groupTotal.toLocaleString('en-US', { minimumFractionDigits: 2 })}
+                    SAR {groupTotal.toLocaleString('en-US', { minimumFractionDigits: 2 })}
                   </span>
                 )}
               </div>
@@ -253,7 +253,7 @@ function WorkOrdersGroupedView({ workOrders }: { workOrders: WorkOrder[] }) {
                     </div>
                     <div className="text-right">
                       {wo.price !== null ? (
-                        <span className="font-medium">${wo.price.toLocaleString('en-US', { minimumFractionDigits: 2 })}</span>
+                        <span className="font-medium">SAR {wo.price.toLocaleString('en-US', { minimumFractionDigits: 2 })}</span>
                       ) : (
                         <Badge variant="outline" className="text-xs">Pending</Badge>
                       )}
@@ -1026,7 +1026,7 @@ export function ClientBranchRequests({ branchId, projectId, onDataChange, userId
                   <div className="grid grid-cols-2 gap-4 text-sm mb-3">
                     <div>
                       <p className="text-purple-600">Quoted Price</p>
-                      <p className="font-bold text-lg">${selectedRequest.quotedPrice.toLocaleString()}</p>
+                      <p className="font-bold text-lg">SAR {selectedRequest.quotedPrice.toLocaleString()}</p>
                     </div>
                     {selectedRequest.quotedDate && (
                       <div>
@@ -1216,7 +1216,7 @@ export function ClientBranchRequests({ branchId, projectId, onDataChange, userId
                 <div>
                   <p className="text-xs text-muted-foreground">Total Value</p>
                   <p className="font-bold text-lg text-primary">
-                    ${calculatedTotal.toLocaleString('en-US', { minimumFractionDigits: 2 })}
+                    SAR {calculatedTotal.toLocaleString('en-US', { minimumFractionDigits: 2 })}
                   </p>
                 </div>
               </div>
@@ -1241,7 +1241,7 @@ export function ClientBranchRequests({ branchId, projectId, onDataChange, userId
                     <div className="flex items-center justify-between p-4 bg-primary/5 border-t">
                       <span className="font-semibold">Total</span>
                       <span className="text-xl font-bold">
-                        ${calculatedTotal.toLocaleString('en-US', { minimumFractionDigits: 2 })}
+                        SAR {calculatedTotal.toLocaleString('en-US', { minimumFractionDigits: 2 })}
                       </span>
                     </div>
                   </div>

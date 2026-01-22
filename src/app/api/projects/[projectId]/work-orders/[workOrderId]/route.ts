@@ -127,7 +127,7 @@ export async function PATCH(
         data: {
           projectId,
           type: 'UPDATED',
-          content: `Price set for work order "${workOrder.description}": $${price}`,
+          content: `Price set for work order "${workOrder.description}": SAR ${price}`,
           createdById: session.user.id,
           createdByRole: session.user.role as 'CONTRACTOR' | 'CLIENT' | 'TEAM_MEMBER',
         }

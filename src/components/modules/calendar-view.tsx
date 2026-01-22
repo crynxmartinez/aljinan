@@ -61,9 +61,9 @@ const STAGE_LABELS: Record<ChecklistItemStage, string> = {
 }
 
 function formatCurrency(amount: number) {
-  return new Intl.NumberFormat('en-US', {
+  return new Intl.NumberFormat('en-SA', {
     style: 'currency',
-    currency: 'USD'
+    currency: 'SAR'
   }).format(amount)
 }
 

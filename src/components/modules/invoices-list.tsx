@@ -248,7 +248,7 @@ export function InvoicesList({ branchId, projectId }: InvoicesListProps) {
   }
 
   const formatCurrency = (amount: number) => {
-    return new Intl.NumberFormat('en-US', { style: 'currency', currency: 'USD' }).format(amount)
+    return new Intl.NumberFormat('en-SA', { style: 'currency', currency: 'SAR' }).format(amount)
   }
 
   const totals = calculateTotals(newInvoice.items, newInvoice.taxRate)

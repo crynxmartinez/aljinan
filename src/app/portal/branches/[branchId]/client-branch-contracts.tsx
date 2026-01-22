@@ -358,7 +358,7 @@ export function ClientBranchContracts({ branchId, projectId }: ClientBranchContr
                       {getStatusBadge(contract.status)}
                     </div>
                     <p className="text-sm text-muted-foreground">
-                      Total Value: ${(contract.totalValue || 0).toLocaleString('en-US', { minimumFractionDigits: 2 })}
+                      Total Value: SAR {(contract.totalValue || 0).toLocaleString('en-US', { minimumFractionDigits: 2 })}
                     </p>
                   </div>
                   <div className="flex gap-2">
@@ -431,7 +431,7 @@ export function ClientBranchContracts({ branchId, projectId }: ClientBranchContr
                         </span>
                       )}
                       <span className="font-medium text-primary">
-                        ${(contract.totalValue || 0).toLocaleString('en-US', { minimumFractionDigits: 2 })}
+                        SAR {(contract.totalValue || 0).toLocaleString('en-US', { minimumFractionDigits: 2 })}
                       </span>
                     </div>
                   </div>
@@ -552,7 +552,7 @@ export function ClientBranchContracts({ branchId, projectId }: ClientBranchContr
                         </span>
                       )}
                       <span className="font-medium text-green-700">
-                        ${(contract.totalValue || 0).toLocaleString('en-US', { minimumFractionDigits: 2 })}
+                        SAR {(contract.totalValue || 0).toLocaleString('en-US', { minimumFractionDigits: 2 })}
                       </span>
                     </div>
                   </div>
@@ -688,7 +688,7 @@ export function ClientBranchContracts({ branchId, projectId }: ClientBranchContr
                 <div>
                   <p className="text-xs text-muted-foreground mb-1">Total Value</p>
                   <p className="font-bold text-lg text-primary">
-                    ${(selectedContract.totalValue || 0).toLocaleString('en-US', { minimumFractionDigits: 2 })}
+                    SAR {(selectedContract.totalValue || 0).toLocaleString('en-US', { minimumFractionDigits: 2 })}
                   </p>
                 </div>
                 {selectedContract.startDate && (
@@ -804,7 +804,7 @@ export function ClientBranchContracts({ branchId, projectId }: ClientBranchContr
               <div className="p-4 bg-muted/50 rounded-lg">
                 <p className="font-medium">{contractToSign.title}</p>
                 <p className="text-sm text-muted-foreground">
-                  Total Value: ${(contractToSign.totalValue || 0).toLocaleString('en-US', { minimumFractionDigits: 2 })}
+                  Total Value: SAR {(contractToSign.totalValue || 0).toLocaleString('en-US', { minimumFractionDigits: 2 })}
                 </p>
               </div>
 
@@ -865,7 +865,7 @@ export function ClientBranchContracts({ branchId, projectId }: ClientBranchContr
               <div className="p-4 bg-green-50 rounded-lg border border-green-200">
                 <p className="font-medium text-green-800">{contractToSign.title}</p>
                 <p className="text-sm text-green-700">
-                  Total Value: ${(contractToSign.totalValue || 0).toLocaleString('en-US', { minimumFractionDigits: 2 })}
+                  Total Value: SAR {(contractToSign.totalValue || 0).toLocaleString('en-US', { minimumFractionDigits: 2 })}
                 </p>
                 {contractToSign.project && (
                   <p className="text-sm text-green-700 mt-1">

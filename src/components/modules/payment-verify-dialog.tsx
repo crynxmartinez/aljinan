@@ -55,9 +55,9 @@ export function PaymentVerifyDialog({
 
   const formatCurrency = (amount: number | null) => {
     if (amount === null) return '-'
-    return new Intl.NumberFormat('en-US', {
+    return new Intl.NumberFormat('en-SA', {
       style: 'currency',
-      currency: 'USD',
+      currency: 'SAR',
       minimumFractionDigits: 2,
     }).format(amount)
   }
