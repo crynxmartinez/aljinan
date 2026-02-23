@@ -150,7 +150,7 @@ export function BranchWorkspace({ clientId, branchId, branch, userRole, teamMemb
   const allModules = [
     { id: 'dashboard', label: 'Dashboard', icon: LayoutDashboard },
     { id: 'requests', label: 'Requests', icon: FileText },
-    { id: 'checklists', label: 'Checklist', icon: ClipboardList },
+    { id: 'checklists', label: 'Kanban Board', icon: ClipboardList },
     { id: 'calendar', label: 'Calendar', icon: Calendar },
     { id: 'equipment', label: 'Equipment', icon: Tag },
     { id: 'billing', label: 'Billing', icon: DollarSign, restrictedForTechnician: true },

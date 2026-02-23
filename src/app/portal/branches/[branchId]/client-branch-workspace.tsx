@@ -273,11 +273,11 @@ export function ClientBranchWorkspace({ branchId, branch }: ClientBranchWorkspac
               </Badge>
             )}
           </TabsTrigger>
-          {/* Only show Checklist when there's an active project */}
+          {/* Only show Kanban Board when there's an active project */}
           {hasActiveProject && (
             <TabsTrigger value="checklist" className="flex items-center gap-2">
               <ClipboardList className="h-4 w-4" />
-              Checklist
+              Kanban Board
             </TabsTrigger>
           )}
           {/* Only show these tabs when there's an active project */}
@@ -536,7 +536,7 @@ export function ClientBranchWorkspace({ branchId, branch }: ClientBranchWorkspac
             </div>
           </TabsContent>
 
-          {/* Checklist Tab - Read-only Kanban view for client */}
+          {/* Kanban Board Tab - Read-only Kanban view for client */}
           {hasActiveProject && (
             <TabsContent value="checklist" className="mt-0">
               <ChecklistKanban branchId={branchId} projectId={selectedProjectId} />
