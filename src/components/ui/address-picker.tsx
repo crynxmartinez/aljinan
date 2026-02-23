@@ -70,8 +70,11 @@ export function AddressPicker({ value, onChange, showManualFields = true }: Addr
 
     setIsSearching(true)
     try {
+      // Add Saudi Arabia country bias and bounded search for Middle East region
+      // Bounding box: [min_lon, min_lat, max_lon, max_lat] for Saudi Arabia and surrounding area
+      const viewbox = '34.5,16.0,55.7,32.2' // Saudi Arabia region
       const response = await fetch(
-        `https://nominatim.openstreetmap.org/search?format=json&q=${encodeURIComponent(query)}&addressdetails=1&limit=5`,
+        `https://nominatim.openstreetmap.org/search?format=json&q=${encodeURIComponent(query)}&addressdetails=1&limit=5&countrycodes=sa&viewbox=${viewbox}&bounded=0`,
         {
           headers: {
             'Accept-Language': 'en',

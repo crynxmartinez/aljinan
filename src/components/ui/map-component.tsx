@@ -10,8 +10,8 @@ interface MapComponentProps {
   onMapClick: (lat: number, lng: number) => void
 }
 
-const defaultCenter: [number, number] = [25.2048, 55.2708] // Dubai as default
-const defaultZoom = 12
+const defaultCenter: [number, number] = [24.7136, 46.6753] // Riyadh, Saudi Arabia as default
+const defaultZoom = 11
 
 export default function MapComponent({ latitude, longitude, onMapClick }: MapComponentProps) {
   const mapRef = useRef<HTMLDivElement>(null)
