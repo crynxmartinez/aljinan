@@ -24,7 +24,7 @@ import {
 } from 'lucide-react'
 import { cn } from '@/lib/utils'
 
-type ChecklistItemStage = 'REQUESTED' | 'SCHEDULED' | 'IN_PROGRESS' | 'FOR_REVIEW' | 'COMPLETED'
+type ChecklistItemStage = 'SCHEDULED' | 'IN_PROGRESS' | 'FOR_REVIEW' | 'COMPLETED'
 type ChecklistItemType = 'SCHEDULED' | 'ADHOC'
 
 interface ScheduledTask {
@@ -45,7 +45,6 @@ interface CalendarViewProps {
 }
 
 const STAGE_COLORS: Record<ChecklistItemStage, string> = {
-  REQUESTED: 'bg-yellow-500',
   SCHEDULED: 'bg-blue-500',
   IN_PROGRESS: 'bg-orange-500',
   FOR_REVIEW: 'bg-purple-500',
@@ -53,7 +52,6 @@ const STAGE_COLORS: Record<ChecklistItemStage, string> = {
 }
 
 const STAGE_LABELS: Record<ChecklistItemStage, string> = {
-  REQUESTED: 'Requested',
   SCHEDULED: 'Scheduled',
   IN_PROGRESS: 'In Progress',
   FOR_REVIEW: 'For Review',

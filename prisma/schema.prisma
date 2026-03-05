@@ -649,7 +649,6 @@ enum ChecklistStatus {
 
 // Checklist item stages (for Kanban board)
 enum ChecklistItemStage {
-  REQUESTED      // Client submitted ad-hoc request
   SCHEDULED      // Task confirmed with date
   IN_PROGRESS    // Technician working on it
   FOR_REVIEW     // Work done, awaiting client confirmation

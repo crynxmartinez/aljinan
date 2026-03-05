@@ -35,7 +35,7 @@ export async function GET(request: Request) {
     const workOrders = await prisma.checklistItem.findMany({
       where: {
         scheduledDate: { not: null },
-        stage: { in: ['SCHEDULED', 'REQUESTED'] }
+        stage: 'SCHEDULED'
       },
       include: {
         checklist: {

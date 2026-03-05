@@ -108,15 +108,8 @@ export async function POST(
 
       // 5. Update all work orders to SCHEDULED stage (now visible in Kanban/Calendar)
       for (const checklist of project.checklists) {
-        await tx.checklistItem.updateMany({
-          where: {
-            checklistId: checklist.id,
-            stage: 'REQUESTED'
-          },
-          data: {
-            stage: 'SCHEDULED'
-          }
-        })
+        // Work orders are now created as SCHEDULED by default
+        // No need to update stage from REQUESTED to SCHEDULED
 
         // Update checklist status
         await tx.checklist.update({

@@ -88,7 +88,7 @@ export async function POST(
                 checklistId: newChecklist.id,
                 description: item.description,
                 notes: item.notes,
-                stage: 'REQUESTED',
+                stage: 'SCHEDULED',
                 type: 'SCHEDULED',
                 price: item.price,
                 order: item.order,

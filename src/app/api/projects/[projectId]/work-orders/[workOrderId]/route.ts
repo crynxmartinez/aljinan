@@ -80,7 +80,7 @@ export async function PATCH(
       notes?: string | null
       scheduledDate?: Date | null
       price?: number | null
-      stage?: 'REQUESTED' | 'SCHEDULED' | 'IN_PROGRESS' | 'FOR_REVIEW' | 'COMPLETED' | 'ARCHIVED'
+      stage?: 'SCHEDULED' | 'IN_PROGRESS' | 'FOR_REVIEW' | 'COMPLETED' | 'ARCHIVED'
       type?: 'SCHEDULED' | 'ADHOC'
       isCompleted?: boolean
       deletedAt?: Date | null

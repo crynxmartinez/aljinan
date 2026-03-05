@@ -64,7 +64,7 @@ import {
 } from '@dnd-kit/core'
 import { useDraggable, useDroppable } from '@dnd-kit/core'
 
-type ChecklistItemStage = 'REQUESTED' | 'SCHEDULED' | 'IN_PROGRESS' | 'FOR_REVIEW' | 'COMPLETED' | 'ARCHIVED'
+type ChecklistItemStage = 'SCHEDULED' | 'IN_PROGRESS' | 'FOR_REVIEW' | 'COMPLETED' | 'ARCHIVED'
 type ChecklistItemType = 'SCHEDULED' | 'ADHOC'
 
 interface InspectionPhoto {
@@ -138,7 +138,6 @@ interface ChecklistKanbanProps {
 }
 
 const STAGES: { id: ChecklistItemStage; label: string; color: string; bgColor: string; icon: typeof Clock }[] = [
-  { id: 'REQUESTED', label: 'Requested', color: 'text-yellow-700', bgColor: 'bg-yellow-50 border-yellow-200', icon: AlertCircle },
   { id: 'SCHEDULED', label: 'Scheduled', color: 'text-blue-700', bgColor: 'bg-blue-50 border-blue-200', icon: Calendar },
   { id: 'IN_PROGRESS', label: 'In Progress', color: 'text-orange-700', bgColor: 'bg-orange-50 border-orange-200', icon: Clock },
   { id: 'FOR_REVIEW', label: 'For Review', color: 'text-purple-700', bgColor: 'bg-purple-50 border-purple-200', icon: FileText },
@@ -151,12 +150,11 @@ const STAGES: { id: ChecklistItemStage; label: string; color: string; bgColor: s
 // Client: FOR_REVIEW → COMPLETED or FOR_REVIEW → IN_PROGRESS (reject)
 // ARCHIVED can be restored to any stage by contractor
 const ALLOWED_TRANSITIONS: Record<ChecklistItemStage, { contractor: ChecklistItemStage[]; client: ChecklistItemStage[] }> = {
-  'REQUESTED': { contractor: ['SCHEDULED'], client: [] },
   'SCHEDULED': { contractor: ['IN_PROGRESS'], client: [] },
   'IN_PROGRESS': { contractor: ['FOR_REVIEW'], client: [] },
   'FOR_REVIEW': { contractor: [], client: ['COMPLETED', 'IN_PROGRESS'] },
   'COMPLETED': { contractor: [], client: [] },
-  'ARCHIVED': { contractor: ['REQUESTED', 'SCHEDULED', 'IN_PROGRESS', 'FOR_REVIEW', 'COMPLETED'], client: [] }, // Can restore to any stage
+  'ARCHIVED': { contractor: ['SCHEDULED', 'IN_PROGRESS', 'FOR_REVIEW', 'COMPLETED'], client: [] }, // Can restore to any stage
 }
 
 function canTransition(from: ChecklistItemStage, to: ChecklistItemStage, isClient: boolean): boolean {

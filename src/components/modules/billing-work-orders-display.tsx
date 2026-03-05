@@ -115,7 +115,6 @@ function getPaymentStatusBadge(status: BillingWorkOrder['paymentStatus']) {
 
 function getStageBadge(stage: string) {
   const config: Record<string, { style: string; label: string }> = {
-    REQUESTED: { style: 'bg-gray-100 text-gray-700', label: 'Requested' },
     SCHEDULED: { style: 'bg-blue-100 text-blue-700', label: 'Scheduled' },
     IN_PROGRESS: { style: 'bg-orange-100 text-orange-700', label: 'In Progress' },
     FOR_REVIEW: { style: 'bg-purple-100 text-purple-700', label: 'For Review' },
