@@ -19,13 +19,22 @@ export async function GET() {
     let workOrders
 
     if (session.user.role === 'CONTRACTOR') {
+      // First get the contractor record to get the contractor ID
+      const contractor = await prisma.contractor.findUnique({
+        where: { userId: session.user.id }
+      })
+
+      if (!contractor) {
+        return NextResponse.json({ error: 'Contractor not found' }, { status: 404 })
+      }
+
       // Get all work orders for contractor's clients
       workOrders = await prisma.checklistItem.findMany({
         where: {
           checklist: {
             branch: {
               client: {
-                contractorId: session.user.id
+                contractorId: contractor.id
               }
             }
           }
