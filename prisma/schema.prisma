@@ -654,6 +654,7 @@ enum ChecklistItemStage {
   IN_PROGRESS    // Technician working on it
   FOR_REVIEW     // Work done, awaiting client confirmation
   COMPLETED      // Task closed
+  ARCHIVED       // Soft deleted (moved to archive)
 }
 
 // Checklist item types
@@ -753,6 +754,11 @@ model ChecklistItem {
   paymentVerifiedAt       DateTime?      // When contractor verified payment
   paymentVerifiedById     String?        // User ID who verified payment
   paymentVerifiedSignature String?       // Contractor signature (base64 image) for verification
+  
+  // Soft delete (Archive)
+  deletedAt       DateTime?          // When moved to archive
+  deletedBy       String?            // User ID who archived it
+  deletedReason   String?            // Optional reason for archiving
   
   createdAt       DateTime           @default(now())
   updatedAt       DateTime           @updatedAt

@@ -35,6 +35,8 @@ import {
   Tag,
   Plus,
   Check,
+  Archive,
+  RotateCcw,
 } from 'lucide-react'
 import {
   Select,
@@ -62,7 +64,7 @@ import {
 } from '@dnd-kit/core'
 import { useDraggable, useDroppable } from '@dnd-kit/core'
 
-type ChecklistItemStage = 'REQUESTED' | 'SCHEDULED' | 'IN_PROGRESS' | 'FOR_REVIEW' | 'COMPLETED'
+type ChecklistItemStage = 'REQUESTED' | 'SCHEDULED' | 'IN_PROGRESS' | 'FOR_REVIEW' | 'COMPLETED' | 'ARCHIVED'
 type ChecklistItemType = 'SCHEDULED' | 'ADHOC'
 
 interface InspectionPhoto {
@@ -104,6 +106,9 @@ interface ChecklistItem {
   checklistId: string
   checklistTitle: string
   projectTitle: string | null
+  deletedAt: string | null
+  deletedBy: string | null
+  deletedReason: string | null
   // Inspection fields
   workOrderType?: 'SERVICE' | 'INSPECTION' | 'MAINTENANCE' | 'INSTALLATION' | 'STICKER_INSPECTION' | null
   linkedRequestId?: string | null
@@ -138,17 +143,20 @@ const STAGES: { id: ChecklistItemStage; label: string; color: string; bgColor: s
   { id: 'IN_PROGRESS', label: 'In Progress', color: 'text-orange-700', bgColor: 'bg-orange-50 border-orange-200', icon: Clock },
   { id: 'FOR_REVIEW', label: 'For Review', color: 'text-purple-700', bgColor: 'bg-purple-50 border-purple-200', icon: FileText },
   { id: 'COMPLETED', label: 'Completed', color: 'text-green-700', bgColor: 'bg-green-50 border-green-200', icon: CheckCircle },
+  { id: 'ARCHIVED', label: 'Archive', color: 'text-gray-600', bgColor: 'bg-gray-50 border-gray-300', icon: Archive },
 ]
 
 // Allowed stage transitions
 // Contractor: SCHEDULED → IN_PROGRESS → FOR_REVIEW
 // Client: FOR_REVIEW → COMPLETED or FOR_REVIEW → IN_PROGRESS (reject)
+// ARCHIVED can be restored to any stage by contractor
 const ALLOWED_TRANSITIONS: Record<ChecklistItemStage, { contractor: ChecklistItemStage[]; client: ChecklistItemStage[] }> = {
   'REQUESTED': { contractor: ['SCHEDULED'], client: [] },
   'SCHEDULED': { contractor: ['IN_PROGRESS'], client: [] },
   'IN_PROGRESS': { contractor: ['FOR_REVIEW'], client: [] },
   'FOR_REVIEW': { contractor: [], client: ['COMPLETED', 'IN_PROGRESS'] },
   'COMPLETED': { contractor: [], client: [] },
+  'ARCHIVED': { contractor: ['REQUESTED', 'SCHEDULED', 'IN_PROGRESS', 'FOR_REVIEW', 'COMPLETED'], client: [] }, // Can restore to any stage
 }
 
 function canTransition(from: ChecklistItemStage, to: ChecklistItemStage, isClient: boolean): boolean {
@@ -188,13 +196,16 @@ function DraggableCard({
     'normal': 'border bg-white',
   }
 
+  // Special styling for archived items
+  const isArchived = item.stage === 'ARCHIVED'
+
   return (
     <div
       ref={setNodeRef}
       style={style}
       className={cn(
         'rounded-lg p-3 shadow-sm hover:shadow-md transition-shadow cursor-pointer',
-        priorityStyles[priority],
+        isArchived ? 'border border-gray-300 bg-gray-100 opacity-75' : priorityStyles[priority],
         isDragging && 'opacity-50 shadow-lg'
       )}
       onClick={onClick}
@@ -234,7 +245,12 @@ function DraggableCard({
           
           <div className="flex items-center justify-between text-xs text-muted-foreground">
             <div className="flex items-center gap-1">
-              {item.type === 'ADHOC' ? (
+              {isArchived ? (
+                <Badge variant="outline" className="text-xs border-gray-400 text-gray-600 bg-gray-200">
+                  <Archive className="h-3 w-3 mr-1" />
+                  Archived
+                </Badge>
+              ) : item.type === 'ADHOC' ? (
                 <Badge variant="outline" className="text-xs border-yellow-300 text-yellow-700 bg-yellow-50">
                   Ad-hoc
                 </Badge>
@@ -245,10 +261,17 @@ function DraggableCard({
               )}
             </div>
             
-            {item.scheduledDate && (
+            {!isArchived && item.scheduledDate && (
               <div className="flex items-center gap-1">
                 <Calendar className="h-3 w-3" />
                 {formatDate(item.scheduledDate)}
+              </div>
+            )}
+            
+            {isArchived && item.deletedAt && (
+              <div className="flex items-center gap-1 text-gray-500">
+                <Clock className="h-3 w-3" />
+                {formatDate(item.deletedAt)}
               </div>
             )}
           </div>
@@ -625,6 +648,34 @@ export function ChecklistKanban({ branchId, projectId, readOnly = false, userRol
       }
     } catch (error) {
       console.error('Failed to sign:', error)
+    } finally {
+      setUpdating(false)
+    }
+  }
+
+  // Restore archived work order to a specific stage
+  const handleStageChange = async (newStage: ChecklistItemStage) => {
+    if (!selectedItem) return
+    setUpdating(true)
+    
+    try {
+      const response = await fetch(`/api/branches/${branchId}/checklist-items`, {
+        method: 'PATCH',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          action: 'update_stage',
+          itemId: selectedItem.id,
+          stage: newStage,
+        }),
+      })
+
+      if (response.ok) {
+        fetchItems()
+        setDetailsOpen(false)
+        router.refresh()
+      }
+    } catch (error) {
+      console.error('Failed to restore work order:', error)
     } finally {
       setUpdating(false)
     }
@@ -1205,6 +1256,73 @@ export function ChecklistKanban({ branchId, projectId, readOnly = false, userRol
                       )}
                     </div>
                   </div>
+                </div>
+              )}
+
+              {/* Archived Info - Show deletion details */}
+              {selectedItem.stage === 'ARCHIVED' && (
+                <div className="border-t pt-4 bg-gray-50 p-4 rounded-lg">
+                  <div className="flex items-center gap-2 mb-3">
+                    <Archive className="h-5 w-5 text-gray-600" />
+                    <h4 className="font-semibold text-gray-700">Archived Work Order</h4>
+                  </div>
+                  {selectedItem.deletedAt && (
+                    <p className="text-sm text-gray-600 mb-2">
+                      Archived on: {new Date(selectedItem.deletedAt).toLocaleDateString()} at {new Date(selectedItem.deletedAt).toLocaleTimeString()}
+                    </p>
+                  )}
+                  {selectedItem.deletedReason && (
+                    <p className="text-sm text-gray-600 mb-3">
+                      Reason: {selectedItem.deletedReason}
+                    </p>
+                  )}
+                  {!readOnly && (
+                    <div className="space-y-2">
+                      <p className="text-sm text-gray-600 mb-2">Restore this work order to:</p>
+                      <div className="grid grid-cols-2 gap-2">
+                        <Button
+                          size="sm"
+                          variant="outline"
+                          onClick={() => handleStageChange('SCHEDULED')}
+                          disabled={updating}
+                          className="text-blue-700 border-blue-300 hover:bg-blue-50"
+                        >
+                          <Calendar className="mr-2 h-4 w-4" />
+                          Scheduled
+                        </Button>
+                        <Button
+                          size="sm"
+                          variant="outline"
+                          onClick={() => handleStageChange('IN_PROGRESS')}
+                          disabled={updating}
+                          className="text-orange-700 border-orange-300 hover:bg-orange-50"
+                        >
+                          <Clock className="mr-2 h-4 w-4" />
+                          In Progress
+                        </Button>
+                        <Button
+                          size="sm"
+                          variant="outline"
+                          onClick={() => handleStageChange('FOR_REVIEW')}
+                          disabled={updating}
+                          className="text-purple-700 border-purple-300 hover:bg-purple-50"
+                        >
+                          <FileText className="mr-2 h-4 w-4" />
+                          For Review
+                        </Button>
+                        <Button
+                          size="sm"
+                          variant="outline"
+                          onClick={() => handleStageChange('COMPLETED')}
+                          disabled={updating}
+                          className="text-green-700 border-green-300 hover:bg-green-50"
+                        >
+                          <CheckCircle className="mr-2 h-4 w-4" />
+                          Completed
+                        </Button>
+                      </div>
+                    </div>
+                  )}
                 </div>
               )}
 

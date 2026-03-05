@@ -80,9 +80,11 @@ export async function PATCH(
       notes?: string | null
       scheduledDate?: Date | null
       price?: number | null
-      stage?: 'REQUESTED' | 'SCHEDULED' | 'IN_PROGRESS' | 'FOR_REVIEW' | 'COMPLETED'
+      stage?: 'REQUESTED' | 'SCHEDULED' | 'IN_PROGRESS' | 'FOR_REVIEW' | 'COMPLETED' | 'ARCHIVED'
       type?: 'SCHEDULED' | 'ADHOC'
       isCompleted?: boolean
+      deletedAt?: Date | null
+      deletedBy?: string | null
     } = {}
 
     if (description !== undefined) updateData.description = description
@@ -289,7 +291,7 @@ export async function PATCH(
   }
 }
 
-// DELETE - Remove a work order
+// DELETE - Soft delete (archive) a work order
 export async function DELETE(
   request: Request,
   { params }: { params: Promise<{ projectId: string; workOrderId: string }> }
@@ -311,8 +313,14 @@ export async function DELETE(
       return NextResponse.json({ error: 'Work order not found' }, { status: 404 })
     }
 
-    await prisma.checklistItem.delete({
-      where: { id: workOrderId }
+    // Soft delete: Move to ARCHIVED stage instead of deleting
+    await prisma.checklistItem.update({
+      where: { id: workOrderId },
+      data: {
+        stage: 'ARCHIVED',
+        deletedAt: new Date(),
+        deletedBy: session.user.id,
+      }
     })
 
     // Add activity
@@ -320,7 +328,7 @@ export async function DELETE(
       data: {
         projectId,
         type: 'UPDATED',
-        content: `Work order removed: ${workOrder.description}`,
+        content: `Work order archived: ${workOrder.description}`,
         createdById: session.user.id,
         createdByRole: session.user.role as 'CONTRACTOR' | 'CLIENT' | 'TEAM_MEMBER',
       }
@@ -328,9 +336,9 @@ export async function DELETE(
 
     return NextResponse.json({ success: true })
   } catch (error) {
-    console.error('Error deleting work order:', error)
+    console.error('Error archiving work order:', error)
     return NextResponse.json(
-      { error: 'Failed to delete work order' },
+      { error: 'Failed to archive work order' },
       { status: 500 }
     )
   }
