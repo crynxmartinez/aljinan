@@ -3,6 +3,7 @@ import { NextResponse } from 'next/server'
 import { authOptions } from '@/lib/auth'
 import { prisma } from '@/lib/prisma'
 import bcrypt from 'bcryptjs'
+import { generateStrongPassword } from '@/lib/password-validation'
 
 // GET - List all team members for the contractor
 export async function GET() {
@@ -143,7 +144,7 @@ export async function POST(request: Request) {
     }
 
     // Generate temporary password
-    const tempPassword = Math.random().toString(36).slice(-8)
+    const tempPassword = generateStrongPassword(12)
     const hashedPassword = await bcrypt.hash(tempPassword, 10)
 
     // Create user and team member in a transaction

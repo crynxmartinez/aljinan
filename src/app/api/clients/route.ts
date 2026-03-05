@@ -3,6 +3,7 @@ import { NextResponse } from 'next/server'
 import { authOptions } from '@/lib/auth'
 import { prisma } from '@/lib/prisma'
 import bcrypt from 'bcryptjs'
+import { generateStrongPassword } from '@/lib/password-validation'
 
 export async function GET() {
   try {
@@ -82,7 +83,7 @@ export async function POST(request: Request) {
       )
     }
 
-    const tempPassword = Math.random().toString(36).slice(-8)
+    const tempPassword = generateStrongPassword(12)
     const hashedPassword = await bcrypt.hash(tempPassword, 10)
 
     const client = await prisma.client.create({

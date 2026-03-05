@@ -2,6 +2,7 @@ import { NextAuthOptions } from 'next-auth'
 import CredentialsProvider from 'next-auth/providers/credentials'
 import bcrypt from 'bcryptjs'
 import { prisma } from './prisma'
+import { checkLoginRateLimit } from './rate-limit'
 
 export const authOptions: NextAuthOptions = {
   providers: [
@@ -14,6 +15,12 @@ export const authOptions: NextAuthOptions = {
       async authorize(credentials) {
         if (!credentials?.email || !credentials?.password) {
           throw new Error('Invalid credentials')
+        }
+
+        // Rate limiting: Check login attempts
+        const rateLimitResult = await checkLoginRateLimit(credentials.email)
+        if (!rateLimitResult.success) {
+          throw new Error('Too many login attempts. Please try again in 15 minutes.')
         }
 
         const user = await prisma.user.findUnique({
@@ -87,6 +94,10 @@ export const authOptions: NextAuthOptions = {
   ],
   session: {
     strategy: 'jwt',
+    maxAge: 24 * 60 * 60, // 24 hours in seconds
+  },
+  jwt: {
+    maxAge: 24 * 60 * 60, // 24 hours in seconds
   },
   callbacks: {
     async jwt({ token, user }) {

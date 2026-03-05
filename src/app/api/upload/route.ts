@@ -2,6 +2,7 @@ import { getServerSession } from 'next-auth'
 import { NextResponse } from 'next/server'
 import { authOptions } from '@/lib/auth'
 import { put, del } from '@vercel/blob'
+import { checkFileUploadRateLimit } from '@/lib/rate-limit'
 
 // Maximum file sizes
 const MAX_IMAGE_SIZE = 5 * 1024 * 1024 // 5MB for photos
@@ -18,6 +19,15 @@ export async function POST(request: Request) {
 
     if (!session) {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
+    }
+
+    // Rate limiting: Check file upload attempts
+    const rateLimitResult = await checkFileUploadRateLimit(session.user.id)
+    if (!rateLimitResult.success) {
+      return NextResponse.json(
+        { error: 'Too many file uploads. Please try again later.' },
+        { status: 429 }
+      )
     }
 
     const formData = await request.formData()
