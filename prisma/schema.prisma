@@ -247,6 +247,9 @@ model Branch {
 
   // Team member access
   teamMemberAccess TeamMemberBranch[]
+  
+  @@index([clientId])
+  @@index([name])
 }
 
 // Project statuses - simplified for contract lifecycle
@@ -286,6 +289,10 @@ model Project {
   checklists   Checklist[]
   activities   Activity[]
   certificates Certificate[]
+  
+  @@index([branchId])
+  @@index([status])
+  @@index([branchId, status])
 }
 
 // Request priorities and statuses
@@ -359,6 +366,11 @@ model Request {
   
   // Equipment for sticker inspections
   equipment           Equipment[]
+  
+  @@index([branchId])
+  @@index([status])
+  @@index([createdAt])
+  @@index([branchId, status])
 }
 
 // Photos attached to service requests
@@ -456,6 +468,11 @@ model Equipment {
   
   createdAt       DateTime         @default(now())
   updatedAt       DateTime         @updatedAt
+  
+  @@index([branchId])
+  @@index([expectedExpiry])
+  @@index([status])
+  @@index([branchId, status])
 }
 
 // Quotation statuses
@@ -761,6 +778,11 @@ model ChecklistItem {
   
   createdAt       DateTime           @default(now())
   updatedAt       DateTime           @updatedAt
+  
+  @@index([stage])
+  @@index([scheduledDate])
+  @@index([deletedAt])
+  @@index([checklistId, stage])
 }
 
 // Photos attached to work order inspections
