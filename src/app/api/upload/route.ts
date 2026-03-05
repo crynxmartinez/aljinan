@@ -3,6 +3,8 @@ import { NextResponse } from 'next/server'
 import { authOptions } from '@/lib/auth'
 import { put, del } from '@vercel/blob'
 import { checkFileUploadRateLimit } from '@/lib/rate-limit'
+import { validateFile, generateSafeFilename, ALLOWED_FILE_TYPES, FILE_SIZE_LIMITS } from '@/lib/file-security'
+import { logFileUpload, logSecurityAlert } from '@/lib/audit-log'
 
 // Maximum file sizes
 const MAX_IMAGE_SIZE = 5 * 1024 * 1024 // 5MB for photos
@@ -43,7 +45,7 @@ export async function POST(request: Request) {
       return NextResponse.json({ error: 'Upload type and folder are required' }, { status: 400 })
     }
 
-    // Validate file type and size based on upload type
+    // Determine allowed types and max size based on upload type
     let maxSize: number
     let allowedTypes: string[]
 
@@ -64,30 +66,50 @@ export async function POST(request: Request) {
         return NextResponse.json({ error: 'Invalid upload type' }, { status: 400 })
     }
 
-    if (file.size > maxSize) {
+    // Comprehensive file validation using security library
+    const validation = validateFile(file.name, file.type, file.size, {
+      allowedTypes,
+      maxSize
+    })
+
+    if (!validation.valid) {
+      // Log security alert for invalid file upload attempt
+      await logSecurityAlert(
+        session.user.id,
+        'Invalid file upload attempt',
+        {
+          filename: file.name,
+          fileType: file.type,
+          fileSize: file.size,
+          errors: validation.errors
+        }
+      )
       return NextResponse.json(
-        { error: `File too large. Maximum size is ${maxSize / (1024 * 1024)}MB` },
+        { error: 'File validation failed', details: validation.errors },
         { status: 400 }
       )
     }
 
-    if (!allowedTypes.includes(file.type)) {
-      return NextResponse.json(
-        { error: `Invalid file type. Allowed types: ${allowedTypes.join(', ')}` },
-        { status: 400 }
-      )
-    }
-
-    // Generate unique filename
-    const timestamp = Date.now()
-    const extension = file.name.split('.').pop()
-    const filename = `${folder}/${timestamp}-${Math.random().toString(36).substring(7)}.${extension}`
+    // Generate safe filename with timestamp and random suffix
+    const safeFilename = generateSafeFilename(validation.sanitizedFilename!, folder)
+    const filename = `${folder}/${safeFilename}`
 
     // Upload to Vercel Blob
     const blob = await put(filename, file, {
       access: 'public',
       addRandomSuffix: false,
     })
+
+    // Log successful file upload
+    await logFileUpload(
+      session.user.id,
+      session.user.role as any,
+      file.name,
+      file.size,
+      file.type,
+      uploadType,
+      folder
+    )
 
     return NextResponse.json({
       url: blob.url,

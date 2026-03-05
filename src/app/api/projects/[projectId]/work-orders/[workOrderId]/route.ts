@@ -3,6 +3,10 @@ import { NextResponse } from 'next/server'
 import { authOptions } from '@/lib/auth'
 import { prisma } from '@/lib/prisma'
 import { invalidateProjectCache, invalidateBranchCache } from '@/lib/cache'
+import { canEditWorkOrder, canDeleteWorkOrder, permissionDeniedError } from '@/lib/permissions'
+import { sanitizePlainText } from '@/lib/sanitize'
+import { validatePrice } from '@/lib/validation'
+import { logResourceUpdated, logWorkOrderArchive, logPermissionDenied } from '@/lib/audit-log'
 
 // GET - Fetch a specific work order
 export async function GET(
@@ -75,6 +79,14 @@ export async function PATCH(
     const body = await request.json()
     const { description, notes, scheduledDate, price, stage, type } = body
 
+    // Check permissions
+    const hasPermission = await canEditWorkOrder(session.user.id, session.user.role as any, workOrderId)
+    if (!hasPermission) {
+      await logPermissionDenied(session.user.id, session.user.role as any, 'edit work order', 'work_order', workOrderId)
+      const error = permissionDeniedError('edit this work order')
+      return NextResponse.json({ error: error.error }, { status: error.status })
+    }
+
     // Build update data
     const updateData: {
       description?: string
@@ -88,10 +100,19 @@ export async function PATCH(
       deletedBy?: string | null
     } = {}
 
-    if (description !== undefined) updateData.description = description
-    if (notes !== undefined) updateData.notes = notes
+    if (description !== undefined) updateData.description = sanitizePlainText(description)
+    if (notes !== undefined) updateData.notes = notes ? sanitizePlainText(notes) : null
     if (scheduledDate !== undefined) updateData.scheduledDate = scheduledDate ? new Date(scheduledDate) : null
-    if (price !== undefined) updateData.price = price ? parseFloat(price) : null
+    if (price !== undefined) {
+      const priceNum = price ? parseFloat(price) : null
+      if (priceNum !== null) {
+        const priceValidation = validatePrice(priceNum)
+        if (!priceValidation.valid) {
+          return NextResponse.json({ error: priceValidation.error }, { status: 400 })
+        }
+      }
+      updateData.price = priceNum
+    }
     if (stage !== undefined) {
       updateData.stage = stage
       if (stage === 'COMPLETED') {
@@ -268,6 +289,15 @@ export async function PATCH(
       }
     }
 
+    // Log the update
+    await logResourceUpdated(
+      session.user.id,
+      session.user.role as any,
+      'work_order',
+      workOrderId,
+      updateData
+    )
+
     // Invalidate cache after work order update
     const project = await prisma.project.findUnique({
       where: { id: projectId },
@@ -315,6 +345,14 @@ export async function DELETE(
     }
 
     const { projectId, workOrderId } = await params
+
+    // Check permissions
+    const hasPermission = await canDeleteWorkOrder(session.user.id, session.user.role as any, workOrderId)
+    if (!hasPermission) {
+      await logPermissionDenied(session.user.id, session.user.role as any, 'delete work order', 'work_order', workOrderId)
+      const error = permissionDeniedError('delete this work order')
+      return NextResponse.json({ error: error.error }, { status: error.status })
+    }
 
     const workOrder = await prisma.checklistItem.findUnique({
       where: { id: workOrderId }
