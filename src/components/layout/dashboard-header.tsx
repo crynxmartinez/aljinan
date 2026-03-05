@@ -1,7 +1,6 @@
 'use client'
 
 import { GlobalSearch } from '@/components/search/global-search'
-import { NotificationCenter } from '@/components/notifications/notification-center'
 import { Avatar, AvatarFallback } from '@/components/ui/avatar'
 
 interface DashboardHeaderProps {
@@ -26,10 +25,8 @@ export function DashboardHeader({ userName }: DashboardHeaderProps) {
         <GlobalSearch />
       </div>
 
-      {/* Right Side: Notifications & User */}
+      {/* Right Side: User */}
       <div className="flex items-center gap-4">
-        <NotificationCenter />
-        
         <div className="flex items-center gap-3">
           <div className="text-right hidden sm:block">
             <p className="text-sm font-medium">{userName || 'User'}</p>
