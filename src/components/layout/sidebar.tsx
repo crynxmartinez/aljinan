@@ -17,6 +17,7 @@ import {
   UserCog,
   Loader2,
   BarChart3,
+  ClipboardList,
 } from 'lucide-react'
 import { cn } from '@/lib/utils'
 import { Button } from '@/components/ui/button'
@@ -51,6 +52,11 @@ const mainNavItems = [
     title: 'Dashboard',
     href: '/dashboard',
     icon: LayoutDashboard,
+  },
+  {
+    title: 'Work Orders',
+    href: '/dashboard/work-orders',
+    icon: ClipboardList,
   },
   {
     title: 'Analytics',
