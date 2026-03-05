@@ -53,41 +53,21 @@ export function NotificationCenter() {
 
   const fetchNotifications = async () => {
     try {
-      // TODO: Replace with actual API call
-      // const response = await fetch('/api/notifications')
-      // const data = await response.json()
-      // setNotifications(data)
-      
-      // Mock data for now
-      setNotifications([
-        {
-          id: '1',
-          type: 'quote',
-          title: 'New quote received',
-          message: 'ABC Corp sent a quote for Fire Inspection',
-          link: '/dashboard/requests',
-          read: false,
-          createdAt: new Date(Date.now() - 2 * 60 * 1000),
-        },
-        {
-          id: '2',
-          type: 'work_order',
-          title: 'Work order due today',
-          message: 'Fire extinguisher inspection #123',
-          link: '/dashboard',
-          read: false,
-          createdAt: new Date(Date.now() - 60 * 60 * 1000),
-        },
-        {
-          id: '3',
-          type: 'payment',
-          title: 'Payment received',
-          message: 'Invoice #456 - SAR 2,500',
-          link: '/dashboard/billing',
-          read: true,
-          createdAt: new Date(Date.now() - 3 * 60 * 60 * 1000),
-        },
-      ])
+      const response = await fetch('/api/notifications')
+      if (response.ok) {
+        const data = await response.json()
+        // Map API notifications to component format
+        const mappedNotifications = (data.notifications || []).map((n: any) => ({
+          id: n.id,
+          type: n.type?.toLowerCase() || 'alert',
+          title: n.title,
+          message: n.message,
+          link: n.link,
+          read: n.isRead,
+          createdAt: new Date(n.createdAt),
+        }))
+        setNotifications(mappedNotifications)
+      }
     } catch (error) {
       console.error('Failed to fetch notifications:', error)
     } finally {
