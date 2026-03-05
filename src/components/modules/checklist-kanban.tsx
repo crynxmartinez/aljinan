@@ -294,10 +294,12 @@ function DraggableCard({
 // Droppable column component
 function DroppableColumn({ 
   stage, 
+  count,
   children, 
   isOver 
 }: { 
   stage: typeof STAGES[number]
+  count: number
   children: React.ReactNode
   isOver: boolean
 }) {
@@ -317,13 +319,14 @@ function DroppableColumn({
       )}
     >
       <div className={cn('p-3 border-b', stage.bgColor)}>
-        <div className="flex items-center justify-between">
-          <div className="flex items-center gap-2">
-            <StageIcon className={cn('h-4 w-4', stage.color)} />
-            <span className={cn('font-semibold text-sm', stage.color)}>
-              {stage.label}
-            </span>
-          </div>
+        <div className="flex items-center gap-2">
+          <StageIcon className={cn('h-4 w-4', stage.color)} />
+          <span className={cn('font-semibold text-sm', stage.color)}>
+            {stage.label}
+          </span>
+          <Badge variant="secondary" className="text-xs ml-auto">
+            {count}
+          </Badge>
         </div>
       </div>
       
@@ -837,11 +840,9 @@ export function ChecklistKanban({ branchId, projectId, readOnly = false, userRol
                     <DroppableColumn 
                       key={stage.id} 
                       stage={stage} 
+                      count={stageItems.length}
                       isOver={overId === stage.id}
                     >
-                      <Badge variant="secondary" className="text-xs mb-2 ml-1">
-                        {stageItems.length}
-                      </Badge>
                       {stageItems.map((item) => (
                         <DraggableCard
                           key={item.id}
