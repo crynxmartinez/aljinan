@@ -25,17 +25,11 @@ export function DashboardHeader({ userName }: DashboardHeaderProps) {
         <GlobalSearch />
       </div>
 
-      {/* Right Side: User */}
+      {/* Right Side: User Avatar */}
       <div className="flex items-center gap-4">
-        <div className="flex items-center gap-3">
-          <div className="text-right hidden sm:block">
-            <p className="text-sm font-medium">{userName || 'User'}</p>
-            <p className="text-xs text-muted-foreground">Contractor</p>
-          </div>
-          <Avatar>
-            <AvatarFallback>{getInitials(userName)}</AvatarFallback>
-          </Avatar>
-        </div>
+        <Avatar>
+          <AvatarFallback>{getInitials(userName)}</AvatarFallback>
+        </Avatar>
       </div>
     </header>
   )
