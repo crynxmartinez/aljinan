@@ -8,7 +8,7 @@ import { Card } from '@/components/ui/card'
 import { MapPin, Search, Loader2, X } from 'lucide-react'
 import dynamic from 'next/dynamic'
 
-const MapComponent = dynamic(() => import('./map-component'), {
+const MapComponent = dynamic(() => import('./google-map-component'), {
   ssr: false,
   loading: () => (
     <div className="h-[300px] bg-muted rounded-lg flex items-center justify-center">
@@ -70,20 +70,50 @@ export function AddressPicker({ value, onChange, showManualFields = true }: Addr
 
     setIsSearching(true)
     try {
-      // Add Saudi Arabia country bias and bounded search for Middle East region
-      // Bounding box: [min_lon, min_lat, max_lon, max_lat] for Saudi Arabia and surrounding area
-      const viewbox = '34.5,16.0,55.7,32.2' // Saudi Arabia region
+      const apiKey = process.env.NEXT_PUBLIC_GOOGLE_MAPS_API_KEY
+      if (!apiKey) {
+        console.error('Google Maps API key not configured')
+        setSuggestions([])
+        setIsSearching(false)
+        return
+      }
+
+      // Use Google Geocoding API with Saudi Arabia bias
       const response = await fetch(
-        `https://nominatim.openstreetmap.org/search?format=json&q=${encodeURIComponent(query)}&addressdetails=1&limit=5&countrycodes=sa&viewbox=${viewbox}&bounded=0`,
-        {
-          headers: {
-            'Accept-Language': 'en',
-          },
-        }
+        `https://maps.googleapis.com/maps/api/geocode/json?address=${encodeURIComponent(query)}&region=sa&key=${apiKey}`
       )
-      const data: NominatimResult[] = await response.json()
-      setSuggestions(data)
-      setShowSuggestions(true)
+      const data = await response.json()
+      
+      if (data.results) {
+        // Convert Google results to our format
+        const converted: NominatimResult[] = data.results.map((result: any) => {
+          const addressComponents = result.address_components
+          const getComponent = (type: string) => 
+            addressComponents.find((c: any) => c.types.includes(type))?.long_name || ''
+          
+          return {
+            place_id: result.place_id,
+            display_name: result.formatted_address,
+            lat: result.geometry.location.lat.toString(),
+            lon: result.geometry.location.lng.toString(),
+            address: {
+              house_number: getComponent('street_number'),
+              road: getComponent('route'),
+              neighbourhood: getComponent('neighborhood'),
+              suburb: getComponent('sublocality'),
+              city: getComponent('locality'),
+              town: getComponent('administrative_area_level_2'),
+              village: getComponent('administrative_area_level_3'),
+              state: getComponent('administrative_area_level_1'),
+              province: getComponent('administrative_area_level_1'),
+              postcode: getComponent('postal_code'),
+              country: getComponent('country'),
+            }
+          }
+        })
+        setSuggestions(converted)
+        setShowSuggestions(true)
+      }
     } catch (error) {
       console.error('Error searching address:', error)
       setSuggestions([])
@@ -144,32 +174,43 @@ export function AddressPicker({ value, onChange, showManualFields = true }: Addr
 
   const handleMapClick = async (lat: number, lng: number) => {
     try {
+      const apiKey = process.env.NEXT_PUBLIC_GOOGLE_MAPS_API_KEY
+      if (!apiKey) {
+        console.error('Google Maps API key not configured')
+        onChange({
+          ...value,
+          latitude: lat,
+          longitude: lng,
+        })
+        return
+      }
+
       const response = await fetch(
-        `https://nominatim.openstreetmap.org/reverse?format=json&lat=${lat}&lon=${lng}&addressdetails=1`,
-        {
-          headers: {
-            'Accept-Language': 'en',
-          },
-        }
+        `https://maps.googleapis.com/maps/api/geocode/json?latlng=${lat},${lng}&key=${apiKey}`
       )
-      const data: NominatimResult = await response.json()
+      const data = await response.json()
       
-      if (data) {
-        const addr = data.address
-        const streetParts = [addr.house_number, addr.road].filter(Boolean)
-        const street = streetParts.join(' ') || data.display_name.split(',')[0]
+      if (data.results && data.results[0]) {
+        const result = data.results[0]
+        const addressComponents = result.address_components
+        const getComponent = (type: string) => 
+          addressComponents.find((c: any) => c.types.includes(type))?.long_name || ''
+        
+        const streetNumber = getComponent('street_number')
+        const route = getComponent('route')
+        const street = [streetNumber, route].filter(Boolean).join(' ') || result.formatted_address.split(',')[0]
 
         onChange({
           address: street,
-          city: addr.city || addr.town || addr.village || '',
-          state: addr.state || addr.province || '',
-          zipCode: addr.postcode || '',
-          country: addr.country || '',
+          city: getComponent('locality') || getComponent('administrative_area_level_2'),
+          state: getComponent('administrative_area_level_1'),
+          zipCode: getComponent('postal_code'),
+          country: getComponent('country'),
           latitude: lat,
           longitude: lng,
         })
 
-        setSearchQuery(data.display_name)
+        setSearchQuery(result.formatted_address)
       }
     } catch (error) {
       console.error('Error reverse geocoding:', error)
