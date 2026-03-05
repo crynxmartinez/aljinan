@@ -7,6 +7,18 @@ import "./globals.css";
 export const metadata: Metadata = {
   title: "Aljinan - Client-Facing Operations Platform",
   description: "A shared workspace between service providers and clients",
+  manifest: "/manifest.json",
+  themeColor: "#0f172a",
+  appleWebApp: {
+    capable: true,
+    statusBarStyle: "default",
+    title: "Aljinan",
+  },
+  viewport: {
+    width: "device-width",
+    initialScale: 1,
+    maximumScale: 1,
+  },
 };
 
 export default function RootLayout({
