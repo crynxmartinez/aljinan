@@ -29,7 +29,7 @@ import {
   CollapsibleTrigger,
 } from '@/components/ui/collapsible'
 import { Separator } from '@/components/ui/separator'
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 
 interface Client {
   id: string
@@ -101,6 +101,27 @@ export function Sidebar({ clients = [], userRole, teamMemberRole }: SidebarProps
   const { data: session } = useSession()
   const [expandedClients, setExpandedClients] = useState<string[]>([])
   const [loadingHref, setLoadingHref] = useState<string | null>(null)
+  const [unreadNotifications, setUnreadNotifications] = useState(0)
+
+  useEffect(() => {
+    fetchUnreadCount()
+    // Poll every 30 seconds
+    const interval = setInterval(fetchUnreadCount, 30000)
+    return () => clearInterval(interval)
+  }, [])
+
+  const fetchUnreadCount = async () => {
+    try {
+      const response = await fetch('/api/notifications')
+      if (response.ok) {
+        const data = await response.json()
+        const unread = (data.notifications || []).filter((n: any) => !n.isRead).length
+        setUnreadNotifications(unread)
+      }
+    } catch (error) {
+      console.error('Failed to fetch notification count:', error)
+    }
+  }
 
   const handleNavClick = (e: React.MouseEvent, href: string) => {
     // Don't show loading if already on this page
@@ -162,7 +183,7 @@ export function Sidebar({ clients = [], userRole, teamMemberRole }: SidebarProps
               href={item.href}
               onClick={(e) => handleNavClick(e, item.href)}
               className={cn(
-                'flex items-center gap-3 rounded-lg px-3 py-2 text-sm transition-colors',
+                'flex items-center gap-3 rounded-lg px-3 py-2 text-sm transition-colors relative',
                 pathname === item.href
                   ? 'bg-sidebar-accent text-sidebar-accent-foreground'
                   : 'text-sidebar-foreground/70 hover:bg-sidebar-accent hover:text-sidebar-accent-foreground'
@@ -174,6 +195,11 @@ export function Sidebar({ clients = [], userRole, teamMemberRole }: SidebarProps
                 <item.icon className="h-4 w-4" />
               )}
               {item.title}
+              {item.href === '/dashboard/notifications' && unreadNotifications > 0 && (
+                <span className="ml-auto flex h-5 w-5 items-center justify-center rounded-full bg-red-600 text-xs font-medium text-white">
+                  {unreadNotifications > 9 ? '9+' : unreadNotifications}
+                </span>
+              )}
             </Link>
           ))}
         </div>
