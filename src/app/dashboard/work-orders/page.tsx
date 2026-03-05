@@ -8,7 +8,8 @@ import { ExportDialog } from '@/components/export/export-dialog'
 import { Button } from '@/components/ui/button'
 import { Checkbox } from '@/components/ui/checkbox'
 import { Badge } from '@/components/ui/badge'
-import { ClipboardList, Loader2 } from 'lucide-react'
+import { ClipboardList, Loader2, ChevronLeft, ChevronRight } from 'lucide-react'
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select'
 
 interface WorkOrder {
   id: string
@@ -25,6 +26,8 @@ export default function WorkOrdersPage() {
   const [workOrders, setWorkOrders] = useState<WorkOrder[]>([])
   const [loading, setLoading] = useState(true)
   const [selectedIds, setSelectedIds] = useState<string[]>([])
+  const [currentPage, setCurrentPage] = useState(1)
+  const [itemsPerPage, setItemsPerPage] = useState(10)
   const [filters, setFilters] = useState([
     {
       id: 'status',
@@ -73,12 +76,31 @@ export default function WorkOrdersPage() {
     }
   }
 
+  // Pagination calculations
+  const totalPages = Math.ceil(workOrders.length / itemsPerPage)
+  const startIndex = (currentPage - 1) * itemsPerPage
+  const endIndex = startIndex + itemsPerPage
+  const paginatedWorkOrders = workOrders.slice(startIndex, endIndex)
+
   const handleSelectAll = (checked: boolean) => {
     if (checked) {
-      setSelectedIds(workOrders.map(wo => wo.id))
+      setSelectedIds(paginatedWorkOrders.map(wo => wo.id))
     } else {
       setSelectedIds([])
     }
+  }
+
+  const handleItemsPerPageChange = (value: string) => {
+    setItemsPerPage(Number(value))
+    setCurrentPage(1) // Reset to first page
+  }
+
+  const handlePreviousPage = () => {
+    setCurrentPage(prev => Math.max(1, prev - 1))
+  }
+
+  const handleNextPage = () => {
+    setCurrentPage(prev => Math.min(totalPages, prev + 1))
   }
 
   const handleSelectOne = (id: string, checked: boolean) => {
@@ -162,8 +184,25 @@ export default function WorkOrdersPage() {
           onFilterChange={handleFilterChange}
           activeFilterCount={getActiveFilterCount()}
         />
-        <div className="text-sm text-muted-foreground ml-auto">
-          {workOrders.length} work orders
+        <div className="flex items-center gap-4 ml-auto">
+          <div className="flex items-center gap-2">
+            <span className="text-sm text-muted-foreground">Show:</span>
+            <Select value={itemsPerPage.toString()} onValueChange={handleItemsPerPageChange}>
+              <SelectTrigger className="w-[80px]">
+                <SelectValue />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="10">10</SelectItem>
+                <SelectItem value="20">20</SelectItem>
+                <SelectItem value="40">40</SelectItem>
+                <SelectItem value="60">60</SelectItem>
+                <SelectItem value="100">100</SelectItem>
+              </SelectContent>
+            </Select>
+          </div>
+          <div className="text-sm text-muted-foreground">
+            {workOrders.length} total work orders
+          </div>
         </div>
       </div>
 
@@ -197,7 +236,7 @@ export default function WorkOrdersPage() {
               <div className="grid grid-cols-12 gap-4 px-4 py-2 bg-muted/50 rounded-lg font-medium text-sm">
                 <div className="col-span-1 flex items-center">
                   <Checkbox
-                    checked={selectedIds.length === workOrders.length}
+                    checked={paginatedWorkOrders.length > 0 && selectedIds.length === paginatedWorkOrders.length}
                     onCheckedChange={handleSelectAll}
                   />
                 </div>
@@ -210,7 +249,7 @@ export default function WorkOrdersPage() {
               </div>
 
               {/* Table Rows */}
-              {workOrders.map((wo) => (
+              {paginatedWorkOrders.map((wo) => (
                 <div
                   key={wo.id}
                   className="grid grid-cols-12 gap-4 px-4 py-3 border rounded-lg hover:bg-muted/30 transition-colors"
@@ -250,6 +289,61 @@ export default function WorkOrdersPage() {
                   </div>
                 </div>
               ))}
+            </div>
+          )}
+
+          {/* Pagination Controls */}
+          {!loading && workOrders.length > 0 && (
+            <div className="flex items-center justify-between px-4 py-4 border-t">
+              <div className="text-sm text-muted-foreground">
+                Showing {startIndex + 1} to {Math.min(endIndex, workOrders.length)} of {workOrders.length} work orders
+              </div>
+              <div className="flex items-center gap-2">
+                <Button
+                  variant="outline"
+                  size="sm"
+                  onClick={handlePreviousPage}
+                  disabled={currentPage === 1}
+                >
+                  <ChevronLeft className="h-4 w-4 mr-1" />
+                  Previous
+                </Button>
+                <div className="flex items-center gap-1">
+                  {Array.from({ length: totalPages }, (_, i) => i + 1)
+                    .filter(page => {
+                      // Show first page, last page, current page, and pages around current
+                      return (
+                        page === 1 ||
+                        page === totalPages ||
+                        (page >= currentPage - 1 && page <= currentPage + 1)
+                      )
+                    })
+                    .map((page, index, array) => (
+                      <div key={page} className="flex items-center">
+                        {index > 0 && array[index - 1] !== page - 1 && (
+                          <span className="px-2 text-muted-foreground">...</span>
+                        )}
+                        <Button
+                          variant={currentPage === page ? "default" : "outline"}
+                          size="sm"
+                          onClick={() => setCurrentPage(page)}
+                          className="min-w-[40px]"
+                        >
+                          {page}
+                        </Button>
+                      </div>
+                    ))}
+                </div>
+                <Button
+                  variant="outline"
+                  size="sm"
+                  onClick={handleNextPage}
+                  disabled={currentPage === totalPages}
+                >
+                  Next
+                  <ChevronRight className="h-4 w-4 ml-1" />
+                </Button>
+              </div>
             </div>
           )}
         </CardContent>
