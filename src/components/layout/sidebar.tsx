@@ -16,6 +16,7 @@ import {
   Bell,
   UserCog,
   Loader2,
+  BarChart3,
 } from 'lucide-react'
 import { cn } from '@/lib/utils'
 import { Button } from '@/components/ui/button'
@@ -47,14 +48,19 @@ interface SidebarProps {
 
 const mainNavItems = [
   {
-    title: 'Notifications',
-    href: '/dashboard/notifications',
-    icon: Bell,
-  },
-  {
     title: 'Dashboard',
     href: '/dashboard',
     icon: LayoutDashboard,
+  },
+  {
+    title: 'Analytics',
+    href: '/dashboard/analytics',
+    icon: BarChart3,
+  },
+  {
+    title: 'Notifications',
+    href: '/dashboard/notifications',
+    icon: Bell,
   },
   {
     title: 'Company Profile',

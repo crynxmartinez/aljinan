@@ -3,6 +3,7 @@ import { redirect } from 'next/navigation'
 import { authOptions } from '@/lib/auth'
 import { prisma } from '@/lib/prisma'
 import { Sidebar } from '@/components/layout/sidebar'
+import { DashboardHeader } from '@/components/layout/dashboard-header'
 
 async function getClientsForContractor(userId: string) {
   const contractor = await prisma.contractor.findUnique({
@@ -117,9 +118,12 @@ export default async function DashboardLayout({
         userRole={session.user.role}
         teamMemberRole={session.user.teamMemberRole}
       />
-      <main className="flex-1 overflow-auto bg-background">
-        {children}
-      </main>
+      <div className="flex-1 flex flex-col overflow-hidden">
+        <DashboardHeader userName={session.user.name} />
+        <main className="flex-1 overflow-auto bg-background">
+          {children}
+        </main>
+      </div>
     </div>
   )
 }
