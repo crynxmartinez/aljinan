@@ -2,6 +2,8 @@ import { getServerSession } from 'next-auth'
 import { NextResponse } from 'next/server'
 import { authOptions } from '@/lib/auth'
 import { prisma } from '@/lib/prisma'
+import { canApproveProject, permissionDeniedError } from '@/lib/permissions'
+import { logResourceUpdated, logPermissionDenied } from '@/lib/audit-log'
 
 // POST - Approve a project/quotation (Client action)
 // This triggers: Project PENDING -> ACTIVE, creates Contract, creates Invoice, work orders become visible
@@ -17,6 +19,14 @@ export async function POST(
     }
 
     const { projectId } = await params
+
+    // Check permissions - only clients can approve projects
+    const hasPermission = await canApproveProject(session.user.id, session.user.role as any, projectId)
+    if (!hasPermission) {
+      await logPermissionDenied(session.user.id, session.user.role as any, 'approve project', 'project', projectId)
+      const error = permissionDeniedError('approve this project')
+      return NextResponse.json({ error: error.error }, { status: error.status })
+    }
 
     // Get the project with its quotations, work orders, and requests
     const project = await prisma.project.findUnique({
@@ -148,6 +158,20 @@ export async function POST(
         invoice
       }
     })
+
+    // Log project approval
+    await logResourceUpdated(
+      session.user.id,
+      session.user.role as any,
+      'project',
+      projectId,
+      {
+        status: 'ACTIVE',
+        totalValue,
+        contractCreated: true,
+        invoiceCreated: true
+      }
+    )
 
     return NextResponse.json({
       success: true,

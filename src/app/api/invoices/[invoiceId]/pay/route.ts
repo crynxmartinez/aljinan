@@ -2,6 +2,8 @@ import { getServerSession } from 'next-auth'
 import { NextResponse } from 'next/server'
 import { authOptions } from '@/lib/auth'
 import { prisma } from '@/lib/prisma'
+import { canPayInvoice, permissionDeniedError } from '@/lib/permissions'
+import { logInvoicePayment, logPermissionDenied } from '@/lib/audit-log'
 
 // POST - Mark an invoice as PAID
 // This triggers: Project DONE -> CLOSED (if project is DONE)
@@ -17,6 +19,14 @@ export async function POST(
     }
 
     const { invoiceId } = await params
+
+    // Check permissions - only clients can pay invoices
+    const hasPermission = await canPayInvoice(session.user.id, session.user.role as any, invoiceId)
+    if (!hasPermission) {
+      await logPermissionDenied(session.user.id, session.user.role as any, 'pay invoice', 'invoice', invoiceId)
+      const error = permissionDeniedError('pay this invoice')
+      return NextResponse.json({ error: error.error }, { status: error.status })
+    }
 
     // Get the invoice with its project
     const invoice = await prisma.invoice.findUnique({
@@ -86,6 +96,15 @@ export async function POST(
         project: updatedProject
       }
     })
+
+    // Log invoice payment
+    await logInvoicePayment(
+      session.user.id,
+      session.user.role as any,
+      invoiceId,
+      invoice.total,
+      'manual'
+    )
 
     return NextResponse.json({
       success: true,

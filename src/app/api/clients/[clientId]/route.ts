@@ -2,6 +2,10 @@ import { getServerSession } from 'next-auth'
 import { NextResponse } from 'next/server'
 import { authOptions } from '@/lib/auth'
 import { prisma } from '@/lib/prisma'
+import { canManageClients, permissionDeniedError } from '@/lib/permissions'
+import { sanitizePlainText, sanitizeEmail, sanitizePhone } from '@/lib/sanitize'
+import { validateEmail, validatePhone, validateRequired } from '@/lib/validation'
+import { logResourceUpdated, logPermissionDenied } from '@/lib/audit-log'
 
 // GET - Fetch a single client
 export async function GET(
@@ -88,15 +92,36 @@ export async function PATCH(
       contacts
     } = body
 
-    // Build update data
+    // Validate and sanitize inputs
     const updateData: Record<string, unknown> = {}
 
-    if (companyName !== undefined) updateData.companyName = companyName
-    if (companyPhone !== undefined) updateData.companyPhone = companyPhone
-    if (companyEmail !== undefined) updateData.companyEmail = companyEmail
-    if (crNumber !== undefined) updateData.crNumber = crNumber
-    if (vatNumber !== undefined) updateData.vatNumber = vatNumber
-    if (billingAddress !== undefined) updateData.billingAddress = billingAddress
+    if (companyName !== undefined) {
+      const nameValidation = validateRequired(companyName, 'Company name')
+      if (!nameValidation.valid) {
+        return NextResponse.json({ error: nameValidation.error }, { status: 400 })
+      }
+      updateData.companyName = sanitizePlainText(companyName)
+    }
+
+    if (companyPhone !== undefined && companyPhone) {
+      const phoneValidation = validatePhone(companyPhone)
+      if (!phoneValidation.valid) {
+        return NextResponse.json({ error: phoneValidation.error }, { status: 400 })
+      }
+      updateData.companyPhone = sanitizePhone(companyPhone)
+    }
+
+    if (companyEmail !== undefined && companyEmail) {
+      const emailValidation = validateEmail(companyEmail)
+      if (!emailValidation.valid) {
+        return NextResponse.json({ error: emailValidation.error }, { status: 400 })
+      }
+      updateData.companyEmail = sanitizeEmail(companyEmail)
+    }
+
+    if (crNumber !== undefined) updateData.crNumber = crNumber ? sanitizePlainText(crNumber) : null
+    if (vatNumber !== undefined) updateData.vatNumber = vatNumber ? sanitizePlainText(vatNumber) : null
+    if (billingAddress !== undefined) updateData.billingAddress = billingAddress ? sanitizePlainText(billingAddress) : null
     if (contacts !== undefined) updateData.contacts = contacts
 
     const updated = await prisma.client.update({
@@ -114,6 +139,15 @@ export async function PATCH(
         }
       }
     })
+
+    // Log the update
+    await logResourceUpdated(
+      session.user.id,
+      session.user.role as any,
+      'client',
+      clientId,
+      updateData
+    )
 
     return NextResponse.json(updated)
   } catch (error) {
