@@ -60,41 +60,12 @@ export default function WorkOrdersPage() {
 
   const fetchWorkOrders = async () => {
     try {
-      // TODO: Replace with actual API call
-      // Mock data for now
-      const mockData: WorkOrder[] = [
-        {
-          id: '1',
-          description: 'Fire extinguisher inspection',
-          stage: 'SCHEDULED',
-          workOrderType: 'INSPECTION',
-          scheduledDate: '2026-03-10',
-          price: 500,
-          clientName: 'ABC Corporation',
-          branchName: 'Main Office'
-        },
-        {
-          id: '2',
-          description: 'Fire alarm system maintenance',
-          stage: 'IN_PROGRESS',
-          workOrderType: 'MAINTENANCE',
-          scheduledDate: '2026-03-08',
-          price: 1200,
-          clientName: 'XYZ Ltd',
-          branchName: 'Warehouse'
-        },
-        {
-          id: '3',
-          description: 'Emergency exit inspection',
-          stage: 'FOR_REVIEW',
-          workOrderType: 'INSPECTION',
-          scheduledDate: '2026-03-05',
-          price: 300,
-          clientName: 'ABC Corporation',
-          branchName: 'Branch 2'
-        },
-      ]
-      setWorkOrders(mockData)
+      const response = await fetch('/api/work-orders')
+      if (!response.ok) {
+        throw new Error('Failed to fetch work orders')
+      }
+      const data = await response.json()
+      setWorkOrders(data)
     } catch (error) {
       console.error('Failed to fetch work orders:', error)
     } finally {
