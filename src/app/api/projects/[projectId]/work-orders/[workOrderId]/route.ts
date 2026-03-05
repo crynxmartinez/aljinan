@@ -2,6 +2,7 @@ import { getServerSession } from 'next-auth'
 import { NextResponse } from 'next/server'
 import { authOptions } from '@/lib/auth'
 import { prisma } from '@/lib/prisma'
+import { invalidateProjectCache, invalidateBranchCache } from '@/lib/cache'
 
 // GET - Fetch a specific work order
 export async function GET(
@@ -267,6 +268,16 @@ export async function PATCH(
       }
     }
 
+    // Invalidate cache after work order update
+    const project = await prisma.project.findUnique({
+      where: { id: projectId },
+      select: { branchId: true }
+    })
+    if (project) {
+      invalidateProjectCache(projectId, project.branchId)
+      invalidateBranchCache(project.branchId)
+    }
+
     return NextResponse.json({
       id: workOrder.id,
       checklistId: workOrder.checklistId,
@@ -333,6 +344,16 @@ export async function DELETE(
         createdByRole: session.user.role as 'CONTRACTOR' | 'CLIENT' | 'TEAM_MEMBER',
       }
     })
+
+    // Invalidate cache after work order deletion
+    const project = await prisma.project.findUnique({
+      where: { id: projectId },
+      select: { branchId: true }
+    })
+    if (project) {
+      invalidateProjectCache(projectId, project.branchId)
+      invalidateBranchCache(project.branchId)
+    }
 
     return NextResponse.json({ success: true })
   } catch (error) {
