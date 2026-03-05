@@ -236,62 +236,74 @@ export function Sidebar({ clients = [], userRole, teamMemberRole }: SidebarProps
               )}
             </div>
           ) : (
-            clients.map((client) => (
-              <Collapsible
-                key={client.id}
-                open={expandedClients.includes(client.id)}
-                onOpenChange={() => toggleClient(client.id)}
-              >
-                <div className="flex items-center">
-                  <CollapsibleTrigger className="flex items-center justify-center rounded-lg p-2 text-sidebar-foreground/70 hover:bg-sidebar-accent hover:text-sidebar-accent-foreground">
-                    {expandedClients.includes(client.id) ? (
-                      <ChevronDown className="h-4 w-4" />
-                    ) : (
-                      <ChevronRight className="h-4 w-4" />
-                    )}
-                  </CollapsibleTrigger>
-                  <Link
-                    href={`/dashboard/clients/${client.id}`}
-                    onClick={(e) => handleNavClick(e, `/dashboard/clients/${client.id}`)}
-                    className={cn(
-                      'flex flex-1 items-center gap-2 rounded-lg px-2 py-2 text-sm transition-colors',
-                      pathname === `/dashboard/clients/${client.id}` || pathname.startsWith(`/dashboard/clients/${client.id}/`)
-                        ? 'bg-sidebar-accent text-sidebar-accent-foreground'
-                        : 'text-sidebar-foreground/70 hover:bg-sidebar-accent hover:text-sidebar-accent-foreground'
-                    )}
-                  >
-                    {loadingHref === `/dashboard/clients/${client.id}` ? (
-                      <Loader2 className="h-4 w-4 animate-spin" />
-                    ) : (
-                      <Users className="h-4 w-4" />
-                    )}
-                    <span className="truncate">{client.companyName}</span>
-                  </Link>
-                </div>
-                <CollapsibleContent className="pl-6">
-                  {client.branches.map((branch) => (
+            <>
+              {clients.map((client) => (
+                <Collapsible
+                  key={client.id}
+                  open={expandedClients.includes(client.id)}
+                  onOpenChange={() => toggleClient(client.id)}
+                >
+                  <div className="flex items-center">
+                    <CollapsibleTrigger className="flex items-center justify-center rounded-lg p-2 text-sidebar-foreground/70 hover:bg-sidebar-accent hover:text-sidebar-accent-foreground">
+                      {expandedClients.includes(client.id) ? (
+                        <ChevronDown className="h-4 w-4" />
+                      ) : (
+                        <ChevronRight className="h-4 w-4" />
+                      )}
+                    </CollapsibleTrigger>
                     <Link
-                      key={branch.id}
-                      href={`/dashboard/clients/${client.id}/branches/${branch.id}`}
-                      onClick={(e) => handleNavClick(e, `/dashboard/clients/${client.id}/branches/${branch.id}`)}
+                      href={`/dashboard/clients/${client.id}`}
+                      onClick={(e) => handleNavClick(e, `/dashboard/clients/${client.id}`)}
                       className={cn(
-                        'flex items-center gap-2 rounded-lg px-3 py-2 text-sm transition-colors',
-                        pathname === `/dashboard/clients/${client.id}/branches/${branch.id}`
+                        'flex flex-1 items-center gap-2 rounded-lg px-2 py-2 text-sm transition-colors',
+                        pathname === `/dashboard/clients/${client.id}` || pathname.startsWith(`/dashboard/clients/${client.id}/`)
                           ? 'bg-sidebar-accent text-sidebar-accent-foreground'
-                          : 'text-sidebar-foreground/60 hover:bg-sidebar-accent hover:text-sidebar-accent-foreground'
+                          : 'text-sidebar-foreground/70 hover:bg-sidebar-accent hover:text-sidebar-accent-foreground'
                       )}
                     >
-                      {loadingHref === `/dashboard/clients/${client.id}/branches/${branch.id}` ? (
-                        <Loader2 className="h-3 w-3 animate-spin" />
+                      {loadingHref === `/dashboard/clients/${client.id}` ? (
+                        <Loader2 className="h-4 w-4 animate-spin" />
                       ) : (
-                        <MapPin className="h-3 w-3" />
+                        <Users className="h-4 w-4" />
                       )}
-                      <span className="truncate">{branch.address}</span>
+                      <span className="truncate">{client.companyName}</span>
                     </Link>
-                  ))}
-                </CollapsibleContent>
-              </Collapsible>
-            ))
+                  </div>
+                  <CollapsibleContent className="pl-6">
+                    {client.branches.map((branch) => (
+                      <Link
+                        key={branch.id}
+                        href={`/dashboard/clients/${client.id}/branches/${branch.id}`}
+                        onClick={(e) => handleNavClick(e, `/dashboard/clients/${client.id}/branches/${branch.id}`)}
+                        className={cn(
+                          'flex items-center gap-2 rounded-lg px-3 py-2 text-sm transition-colors',
+                          pathname === `/dashboard/clients/${client.id}/branches/${branch.id}`
+                            ? 'bg-sidebar-accent text-sidebar-accent-foreground'
+                            : 'text-sidebar-foreground/60 hover:bg-sidebar-accent hover:text-sidebar-accent-foreground'
+                        )}
+                      >
+                        {loadingHref === `/dashboard/clients/${client.id}/branches/${branch.id}` ? (
+                          <Loader2 className="h-3 w-3 animate-spin" />
+                        ) : (
+                          <MapPin className="h-3 w-3" />
+                        )}
+                        <span className="truncate">{branch.address}</span>
+                      </Link>
+                    ))}
+                  </CollapsibleContent>
+                </Collapsible>
+              ))}
+              {!isTeamMember && (
+                <div className="px-3 pt-2">
+                  <Link href="/dashboard/clients">
+                    <Button variant="outline" size="sm" className="w-full">
+                      <Users className="mr-2 h-4 w-4" />
+                      Add Client
+                    </Button>
+                  </Link>
+                </div>
+              )}
+            </>
           )}
         </div>
 
