@@ -30,8 +30,8 @@ export function PDFViewer({ url, name, open, onOpenChange }: PDFViewerProps) {
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="max-w-[95vw] sm:max-w-[95vw] max-h-[95vh] overflow-hidden flex flex-col">
-        <DialogHeader>
+      <DialogContent className="max-w-[95vw] sm:max-w-[95vw] h-[95vh] overflow-hidden flex flex-col p-0">
+        <DialogHeader className="px-6 pt-6 pb-4 border-b">
           <DialogTitle className="flex items-center justify-between">
             <span className="truncate">{name}</span>
             <div className="flex gap-2 ml-4">
