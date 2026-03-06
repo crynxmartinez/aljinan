@@ -7,6 +7,7 @@ import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
 import { Textarea } from '@/components/ui/textarea'
+import { FileUploadDropzone } from '@/components/ui/file-upload-dropzone'
 import { Badge } from '@/components/ui/badge'
 import {
   Dialog,
@@ -508,34 +509,21 @@ export function CertificatesList({ branchId, userRole }: CertificatesListProps) 
 
               <div className="space-y-2">
                 <Label>Certificate File (PDF)</Label>
-                <div className="border-2 border-dashed rounded-lg p-4">
-                  <input
-                    type="file"
-                    accept=".pdf,.jpg,.jpeg,.png"
-                    onChange={handleFileUpload}
-                    className="hidden"
-                    id="certificate-file-upload"
-                    disabled={uploading}
-                  />
-                  <label
-                    htmlFor="certificate-file-upload"
-                    className="flex flex-col items-center justify-center cursor-pointer"
-                  >
-                    {uploading ? (
-                      <Loader2 className="h-6 w-6 animate-spin text-muted-foreground" />
-                    ) : uploadedFileUrl ? (
-                      <div className="flex items-center gap-2 text-green-700">
-                        <CheckCircle className="h-5 w-5" />
-                        <span className="text-sm">File uploaded</span>
-                      </div>
-                    ) : (
-                      <>
-                        <Upload className="h-6 w-6 text-muted-foreground mb-1" />
-                        <span className="text-sm text-muted-foreground">Click to upload file</span>
-                      </>
-                    )}
-                  </label>
-                </div>
+                <FileUploadDropzone
+                  onFilesSelected={(files) => {
+                    const event = {
+                      target: { files }
+                    } as any
+                    handleFileUpload(event)
+                  }}
+                  accept=".pdf,.jpg,.jpeg,.png"
+                  multiple={false}
+                  disabled={uploading}
+                  uploading={uploading}
+                  uploadedFiles={uploadedFileUrl ? [{ url: uploadedFileUrl, name: 'Certificate' }] : []}
+                  label="Click to upload or drag and drop"
+                  showPreview={true}
+                />
               </div>
             </div>
             <DialogFooter className="mt-6">

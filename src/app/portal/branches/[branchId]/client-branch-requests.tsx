@@ -7,6 +7,7 @@ import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
 import { Textarea } from '@/components/ui/textarea'
+import { FileUploadDropzone } from '@/components/ui/file-upload-dropzone'
 import { Badge } from '@/components/ui/badge'
 import {
   Dialog,
@@ -1123,50 +1124,22 @@ export function ClientBranchRequests({ branchId, projectId, onDataChange, userId
                 <p className="text-xs text-muted-foreground mb-2">
                   Upload photos of the issue to help the technician understand the problem
                 </p>
-                <div className="border-2 border-dashed rounded-lg p-4">
-                  <input
-                    type="file"
-                    accept="image/*"
-                    multiple
-                    onChange={handlePhotoUpload}
-                    className="hidden"
-                    id="photo-upload"
-                    disabled={uploading}
-                  />
-                  <label
-                    htmlFor="photo-upload"
-                    className="flex flex-col items-center justify-center cursor-pointer"
-                  >
-                    {uploading ? (
-                      <Loader2 className="h-8 w-8 animate-spin text-muted-foreground" />
-                    ) : (
-                      <>
-                        <Upload className="h-8 w-8 text-muted-foreground mb-2" />
-                        <span className="text-sm text-muted-foreground">Click to upload photos</span>
-                      </>
-                    )}
-                  </label>
-                </div>
-                {uploadedPhotos.length > 0 && (
-                  <div className="flex flex-wrap gap-2 mt-2">
-                    {uploadedPhotos.map((photo, index) => (
-                      <div key={index} className="relative group">
-                        <img
-                          src={photo.url}
-                          alt={photo.name}
-                          className="h-16 w-16 object-cover rounded-lg border"
-                        />
-                        <button
-                          type="button"
-                          onClick={() => removePhoto(photo.url)}
-                          className="absolute -top-2 -right-2 bg-destructive text-destructive-foreground rounded-full p-1 opacity-0 group-hover:opacity-100 transition-opacity"
-                        >
-                          <X className="h-3 w-3" />
-                        </button>
-                      </div>
-                    ))}
-                  </div>
-                )}
+                <FileUploadDropzone
+                  onFilesSelected={(files) => {
+                    const event = {
+                      target: { files }
+                    } as any
+                    handlePhotoUpload(event)
+                  }}
+                  accept="image/*"
+                  multiple={true}
+                  disabled={uploading}
+                  uploading={uploading}
+                  uploadedFiles={uploadedPhotos}
+                  onRemoveFile={removePhoto}
+                  label="Click to upload or drag and drop photos"
+                  showPreview={true}
+                />
               </div>
             </div>
             <DialogFooter className="mt-6">

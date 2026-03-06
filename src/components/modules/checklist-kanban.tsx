@@ -48,6 +48,7 @@ import {
 import { Checkbox } from '@/components/ui/checkbox'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
+import { FileUploadDropzone } from '@/components/ui/file-upload-dropzone'
 import { Textarea } from '@/components/ui/textarea'
 import { cn } from '@/lib/utils'
 import {
@@ -1005,50 +1006,22 @@ export function ChecklistKanban({ branchId, projectId, readOnly = false, userRol
                       {/* Photo Upload */}
                       <div className="space-y-2">
                         <Label>Photos</Label>
-                        <div className="border-2 border-dashed rounded-lg p-4">
-                          <input
-                            type="file"
-                            accept="image/*"
-                            multiple
-                            onChange={(e) => handleInspectionPhotoUpload(e, 'INSPECTION')}
-                            className="hidden"
-                            id="inspection-photo-upload"
-                            disabled={uploadingPhoto}
-                          />
-                          <label
-                            htmlFor="inspection-photo-upload"
-                            className="flex flex-col items-center justify-center cursor-pointer"
-                          >
-                            {uploadingPhoto ? (
-                              <Loader2 className="h-6 w-6 animate-spin text-muted-foreground" />
-                            ) : (
-                              <>
-                                <Upload className="h-6 w-6 text-muted-foreground mb-1" />
-                                <span className="text-sm text-muted-foreground">Upload photos</span>
-                              </>
-                            )}
-                          </label>
-                        </div>
-                        {inspectionPhotos.length > 0 && (
-                          <div className="flex flex-wrap gap-2 mt-2">
-                            {inspectionPhotos.map((photo, index) => (
-                              <div key={index} className="relative group">
-                                <img
-                                  src={photo.url}
-                                  alt={photo.name}
-                                  className="h-16 w-16 object-cover rounded-lg border"
-                                />
-                                <button
-                                  type="button"
-                                  onClick={() => removeInspectionPhoto(photo.url)}
-                                  className="absolute -top-2 -right-2 bg-destructive text-destructive-foreground rounded-full p-1 opacity-0 group-hover:opacity-100 transition-opacity"
-                                >
-                                  <X className="h-3 w-3" />
-                                </button>
-                              </div>
-                            ))}
-                          </div>
-                        )}
+                        <FileUploadDropzone
+                          onFilesSelected={(files) => {
+                            const event = {
+                              target: { files }
+                            } as any
+                            handleInspectionPhotoUpload(event, 'INSPECTION')
+                          }}
+                          accept="image/*"
+                          multiple={true}
+                          disabled={uploadingPhoto}
+                          uploading={uploadingPhoto}
+                          uploadedFiles={inspectionPhotos}
+                          onRemoveFile={removeInspectionPhoto}
+                          label="Click to upload or drag and drop photos"
+                          showPreview={true}
+                        />
                       </div>
 
                       {/* Equipment Inspection Section - Only for STICKER_INSPECTION work orders */}
