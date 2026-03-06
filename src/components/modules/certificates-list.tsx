@@ -9,6 +9,8 @@ import { Label } from '@/components/ui/label'
 import { Textarea } from '@/components/ui/textarea'
 import { FileUploadDropzone } from '@/components/ui/file-upload-dropzone'
 import { Badge } from '@/components/ui/badge'
+import { ImageLightbox } from '@/components/ui/image-lightbox'
+import { PDFViewer } from '@/components/ui/pdf-viewer'
 import {
   Dialog,
   DialogContent,
@@ -123,6 +125,8 @@ export function CertificatesList({ branchId, userRole }: CertificatesListProps) 
   const [deleting, setDeleting] = useState(false)
   const [error, setError] = useState('')
   const [uploading, setUploading] = useState(false)
+  const [previewOpen, setPreviewOpen] = useState(false)
+  const [previewFile, setPreviewFile] = useState<{ url: string; name: string; type: 'image' | 'pdf' } | null>(null)
   
   const [newCertificate, setNewCertificate] = useState({
     type: 'PREVENTIVE_MAINTENANCE' as CertificateType,
@@ -620,10 +624,27 @@ export function CertificatesList({ branchId, userRole }: CertificatesListProps) 
               )}
 
               {selectedCertificate.fileUrl && (
-                <div className="pt-4 border-t">
+                <div className="pt-4 border-t space-y-2">
+                  <Button 
+                    onClick={() => {
+                      const isImage = selectedCertificate.fileUrl!.match(/\.(jpg|jpeg|png|gif|webp)$/i)
+                      setPreviewFile({
+                        url: selectedCertificate.fileUrl!,
+                        name: selectedCertificate.title,
+                        type: isImage ? 'image' : 'pdf'
+                      })
+                      setPreviewOpen(true)
+                    }}
+                    className="w-full"
+                    variant="default"
+                  >
+                    <Eye className="mr-2 h-4 w-4" />
+                    View Certificate
+                  </Button>
                   <Button 
                     onClick={() => window.open(selectedCertificate.fileUrl!, '_blank')}
                     className="w-full"
+                    variant="outline"
                   >
                     <Download className="mr-2 h-4 w-4" />
                     Download Certificate
@@ -634,6 +655,24 @@ export function CertificatesList({ branchId, userRole }: CertificatesListProps) 
           )}
         </DialogContent>
       </Dialog>
+
+      {/* File Preview Modals */}
+      {previewFile?.type === 'image' && (
+        <ImageLightbox
+          images={[{ url: previewFile.url, name: previewFile.name }]}
+          initialIndex={0}
+          open={previewOpen}
+          onOpenChange={setPreviewOpen}
+        />
+      )}
+      {previewFile?.type === 'pdf' && (
+        <PDFViewer
+          url={previewFile.url}
+          name={previewFile.name}
+          open={previewOpen}
+          onOpenChange={setPreviewOpen}
+        />
+      )}
     </>
   )
 }
