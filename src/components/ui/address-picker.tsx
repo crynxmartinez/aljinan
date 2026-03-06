@@ -78,7 +78,6 @@ export function AddressPicker({ value, onChange, showManualFields = true }: Addr
         const request = {
           input: query,
           componentRestrictions: { country: 'sa' },
-          types: ['geocode', 'establishment'],
         }
         
         autocompleteService.getPlacePredictions(request, (predictions, status) => {
