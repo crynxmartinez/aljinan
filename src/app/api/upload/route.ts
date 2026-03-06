@@ -1,7 +1,7 @@
 import { getServerSession } from 'next-auth'
 import { NextResponse } from 'next/server'
 import { authOptions } from '@/lib/auth'
-import { put, del } from '@vercel/blob'
+import { uploadToS3, deleteFromS3 } from '@/lib/s3'
 import { checkFileUploadRateLimit } from '@/lib/rate-limit'
 import { validateFile, generateSafeFilename, ALLOWED_FILE_TYPES, FILE_SIZE_LIMITS } from '@/lib/file-security'
 import { logFileUpload, logSecurityAlert } from '@/lib/audit-log'
@@ -94,11 +94,8 @@ export async function POST(request: Request) {
     const safeFilename = generateSafeFilename(validation.sanitizedFilename!, folder)
     const filename = `${folder}/${safeFilename}`
 
-    // Upload to Vercel Blob
-    const blob = await put(filename, file, {
-      access: 'public',
-      addRandomSuffix: false,
-    })
+    // Upload to S3
+    const result = await uploadToS3(file, filename)
 
     // Log successful file upload
     await logFileUpload(
@@ -112,7 +109,7 @@ export async function POST(request: Request) {
     )
 
     return NextResponse.json({
-      url: blob.url,
+      url: result.url,
       filename: file.name,
       size: file.size,
       type: file.type,
@@ -141,7 +138,7 @@ export async function DELETE(request: Request) {
       return NextResponse.json({ error: 'URL is required' }, { status: 400 })
     }
 
-    await del(url)
+    await deleteFromS3(url)
 
     return NextResponse.json({ success: true })
   } catch (error) {
