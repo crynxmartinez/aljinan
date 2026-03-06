@@ -74,8 +74,14 @@ export function AddressPicker({ value, onChange, showManualFields = true }: Addr
       // Use Google Maps JavaScript API Geocoder (client-side, works with referrer restrictions)
       if (typeof google !== 'undefined' && google.maps) {
         const geocoder = new google.maps.Geocoder()
+        
+        // Append Saudi Arabia for better results on short/local queries
+        const searchQuery = query.toLowerCase().includes('saudi') 
+          ? query 
+          : `${query}, Saudi Arabia`
+        
         const response = await geocoder.geocode({ 
-          address: query,
+          address: searchQuery,
           region: 'sa'
         })
         
@@ -114,10 +120,18 @@ export function AddressPicker({ value, onChange, showManualFields = true }: Addr
       } else {
         console.error('Google Maps not loaded yet')
         setSuggestions([])
+        setShowSuggestions(true)
       }
-    } catch (error) {
-      console.error('Error searching address:', error)
-      setSuggestions([])
+    } catch (error: any) {
+      // ZERO_RESULTS is not a real error - just means no matches found
+      if (error?.message?.includes('ZERO_RESULTS')) {
+        setSuggestions([])
+        setShowSuggestions(true)
+      } else {
+        console.error('Error searching address:', error)
+        setSuggestions([])
+        setShowSuggestions(true)
+      }
     } finally {
       setIsSearching(false)
     }
