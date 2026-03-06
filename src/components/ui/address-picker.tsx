@@ -7,6 +7,7 @@ import { Label } from '@/components/ui/label'
 import { Card } from '@/components/ui/card'
 import { MapPin, Search, Loader2, X } from 'lucide-react'
 import dynamic from 'next/dynamic'
+import { APIProvider } from '@vis.gl/react-google-maps'
 
 const MapComponent = dynamic(() => import('./google-map-component'), {
   ssr: false,
@@ -70,41 +71,49 @@ export function AddressPicker({ value, onChange, showManualFields = true }: Addr
 
     setIsSearching(true)
     try {
-      // Use server-side API route for geocoding
-      const response = await fetch(
-        `/api/geocode?address=${encodeURIComponent(query)}`
-      )
-      const data = await response.json()
-      
-      if (data.results) {
-        // Convert Google results to our format
-        const converted: NominatimResult[] = data.results.map((result: any) => {
-          const addressComponents = result.address_components
-          const getComponent = (type: string) => 
-            addressComponents.find((c: any) => c.types.includes(type))?.long_name || ''
-          
-          return {
-            place_id: result.place_id,
-            display_name: result.formatted_address,
-            lat: result.geometry.location.lat.toString(),
-            lon: result.geometry.location.lng.toString(),
-            address: {
-              house_number: getComponent('street_number'),
-              road: getComponent('route'),
-              neighbourhood: getComponent('neighborhood'),
-              suburb: getComponent('sublocality'),
-              city: getComponent('locality'),
-              town: getComponent('administrative_area_level_2'),
-              village: getComponent('administrative_area_level_3'),
-              state: getComponent('administrative_area_level_1'),
-              province: getComponent('administrative_area_level_1'),
-              postcode: getComponent('postal_code'),
-              country: getComponent('country'),
-            }
-          }
+      // Use Google Maps JavaScript API Geocoder (client-side, works with referrer restrictions)
+      if (typeof google !== 'undefined' && google.maps) {
+        const geocoder = new google.maps.Geocoder()
+        const response = await geocoder.geocode({ 
+          address: query,
+          region: 'sa'
         })
-        setSuggestions(converted)
-        setShowSuggestions(true)
+        
+        if (response.results && response.results.length > 0) {
+          const converted: NominatimResult[] = response.results.map((result: any) => {
+            const addressComponents = result.address_components
+            const getComponent = (type: string) => 
+              addressComponents.find((c: any) => c.types.includes(type))?.long_name || ''
+            
+            return {
+              place_id: result.place_id,
+              display_name: result.formatted_address,
+              lat: result.geometry.location.lat().toString(),
+              lon: result.geometry.location.lng().toString(),
+              address: {
+                house_number: getComponent('street_number'),
+                road: getComponent('route'),
+                neighbourhood: getComponent('neighborhood'),
+                suburb: getComponent('sublocality'),
+                city: getComponent('locality'),
+                town: getComponent('administrative_area_level_2'),
+                village: getComponent('administrative_area_level_3'),
+                state: getComponent('administrative_area_level_1'),
+                province: getComponent('administrative_area_level_1'),
+                postcode: getComponent('postal_code'),
+                country: getComponent('country'),
+              }
+            }
+          })
+          setSuggestions(converted)
+          setShowSuggestions(true)
+        } else {
+          setSuggestions([])
+          setShowSuggestions(true)
+        }
+      } else {
+        console.error('Google Maps not loaded yet')
+        setSuggestions([])
       }
     } catch (error) {
       console.error('Error searching address:', error)
@@ -166,33 +175,41 @@ export function AddressPicker({ value, onChange, showManualFields = true }: Addr
 
   const handleMapClick = async (lat: number, lng: number) => {
     try {
-      // Use server-side API route for reverse geocoding
-      const response = await fetch(
-        `/api/geocode?latlng=${lat},${lng}`
-      )
-      const data = await response.json()
-      
-      if (data.results && data.results[0]) {
-        const result = data.results[0]
-        const addressComponents = result.address_components
-        const getComponent = (type: string) => 
-          addressComponents.find((c: any) => c.types.includes(type))?.long_name || ''
-        
-        const streetNumber = getComponent('street_number')
-        const route = getComponent('route')
-        const street = [streetNumber, route].filter(Boolean).join(' ') || result.formatted_address.split(',')[0]
+      // Use Google Maps JavaScript API Geocoder for reverse geocoding
+      if (typeof google !== 'undefined' && google.maps) {
+        const geocoder = new google.maps.Geocoder()
+        const response = await geocoder.geocode({
+          location: { lat, lng }
+        })
 
+        if (response.results && response.results[0]) {
+          const result = response.results[0]
+          const addressComponents = result.address_components
+          const getComponent = (type: string) => 
+            addressComponents.find((c: any) => c.types.includes(type))?.long_name || ''
+          
+          const streetNumber = getComponent('street_number')
+          const route = getComponent('route')
+          const street = [streetNumber, route].filter(Boolean).join(' ') || result.formatted_address.split(',')[0]
+
+          onChange({
+            address: street,
+            city: getComponent('locality') || getComponent('administrative_area_level_2'),
+            state: getComponent('administrative_area_level_1'),
+            zipCode: getComponent('postal_code'),
+            country: getComponent('country'),
+            latitude: lat,
+            longitude: lng,
+          })
+
+          setSearchQuery(result.formatted_address)
+        }
+      } else {
         onChange({
-          address: street,
-          city: getComponent('locality') || getComponent('administrative_area_level_2'),
-          state: getComponent('administrative_area_level_1'),
-          zipCode: getComponent('postal_code'),
-          country: getComponent('country'),
+          ...value,
           latitude: lat,
           longitude: lng,
         })
-
-        setSearchQuery(result.formatted_address)
       }
     } catch (error) {
       console.error('Error reverse geocoding:', error)
@@ -225,7 +242,10 @@ export function AddressPicker({ value, onChange, showManualFields = true }: Addr
     })
   }
 
+  const apiKey = process.env.NEXT_PUBLIC_GOOGLE_MAPS_API_KEY || ''
+
   return (
+    <APIProvider apiKey={apiKey}>
     <div className="space-y-4">
       {/* Search Box */}
       <div ref={containerRef} className="relative">
@@ -383,5 +403,6 @@ export function AddressPicker({ value, onChange, showManualFields = true }: Addr
         </div>
       )}
     </div>
+    </APIProvider>
   )
 }
