@@ -35,7 +35,7 @@ interface AddressPickerProps {
 }
 
 interface NominatimResult {
-  place_id: number
+  place_id: string | number
   display_name: string
   lat: string
   lon: string
@@ -71,67 +71,54 @@ export function AddressPicker({ value, onChange, showManualFields = true }: Addr
 
     setIsSearching(true)
     try {
-      // Use Google Maps JavaScript API Geocoder (client-side, works with referrer restrictions)
-      if (typeof google !== 'undefined' && google.maps) {
-        const geocoder = new google.maps.Geocoder()
+      // Use Google Places Autocomplete for search-as-you-type
+      if (typeof google !== 'undefined' && google.maps && google.maps.places) {
+        const autocompleteService = new google.maps.places.AutocompleteService()
         
-        // Append Saudi Arabia for better results on short/local queries
-        const searchQuery = query.toLowerCase().includes('saudi') 
-          ? query 
-          : `${query}, Saudi Arabia`
-        
-        const response = await geocoder.geocode({ 
-          address: searchQuery,
-          region: 'sa'
-        })
-        
-        if (response.results && response.results.length > 0) {
-          const converted: NominatimResult[] = response.results.map((result: any) => {
-            const addressComponents = result.address_components
-            const getComponent = (type: string) => 
-              addressComponents.find((c: any) => c.types.includes(type))?.long_name || ''
-            
-            return {
-              place_id: result.place_id,
-              display_name: result.formatted_address,
-              lat: result.geometry.location.lat().toString(),
-              lon: result.geometry.location.lng().toString(),
-              address: {
-                house_number: getComponent('street_number'),
-                road: getComponent('route'),
-                neighbourhood: getComponent('neighborhood'),
-                suburb: getComponent('sublocality'),
-                city: getComponent('locality'),
-                town: getComponent('administrative_area_level_2'),
-                village: getComponent('administrative_area_level_3'),
-                state: getComponent('administrative_area_level_1'),
-                province: getComponent('administrative_area_level_1'),
-                postcode: getComponent('postal_code'),
-                country: getComponent('country'),
-              }
-            }
-          })
-          setSuggestions(converted)
-          setShowSuggestions(true)
-        } else {
-          setSuggestions([])
-          setShowSuggestions(true)
+        const request = {
+          input: query,
+          componentRestrictions: { country: 'sa' },
+          types: ['geocode', 'establishment'],
         }
+        
+        autocompleteService.getPlacePredictions(request, (predictions, status) => {
+          if (status === google.maps.places.PlacesServiceStatus.OK && predictions) {
+            const converted: NominatimResult[] = predictions.map((prediction) => ({
+              place_id: prediction.place_id,
+              display_name: prediction.description,
+              lat: '0',
+              lon: '0',
+              address: {
+                house_number: '',
+                road: prediction.structured_formatting?.main_text || '',
+                neighbourhood: '',
+                suburb: '',
+                city: '',
+                town: '',
+                village: '',
+                state: '',
+                province: '',
+                postcode: '',
+                country: 'Saudi Arabia',
+              }
+            }))
+            setSuggestions(converted)
+            setShowSuggestions(true)
+          } else {
+            setSuggestions([])
+            setShowSuggestions(true)
+          }
+          setIsSearching(false)
+        })
+        return // Don't hit finally since callback handles isSearching
       } else {
-        console.error('Google Maps not loaded yet')
         setSuggestions([])
         setShowSuggestions(true)
       }
     } catch (error: any) {
-      // ZERO_RESULTS is not a real error - just means no matches found
-      if (error?.message?.includes('ZERO_RESULTS')) {
-        setSuggestions([])
-        setShowSuggestions(true)
-      } else {
-        console.error('Error searching address:', error)
-        setSuggestions([])
-        setShowSuggestions(true)
-      }
+      console.error('Error searching address:', error)
+      setSuggestions([])
+      setShowSuggestions(true)
     } finally {
       setIsSearching(false)
     }
@@ -169,22 +156,64 @@ export function AddressPicker({ value, onChange, showManualFields = true }: Addr
   }, [])
 
   const selectAddress = (result: NominatimResult) => {
-    const addr = result.address
-    const streetParts = [addr.house_number, addr.road].filter(Boolean)
-    const street = streetParts.join(' ') || result.display_name.split(',')[0]
-
-    onChange({
-      address: street,
-      city: addr.city || addr.town || addr.village || '',
-      state: addr.state || addr.province || '',
-      zipCode: addr.postcode || '',
-      country: addr.country || '',
-      latitude: parseFloat(result.lat),
-      longitude: parseFloat(result.lon),
-    })
-
     setSearchQuery(result.display_name)
     setShowSuggestions(false)
+
+    // If coordinates are already available (from old format), use them directly
+    if (result.lat !== '0' && result.lon !== '0') {
+      const addr = result.address
+      const streetParts = [addr.house_number, addr.road].filter(Boolean)
+      const street = streetParts.join(' ') || result.display_name.split(',')[0]
+
+      onChange({
+        address: street,
+        city: addr.city || addr.town || addr.village || '',
+        state: addr.state || addr.province || '',
+        zipCode: addr.postcode || '',
+        country: addr.country || '',
+        latitude: parseFloat(result.lat),
+        longitude: parseFloat(result.lon),
+      })
+      return
+    }
+
+    // Use PlacesService to get full details (coordinates + address components)
+    if (typeof google !== 'undefined' && google.maps && google.maps.places) {
+      // PlacesService requires a DOM element
+      const div = document.createElement('div')
+      const placesService = new google.maps.places.PlacesService(div)
+
+      placesService.getDetails(
+        {
+          placeId: String(result.place_id),
+          fields: ['geometry', 'address_components', 'formatted_address'],
+        },
+        (place, status) => {
+          if (status === google.maps.places.PlacesServiceStatus.OK && place?.geometry?.location) {
+            const lat = place.geometry.location.lat()
+            const lng = place.geometry.location.lng()
+            const addressComponents = place.address_components || []
+            const getComponent = (type: string) =>
+              addressComponents.find((c: any) => c.types.includes(type))?.long_name || ''
+
+            const streetNumber = getComponent('street_number')
+            const route = getComponent('route')
+            const street = [streetNumber, route].filter(Boolean).join(' ') || 
+              place.formatted_address?.split(',')[0] || result.display_name.split(',')[0]
+
+            onChange({
+              address: street,
+              city: getComponent('locality') || getComponent('administrative_area_level_2'),
+              state: getComponent('administrative_area_level_1'),
+              zipCode: getComponent('postal_code'),
+              country: getComponent('country'),
+              latitude: lat,
+              longitude: lng,
+            })
+          }
+        }
+      )
+    }
   }
 
   const handleMapClick = async (lat: number, lng: number) => {
