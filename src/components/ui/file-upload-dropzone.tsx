@@ -1,8 +1,10 @@
 'use client'
 
 import { useState, useRef, DragEvent, ChangeEvent } from 'react'
-import { Upload, Loader2, X, CheckCircle } from 'lucide-react'
+import { Upload, Loader2, X, CheckCircle, Eye } from 'lucide-react'
 import { cn } from '@/lib/utils'
+import { ImageLightbox } from './image-lightbox'
+import { PDFViewer } from './pdf-viewer'
 
 interface FileUploadDropzoneProps {
   onFilesSelected: (files: File[]) => void
@@ -31,6 +33,10 @@ export function FileUploadDropzone({
 }: FileUploadDropzoneProps) {
   const [isDragging, setIsDragging] = useState(false)
   const inputRef = useRef<HTMLInputElement>(null)
+  const [lightboxOpen, setLightboxOpen] = useState(false)
+  const [lightboxIndex, setLightboxIndex] = useState(0)
+  const [pdfViewerOpen, setPdfViewerOpen] = useState(false)
+  const [selectedPdf, setSelectedPdf] = useState<{ url: string; name: string } | null>(null)
 
   const handleDragEnter = (e: DragEvent<HTMLDivElement>) => {
     e.preventDefault()
@@ -169,36 +175,81 @@ export function FileUploadDropzone({
       {/* Preview uploaded files */}
       {showPreview && uploadedFiles.length > 0 && (
         <div className="flex flex-wrap gap-2">
-          {uploadedFiles.map((file, index) => (
-            <div key={index} className="relative group">
-              {file.url.match(/\.(jpg|jpeg|png|gif|webp)$/i) ? (
-                <img
-                  src={file.url}
-                  alt={file.name}
-                  className="h-20 w-20 object-cover rounded-lg border"
-                />
-              ) : (
-                <div className="h-20 w-20 flex items-center justify-center bg-muted rounded-lg border">
-                  <span className="text-xs text-muted-foreground text-center px-1">
-                    {file.name.split('.').pop()?.toUpperCase()}
-                  </span>
-                </div>
-              )}
-              {onRemoveFile && (
-                <button
-                  type="button"
+          {uploadedFiles.map((file, index) => {
+            const isImage = file.url.match(/\.(jpg|jpeg|png|gif|webp)$/i)
+            const isPdf = file.url.match(/\.pdf$/i)
+            
+            return (
+              <div key={index} className="relative group">
+                <div
+                  className="cursor-pointer"
                   onClick={(e) => {
                     e.stopPropagation()
-                    onRemoveFile(file.url)
+                    if (isImage) {
+                      setLightboxIndex(index)
+                      setLightboxOpen(true)
+                    } else if (isPdf) {
+                      setSelectedPdf({ url: file.url, name: file.name })
+                      setPdfViewerOpen(true)
+                    }
                   }}
-                  className="absolute -top-2 -right-2 bg-destructive text-destructive-foreground rounded-full p-1 opacity-0 group-hover:opacity-100 transition-opacity"
                 >
-                  <X className="h-3 w-3" />
-                </button>
-              )}
-            </div>
-          ))}
+                  {isImage ? (
+                    <img
+                      src={file.url}
+                      alt={file.name}
+                      className="h-20 w-20 object-cover rounded-lg border hover:opacity-80 transition-opacity"
+                    />
+                  ) : (
+                    <div className="h-20 w-20 flex items-center justify-center bg-muted rounded-lg border hover:bg-muted/80 transition-colors">
+                      <span className="text-xs text-muted-foreground text-center px-1">
+                        {file.name.split('.').pop()?.toUpperCase()}
+                      </span>
+                    </div>
+                  )}
+                </div>
+                
+                {/* View icon overlay */}
+                <div className="absolute inset-0 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity pointer-events-none">
+                  <div className="bg-black/50 rounded-full p-2">
+                    <Eye className="h-4 w-4 text-white" />
+                  </div>
+                </div>
+                
+                {onRemoveFile && (
+                  <button
+                    type="button"
+                    onClick={(e) => {
+                      e.stopPropagation()
+                      onRemoveFile(file.url)
+                    }}
+                    className="absolute -top-2 -right-2 bg-destructive text-destructive-foreground rounded-full p-1 opacity-0 group-hover:opacity-100 transition-opacity z-10"
+                  >
+                    <X className="h-3 w-3" />
+                  </button>
+                )}
+              </div>
+            )
+          })}
         </div>
+      )}
+      
+      {/* Image Lightbox */}
+      <ImageLightbox
+        images={uploadedFiles.filter(f => f.url.match(/\.(jpg|jpeg|png|gif|webp)$/i))}
+        initialIndex={lightboxIndex}
+        open={lightboxOpen}
+        onOpenChange={setLightboxOpen}
+      />
+      
+      {/* PDF Viewer */}
+      {selectedPdf && (
+        <PDFViewer
+          url={selectedPdf.url}
+          name={selectedPdf.name}
+          open={pdfViewerOpen}
+          onOpenChange={setPdfViewerOpen}
+        />
       )}
     </div>
   )
