@@ -288,7 +288,7 @@ export function AddressPicker({ value, onChange, showManualFields = true }: Addr
   const apiKey = process.env.NEXT_PUBLIC_GOOGLE_MAPS_API_KEY || ''
 
   return (
-    <APIProvider apiKey={apiKey}>
+    <APIProvider apiKey={apiKey} libraries={['places']}>
     <div className="space-y-4">
       {/* Search Box */}
       <div ref={containerRef} className="relative">
