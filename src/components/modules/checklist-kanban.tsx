@@ -51,6 +51,7 @@ import { Label } from '@/components/ui/label'
 import { FileUploadDropzone } from '@/components/ui/file-upload-dropzone'
 import { Textarea } from '@/components/ui/textarea'
 import { cn } from '@/lib/utils'
+import { ColumnDetailModal } from './column-detail-modal'
 import {
   DndContext,
   DragOverlay,
@@ -297,12 +298,14 @@ function DroppableColumn({
   stage, 
   count,
   children, 
-  isOver 
+  isOver,
+  onHeaderClick
 }: { 
   stage: typeof STAGES[number]
   count: number
   children: React.ReactNode
   isOver: boolean
+  onHeaderClick: () => void
 }) {
   const { setNodeRef } = useDroppable({
     id: stage.id,
@@ -319,7 +322,10 @@ function DroppableColumn({
         isOver && 'ring-2 ring-primary ring-offset-2'
       )}
     >
-      <div className={cn('p-3 border-b', stage.bgColor)}>
+      <div 
+        className={cn('p-3 border-b cursor-pointer hover:opacity-80 transition-opacity', stage.bgColor)}
+        onClick={onHeaderClick}
+      >
         <div className="flex items-center gap-2">
           <StageIcon className={cn('h-4 w-4', stage.color)} />
           <span className={cn('font-semibold text-sm', stage.color)}>
@@ -429,6 +435,8 @@ export function ChecklistKanban({ branchId, projectId, readOnly = false, userRol
   const router = useRouter()
   const [items, setItems] = useState<ChecklistItem[]>([])
   const [loading, setLoading] = useState(true)
+  const [columnModalOpen, setColumnModalOpen] = useState(false)
+  const [selectedStage, setSelectedStage] = useState<typeof STAGES[number] | null>(null)
   const [selectedItem, setSelectedItem] = useState<ChecklistItem | null>(null)
   const [detailsOpen, setDetailsOpen] = useState(false)
   const [updating, setUpdating] = useState(false)
@@ -482,6 +490,11 @@ export function ChecklistKanban({ branchId, projectId, readOnly = false, userRol
   const getItemsByStage = (stage: ChecklistItemStage) => {
     const stageItems = items.filter(item => item.stage === stage)
     return sortByPriority(stageItems)
+  }
+
+  const handleColumnHeaderClick = (stage: typeof STAGES[number]) => {
+    setSelectedStage(stage)
+    setColumnModalOpen(true)
   }
 
   const handleItemClick = (item: ChecklistItem) => {
@@ -843,6 +856,7 @@ export function ChecklistKanban({ branchId, projectId, readOnly = false, userRol
                       stage={stage} 
                       count={stageItems.length}
                       isOver={overId === stage.id}
+                      onHeaderClick={() => handleColumnHeaderClick(stage)}
                     >
                       {stageItems.map((item) => (
                         <DraggableCard
@@ -1326,6 +1340,20 @@ export function ChecklistKanban({ branchId, projectId, readOnly = false, userRol
           )}
         </DialogContent>
       </Dialog>
+
+      {/* Column Detail Modal */}
+      {selectedStage && (
+        <ColumnDetailModal
+          open={columnModalOpen}
+          onOpenChange={setColumnModalOpen}
+          stage={selectedStage}
+          items={getItemsByStage(selectedStage.id)}
+          onItemClick={(item) => {
+            setColumnModalOpen(false)
+            handleItemClick(item)
+          }}
+        />
+      )}
     </>
   )
 }
