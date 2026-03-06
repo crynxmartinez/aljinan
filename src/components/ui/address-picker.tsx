@@ -70,17 +70,9 @@ export function AddressPicker({ value, onChange, showManualFields = true }: Addr
 
     setIsSearching(true)
     try {
-      const apiKey = process.env.NEXT_PUBLIC_GOOGLE_MAPS_API_KEY
-      if (!apiKey) {
-        console.error('Google Maps API key not configured')
-        setSuggestions([])
-        setIsSearching(false)
-        return
-      }
-
-      // Use Google Geocoding API with Saudi Arabia bias
+      // Use server-side API route for geocoding
       const response = await fetch(
-        `https://maps.googleapis.com/maps/api/geocode/json?address=${encodeURIComponent(query)}&region=sa&key=${apiKey}`
+        `/api/geocode?address=${encodeURIComponent(query)}`
       )
       const data = await response.json()
       
@@ -174,19 +166,9 @@ export function AddressPicker({ value, onChange, showManualFields = true }: Addr
 
   const handleMapClick = async (lat: number, lng: number) => {
     try {
-      const apiKey = process.env.NEXT_PUBLIC_GOOGLE_MAPS_API_KEY
-      if (!apiKey) {
-        console.error('Google Maps API key not configured')
-        onChange({
-          ...value,
-          latitude: lat,
-          longitude: lng,
-        })
-        return
-      }
-
+      // Use server-side API route for reverse geocoding
       const response = await fetch(
-        `https://maps.googleapis.com/maps/api/geocode/json?latlng=${lat},${lng}&key=${apiKey}`
+        `/api/geocode?latlng=${lat},${lng}`
       )
       const data = await response.json()
       
