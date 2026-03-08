@@ -1,16 +1,38 @@
-import { Navbar } from '@/components/marketing/navbar'
-import { Footer } from '@/components/marketing/footer'
+import type { Metadata } from "next";
+import { SessionProvider } from "@/components/providers/session-provider";
+import { Analytics } from '@vercel/analytics/react';
+import { SpeedInsights } from '@vercel/speed-insights/next';
+import "./globals.css";
 
-export default function MarketingLayout({
+export const metadata: Metadata = {
+  title: "Tasheel - Safety Contractor Management Platform",
+  description: "Complete safety management platform for contractors in Saudi Arabia",
+  manifest: "/manifest.json",
+  themeColor: "#0f172a",
+  appleWebApp: {
+    capable: true,
+    statusBarStyle: "default",
+    title: "Tasheel",
+  },
+  viewport: {
+    width: "device-width",
+    initialScale: 1,
+    maximumScale: 1,
+  },
+};
+
+export default function RootLayout({
   children,
-}: {
-  children: React.ReactNode
-}) {
+}: Readonly<{
+  children: React.ReactNode;
+}>) {
   return (
-    <div className="min-h-screen flex flex-col">
-      <Navbar variant="marketing" />
-      <main className="flex-1">{children}</main>
-      <Footer />
-    </div>
-  )
+    <html lang="en">
+      <body className="antialiased">
+        <SessionProvider>{children}</SessionProvider>
+        <Analytics />
+        <SpeedInsights />
+      </body>
+    </html>
+  );
 }
