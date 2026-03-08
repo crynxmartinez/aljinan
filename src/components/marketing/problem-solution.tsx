@@ -24,9 +24,9 @@ export function ProblemSolution() {
             </h2>
           </div>
 
-          <div className="grid md:grid-cols-2 gap-8 md:gap-12 items-center">
+          <div className="flex flex-col md:flex-row gap-8 items-center">
             {/* Problems */}
-            <div className="space-y-4">
+            <div className="flex-1 space-y-4 w-full">
               {problems.map((problem, index) => (
                 <div key={index} className="flex items-start gap-3 p-4 bg-red-50 border border-red-200 rounded-lg">
                   <X className="h-5 w-5 text-red-600 flex-shrink-0 mt-0.5" />
@@ -36,15 +36,13 @@ export function ProblemSolution() {
             </div>
 
             {/* Arrow */}
-            <div className="hidden md:flex justify-center">
-              <div className="text-6xl text-orange-500 font-bold">→</div>
-            </div>
-            <div className="md:hidden flex justify-center py-4">
-              <div className="text-4xl text-orange-500 font-bold">↓</div>
+            <div className="flex-shrink-0">
+              <div className="hidden md:block text-5xl text-orange-500 font-bold">→</div>
+              <div className="md:hidden text-4xl text-orange-500 font-bold">↓</div>
             </div>
 
             {/* Solutions */}
-            <div className="space-y-4 md:col-start-2">
+            <div className="flex-1 space-y-4 w-full">
               <h3 className="text-2xl font-bold text-center md:text-left mb-6">
                 Tasheel Makes It Easy
               </h3>

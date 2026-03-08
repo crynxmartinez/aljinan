@@ -2,9 +2,7 @@ import { Metadata } from 'next'
 import Link from 'next/link'
 import Image from 'next/image'
 import { Button } from '@/components/ui/button'
-import { Navbar } from '@/components/marketing/navbar'
-import { Footer } from '@/components/marketing/footer'
-import { ClipboardList, Wrench, FileCheck, Users, BarChart3, DollarSign, Bell, Shield, Smartphone, Clock, CheckCircle, ArrowRight } from 'lucide-react'
+import { ClipboardList, Wrench, FileCheck, Users, BarChart3, DollarSign, Bell, Shield, Smartphone, CheckCircle, ArrowRight } from 'lucide-react'
 
 export const metadata: Metadata = {
   title: 'Features - Complete Safety Management Platform | Tasheel',
@@ -89,7 +87,7 @@ const features = [
     icon: Bell,
     title: 'Smart Notifications',
     description: 'Stay informed with intelligent alerts for deadlines, updates, and important events.',
-    image: '/images/marketing/feature-reports.jpg',
+    image: '/images/marketing/feature-notifications.jpg',
     benefits: [
       'Email notifications',
       'In-app alerts',
@@ -101,7 +99,7 @@ const features = [
     icon: Shield,
     title: 'Security & Compliance',
     description: 'Enterprise-grade security with role-based access control and audit trails.',
-    image: '/images/marketing/feature-certificates.jpg',
+    image: '/images/marketing/feature-security.jpg',
     benefits: [
       'Data encryption',
       'Role-based permissions',
@@ -113,7 +111,7 @@ const features = [
     icon: Smartphone,
     title: 'Mobile Access',
     description: 'Work from anywhere with our mobile-responsive platform. Perfect for field work.',
-    image: '/images/marketing/feature-work-orders.jpg',
+    image: '/images/marketing/feature-mobile.jpg',
     benefits: [
       'Works on any device',
       'Offline mode',
@@ -125,9 +123,7 @@ const features = [
 
 export default function FeaturesPage() {
   return (
-    <div className="min-h-screen flex flex-col">
-      <Navbar variant="marketing" />
-      <main className="flex-1 py-16 md:py-24">
+    <div className="py-16 md:py-24">
       {/* Hero Section */}
       <section className="container mx-auto px-4 mb-16">
         <div className="max-w-3xl mx-auto text-center">
@@ -210,8 +206,6 @@ export default function FeaturesPage() {
           </Button>
         </div>
       </section>
-      </main>
-      <Footer />
     </div>
   )
 }

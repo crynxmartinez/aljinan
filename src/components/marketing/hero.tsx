@@ -11,7 +11,7 @@ export function Hero() {
         style={{ backgroundImage: 'url(/images/marketing/hero-safety-inspector.jpg)' }}
       />
       {/* Background Pattern */}
-      <div className="absolute inset-0 bg-grid-white/[0.05] bg-[size:20px_20px]" />
+      <div className="absolute inset-0 opacity-[0.03]" style={{ backgroundImage: 'radial-gradient(circle, white 1px, transparent 1px)', backgroundSize: '20px 20px' }} />
       
       <div className="container mx-auto px-4 py-20 md:py-32 relative">
         <div className="max-w-4xl mx-auto text-center">

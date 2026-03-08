@@ -1,6 +1,6 @@
 import { Metadata } from 'next'
-import { Navbar } from '@/components/marketing/navbar'
-import { Footer } from '@/components/marketing/footer'
+import Link from 'next/link'
+import { Button } from '@/components/ui/button'
 import {
   Accordion,
   AccordionContent,
@@ -116,9 +116,7 @@ const faqs = [
 
 export default function FAQPage() {
   return (
-    <div className="min-h-screen flex flex-col">
-      <Navbar variant="marketing" />
-      <main className="flex-1 py-16 md:py-24">
+    <div className="py-16 md:py-24">
       <div className="container mx-auto px-4">
         <div className="max-w-3xl mx-auto text-center mb-12">
           <h1 className="text-4xl md:text-5xl font-bold mb-6">
@@ -155,17 +153,12 @@ export default function FAQPage() {
             <p className="text-muted-foreground mb-6">
               Can't find the answer you're looking for? Please contact our support team.
             </p>
-            <a
-              href="/contact"
-              className="inline-flex items-center justify-center rounded-md text-sm font-medium ring-offset-background transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:pointer-events-none disabled:opacity-50 bg-primary text-primary-foreground hover:bg-primary/90 h-10 px-4 py-2"
-            >
-              Contact Support
-            </a>
+            <Button asChild>
+              <Link href="/contact">Contact Support</Link>
+            </Button>
           </div>
         </div>
       </div>
-      </main>
-      <Footer />
     </div>
   )
 }

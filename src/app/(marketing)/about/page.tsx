@@ -1,8 +1,6 @@
 import { Metadata } from 'next'
 import Link from 'next/link'
 import { Button } from '@/components/ui/button'
-import { Navbar } from '@/components/marketing/navbar'
-import { Footer } from '@/components/marketing/footer'
 import { Target, Users, Zap, Shield, ArrowRight } from 'lucide-react'
 
 export const metadata: Metadata = {
@@ -36,9 +34,7 @@ export default function AboutPage() {
   ]
 
   return (
-    <div className="min-h-screen flex flex-col">
-      <Navbar variant="marketing" />
-      <main className="flex-1 py-16 md:py-24">
+    <div className="py-16 md:py-24">
       {/* Hero Section */}
       <section className="container mx-auto px-4 mb-16">
         <div className="max-w-3xl mx-auto text-center">
@@ -141,8 +137,6 @@ export default function AboutPage() {
           </Button>
         </div>
       </section>
-      </main>
-      <Footer />
     </div>
   )
 }

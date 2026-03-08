@@ -5,8 +5,6 @@ import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
 import { Textarea } from '@/components/ui/textarea'
 import { Button } from '@/components/ui/button'
-import { Navbar } from '@/components/marketing/navbar'
-import { Footer } from '@/components/marketing/footer'
 import { Mail, Phone, MapPin, Clock, Loader2 } from 'lucide-react'
 
 export default function ContactPage() {
@@ -48,9 +46,7 @@ export default function ContactPage() {
   }
 
   return (
-    <div className="min-h-screen flex flex-col">
-      <Navbar variant="marketing" />
-      <main className="flex-1 py-16 md:py-24">
+    <div className="py-16 md:py-24">
       <div className="container mx-auto px-4">
         <div className="max-w-3xl mx-auto text-center mb-12">
           <h1 className="text-4xl md:text-5xl font-bold mb-6">Get in Touch</h1>
@@ -202,8 +198,6 @@ export default function ContactPage() {
           </div>
         </div>
       </div>
-      </main>
-      <Footer />
     </div>
   )
 }

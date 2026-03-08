@@ -97,9 +97,13 @@ export default function LoginPage() {
                   Remember me
                 </label>
               </div>
-              <Link href="/forgot-password" className="text-sm text-primary hover:underline">
+              <button 
+                type="button"
+                onClick={() => alert('Please contact support@tasheel.sa to reset your password.')}
+                className="text-sm text-primary hover:underline"
+              >
                 Forgot password?
-              </Link>
+              </button>
             </div>
           </div>
 

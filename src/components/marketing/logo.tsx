@@ -17,7 +17,7 @@ export function Logo({ size = 'md', clickable = true, className }: LogoProps) {
   }
 
   const logo = (
-    <div className={cn('font-bold text-primary-900', sizeClasses[size], className)}>
+    <div className={cn('font-bold text-gray-900', sizeClasses[size], className)}>
       TASHEEL
     </div>
   )
