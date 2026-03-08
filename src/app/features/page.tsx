@@ -1,5 +1,6 @@
 import { Metadata } from 'next'
 import Link from 'next/link'
+import Image from 'next/image'
 import { Button } from '@/components/ui/button'
 import { ClipboardList, Wrench, FileCheck, Users, BarChart3, DollarSign, Bell, Shield, Smartphone, Clock, CheckCircle, ArrowRight } from 'lucide-react'
 
@@ -14,6 +15,7 @@ const features = [
     icon: ClipboardList,
     title: 'Work Order Management',
     description: 'Create, assign, and track work orders from start to finish. Manage schedules, priorities, and team assignments all in one place.',
+    image: '/images/marketing/feature-work-orders.jpg',
     benefits: [
       'Drag-and-drop kanban board',
       'Automated task assignments',
@@ -25,6 +27,7 @@ const features = [
     icon: Wrench,
     title: 'Equipment Tracking',
     description: 'Monitor all your equipment status, locations, and maintenance schedules. Never lose track of critical assets.',
+    image: '/images/marketing/feature-equipment.jpg',
     benefits: [
       'Equipment inventory management',
       'Location tracking',
@@ -36,6 +39,7 @@ const features = [
     icon: FileCheck,
     title: 'Certificate Management',
     description: 'Automated expiry alerts ensure you never miss a renewal deadline. Keep all compliance documents organized.',
+    image: '/images/marketing/feature-certificates.jpg',
     benefits: [
       'Automated expiry notifications',
       'Digital certificate storage',
@@ -47,6 +51,7 @@ const features = [
     icon: Users,
     title: 'Client Portal',
     description: 'Give your clients 24/7 access to their projects, reports, and invoices. Improve transparency and communication.',
+    image: '/images/marketing/feature-client-portal.jpg',
     benefits: [
       'Secure client access',
       'Real-time project visibility',
@@ -58,6 +63,7 @@ const features = [
     icon: BarChart3,
     title: 'Reports & Analytics',
     description: 'Generate professional inspection reports in seconds. Track performance metrics and business insights.',
+    image: '/images/marketing/feature-reports.jpg',
     benefits: [
       'One-click report generation',
       'Custom templates',
@@ -69,6 +75,7 @@ const features = [
     icon: DollarSign,
     title: 'Billing & Invoicing',
     description: 'Track payments, send invoices, and manage finances effortlessly. Get paid faster with integrated billing.',
+    image: '/images/marketing/feature-billing.jpg',
     benefits: [
       'Automated invoice generation',
       'Payment tracking',
@@ -80,6 +87,7 @@ const features = [
     icon: Bell,
     title: 'Smart Notifications',
     description: 'Stay informed with intelligent alerts for deadlines, updates, and important events.',
+    image: '/images/marketing/feature-reports.jpg',
     benefits: [
       'Email notifications',
       'In-app alerts',
@@ -91,6 +99,7 @@ const features = [
     icon: Shield,
     title: 'Security & Compliance',
     description: 'Enterprise-grade security with role-based access control and audit trails.',
+    image: '/images/marketing/feature-certificates.jpg',
     benefits: [
       'Data encryption',
       'Role-based permissions',
@@ -102,6 +111,7 @@ const features = [
     icon: Smartphone,
     title: 'Mobile Access',
     description: 'Work from anywhere with our mobile-responsive platform. Perfect for field work.',
+    image: '/images/marketing/feature-work-orders.jpg',
     benefits: [
       'Works on any device',
       'Offline mode',
@@ -164,8 +174,13 @@ export default function FeaturesPage() {
                   </ul>
                 </div>
                 <div className="flex-1">
-                  <div className="bg-gray-100 rounded-lg p-8 h-64 flex items-center justify-center">
-                    <Icon className="h-32 w-32 text-gray-300" />
+                  <div className="relative rounded-lg overflow-hidden h-64">
+                    <Image
+                      src={feature.image}
+                      alt={feature.title}
+                      fill
+                      className="object-cover"
+                    />
                   </div>
                 </div>
               </div>

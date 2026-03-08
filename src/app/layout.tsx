@@ -1,38 +1,16 @@
-import type { Metadata } from "next";
-import { SessionProvider } from "@/components/providers/session-provider";
-import { Analytics } from '@vercel/analytics/react';
-import { SpeedInsights } from '@vercel/speed-insights/next';
-import "./globals.css";
+import { Navbar } from '@/components/marketing/navbar'
+import { Footer } from '@/components/marketing/footer'
 
-export const metadata: Metadata = {
-  title: "Aljinan - Client-Facing Operations Platform",
-  description: "A shared workspace between service providers and clients",
-  manifest: "/manifest.json",
-  themeColor: "#0f172a",
-  appleWebApp: {
-    capable: true,
-    statusBarStyle: "default",
-    title: "Aljinan",
-  },
-  viewport: {
-    width: "device-width",
-    initialScale: 1,
-    maximumScale: 1,
-  },
-};
-
-export default function RootLayout({
+export default function MarketingLayout({
   children,
-}: Readonly<{
-  children: React.ReactNode;
-}>) {
+}: {
+  children: React.ReactNode
+}) {
   return (
-    <html lang="en">
-      <body className="antialiased">
-        <SessionProvider>{children}</SessionProvider>
-        <Analytics />
-        <SpeedInsights />
-      </body>
-    </html>
-  );
+    <div className="min-h-screen flex flex-col">
+      <Navbar variant="marketing" />
+      <main className="flex-1">{children}</main>
+      <Footer />
+    </div>
+  )
 }

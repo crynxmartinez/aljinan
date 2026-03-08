@@ -5,6 +5,11 @@ import { ArrowRight } from 'lucide-react'
 export function Hero() {
   return (
     <section className="relative bg-gradient-to-br from-gray-900 via-gray-800 to-gray-900 text-white overflow-hidden">
+      {/* Background Image */}
+      <div 
+        className="absolute inset-0 bg-cover bg-center opacity-20"
+        style={{ backgroundImage: 'url(/images/marketing/hero-safety-inspector.jpg)' }}
+      />
       {/* Background Pattern */}
       <div className="absolute inset-0 bg-grid-white/[0.05] bg-[size:20px_20px]" />
       
