@@ -82,27 +82,6 @@ const faqs = [
     ],
   },
   {
-    category: 'Billing & Pricing',
-    questions: [
-      {
-        question: 'What payment methods do you accept?',
-        answer: 'We accept major credit cards (Visa, Mastercard), bank transfers, and STC Pay for your convenience.',
-      },
-      {
-        question: 'Can I cancel anytime?',
-        answer: 'Yes, you can cancel your subscription at any time. No long-term contracts or cancellation fees.',
-      },
-      {
-        question: 'Do you offer discounts for annual plans?',
-        answer: 'Yes, we offer significant discounts for annual subscriptions. Contact our sales team for pricing details.',
-      },
-      {
-        question: 'What happens to my data if I cancel?',
-        answer: 'You can export all your data before canceling. We retain your data for 30 days after cancellation in case you want to reactivate.',
-      },
-    ],
-  },
-  {
     category: 'Support & Security',
     questions: [
       {

@@ -61,22 +61,6 @@ export function FAQSchema() {
       },
       {
         "@type": "Question",
-        "name": "What payment methods do you accept?",
-        "acceptedAnswer": {
-          "@type": "Answer",
-          "text": "We accept major credit cards (Visa, Mastercard), bank transfers, and STC Pay for your convenience."
-        }
-      },
-      {
-        "@type": "Question",
-        "name": "Can I cancel anytime?",
-        "acceptedAnswer": {
-          "@type": "Answer",
-          "text": "Yes, you can cancel your subscription at any time. No long-term contracts or cancellation fees."
-        }
-      },
-      {
-        "@type": "Question",
         "name": "Is my data secure?",
         "acceptedAnswer": {
           "@type": "Answer",
