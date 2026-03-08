@@ -11,20 +11,35 @@ import { Stats } from '@/components/marketing/stats'
 import { CTASection } from '@/components/marketing/cta-section'
 
 export const metadata: Metadata = {
-  title: 'Tasheel - Safety Contractor Management Platform | Easy. Fast. Compliant.',
-  description: 'Complete safety management platform for contractors in Saudi Arabia. Manage inspections, track certificates, and ensure compliance. Start free trial today.',
-  keywords: 'safety software, contractor management, inspection tracking, certificate compliance, Saudi Arabia',
+  title: 'Tasheel - Safety Management Software for Saudi Arabia Contractors | Free Trial',
+  description: 'Leading safety inspection & compliance platform for contractors in Saudi Arabia. Manage fire safety, HVAC, electrical inspections. Automated certificates, work orders & client portal. Start free trial.',
+  keywords: 'safety management software Saudi Arabia, contractor platform KSA, fire safety inspection software Riyadh, building compliance system, HVAC inspection management, electrical safety compliance, certificate tracking, work order management Saudi Arabia',
+  alternates: {
+    canonical: 'https://tasheel.sa/',
+  },
   openGraph: {
-    title: 'Tasheel - Making Safety Management Effortless',
-    description: 'The complete platform for safety contractors and their clients. Easy. Fast. Transparent.',
-    type: 'website',
-    locale: 'en_US',
+    title: 'Tasheel - Safety Management Software for Saudi Arabia Contractors',
+    description: 'Leading safety inspection & compliance platform for contractors in Saudi Arabia. Automated certificates, work orders & client portal.',
+    url: 'https://tasheel.sa/',
     siteName: 'Tasheel',
+    images: [
+      {
+        url: 'https://tasheel.sa/images/og-image.jpg',
+        width: 1200,
+        height: 630,
+        alt: 'Tasheel - Safety Management Platform for Saudi Arabia',
+      },
+    ],
+    locale: 'en_US',
+    type: 'website',
   },
   twitter: {
     card: 'summary_large_image',
-    title: 'Tasheel - Safety Management Platform',
-    description: 'Complete platform for safety contractors. Start free trial.',
+    title: 'Tasheel - Safety Management Software for Saudi Arabia',
+    description: 'Leading safety inspection & compliance platform. Automated certificates, work orders & client portal. Start free trial.',
+    images: ['https://tasheel.sa/images/og-image.jpg'],
+    creator: '@tasheel_sa',
+    site: '@tasheel_sa',
   },
 }
 

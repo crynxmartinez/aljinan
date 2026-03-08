@@ -4,9 +4,36 @@ import { Button } from '@/components/ui/button'
 import { Target, Users, Zap, Shield, ArrowRight } from 'lucide-react'
 
 export const metadata: Metadata = {
-  title: 'About Tasheel - Simplifying Safety Management',
-  description: 'Learn about Tasheel\'s mission to make safety management easy, fast, and efficient for contractors and clients across Saudi Arabia.',
-  keywords: 'about tasheel, safety platform, contractor software Saudi Arabia',
+  title: 'About Tasheel - Saudi Arabia\'s Leading Safety Management Platform',
+  description: 'Tasheel simplifies safety management for contractors across Saudi Arabia. Trusted by 50+ contractors for fire safety, HVAC, electrical & building inspections. Learn our mission and values.',
+  keywords: 'safety platform Saudi Arabia, contractor software KSA, inspection management Riyadh, compliance software Saudi contractors, building safety management, about tasheel',
+  alternates: {
+    canonical: 'https://tasheel.sa/about',
+  },
+  openGraph: {
+    title: 'About Tasheel - Saudi Arabia\'s Leading Safety Management Platform',
+    description: 'Tasheel simplifies safety management for contractors across Saudi Arabia. Trusted by 50+ contractors for fire safety, HVAC & electrical inspections.',
+    url: 'https://tasheel.sa/about',
+    siteName: 'Tasheel',
+    images: [
+      {
+        url: 'https://tasheel.sa/images/og-image.jpg',
+        width: 1200,
+        height: 630,
+        alt: 'About Tasheel - Safety Management Platform',
+      },
+    ],
+    locale: 'en_US',
+    type: 'website',
+  },
+  twitter: {
+    card: 'summary_large_image',
+    title: 'About Tasheel - Saudi Arabia\'s Safety Platform',
+    description: 'Simplifying safety management for contractors across Saudi Arabia. Learn our mission and values.',
+    images: ['https://tasheel.sa/images/og-image.jpg'],
+    creator: '@tasheel_sa',
+    site: '@tasheel_sa',
+  },
 }
 
 export default function AboutPage() {
@@ -52,15 +79,16 @@ export default function AboutPage() {
         <div className="max-w-4xl mx-auto">
           <div className="prose prose-lg max-w-none">
             <p className="text-lg text-muted-foreground mb-6">
-              Tasheel was born from a simple observation: safety contractors spend too much time on paperwork 
-              and not enough time on what matters—keeping people safe.
+              <Link href="/" className="text-primary hover:underline font-semibold">Tasheel</Link> was born from a simple observation: safety contractors spend too much time on paperwork 
+              and not enough time on what matters—keeping people safe in Saudi Arabia.
             </p>
             <p className="text-lg text-muted-foreground mb-6">
               We built Tasheel to change that. Our platform automates the tedious tasks, streamlines communication, 
-              and ensures compliance—so contractors can focus on delivering exceptional service.
+              and ensures compliance—so contractors can focus on delivering exceptional service in KSA.
             </p>
             <p className="text-lg text-muted-foreground mb-6">
               Today, Tasheel serves safety contractors across Saudi Arabia, helping them manage thousands of 
+              inspections, certificates, and client relationships with ease in Riyadh and beyond.
               inspections, certificates, and client relationships with ease.
             </p>
             <p className="text-lg text-muted-foreground">
@@ -127,7 +155,7 @@ export default function AboutPage() {
             Join Our Growing Community
           </h2>
           <p className="text-xl mb-8 text-orange-50">
-            Start simplifying your safety operations today
+            Start simplifying your safety operations with <Link href="/" className="text-white hover:underline font-semibold">Tasheel</Link> today
           </p>
           <Button size="lg" className="bg-white text-orange-600 hover:bg-gray-100" asChild>
             <Link href="/register">

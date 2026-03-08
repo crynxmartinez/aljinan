@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 import { SessionProvider } from "@/components/providers/session-provider";
 import { Analytics } from '@vercel/analytics/react';
 import { SpeedInsights } from '@vercel/speed-insights/next';
+import { OrganizationSchema } from "@/components/seo/organization-schema";
 import "./globals.css";
 
 export const metadata: Metadata = {
@@ -28,8 +29,13 @@ export default function RootLayout({
 }>) {
   return (
     <html lang="en">
+      <head>
+        <OrganizationSchema />
+      </head>
       <body className="antialiased">
-        <SessionProvider>{children}</SessionProvider>
+        <SessionProvider>
+          {children}
+        </SessionProvider>
         <Analytics />
         <SpeedInsights />
       </body>

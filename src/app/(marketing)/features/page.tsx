@@ -2,12 +2,40 @@ import { Metadata } from 'next'
 import Link from 'next/link'
 import Image from 'next/image'
 import { Button } from '@/components/ui/button'
+import { ServiceSchema } from '@/components/seo/service-schema'
 import { ClipboardList, Wrench, FileCheck, Users, BarChart3, DollarSign, Bell, Shield, Smartphone, CheckCircle, ArrowRight } from 'lucide-react'
 
 export const metadata: Metadata = {
-  title: 'Features - Complete Safety Management Platform | Tasheel',
-  description: 'Explore Tasheel\'s powerful features: work order management, equipment tracking, certificate compliance, client portal, professional reports, and integrated billing.',
-  keywords: 'work order management, equipment tracking, certificate management, client portal, inspection reports',
+  title: 'Safety Inspection Features - Work Orders, Certificates & Compliance | Tasheel',
+  description: 'Comprehensive safety management features for Saudi Arabia contractors: automated work orders, certificate tracking, equipment inspection, client portal, digital reports & billing. Built for fire safety, HVAC & electrical inspections.',
+  keywords: 'work order management Saudi Arabia, certificate compliance tracking, equipment inspection software, safety inspection reports, client portal KSA, automated billing contractors, fire safety management, HVAC inspection tracking',
+  alternates: {
+    canonical: 'https://tasheel.sa/features',
+  },
+  openGraph: {
+    title: 'Safety Inspection Features - Work Orders, Certificates & Compliance | Tasheel',
+    description: 'Comprehensive safety management features: automated work orders, certificate tracking, equipment inspection, client portal, digital reports & billing.',
+    url: 'https://tasheel.sa/features',
+    siteName: 'Tasheel',
+    images: [
+      {
+        url: 'https://tasheel.sa/images/og-image.jpg',
+        width: 1200,
+        height: 630,
+        alt: 'Tasheel Safety Management Features',
+      },
+    ],
+    locale: 'en_US',
+    type: 'website',
+  },
+  twitter: {
+    card: 'summary_large_image',
+    title: 'Safety Inspection Features | Tasheel',
+    description: 'Automated work orders, certificate tracking, equipment inspection, client portal & more for Saudi Arabia contractors.',
+    images: ['https://tasheel.sa/images/og-image.jpg'],
+    creator: '@tasheel_sa',
+    site: '@tasheel_sa',
+  },
 }
 
 const features = [
@@ -124,6 +152,7 @@ const features = [
 export default function FeaturesPage() {
   return (
     <div className="py-16 md:py-24">
+      <ServiceSchema />
       {/* Hero Section */}
       <section className="container mx-auto px-4 mb-16">
         <div className="max-w-3xl mx-auto text-center">
@@ -131,7 +160,7 @@ export default function FeaturesPage() {
             Powerful Features for Modern Safety Contractors
           </h1>
           <p className="text-xl text-muted-foreground mb-8">
-            Everything you need to streamline operations, ensure compliance, and grow your business
+            Everything you need to streamline operations, ensure compliance, and grow your business. Discover why <Link href="/" className="text-primary hover:underline">Tasheel</Link> is the leading safety platform in Saudi Arabia.
           </p>
           <Button size="lg" asChild>
             <Link href="/register">
@@ -196,7 +225,7 @@ export default function FeaturesPage() {
             Ready to Transform Your Operations?
           </h2>
           <p className="text-xl mb-8 text-orange-50">
-            Join 50+ contractors already using Tasheel
+            Join 50+ contractors already using <Link href="/" className="text-white hover:underline font-semibold">Tasheel</Link> across Saudi Arabia
           </p>
           <Button size="lg" className="bg-white text-orange-600 hover:bg-gray-100" asChild>
             <Link href="/register">

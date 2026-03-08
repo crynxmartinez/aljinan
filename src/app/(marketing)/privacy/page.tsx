@@ -1,8 +1,37 @@
 import { Metadata } from 'next'
+import Link from 'next/link'
 
 export const metadata: Metadata = {
-  title: 'Privacy Policy | Tasheel',
-  description: 'Tasheel\'s privacy policy and data protection practices.',
+  title: 'Privacy Policy - Data Protection & Security | Tasheel',
+  description: 'Tasheel privacy policy for Saudi Arabia contractors. Learn how we protect your safety inspection data, certificates, and client information with enterprise-grade security.',
+  keywords: 'privacy policy Saudi Arabia, data protection KSA, safety software security, contractor data privacy, tasheel privacy',
+  alternates: {
+    canonical: 'https://tasheel.sa/privacy',
+  },
+  openGraph: {
+    title: 'Privacy Policy - Data Protection & Security | Tasheel',
+    description: 'Tasheel privacy policy for Saudi Arabia contractors. Enterprise-grade security for your safety inspection data.',
+    url: 'https://tasheel.sa/privacy',
+    siteName: 'Tasheel',
+    images: [
+      {
+        url: 'https://tasheel.sa/images/og-image.jpg',
+        width: 1200,
+        height: 630,
+        alt: 'Tasheel Privacy Policy',
+      },
+    ],
+    locale: 'en_US',
+    type: 'website',
+  },
+  twitter: {
+    card: 'summary_large_image',
+    title: 'Privacy Policy | Tasheel',
+    description: 'Data protection & security for Saudi Arabia contractors.',
+    images: ['https://tasheel.sa/images/og-image.jpg'],
+    creator: '@tasheel_sa',
+    site: '@tasheel_sa',
+  },
 }
 
 export default function PrivacyPage() {
@@ -18,7 +47,7 @@ export default function PrivacyPage() {
               <h2 className="text-2xl font-bold mb-4">1. Information We Collect</h2>
               <p className="text-muted-foreground">
                 We collect information you provide directly to us, including your name, email address, 
-                company name, phone number, and any other information you choose to provide when using Tasheel.
+                company name, phone number, and any other information you choose to provide when using <Link href="/" className="text-primary hover:underline">Tasheel</Link>.
               </p>
             </section>
 
@@ -89,7 +118,7 @@ export default function PrivacyPage() {
             <section>
               <h2 className="text-2xl font-bold mb-4">9. Contact Us</h2>
               <p className="text-muted-foreground">
-                If you have any questions about this Privacy Policy, please contact us at:
+                If you have any questions about this Privacy Policy, please <Link href="/" className="text-primary hover:underline">contact us</Link> at:
               </p>
               <p className="text-muted-foreground mt-4">
                 Email: privacy@tasheel.sa<br />

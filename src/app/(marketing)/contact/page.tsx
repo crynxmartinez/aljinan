@@ -1,6 +1,7 @@
 'use client'
 
 import { useState } from 'react'
+import Link from 'next/link'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
 import { Textarea } from '@/components/ui/textarea'
@@ -51,7 +52,7 @@ export default function ContactPage() {
         <div className="max-w-3xl mx-auto text-center mb-12">
           <h1 className="text-4xl md:text-5xl font-bold mb-6">Get in Touch</h1>
           <p className="text-xl text-muted-foreground">
-            Have questions? We'd love to hear from you. Send us a message and we'll respond as soon as possible.
+            Have questions about <Link href="/" className="text-primary hover:underline">Tasheel's safety platform</Link>? We'd love to hear from you. Send us a message and we'll respond as soon as possible.
           </p>
         </div>
 
@@ -189,7 +190,7 @@ export default function ContactPage() {
             <div className="bg-gray-50 p-6 rounded-lg border">
               <h3 className="font-semibold mb-2">Need Immediate Help?</h3>
               <p className="text-sm text-muted-foreground mb-4">
-                For urgent support issues, please email support@tasheel.sa or call us during business hours.
+                For urgent support issues, please email support@tasheel.sa or call us during business hours. Learn more about <Link href="/" className="text-primary hover:underline">our features and pricing</Link>.
               </p>
               <p className="text-sm text-muted-foreground">
                 We typically respond to all inquiries within 24 hours.
