@@ -6,6 +6,7 @@ import { OrganizationSchema } from "@/components/seo/organization-schema";
 import "./globals.css";
 
 export const metadata: Metadata = {
+  metadataBase: new URL('https://tasheel.sa'),
   title: "Tasheel - Safety Contractor Management Platform",
   description: "Complete safety management platform for contractors in Saudi Arabia",
   manifest: "/manifest.json",
