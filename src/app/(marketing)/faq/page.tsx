@@ -1,4 +1,6 @@
 import { Metadata } from 'next'
+import { Navbar } from '@/components/marketing/navbar'
+import { Footer } from '@/components/marketing/footer'
 import {
   Accordion,
   AccordionContent,
@@ -114,7 +116,9 @@ const faqs = [
 
 export default function FAQPage() {
   return (
-    <div className="py-16 md:py-24">
+    <div className="min-h-screen flex flex-col">
+      <Navbar variant="marketing" />
+      <main className="flex-1 py-16 md:py-24">
       <div className="container mx-auto px-4">
         <div className="max-w-3xl mx-auto text-center mb-12">
           <h1 className="text-4xl md:text-5xl font-bold mb-6">
@@ -160,6 +164,8 @@ export default function FAQPage() {
           </div>
         </div>
       </div>
+      </main>
+      <Footer />
     </div>
   )
 }

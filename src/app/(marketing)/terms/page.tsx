@@ -1,4 +1,6 @@
 import { Metadata } from 'next'
+import { Navbar } from '@/components/marketing/navbar'
+import { Footer } from '@/components/marketing/footer'
 
 export const metadata: Metadata = {
   title: 'Terms of Service | Tasheel',
@@ -7,7 +9,9 @@ export const metadata: Metadata = {
 
 export default function TermsPage() {
   return (
-    <div className="py-16 md:py-24">
+    <div className="min-h-screen flex flex-col">
+      <Navbar variant="marketing" />
+      <main className="flex-1 py-16 md:py-24">
       <div className="container mx-auto px-4">
         <div className="max-w-4xl mx-auto">
           <h1 className="text-4xl md:text-5xl font-bold mb-6">Terms of Service</h1>
@@ -117,6 +121,8 @@ export default function TermsPage() {
           </div>
         </div>
       </div>
+      </main>
+      <Footer />
     </div>
   )
 }
