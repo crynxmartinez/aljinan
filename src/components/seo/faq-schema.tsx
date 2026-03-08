@@ -8,15 +8,7 @@ export function FAQSchema() {
         "name": "How do I sign up for Tasheel?",
         "acceptedAnswer": {
           "@type": "Answer",
-          "text": "Click the 'Get Started' or 'Sign Up' button on our homepage, fill out the registration form with your company details, and you'll be up and running in under 2 minutes. No credit card required for the free trial."
-        }
-      },
-      {
-        "@type": "Question",
-        "name": "Is there a free trial?",
-        "acceptedAnswer": {
-          "@type": "Answer",
-          "text": "Yes! We offer a 14-day free trial with full access to all features. No credit card required to start your trial."
+          "text": "Click the 'Get Started' or 'Sign Up' button on our homepage, fill out the registration form with your company details, and you'll be up and running in under 2 minutes. Completely free to get started."
         }
       },
       {

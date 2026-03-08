@@ -48,11 +48,7 @@ const faqs = [
     questions: [
       {
         question: 'How do I sign up for Tasheel?',
-        answer: 'Click the "Get Started" or "Sign Up" button on our homepage, fill out the registration form with your company details, and you\'ll be up and running in under 2 minutes. No credit card required for the free trial.',
-      },
-      {
-        question: 'Is there a free trial?',
-        answer: 'Yes! We offer a 14-day free trial with full access to all features. No credit card required to start your trial.',
+        answer: 'Click the "Get Started" or "Sign Up" button on our homepage, fill out the registration form with your company details, and you\'ll be up and running in under 2 minutes. Completely free to get started.',
       },
       {
         question: 'How long does it take to set up?',
