@@ -86,7 +86,21 @@ export function Footer() {
         </div>
 
         <div className="border-t mt-8 pt-8 text-center text-sm text-muted-foreground">
-          <p>© {new Date().getFullYear()} Tasheel. All rights reserved.</p>
+          <div className="flex flex-col md:flex-row items-center justify-center gap-2">
+            <p>© {new Date().getFullYear()} Tasheel. All rights reserved.</p>
+            <span className="hidden md:inline text-muted-foreground">•</span>
+            <p>
+              Powered by{' '}
+              <a 
+                href="https://www.jinanagency.com" 
+                target="_blank" 
+                rel="noopener noreferrer"
+                className="text-primary hover:underline font-medium"
+              >
+                Jinan Agency
+              </a>
+            </p>
+          </div>
         </div>
       </div>
     </footer>

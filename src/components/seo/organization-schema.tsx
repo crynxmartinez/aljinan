@@ -3,16 +3,33 @@ export function OrganizationSchema() {
     "@context": "https://schema.org",
     "@type": "Organization",
     "name": "Tasheel",
-    "legalName": "Tasheel Safety Management LLC",
+    "legalName": "Tasheel Safety Management Platform",
     "url": "https://tasheel.sa",
     "logo": "https://tasheel.sa/images/logo.png",
-    "foundingDate": "2024",
+    "foundingDate": "2025",
     "founders": [
       {
         "@type": "Person",
-        "name": "Ahmed Al-Mansour"
+        "name": "Hyper Abtahi",
+        "jobTitle": "Chief Executive Officer"
+      },
+      {
+        "@type": "Person",
+        "name": "Raph-el Martinez",
+        "jobTitle": "Chief Technology Officer"
+      },
+      {
+        "@type": "Person",
+        "name": "Josh Pescadera",
+        "jobTitle": "Chief Financial Officer"
       }
     ],
+    "parentOrganization": {
+      "@type": "Organization",
+      "name": "Jinan Agency",
+      "url": "https://www.jinanagency.com",
+      "description": "Digital Growth Partner for Medical Clinics"
+    },
     "address": {
       "@type": "PostalAddress",
       "streetAddress": "King Fahd Road, Al Olaya District",
