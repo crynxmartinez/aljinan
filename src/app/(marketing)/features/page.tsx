@@ -1,0 +1,196 @@
+import { Metadata } from 'next'
+import Link from 'next/link'
+import { Button } from '@/components/ui/button'
+import { ClipboardList, Wrench, FileCheck, Users, BarChart3, DollarSign, Bell, Shield, Smartphone, Clock, CheckCircle, ArrowRight } from 'lucide-react'
+
+export const metadata: Metadata = {
+  title: 'Features - Complete Safety Management Platform | Tasheel',
+  description: 'Explore Tasheel\'s powerful features: work order management, equipment tracking, certificate compliance, client portal, professional reports, and integrated billing.',
+  keywords: 'work order management, equipment tracking, certificate management, client portal, inspection reports',
+}
+
+const features = [
+  {
+    icon: ClipboardList,
+    title: 'Work Order Management',
+    description: 'Create, assign, and track work orders from start to finish. Manage schedules, priorities, and team assignments all in one place.',
+    benefits: [
+      'Drag-and-drop kanban board',
+      'Automated task assignments',
+      'Real-time status updates',
+      'Priority management',
+    ],
+  },
+  {
+    icon: Wrench,
+    title: 'Equipment Tracking',
+    description: 'Monitor all your equipment status, locations, and maintenance schedules. Never lose track of critical assets.',
+    benefits: [
+      'Equipment inventory management',
+      'Location tracking',
+      'Maintenance history',
+      'Status monitoring',
+    ],
+  },
+  {
+    icon: FileCheck,
+    title: 'Certificate Management',
+    description: 'Automated expiry alerts ensure you never miss a renewal deadline. Keep all compliance documents organized.',
+    benefits: [
+      'Automated expiry notifications',
+      'Digital certificate storage',
+      'Compliance tracking',
+      'Quick certificate lookup',
+    ],
+  },
+  {
+    icon: Users,
+    title: 'Client Portal',
+    description: 'Give your clients 24/7 access to their projects, reports, and invoices. Improve transparency and communication.',
+    benefits: [
+      'Secure client access',
+      'Real-time project visibility',
+      'Document sharing',
+      'Direct messaging',
+    ],
+  },
+  {
+    icon: BarChart3,
+    title: 'Reports & Analytics',
+    description: 'Generate professional inspection reports in seconds. Track performance metrics and business insights.',
+    benefits: [
+      'One-click report generation',
+      'Custom templates',
+      'Performance analytics',
+      'Export to PDF',
+    ],
+  },
+  {
+    icon: DollarSign,
+    title: 'Billing & Invoicing',
+    description: 'Track payments, send invoices, and manage finances effortlessly. Get paid faster with integrated billing.',
+    benefits: [
+      'Automated invoice generation',
+      'Payment tracking',
+      'Financial reports',
+      'Multiple payment methods',
+    ],
+  },
+  {
+    icon: Bell,
+    title: 'Smart Notifications',
+    description: 'Stay informed with intelligent alerts for deadlines, updates, and important events.',
+    benefits: [
+      'Email notifications',
+      'In-app alerts',
+      'Custom notification rules',
+      'Priority alerts',
+    ],
+  },
+  {
+    icon: Shield,
+    title: 'Security & Compliance',
+    description: 'Enterprise-grade security with role-based access control and audit trails.',
+    benefits: [
+      'Data encryption',
+      'Role-based permissions',
+      'Audit logs',
+      'Secure backups',
+    ],
+  },
+  {
+    icon: Smartphone,
+    title: 'Mobile Access',
+    description: 'Work from anywhere with our mobile-responsive platform. Perfect for field work.',
+    benefits: [
+      'Works on any device',
+      'Offline mode',
+      'Photo uploads',
+      'GPS location tracking',
+    ],
+  },
+]
+
+export default function FeaturesPage() {
+  return (
+    <div className="py-16 md:py-24">
+      {/* Hero Section */}
+      <section className="container mx-auto px-4 mb-16">
+        <div className="max-w-3xl mx-auto text-center">
+          <h1 className="text-4xl md:text-5xl font-bold mb-6">
+            Powerful Features for Modern Safety Contractors
+          </h1>
+          <p className="text-xl text-muted-foreground mb-8">
+            Everything you need to streamline operations, ensure compliance, and grow your business
+          </p>
+          <Button size="lg" asChild>
+            <Link href="/register">
+              Start Free Trial
+              <ArrowRight className="ml-2 h-4 w-4" />
+            </Link>
+          </Button>
+        </div>
+      </section>
+
+      {/* Features Grid */}
+      <section className="container mx-auto px-4">
+        <div className="space-y-16">
+          {features.map((feature, index) => {
+            const Icon = feature.icon
+            const isEven = index % 2 === 0
+
+            return (
+              <div
+                key={index}
+                className={`flex flex-col ${isEven ? 'md:flex-row' : 'md:flex-row-reverse'} gap-8 items-center`}
+              >
+                <div className="flex-1">
+                  <div className="flex items-center gap-4 mb-4">
+                    <div className="w-12 h-12 bg-orange-100 rounded-lg flex items-center justify-center flex-shrink-0">
+                      <Icon className="h-6 w-6 text-orange-600" />
+                    </div>
+                    <h2 className="text-2xl md:text-3xl font-bold">{feature.title}</h2>
+                  </div>
+                  <p className="text-lg text-muted-foreground mb-6">
+                    {feature.description}
+                  </p>
+                  <ul className="space-y-3">
+                    {feature.benefits.map((benefit, i) => (
+                      <li key={i} className="flex items-start gap-3">
+                        <CheckCircle className="h-5 w-5 text-green-600 flex-shrink-0 mt-0.5" />
+                        <span>{benefit}</span>
+                      </li>
+                    ))}
+                  </ul>
+                </div>
+                <div className="flex-1">
+                  <div className="bg-gray-100 rounded-lg p-8 h-64 flex items-center justify-center">
+                    <Icon className="h-32 w-32 text-gray-300" />
+                  </div>
+                </div>
+              </div>
+            )
+          })}
+        </div>
+      </section>
+
+      {/* CTA Section */}
+      <section className="container mx-auto px-4 mt-24">
+        <div className="bg-gradient-to-br from-orange-500 to-orange-600 text-white rounded-2xl p-12 text-center">
+          <h2 className="text-3xl md:text-4xl font-bold mb-4">
+            Ready to Transform Your Operations?
+          </h2>
+          <p className="text-xl mb-8 text-orange-50">
+            Join 50+ contractors already using Tasheel
+          </p>
+          <Button size="lg" className="bg-white text-orange-600 hover:bg-gray-100" asChild>
+            <Link href="/register">
+              Get Started Free
+              <ArrowRight className="ml-2 h-4 w-4" />
+            </Link>
+          </Button>
+        </div>
+      </section>
+    </div>
+  )
+}
