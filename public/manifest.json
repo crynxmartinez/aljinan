@@ -1,7 +1,7 @@
 {
-  "name": "Aljinan - Client Operations Platform",
-  "short_name": "Aljinan",
-  "description": "A shared workspace between service providers and clients for fire safety and pest control operations",
+  "name": "Tasheel - Safety Management Platform",
+  "short_name": "Tasheel",
+  "description": "Leading safety inspection and compliance platform for contractors in Saudi Arabia. Manage fire safety, HVAC, electrical inspections, certificates, and work orders.",
   "start_url": "/",
   "display": "standalone",
   "background_color": "#ffffff",
@@ -27,7 +27,7 @@
     {
       "name": "Dashboard",
       "short_name": "Dashboard",
-      "description": "Go to dashboard",
+      "description": "Go to contractor dashboard",
       "url": "/dashboard",
       "icons": [
         {
@@ -39,8 +39,20 @@
     {
       "name": "Work Orders",
       "short_name": "Work Orders",
-      "description": "View work orders",
-      "url": "/dashboard",
+      "description": "Manage work orders",
+      "url": "/dashboard/work-orders",
+      "icons": [
+        {
+          "src": "/icon-192.png",
+          "sizes": "192x192"
+        }
+      ]
+    },
+    {
+      "name": "Client Portal",
+      "short_name": "Portal",
+      "description": "Access client portal",
+      "url": "/portal",
       "icons": [
         {
           "src": "/icon-192.png",

@@ -6,6 +6,7 @@ import { usePathname } from 'next/navigation'
 import { Menu, X } from 'lucide-react'
 import { Logo } from './logo'
 import { Button } from '@/components/ui/button'
+import { InstallPWAButton } from '@/components/pwa/install-pwa-button'
 import { cn } from '@/lib/utils'
 
 interface NavbarProps {
@@ -71,6 +72,7 @@ export function Navbar({ variant = 'marketing', showHomeButton = false }: Navbar
 
           {/* Desktop Auth Buttons */}
           <div className="hidden md:flex items-center gap-4">
+            <InstallPWAButton />
             <Button variant="ghost" asChild>
               <Link href="/login">Login</Link>
             </Button>
@@ -112,6 +114,9 @@ export function Navbar({ variant = 'marketing', showHomeButton = false }: Navbar
                 </Link>
               ))}
               <div className="flex flex-col gap-2 px-4 pt-4 border-t">
+                <div className="mb-2">
+                  <InstallPWAButton />
+                </div>
                 <Button variant="ghost" asChild className="w-full">
                   <Link href="/login">Login</Link>
                 </Button>
