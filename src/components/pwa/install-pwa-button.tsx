@@ -89,10 +89,8 @@ export function InstallPWAButton() {
     return null
   }
 
-  // Show button if installable (Android/Desktop) or iOS
-  if (!isInstallable && !isIOS) {
-    return null
-  }
+  // Always show button - let users try to install
+  // Button will work when PWA criteria are met or show iOS instructions
 
   return (
     <>
