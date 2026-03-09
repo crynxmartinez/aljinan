@@ -355,6 +355,7 @@ Copyright © 2025 Tasheel. All rights reserved.
 - **Hyper Abtahi** - Chief Executive Officer
 - **Raph-el Martinez** - Chief Technology Officer
 - **Josh Pescadera** - Chief Financial Officer
+- **Abdullah Abtahi** - UX Designer
 
 **Parent Organization:** [Jinan Agency](https://www.jinanagency.com)
 

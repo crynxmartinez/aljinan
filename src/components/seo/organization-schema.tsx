@@ -22,6 +22,11 @@ export function OrganizationSchema() {
         "@type": "Person",
         "name": "Josh Pescadera",
         "jobTitle": "Chief Financial Officer"
+      },
+      {
+        "@type": "Person",
+        "name": "Abdullah Abtahi",
+        "jobTitle": "UX Designer"
       }
     ],
     "parentOrganization": {
