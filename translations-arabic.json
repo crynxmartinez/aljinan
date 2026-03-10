@@ -1,0 +1,458 @@
+{
+  "common": {
+    "appName": "تسهيل",
+    "tagline": "تبسيط السلامة، معاملة واحدة في كل مرة",
+    "login": "تسجيل الدخول",
+    "signUp": "إنشاء حساب",
+    "signIn": "تسجيل الدخول",
+    "register": "التسجيل",
+    "home": "الرئيسية",
+    "features": "المميزات",
+    "about": "من نحن",
+    "contact": "اتصل بنا",
+    "faq": "الأسئلة الشائعة",
+    "product": "المنتج",
+    "company": "الشركة",
+    "legal": "قانوني",
+    "privacyPolicy": "سياسة الخصوصية",
+    "termsOfService": "شروط الخدمة",
+    "loading": "جاري التحميل...",
+    "or": "أو",
+    "cancel": "إلغاء",
+    "save": "حفظ",
+    "delete": "حذف",
+    "edit": "تعديل",
+    "close": "إغلاق",
+    "back": "رجوع",
+    "next": "التالي",
+    "previous": "السابق",
+    "submit": "إرسال",
+    "search": "بحث",
+    "filter": "تصفية",
+    "export": "تصدير",
+    "import": "استيراد",
+    "download": "تحميل",
+    "upload": "رفع",
+    "view": "عرض",
+    "actions": "الإجراءات",
+    "status": "الحالة",
+    "priority": "الأولوية",
+    "type": "النوع",
+    "date": "التاريخ",
+    "time": "الوقت",
+    "name": "الاسم",
+    "email": "البريد الإلكتروني",
+    "phone": "الجوال",
+    "address": "العنوان",
+    "city": "المدينة",
+    "country": "الدولة",
+    "description": "الوصف",
+    "notes": "ملاحظات",
+    "total": "الإجمالي",
+    "subtotal": "المجموع الفرعي",
+    "amount": "المبلغ",
+    "quantity": "الكمية",
+    "price": "السعر",
+    "yes": "نعم",
+    "no": "لا",
+    "confirm": "تأكيد",
+    "success": "نجح",
+    "error": "خطأ",
+    "warning": "تحذير",
+    "info": "معلومات"
+  },
+  "navbar": {
+    "features": "المميزات",
+    "about": "من نحن",
+    "contact": "اتصل بنا",
+    "login": "تسجيل الدخول",
+    "signUp": "إنشاء حساب",
+    "home": "الرئيسية"
+  },
+  "footer": {
+    "tagline": "تبسيط السلامة، معاملة واحدة في كل مرة",
+    "email": "info@tasheel.sa",
+    "phone": "+966 50 123 4567",
+    "location": "الرياض، المملكة العربية السعودية",
+    "product": "المنتج",
+    "features": "المميزات",
+    "faq": "الأسئلة الشائعة",
+    "company": "الشركة",
+    "aboutUs": "من نحن",
+    "contact": "اتصل بنا",
+    "legal": "قانوني",
+    "privacyPolicy": "سياسة الخصوصية",
+    "termsOfService": "شروط الخدمة",
+    "copyright": "© {year} تسهيل. جميع الحقوق محفوظة.",
+    "poweredBy": "مدعوم من",
+    "jinanAgency": "وكالة جنان"
+  },
+  "auth": {
+    "login": {
+      "title": "مرحباً بعودتك إلى تسهيل",
+      "subtitle": "سجل الدخول إلى حسابك",
+      "emailLabel": "البريد الإلكتروني *",
+      "emailPlaceholder": "you@company.com",
+      "passwordLabel": "كلمة المرور *",
+      "passwordPlaceholder": "••••••••",
+      "rememberMe": "تذكرني",
+      "forgotPassword": "نسيت كلمة المرور؟",
+      "forgotPasswordMessage": "يرجى التواصل مع support@tasheel.sa لإعادة تعيين كلمة المرور.",
+      "signInButton": "تسجيل الدخول",
+      "signingIn": "جاري تسجيل الدخول...",
+      "noAccount": "ليس لديك حساب؟",
+      "createAccount": "إنشاء حساب"
+    },
+    "register": {
+      "title": "إنشاء حسابك",
+      "subtitle": "انضم إلى أكثر من 50 مقاول يديرون أعمالهم بسهولة",
+      "companyNameLabel": "اسم الشركة *",
+      "companyNamePlaceholder": "اسم شركتك",
+      "businessRegLabel": "رقم السجل التجاري",
+      "businessRegPlaceholder": "اختياري",
+      "phoneLabel": "رقم الجوال *",
+      "phonePlaceholder": "50 123 4567",
+      "emailLabel": "البريد الإلكتروني للشركة *",
+      "emailPlaceholder": "contact@company.com",
+      "fullNameLabel": "اسمك الكامل *",
+      "fullNamePlaceholder": "أحمد محمد",
+      "passwordLabel": "كلمة المرور *",
+      "confirmPasswordLabel": "تأكيد كلمة المرور *",
+      "passwordPlaceholder": "••••••••",
+      "passwordRequirements": {
+        "length": "8 أحرف على الأقل",
+        "case": "تضمين أحرف كبيرة وصغيرة",
+        "number": "تضمين رقم"
+      },
+      "agreeToTerms": "أوافق على",
+      "and": "و",
+      "createAccountButton": "إنشاء حساب",
+      "creatingAccount": "جاري إنشاء الحساب...",
+      "alreadyHaveAccount": "لديك حساب بالفعل؟",
+      "signIn": "تسجيل الدخول",
+      "errors": {
+        "mustAgree": "يجب الموافقة على شروط الخدمة وسياسة الخصوصية",
+        "passwordTooShort": "يجب أن تكون كلمة المرور 8 أحرف على الأقل",
+        "passwordNoUppercase": "يجب أن تتضمن كلمة المرور حرفاً كبيراً",
+        "passwordNoLowercase": "يجب أن تتضمن كلمة المرور حرفاً صغيراً",
+        "passwordNoNumber": "يجب أن تتضمن كلمة المرور رقماً",
+        "passwordsNoMatch": "كلمات المرور غير متطابقة"
+      }
+    }
+  },
+  "home": {
+    "hero": {
+      "title": "بسّط إدارة أعمال المقاولات الخاصة بالسلامة",
+      "subtitle": "إدارة الفحوصات والشهادات وعلاقات العملاء في منصة واحدة قوية",
+      "ctaPrimary": "ابدأ مجاناً",
+      "ctaSecondary": "شاهد العرض التوضيحي",
+      "noCreditCard": "لا حاجة لبطاقة ائتمان"
+    },
+    "stats": {
+      "workOrders": "أوامر العمل المُدارة",
+      "inspections": "الفحوصات في الوقت المحدد",
+      "contractors": "المقاولون النشطون",
+      "certificates": "الشهادات المتتبعة"
+    },
+    "problemSolution": {
+      "title": "توقف عن التنقل بين جداول البيانات والبريد الإلكتروني والمكالمات الهاتفية",
+      "problems": {
+        "1": "التتبع اليدوي يؤدي إلى تفويت الفحوصات",
+        "2": "فقدان الشهادات ومشاكل الامتثال",
+        "3": "التواصل البطيء يُحبط العملاء"
+      },
+      "solutionsTitle": "تسهيل يجعل الأمر سهلاً",
+      "solutions": {
+        "1": "تذكيرات وجدولة تلقائية",
+        "2": "إدارة مركزية للشهادات",
+        "3": "وصول فوري لبوابة العملاء"
+      }
+    },
+    "howItWorks": {
+      "title": "ابدأ في دقائق",
+      "subtitle": "ثلاث خطوات بسيطة لتحويل عمليات السلامة الخاصة بك",
+      "steps": {
+        "1": {
+          "title": "سجّل",
+          "description": "أنشئ حساب المقاول الخاص بك في أقل من دقيقتين"
+        },
+        "2": {
+          "title": "أضف العملاء",
+          "description": "استورد عملاءك ومنشآتهم"
+        },
+        "3": {
+          "title": "ابدأ الإدارة",
+          "description": "أنشئ أوامر العمل، جدول الفحوصات، تتبع كل شيء"
+        }
+      }
+    },
+    "benefits": {
+      "title": "مصمم لكل من المقاولين وعملائهم",
+      "subtitle": "منصة تفيد الجميع في نظام السلامة",
+      "contractors": {
+        "title": "لمقاولي السلامة",
+        "benefits": {
+          "1": "وفر أكثر من 10 ساعات أسبوعياً في الأعمال الإدارية",
+          "2": "لا تفوت أبداً موعد فحص",
+          "3": "تقارير احترافية بعلامتك التجارية",
+          "4": "تحصيل دفعات أسرع",
+          "5": "وصول عبر الجوال للعمل الميداني"
+        }
+      },
+      "clients": {
+        "title": "لعملائك",
+        "benefits": {
+          "1": "وصول للبوابة على مدار الساعة",
+          "2": "تحديثات المشروع في الوقت الفعلي",
+          "3": "تخزين رقمي للشهادات",
+          "4": "تسعير شفاف",
+          "5": "تواصل سهل"
+        }
+      }
+    },
+    "testimonials": {
+      "title": "موثوق به من قبل محترفي السلامة",
+      "subtitle": "اطلع على ما يقوله المقاولون عن تسهيل",
+      "items": {
+        "1": {
+          "quote": "تسهيل غيّر طريقة إدارتنا لعمليات السلامة. ما كان يستغرق ساعات أصبح يستغرق دقائق. عملاؤنا يحبون الشفافية.",
+          "author": "أحمد الراشد",
+          "company": "مقاولات السلامة أولاً"
+        },
+        "2": {
+          "quote": "ميزة تتبع الشهادات وحدها تستحق. لم نفوت أي تجديد منذ التحول إلى تسهيل.",
+          "author": "فاطمة المنصور",
+          "company": "أنظمة السلامة الحارسة"
+        },
+        "3": {
+          "quote": "عملاؤنا أكثر سعادة، فريقنا أكثر كفاءة، ونحن ننمو بشكل أسرع. تسهيل جعل كل هذا ممكناً.",
+          "author": "محمد الزهراني",
+          "company": "حلول السلامة النخبة"
+        }
+      }
+    },
+    "cta": {
+      "title": "هل أنت مستعد لتبسيط عمليات السلامة الخاصة بك؟",
+      "subtitle": "انضم إلى المقاولين الرائدين الذين يثقون في تسهيل لأعمالهم",
+      "button": "ابدأ مجاناً",
+      "footer": "لا حاجة لبطاقة ائتمان • تجربة مجانية • إلغاء في أي وقت"
+    }
+  },
+  "dashboard": {
+    "nav": {
+      "dashboard": "لوحة التحكم",
+      "clients": "العملاء",
+      "workOrders": "أوامر العمل",
+      "analytics": "التحليلات",
+      "team": "الفريق",
+      "templates": "القوالب",
+      "settings": "الإعدادات",
+      "notifications": "الإشعارات",
+      "company": "الشركة",
+      "logout": "تسجيل الخروج"
+    },
+    "overview": {
+      "title": "لوحة التحكم",
+      "subtitle": "نظرة عامة على عمليات عملك",
+      "welcome": "مرحباً بعودتك، {name}",
+      "quickStats": "إحصائيات سريعة",
+      "recentActivity": "النشاط الأخير",
+      "actionCenter": "مركز الإجراءات",
+      "upcomingTasks": "المهام القادمة"
+    },
+    "clients": {
+      "title": "العملاء",
+      "subtitle": "إدارة حسابات العملاء والمنشآت",
+      "addClient": "إضافة عميل",
+      "viewAll": "عرض جميع العملاء",
+      "searchPlaceholder": "البحث عن العملاء...",
+      "noClients": "لا يوجد عملاء",
+      "noClientsDescription": "ابدأ بإضافة عميلك الأول",
+      "clientDetails": "تفاصيل العميل",
+      "branches": "الفروع",
+      "projects": "المشاريع",
+      "contacts": "جهات الاتصال",
+      "archived": "مؤرشف",
+      "active": "نشط"
+    },
+    "workOrders": {
+      "title": "أوامر العمل",
+      "subtitle": "إدارة وتتبع جميع أوامر العمل",
+      "addWorkOrder": "إضافة أمر عمل",
+      "viewAll": "عرض جميع أوامر العمل",
+      "searchPlaceholder": "البحث عن أوامر العمل...",
+      "noWorkOrders": "لا توجد أوامر عمل",
+      "noWorkOrdersDescription": "ستظهر أوامر العمل هنا بمجرد إنشائها",
+      "workOrderDetails": "تفاصيل أمر العمل",
+      "assignedTo": "مُسند إلى",
+      "dueDate": "تاريخ الاستحقاق",
+      "completedDate": "تاريخ الإنجاز",
+      "totalWorkOrders": "{count} إجمالي أوامر العمل",
+      "showing": "عرض {start} إلى {end} من {total} أمر عمل"
+    },
+    "analytics": {
+      "title": "التحليلات",
+      "subtitle": "رؤى الأعمال ومقاييس الأداء",
+      "revenue": "الإيرادات",
+      "expenses": "المصروفات",
+      "profit": "الربح",
+      "growth": "النمو",
+      "thisMonth": "هذا الشهر",
+      "lastMonth": "الشهر الماضي",
+      "thisYear": "هذا العام",
+      "customRange": "نطاق مخصص"
+    },
+    "team": {
+      "title": "الفريق",
+      "subtitle": "إدارة أعضاء الفريق والصلاحيات",
+      "addMember": "إضافة عضو فريق",
+      "editMember": "تعديل عضو الفريق",
+      "deleteMember": "حذف عضو الفريق",
+      "noMembers": "لا يوجد أعضاء فريق",
+      "noMembersDescription": "أضف أعضاء الفريق للتعاون",
+      "role": "الدور",
+      "supervisor": "مشرف",
+      "technician": "فني",
+      "branchAccess": "الوصول للفروع",
+      "jobTitle": "المسمى الوظيفي",
+      "selectBranches": "حدد الفروع التي يمكن لعضو الفريق الوصول إليها",
+      "noBranches": "لا يوجد عملاء بفروع متاحة"
+    },
+    "settings": {
+      "title": "الإعدادات",
+      "subtitle": "إدارة حسابك وتفضيلاتك",
+      "profile": "الملف الشخصي",
+      "security": "الأمان",
+      "notifications": "الإشعارات",
+      "billing": "الفواتير",
+      "preferences": "التفضيلات",
+      "language": "اللغة",
+      "timezone": "المنطقة الزمنية",
+      "saveChanges": "حفظ التغييرات",
+      "changesSaved": "تم حفظ التغييرات بنجاح"
+    },
+    "notifications": {
+      "title": "الإشعارات",
+      "subtitle": "ابق على اطلاع بأنشطة عملك",
+      "markAllRead": "تعليم الكل كمقروء",
+      "noNotifications": "لا توجد إشعارات",
+      "noNotificationsDescription": "أنت على اطلاع بكل شيء!",
+      "new": "جديد",
+      "earlier": "سابقاً"
+    }
+  },
+  "workOrder": {
+    "status": {
+      "pending": "قيد الانتظار",
+      "scheduled": "مجدول",
+      "inProgress": "قيد التنفيذ",
+      "completed": "مكتمل",
+      "cancelled": "ملغى",
+      "onHold": "معلق"
+    },
+    "priority": {
+      "low": "منخفضة",
+      "medium": "متوسطة",
+      "high": "عالية",
+      "urgent": "عاجل"
+    },
+    "type": {
+      "inspection": "فحص",
+      "maintenance": "صيانة",
+      "installation": "تركيب",
+      "repair": "إصلاح",
+      "testing": "اختبار"
+    }
+  },
+  "client": {
+    "status": {
+      "active": "نشط",
+      "inactive": "غير نشط",
+      "archived": "مؤرشف"
+    },
+    "type": {
+      "commercial": "تجاري",
+      "industrial": "صناعي",
+      "residential": "سكني",
+      "government": "حكومي"
+    }
+  },
+  "forms": {
+    "required": "مطلوب",
+    "optional": "اختياري",
+    "selectOption": "اختر خياراً",
+    "selectDate": "اختر تاريخاً",
+    "selectTime": "اختر وقتاً",
+    "uploadFile": "رفع ملف",
+    "dragDropFile": "اسحب وأفلت أو انقر للرفع",
+    "fileUploaded": "تم رفع الملف بنجاح",
+    "fileUploadError": "فشل رفع الملف",
+    "invalidEmail": "عنوان بريد إلكتروني غير صالح",
+    "invalidPhone": "رقم جوال غير صالح",
+    "fieldRequired": "هذا الحقل مطلوب",
+    "minLength": "الحد الأدنى {count} أحرف",
+    "maxLength": "الحد الأقصى {count} أحرف"
+  },
+  "messages": {
+    "saveSuccess": "تم الحفظ بنجاح",
+    "saveError": "فشل الحفظ",
+    "deleteSuccess": "تم الحذف بنجاح",
+    "deleteError": "فشل الحذف",
+    "updateSuccess": "تم التحديث بنجاح",
+    "updateError": "فشل التحديث",
+    "createSuccess": "تم الإنشاء بنجاح",
+    "createError": "فشل الإنشاء",
+    "confirmDelete": "هل أنت متأكد من الحذف؟",
+    "confirmCancel": "هل أنت متأكد من الإلغاء؟",
+    "unsavedChanges": "لديك تغييرات غير محفوظة",
+    "loadingData": "جاري تحميل البيانات...",
+    "noData": "لا توجد بيانات متاحة",
+    "errorOccurred": "حدث خطأ",
+    "tryAgain": "يرجى المحاولة مرة أخرى"
+  },
+  "install": {
+    "title": "تحميل تسهيل",
+    "subtitle": "احصل على تطبيق سطح المكتب أو الجوال",
+    "windows": {
+      "title": "ويندوز",
+      "description": "تحميل المثبت لأجهزة ويندوز",
+      "button": "تحميل لويندوز",
+      "requirements": "ويندوز 10 أو أحدث • ~170 ميجابايت"
+    },
+    "linux": {
+      "title": "لينكس",
+      "description": "تحميل لأنظمة لينكس",
+      "buttonAppImage": "تحميل AppImage",
+      "buttonDeb": "تحميل حزمة DEB",
+      "comingSoon": "قريباً - البناء قيد التقدم",
+      "requirements": "Ubuntu 20.04+ أو ما يعادله"
+    },
+    "mobile": {
+      "title": "تطبيقات الجوال",
+      "description": "تطبيقات أصلية لنظامي iOS و Android",
+      "status": "قيد التطوير",
+      "message": "تطبيقات الجوال قيد التطوير حالياً وستكون متاحة قريباً. ترقبوا!",
+      "platforms": "iOS و Android"
+    },
+    "instructions": {
+      "title": "تعليمات التثبيت",
+      "windows": {
+        "title": "تثبيت ويندوز",
+        "steps": {
+          "1": "قم بتحميل المثبت",
+          "2": "شغّل ملف .exe",
+          "3": "اتبع معالج التثبيت",
+          "4": "شغّل تسهيل من سطح المكتب"
+        }
+      },
+      "linux": {
+        "title": "تثبيت لينكس",
+        "steps": {
+          "1": "قم بتحميل الحزمة المفضلة لديك",
+          "2": "اجعلها قابلة للتنفيذ (AppImage) أو قم بالتثبيت (DEB)",
+          "3": "شغّل تسهيل من قائمة التطبيقات"
+        }
+      }
+    }
+  }
+}
