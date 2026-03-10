@@ -14,6 +14,7 @@
         "arch": ["x64"]
       }
     ],
+    "icon": "electron/icon.png",
     "forceCodeSigning": false
   },
   "linux": {
