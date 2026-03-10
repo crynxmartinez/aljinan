@@ -10,11 +10,11 @@
   "win": {
     "target": [
       {
-        "target": "nsis",
+        "target": "portable",
         "arch": ["x64"]
       }
     ],
-    "icon": "electron/icon.ico"
+    "forceCodeSigning": false
   },
   "linux": {
     "target": [

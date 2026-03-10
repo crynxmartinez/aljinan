@@ -34,3 +34,9 @@ next-env.d.ts
 # Prisma
 prisma/*.db
 prisma/*.db-journal
+
+# Electron build output
+dist-electron/
+
+# Capacitor/Android build output
+android/

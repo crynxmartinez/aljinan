@@ -38,15 +38,14 @@ export default function InstallPage() {
               <p className="text-muted-foreground mb-6">
                 Download installer for Windows PC
               </p>
-              <Button size="lg" className="w-full gap-2" disabled>
-                <Download className="h-5 w-5" />
-                Download for Windows
+              <Button size="lg" className="w-full gap-2" asChild>
+                <a href="https://tasheel-uploads.s3.ap-southeast-1.amazonaws.com/downloads/tasheel-windows.exe" download>
+                  <Download className="h-5 w-5" />
+                  Download for Windows
+                </a>
               </Button>
-              <p className="text-xs text-muted-foreground mt-2">
-                Coming soon - Build in progress
-              </p>
               <p className="text-xs text-muted-foreground mt-4">
-                Windows 10 or later • ~80 MB
+                Windows 10 or later • ~170 MB
               </p>
             </div>
 
