@@ -30,7 +30,7 @@ export function FeaturesGrid() {
         </div>
 
         <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-8 max-w-6xl mx-auto">
-          {t.features.list.map((feature, index) => {
+          {t.features.list.slice(0, 6).map((feature, index) => {
             const Icon = icons[index]
             return (
               <div
