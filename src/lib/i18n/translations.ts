@@ -308,14 +308,209 @@ export const translations = {
         stillHaveQuestions: "Still have questions?",
         cantFind: "Can't find the answer you're looking for? Visit our homepage or contact our support team.",
         contactButton: "Contact Support",
+        categories: [
+          {
+            name: "Getting Started",
+            questions: [
+              {
+                q: "How do I sign up for Tasheel?",
+                a: "Click the \"Get Started\" or \"Sign Up\" button on our homepage, fill out the registration form with your company details, and you'll be up and running in under 2 minutes. Completely free to get started.",
+              },
+              {
+                q: "How long does it take to set up?",
+                a: "Most contractors are fully set up within 30 minutes. You can start creating work orders and adding clients immediately after signing up.",
+              },
+            ],
+          },
+          {
+            name: "Features",
+            questions: [
+              {
+                q: "Can my clients access the platform?",
+                a: "Yes! Each client gets their own secure portal where they can view projects, certificates, invoices, and communicate with your team 24/7.",
+              },
+              {
+                q: "Does it work on mobile devices?",
+                a: "Absolutely. Tasheel is fully responsive and works seamlessly on smartphones, tablets, and desktops. Perfect for field work.",
+              },
+              {
+                q: "Can I upload existing certificates and documents?",
+                a: "Yes, you can easily upload and organize all your existing certificates, inspection reports, and documents into Tasheel.",
+              },
+              {
+                q: "How does certificate expiry tracking work?",
+                a: "Tasheel automatically monitors all certificate expiry dates and sends you notifications 30, 14, and 7 days before expiration, ensuring you never miss a renewal.",
+              },
+            ],
+          },
+          {
+            name: "Support & Security",
+            questions: [
+              {
+                q: "How do I get help if I have questions?",
+                a: "You can contact us at support@tasheel.sa, use the in-app chat, or call us during business hours. We typically respond within a few hours.",
+              },
+              {
+                q: "Is my data secure?",
+                a: "Yes, we use enterprise-grade encryption, secure data centers, and regular backups. Your data is protected with the highest security standards.",
+              },
+              {
+                q: "Do you provide training?",
+                a: "Yes, we offer free onboarding sessions and video tutorials to help you and your team get started quickly.",
+              },
+              {
+                q: "Can I import data from other systems?",
+                a: "Yes, we can help you migrate data from spreadsheets or other systems. Contact our support team for assistance.",
+              },
+            ],
+          },
+          {
+            name: "Technical",
+            questions: [
+              {
+                q: "Do I need to install any software?",
+                a: "No, Tasheel is a cloud-based platform accessible through any web browser. No installation required.",
+              },
+              {
+                q: "Can multiple team members use the same account?",
+                a: "Yes, you can add unlimited team members with different permission levels based on their roles.",
+              },
+              {
+                q: "Does Tasheel integrate with other tools?",
+                a: "We're constantly adding integrations. Contact us if you have specific integration requirements.",
+              },
+            ],
+          },
+        ],
       },
       privacy: {
         title: "Privacy Policy",
         lastUpdated: "Last updated: March 9, 2026",
+        sections: [
+          {
+            title: "1. Information We Collect",
+            content: "We collect information you provide directly to us, including your name, email address, company name, phone number, and any other information you choose to provide when using Tasheel.",
+          },
+          {
+            title: "2. How We Use Your Information",
+            content: "We use the information we collect to:",
+            list: [
+              "Provide, maintain, and improve our services",
+              "Process transactions and send related information",
+              "Send technical notices, updates, and support messages",
+              "Respond to your comments and questions",
+              "Monitor and analyze trends and usage",
+            ],
+          },
+          {
+            title: "3. Data Security",
+            content: "We implement appropriate technical and organizational measures to protect your personal data against unauthorized or unlawful processing, accidental loss, destruction, or damage.",
+          },
+          {
+            title: "4. Data Retention",
+            content: "We retain your personal data for as long as necessary to fulfill the purposes outlined in this privacy policy, unless a longer retention period is required by law.",
+          },
+          {
+            title: "5. Your Rights",
+            content: "You have the right to:",
+            list: [
+              "Access your personal data",
+              "Correct inaccurate data",
+              "Request deletion of your data",
+              "Object to processing of your data",
+              "Export your data",
+            ],
+          },
+          {
+            title: "6. Cookies",
+            content: "We use cookies and similar tracking technologies to track activity on our service and hold certain information to improve and analyze our service.",
+          },
+          {
+            title: "7. Third-Party Services",
+            content: "We may employ third-party companies and individuals to facilitate our service, provide the service on our behalf, or assist us in analyzing how our service is used.",
+          },
+          {
+            title: "8. Changes to This Policy",
+            content: "We may update our Privacy Policy from time to time. We will notify you of any changes by posting the new Privacy Policy on this page and updating the \"Last updated\" date.",
+          },
+          {
+            title: "9. Contact Us",
+            content: "If you have any questions about this Privacy Policy, please contact us at:",
+            contact: {
+              email: "Email: privacy@tasheel.sa",
+              phone: "Phone: +966 50 123 4567",
+              address: "Address: King Fahd Road, Riyadh 12345, Saudi Arabia",
+            },
+          },
+        ],
       },
       terms: {
         title: "Terms of Service",
         lastUpdated: "Last updated: March 9, 2026",
+        sections: [
+          {
+            title: "1. Acceptance of Terms",
+            content: "By accessing and using Tasheel, you accept and agree to be bound by the terms and provisions of this agreement. If you do not agree to these terms, please do not use our service.",
+          },
+          {
+            title: "2. Use License",
+            content: "Permission is granted to temporarily access Tasheel for personal, non-commercial transitory viewing only. This is the grant of a license, not a transfer of title.",
+          },
+          {
+            title: "3. User Account",
+            content: "To use Tasheel, you must:",
+            list: [
+              "Provide accurate and complete registration information",
+              "Maintain the security of your password",
+              "Notify us immediately of any unauthorized use",
+              "Be responsible for all activities under your account",
+            ],
+          },
+          {
+            title: "4. Acceptable Use",
+            content: "You agree not to:",
+            list: [
+              "Use the service for any unlawful purpose",
+              "Attempt to gain unauthorized access to any systems",
+              "Interfere with or disrupt the service",
+              "Upload malicious code or viruses",
+              "Violate any applicable laws or regulations",
+            ],
+          },
+          {
+            title: "5. Payment Terms",
+            content: "Subscription fees are billed in advance on a monthly or annual basis. All fees are non-refundable except as required by law. We reserve the right to change our pricing with 30 days notice.",
+          },
+          {
+            title: "6. Intellectual Property",
+            content: "The service and its original content, features, and functionality are owned by Tasheel and are protected by international copyright, trademark, and other intellectual property laws.",
+          },
+          {
+            title: "7. Termination",
+            content: "We may terminate or suspend your account immediately, without prior notice, for any reason, including breach of these Terms. Upon termination, your right to use the service will immediately cease.",
+          },
+          {
+            title: "8. Limitation of Liability",
+            content: "In no event shall Tasheel be liable for any indirect, incidental, special, consequential, or punitive damages resulting from your use or inability to use the service.",
+          },
+          {
+            title: "9. Governing Law",
+            content: "These Terms shall be governed by the laws of Saudi Arabia, without regard to its conflict of law provisions.",
+          },
+          {
+            title: "10. Changes to Terms",
+            content: "We reserve the right to modify these terms at any time. We will notify users of any material changes via email or through the service.",
+          },
+          {
+            title: "11. Contact Information",
+            content: "For questions about these Terms, please contact us at:",
+            contact: {
+              email: "Email: legal@tasheel.sa",
+              phone: "Phone: +966 50 123 4567",
+              address: "Address: King Fahd Road, Riyadh 12345, Saudi Arabia",
+            },
+          },
+        ],
       },
       install: {
         title: "Install Tasheel",
@@ -686,14 +881,209 @@ export const translations = {
         stillHaveQuestions: "لا تزال لديك أسئلة؟",
         cantFind: "لا يمكنك العثور على الإجابة التي تبحث عنها؟ قم بزيارة صفحتنا الرئيسية أو اتصل بفريق الدعم لدينا.",
         contactButton: "اتصل بالدعم",
+        categories: [
+          {
+            name: "البدء",
+            questions: [
+              {
+                q: "كيف أسجل في تسهيل؟",
+                a: "انقر على زر \"ابدأ\" أو \"التسجيل\" في صفحتنا الرئيسية، املأ نموذج التسجيل بتفاصيل شركتك، وستكون جاهزاً للعمل في أقل من دقيقتين. مجاني تماماً للبدء.",
+              },
+              {
+                q: "كم من الوقت يستغرق الإعداد؟",
+                a: "معظم المقاولين يكملون الإعداد في غضون 30 دقيقة. يمكنك البدء في إنشاء أوامر العمل وإضافة العملاء فوراً بعد التسجيل.",
+              },
+            ],
+          },
+          {
+            name: "الميزات",
+            questions: [
+              {
+                q: "هل يمكن لعملائي الوصول إلى المنصة؟",
+                a: "نعم! يحصل كل عميل على بوابة آمنة خاصة به حيث يمكنه عرض المشاريع والشهادات والفواتير والتواصل مع فريقك على مدار الساعة.",
+              },
+              {
+                q: "هل يعمل على الأجهزة المحمولة؟",
+                a: "بالتأكيد. تسهيل متجاوب تماماً ويعمل بسلاسة على الهواتف الذكية والأجهزة اللوحية وأجهزة الكمبيوتر المكتبية. مثالي للعمل الميداني.",
+              },
+              {
+                q: "هل يمكنني تحميل الشهادات والوثائق الموجودة؟",
+                a: "نعم، يمكنك بسهولة تحميل وتنظيم جميع شهاداتك وتقارير الفحص والوثائق الموجودة في تسهيل.",
+              },
+              {
+                q: "كيف يعمل تتبع انتهاء صلاحية الشهادات؟",
+                a: "تسهيل تراقب تلقائياً جميع تواريخ انتهاء صلاحية الشهادات وترسل لك إشعارات قبل 30 و 14 و 7 أيام من الانتهاء، مما يضمن عدم تفويت أي تجديد.",
+              },
+            ],
+          },
+          {
+            name: "الدعم والأمان",
+            questions: [
+              {
+                q: "كيف أحصل على المساعدة إذا كان لدي أسئلة؟",
+                a: "يمكنك الاتصال بنا على support@tasheel.sa، أو استخدام الدردشة داخل التطبيق، أو الاتصال بنا خلال ساعات العمل. عادة ما نرد في غضون ساعات قليلة.",
+              },
+              {
+                q: "هل بياناتي آمنة؟",
+                a: "نعم، نستخدم التشفير على مستوى المؤسسات ومراكز البيانات الآمنة والنسخ الاحتياطية المنتظمة. بياناتك محمية بأعلى معايير الأمان.",
+              },
+              {
+                q: "هل تقدمون التدريب؟",
+                a: "نعم، نقدم جلسات تأهيل مجانية ودروس فيديو لمساعدتك أنت وفريقك على البدء بسرعة.",
+              },
+              {
+                q: "هل يمكنني استيراد البيانات من أنظمة أخرى؟",
+                a: "نعم، يمكننا مساعدتك في ترحيل البيانات من جداول البيانات أو الأنظمة الأخرى. اتصل بفريق الدعم لدينا للحصول على المساعدة.",
+              },
+            ],
+          },
+          {
+            name: "التقنية",
+            questions: [
+              {
+                q: "هل أحتاج إلى تثبيت أي برنامج؟",
+                a: "لا، تسهيل منصة سحابية يمكن الوصول إليها من خلال أي متصفح ويب. لا حاجة للتثبيت.",
+              },
+              {
+                q: "هل يمكن لعدة أعضاء في الفريق استخدام نفس الحساب؟",
+                a: "نعم، يمكنك إضافة عدد غير محدود من أعضاء الفريق بمستويات أذونات مختلفة بناءً على أدوارهم.",
+              },
+              {
+                q: "هل تتكامل تسهيل مع أدوات أخرى؟",
+                a: "نحن نضيف التكاملات باستمرار. اتصل بنا إذا كان لديك متطلبات تكامل محددة.",
+              },
+            ],
+          },
+        ],
       },
       privacy: {
         title: "سياسة الخصوصية",
         lastUpdated: "آخر تحديث: 9 مارس 2026",
+        sections: [
+          {
+            title: "1. المعلومات التي نجمعها",
+            content: "نجمع المعلومات التي تقدمها لنا مباشرة، بما في ذلك اسمك وعنوان بريدك الإلكتروني واسم الشركة ورقم الهاتف وأي معلومات أخرى تختار تقديمها عند استخدام تسهيل.",
+          },
+          {
+            title: "2. كيف نستخدم معلوماتك",
+            content: "نستخدم المعلومات التي نجمعها من أجل:",
+            list: [
+              "توفير خدماتنا وصيانتها وتحسينها",
+              "معالجة المعاملات وإرسال المعلومات ذات الصلة",
+              "إرسال الإشعارات الفنية والتحديثات ورسائل الدعم",
+              "الرد على تعليقاتك وأسئلتك",
+              "مراقبة وتحليل الاتجاهات والاستخدام",
+            ],
+          },
+          {
+            title: "3. أمن البيانات",
+            content: "نطبق التدابير التقنية والتنظيمية المناسبة لحماية بياناتك الشخصية من المعالجة غير المصرح بها أو غير القانونية، أو الفقدان العرضي أو التدمير أو الضرر.",
+          },
+          {
+            title: "4. الاحتفاظ بالبيانات",
+            content: "نحتفظ ببياناتك الشخصية طالما كان ذلك ضرورياً لتحقيق الأغراض الموضحة في سياسة الخصوصية هذه، ما لم تكن هناك حاجة لفترة احتفاظ أطول بموجب القانون.",
+          },
+          {
+            title: "5. حقوقك",
+            content: "لديك الحق في:",
+            list: [
+              "الوصول إلى بياناتك الشخصية",
+              "تصحيح البيانات غير الدقيقة",
+              "طلب حذف بياناتك",
+              "الاعتراض على معالجة بياناتك",
+              "تصدير بياناتك",
+            ],
+          },
+          {
+            title: "6. ملفات تعريف الارتباط",
+            content: "نستخدم ملفات تعريف الارتباط وتقنيات التتبع المماثلة لتتبع النشاط على خدمتنا والاحتفاظ بمعلومات معينة لتحسين وتحليل خدمتنا.",
+          },
+          {
+            title: "7. خدمات الطرف الثالث",
+            content: "قد نوظف شركات وأفراد من طرف ثالث لتسهيل خدمتنا، أو تقديم الخدمة نيابة عنا، أو مساعدتنا في تحليل كيفية استخدام خدمتنا.",
+          },
+          {
+            title: "8. التغييرات على هذه السياسة",
+            content: "قد نقوم بتحديث سياسة الخصوصية الخاصة بنا من وقت لآخر. سنخطرك بأي تغييرات عن طريق نشر سياسة الخصوصية الجديدة على هذه الصفحة وتحديث تاريخ \"آخر تحديث\".",
+          },
+          {
+            title: "9. اتصل بنا",
+            content: "إذا كان لديك أي أسئلة حول سياسة الخصوصية هذه، يرجى الاتصال بنا على:",
+            contact: {
+              email: "البريد الإلكتروني: privacy@tasheel.sa",
+              phone: "الهاتف: +966 50 123 4567",
+              address: "العنوان: طريق الملك فهد، الرياض 12345، المملكة العربية السعودية",
+            },
+          },
+        ],
       },
       terms: {
         title: "شروط الخدمة",
         lastUpdated: "آخر تحديث: 9 مارس 2026",
+        sections: [
+          {
+            title: "1. قبول الشروط",
+            content: "من خلال الوصول إلى واستخدام تسهيل، فإنك تقبل وتوافق على الالتزام بشروط وأحكام هذه الاتفاقية. إذا كنت لا توافق على هذه الشروط، يرجى عدم استخدام خدمتنا.",
+          },
+          {
+            title: "2. ترخيص الاستخدام",
+            content: "يُمنح الإذن بالوصول المؤقت إلى تسهيل للعرض الشخصي غير التجاري المؤقت فقط. هذا هو منح ترخيص، وليس نقل ملكية.",
+          },
+          {
+            title: "3. حساب المستخدم",
+            content: "لاستخدام تسهيل، يجب عليك:",
+            list: [
+              "تقديم معلومات تسجيل دقيقة وكاملة",
+              "الحفاظ على أمان كلمة المرور الخاصة بك",
+              "إخطارنا فوراً بأي استخدام غير مصرح به",
+              "تحمل المسؤولية عن جميع الأنشطة تحت حسابك",
+            ],
+          },
+          {
+            title: "4. الاستخدام المقبول",
+            content: "أنت توافق على عدم:",
+            list: [
+              "استخدام الخدمة لأي غرض غير قانوني",
+              "محاولة الحصول على وصول غير مصرح به إلى أي أنظمة",
+              "التدخل في الخدمة أو تعطيلها",
+              "تحميل رموز ضارة أو فيروسات",
+              "انتهاك أي قوانين أو لوائح سارية",
+            ],
+          },
+          {
+            title: "5. شروط الدفع",
+            content: "يتم إصدار فواتير رسوم الاشتراك مقدماً على أساس شهري أو سنوي. جميع الرسوم غير قابلة للاسترداد إلا كما يقتضي القانون. نحتفظ بالحق في تغيير أسعارنا مع إشعار مدته 30 يوماً.",
+          },
+          {
+            title: "6. الملكية الفكرية",
+            content: "الخدمة ومحتواها الأصلي وميزاتها ووظائفها مملوكة لتسهيل ومحمية بموجب حقوق النشر الدولية والعلامات التجارية وقوانين الملكية الفكرية الأخرى.",
+          },
+          {
+            title: "7. الإنهاء",
+            content: "يجوز لنا إنهاء أو تعليق حسابك على الفور، دون إشعار مسبق، لأي سبب، بما في ذلك انتهاك هذه الشروط. عند الإنهاء، سينتهي حقك في استخدام الخدمة على الفور.",
+          },
+          {
+            title: "8. حدود المسؤولية",
+            content: "في أي حال من الأحوال لن تكون تسهيل مسؤولة عن أي أضرار غير مباشرة أو عرضية أو خاصة أو تبعية أو عقابية ناتجة عن استخدامك أو عدم قدرتك على استخدام الخدمة.",
+          },
+          {
+            title: "9. القانون الحاكم",
+            content: "تخضع هذه الشروط لقوانين المملكة العربية السعودية، دون اعتبار لأحكام تنازع القوانين الخاصة بها.",
+          },
+          {
+            title: "10. التغييرات على الشروط",
+            content: "نحتفظ بالحق في تعديل هذه الشروط في أي وقت. سنخطر المستخدمين بأي تغييرات جوهرية عبر البريد الإلكتروني أو من خلال الخدمة.",
+          },
+          {
+            title: "11. معلومات الاتصال",
+            content: "للأسئلة حول هذه الشروط، يرجى الاتصال بنا على:",
+            contact: {
+              email: "البريد الإلكتروني: legal@tasheel.sa",
+              phone: "الهاتف: +966 50 123 4567",
+              address: "العنوان: طريق الملك فهد، الرياض 12345، المملكة العربية السعودية",
+            },
+          },
+        ],
       },
       install: {
         title: "تثبيت تسهيل",

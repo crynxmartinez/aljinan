@@ -45,81 +45,6 @@ export const metadata: Metadata = {
   },
 }
 
-const faqs = [
-  {
-    category: 'Getting Started',
-    questions: [
-      {
-        question: 'How do I sign up for Tasheel?',
-        answer: 'Click the "Get Started" or "Sign Up" button on our homepage, fill out the registration form with your company details, and you\'ll be up and running in under 2 minutes. Completely free to get started.',
-      },
-      {
-        question: 'How long does it take to set up?',
-        answer: 'Most contractors are fully set up within 30 minutes. You can start creating work orders and adding clients immediately after signing up.',
-      },
-    ],
-  },
-  {
-    category: 'Features',
-    questions: [
-      {
-        question: 'Can my clients access the platform?',
-        answer: 'Yes! Each client gets their own secure portal where they can view projects, certificates, invoices, and communicate with your team 24/7.',
-      },
-      {
-        question: 'Does it work on mobile devices?',
-        answer: 'Absolutely. Tasheel is fully responsive and works seamlessly on smartphones, tablets, and desktops. Perfect for field work.',
-      },
-      {
-        question: 'Can I upload existing certificates and documents?',
-        answer: 'Yes, you can easily upload and organize all your existing certificates, inspection reports, and documents into Tasheel.',
-      },
-      {
-        question: 'How does certificate expiry tracking work?',
-        answer: 'Tasheel automatically monitors all certificate expiry dates and sends you notifications 30, 14, and 7 days before expiration, ensuring you never miss a renewal.',
-      },
-    ],
-  },
-  {
-    category: 'Support & Security',
-    questions: [
-      {
-        question: 'How do I get help if I have questions?',
-        answer: 'You can contact us at support@tasheel.sa, use the in-app chat, or call us during business hours. We typically respond within a few hours.',
-      },
-      {
-        question: 'Is my data secure?',
-        answer: 'Yes, we use enterprise-grade encryption, secure data centers, and regular backups. Your data is protected with the highest security standards.',
-      },
-      {
-        question: 'Do you provide training?',
-        answer: 'Yes, we offer free onboarding sessions and video tutorials to help you and your team get started quickly.',
-      },
-      {
-        question: 'Can I import data from other systems?',
-        answer: 'Yes, we can help you migrate data from spreadsheets or other systems. Contact our support team for assistance.',
-      },
-    ],
-  },
-  {
-    category: 'Technical',
-    questions: [
-      {
-        question: 'Do I need to install any software?',
-        answer: 'No, Tasheel is a cloud-based platform accessible through any web browser. No installation required.',
-      },
-      {
-        question: 'Can multiple team members use the same account?',
-        answer: 'Yes, you can add unlimited team members with different permission levels based on their roles.',
-      },
-      {
-        question: 'Does Tasheel integrate with other tools?',
-        answer: 'We\'re constantly adding integrations. Contact us if you have specific integration requirements.',
-      },
-    ],
-  },
-]
-
 export default function FAQPage() {
   const { t } = useTranslation()
   
@@ -137,17 +62,17 @@ export default function FAQPage() {
         </div>
 
         <div className="max-w-4xl mx-auto space-y-12">
-          {faqs.map((category, categoryIndex) => (
+          {t.pages.faq.categories.map((category, categoryIndex) => (
             <div key={categoryIndex}>
-              <h2 className="text-2xl font-bold mb-6">{category.category}</h2>
+              <h2 className="text-2xl font-bold mb-6">{category.name}</h2>
               <Accordion type="single" collapsible className="w-full">
                 {category.questions.map((faq, index) => (
                   <AccordionItem key={index} value={`item-${categoryIndex}-${index}`}>
                     <AccordionTrigger className="text-left">
-                      {faq.question}
+                      {faq.q}
                     </AccordionTrigger>
                     <AccordionContent className="text-muted-foreground">
-                      {faq.answer}
+                      {faq.a}
                     </AccordionContent>
                   </AccordionItem>
                 ))}
