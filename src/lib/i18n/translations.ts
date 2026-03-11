@@ -14,6 +14,8 @@ export const translations = {
       or: "or",
       termsOfService: "Terms of Service",
       privacyPolicy: "Privacy Policy",
+      installApp: "Install App",
+      install: "Install",
     },
     navbar: {
       features: "Features",
@@ -390,6 +392,8 @@ export const translations = {
       or: "أو",
       termsOfService: "شروط الخدمة",
       privacyPolicy: "سياسة الخصوصية",
+      installApp: "تثبيت التطبيق",
+      install: "تثبيت",
     },
     navbar: {
       features: "المميزات",
