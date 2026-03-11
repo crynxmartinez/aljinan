@@ -9,8 +9,10 @@ import { Button } from '@/components/ui/button'
 import { Checkbox } from '@/components/ui/checkbox'
 import { PasswordInput } from '@/components/ui/password-input'
 import { Loader2 } from 'lucide-react'
+import { useTranslation } from '@/lib/i18n/use-translation'
 
 export default function RegisterPage() {
+  const { t } = useTranslation()
   const router = useRouter()
   const [formData, setFormData] = useState({
     companyName: '',
@@ -33,10 +35,10 @@ export default function RegisterPage() {
   }
 
   const validatePassword = (password: string) => {
-    if (password.length < 8) return 'Password must be at least 8 characters'
-    if (!/[A-Z]/.test(password)) return 'Password must include uppercase letter'
-    if (!/[a-z]/.test(password)) return 'Password must include lowercase letter'
-    if (!/[0-9]/.test(password)) return 'Password must include a number'
+    if (password.length < 8) return t.auth.register.errors.passwordTooShort
+    if (!/[A-Z]/.test(password)) return t.auth.register.errors.passwordNoUppercase
+    if (!/[a-z]/.test(password)) return t.auth.register.errors.passwordNoLowercase
+    if (!/[0-9]/.test(password)) return t.auth.register.errors.passwordNoNumber
     return null
   }
 
@@ -45,7 +47,7 @@ export default function RegisterPage() {
     setError('')
 
     if (!agreeToTerms) {
-      setError('You must agree to the Terms of Service and Privacy Policy')
+      setError(t.auth.register.errors.termsRequired)
       return
     }
 
@@ -56,7 +58,7 @@ export default function RegisterPage() {
     }
 
     if (formData.password !== formData.confirmPassword) {
-      setError('Passwords do not match')
+      setError(t.auth.register.errors.passwordMismatch)
       return
     }
 
@@ -85,13 +87,13 @@ export default function RegisterPage() {
   const passwordStrength = formData.password.length > 0 ? (
     <div className="space-y-1 text-xs text-muted-foreground">
       <div className={formData.password.length >= 8 ? 'text-green-600' : ''}>
-        ● At least 8 characters
+        ● {t.auth.register.passwordStrength.minLength}
       </div>
       <div className={/[A-Z]/.test(formData.password) && /[a-z]/.test(formData.password) ? 'text-green-600' : ''}>
-        ● Include uppercase and lowercase
+        ● {t.auth.register.passwordStrength.upperLower}
       </div>
       <div className={/[0-9]/.test(formData.password) ? 'text-green-600' : ''}>
-        ● Include a number
+        ● {t.auth.register.passwordStrength.number}
       </div>
     </div>
   ) : null
@@ -100,8 +102,8 @@ export default function RegisterPage() {
     <div className="w-full max-w-md">
       <div className="bg-white p-8 rounded-lg shadow-sm border">
         <div className="text-center mb-8">
-          <h1 className="text-2xl font-bold mb-2">Create Your Account</h1>
-          <p className="text-sm text-muted-foreground">Join 50+ contractors managing their business with ease</p>
+          <h1 className="text-2xl font-bold mb-2">{t.auth.register.title}</h1>
+          <p className="text-sm text-muted-foreground">{t.auth.register.subtitle}</p>
         </div>
 
         <form onSubmit={handleSubmit} className="space-y-6">
@@ -113,30 +115,30 @@ export default function RegisterPage() {
 
           <div className="space-y-4">
             <div className="space-y-2">
-              <Label htmlFor="companyName">Company Name *</Label>
+              <Label htmlFor="companyName">{t.auth.register.companyNameLabel}</Label>
               <Input
                 id="companyName"
                 name="companyName"
                 value={formData.companyName}
                 onChange={handleChange}
-                placeholder="Your Company Name"
+                placeholder={t.auth.register.companyNamePlaceholder}
                 required
               />
             </div>
 
             <div className="space-y-2">
-              <Label htmlFor="businessRegistration">Business Registration Number</Label>
+              <Label htmlFor="businessRegistration">{t.auth.register.businessRegLabel}</Label>
               <Input
                 id="businessRegistration"
                 name="businessRegistration"
                 value={formData.businessRegistration}
                 onChange={handleChange}
-                placeholder="Optional"
+                placeholder={t.auth.register.businessRegPlaceholder}
               />
             </div>
 
             <div className="space-y-2">
-              <Label htmlFor="phone">Phone Number *</Label>
+              <Label htmlFor="phone">{t.auth.register.phoneLabel}</Label>
               <div className="flex gap-2">
                 <Input
                   value="+966"
@@ -149,7 +151,7 @@ export default function RegisterPage() {
                   type="tel"
                   value={formData.phone}
                   onChange={handleChange}
-                  placeholder="50 123 4567"
+                  placeholder={t.auth.register.phonePlaceholder}
                   required
                   className="flex-1"
                 />
@@ -157,51 +159,51 @@ export default function RegisterPage() {
             </div>
 
             <div className="space-y-2">
-              <Label htmlFor="email">Company Email *</Label>
+              <Label htmlFor="email">{t.auth.register.emailLabel}</Label>
               <Input
                 id="email"
                 name="email"
                 type="email"
                 value={formData.email}
                 onChange={handleChange}
-                placeholder="contact@company.com"
+                placeholder={t.auth.register.emailPlaceholder}
                 required
               />
             </div>
 
             <div className="space-y-2">
-              <Label htmlFor="fullName">Your Full Name *</Label>
+              <Label htmlFor="fullName">{t.auth.register.fullNameLabel}</Label>
               <Input
                 id="fullName"
                 name="fullName"
                 value={formData.fullName}
                 onChange={handleChange}
-                placeholder="John Doe"
+                placeholder={t.auth.register.fullNamePlaceholder}
                 required
               />
             </div>
 
             <div className="space-y-2">
-              <Label htmlFor="password">Password *</Label>
+              <Label htmlFor="password">{t.auth.register.passwordLabel}</Label>
               <PasswordInput
                 id="password"
                 name="password"
                 value={formData.password}
                 onChange={handleChange}
-                placeholder="••••••••"
+                placeholder={t.auth.register.passwordPlaceholder}
                 required
               />
               {passwordStrength}
             </div>
 
             <div className="space-y-2">
-              <Label htmlFor="confirmPassword">Confirm Password *</Label>
+              <Label htmlFor="confirmPassword">{t.auth.register.confirmPasswordLabel}</Label>
               <PasswordInput
                 id="confirmPassword"
                 name="confirmPassword"
                 value={formData.confirmPassword}
                 onChange={handleChange}
-                placeholder="••••••••"
+                placeholder={t.auth.register.passwordPlaceholder}
                 required
               />
             </div>
@@ -216,13 +218,13 @@ export default function RegisterPage() {
                 htmlFor="terms"
                 className="text-sm leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70"
               >
-                I agree to the{' '}
+                {t.auth.register.agreeToTerms}{' '}
                 <Link href="/terms" className="text-primary hover:underline" target="_blank">
-                  Terms of Service
+                  {t.common.termsOfService}
                 </Link>{' '}
-                and{' '}
+                {t.auth.register.and}{' '}
                 <Link href="/privacy" className="text-primary hover:underline" target="_blank">
-                  Privacy Policy
+                  {t.common.privacyPolicy}
                 </Link>
               </label>
             </div>
@@ -230,13 +232,13 @@ export default function RegisterPage() {
 
           <Button type="submit" className="w-full" disabled={loading}>
             {loading && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
-            {loading ? 'Creating Account...' : 'Create Account'}
+            {loading ? t.auth.register.creatingAccount : t.auth.register.createAccountButton}
           </Button>
 
           <div className="text-center text-sm">
-            <span className="text-muted-foreground">Already have an account? </span>
+            <span className="text-muted-foreground">{t.auth.register.alreadyHaveAccount} </span>
             <Link href="/login" className="text-primary font-medium hover:underline">
-              Sign In
+              {t.auth.register.signIn}
             </Link>
           </div>
         </form>

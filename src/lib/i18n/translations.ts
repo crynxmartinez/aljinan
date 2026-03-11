@@ -11,6 +11,9 @@ export const translations = {
       features: "Features",
       about: "About",
       contact: "Contact",
+      or: "or",
+      termsOfService: "Terms of Service",
+      privacyPolicy: "Privacy Policy",
     },
     navbar: {
       features: "Features",
@@ -54,7 +57,7 @@ export const translations = {
       login: {
         title: "Welcome Back to Tasheel",
         subtitle: "Sign in to your account",
-        emailLabel: "Email *",
+        emailLabel: "Email Address *",
         emailPlaceholder: "you@company.com",
         passwordLabel: "Password *",
         passwordPlaceholder: "••••••••",
@@ -78,7 +81,7 @@ export const translations = {
         emailLabel: "Company Email *",
         emailPlaceholder: "contact@company.com",
         fullNameLabel: "Your Full Name *",
-        fullNamePlaceholder: "Ahmed Mohammed",
+        fullNamePlaceholder: "John Doe",
         passwordLabel: "Password *",
         confirmPasswordLabel: "Confirm Password *",
         passwordPlaceholder: "••••••••",
@@ -88,7 +91,141 @@ export const translations = {
         creatingAccount: "Creating account...",
         alreadyHaveAccount: "Already have an account?",
         signIn: "Sign In",
+        passwordStrength: {
+          minLength: "At least 8 characters",
+          upperLower: "Include uppercase and lowercase",
+          number: "Include a number",
+        },
+        errors: {
+          termsRequired: "You must agree to the Terms of Service and Privacy Policy",
+          passwordMismatch: "Passwords do not match",
+          passwordTooShort: "Password must be at least 8 characters",
+          passwordNoUppercase: "Password must include uppercase letter",
+          passwordNoLowercase: "Password must include lowercase letter",
+          passwordNoNumber: "Password must include a number",
+        },
       },
+    },
+    problemSolution: {
+      title: "Stop Juggling Spreadsheets, Emails, and Phone Calls",
+      solutionTitle: "Tasheel Makes It Easy",
+      problems: [
+        "Manual tracking leads to missed inspections",
+        "Lost certificates and compliance headaches",
+        "Slow communication frustrates clients",
+      ],
+      solutions: [
+        "Automated reminders and scheduling",
+        "Centralized certificate management",
+        "Real-time client portal access",
+      ],
+    },
+    howItWorks: {
+      title: "Get Started in Minutes",
+      subtitle: "Three simple steps to transform your safety operations",
+      steps: [
+        {
+          title: "Sign Up",
+          description: "Create your contractor account in under 2 minutes",
+        },
+        {
+          title: "Add Clients",
+          description: "Import your clients and their facilities",
+        },
+        {
+          title: "Start Managing",
+          description: "Create work orders, schedule inspections, track everything",
+        },
+      ],
+    },
+    features: {
+      title: "Everything You Need in One Platform",
+      subtitle: "Powerful features designed for modern safety contractors",
+      list: [
+        {
+          title: "Work Order Management",
+          description: "Create, assign, and track work orders from start to finish",
+        },
+        {
+          title: "Equipment Tracking",
+          description: "Monitor equipment status, locations, and maintenance schedules",
+        },
+        {
+          title: "Certificate Management",
+          description: "Automated expiry alerts. Never miss a renewal deadline",
+        },
+        {
+          title: "Client Portal",
+          description: "Give clients 24/7 access to their projects, reports, and invoices",
+        },
+        {
+          title: "Reports & Analytics",
+          description: "Generate professional inspection reports in seconds",
+        },
+        {
+          title: "Billing & Invoicing",
+          description: "Track payments, send invoices, manage finances effortlessly",
+        },
+      ],
+    },
+    benefits: {
+      title: "Built for Both Contractors and Their Clients",
+      subtitle: "A platform that benefits everyone in the safety ecosystem",
+      contractors: {
+        title: "For Safety Contractors",
+        list: [
+          "Save 10+ hours per week on admin",
+          "Never miss an inspection deadline",
+          "Professional branded reports",
+          "Faster payment collection",
+          "Mobile access for field work",
+        ],
+      },
+      clients: {
+        title: "For Your Clients",
+        list: [
+          "24/7 portal access",
+          "Real-time project updates",
+          "Digital certificates storage",
+          "Transparent pricing",
+          "Easy communication",
+        ],
+      },
+    },
+    testimonials: {
+      title: "Trusted by Safety Professionals",
+      subtitle: "See what contractors are saying about Tasheel",
+      list: [
+        {
+          quote: "Tasheel transformed how we manage our safety operations. What used to take hours now takes minutes. Our clients love the transparency.",
+          author: "Ahmed Al-Rashid",
+          company: "Safety First Contracting",
+        },
+        {
+          quote: "The certificate tracking feature alone is worth it. We haven't missed a single renewal since switching to Tasheel.",
+          author: "Fatima Al-Mansour",
+          company: "Guardian Safety Systems",
+        },
+        {
+          quote: "Our clients are happier, our team is more efficient, and we're growing faster. Tasheel made it all possible.",
+          author: "Mohammed Al-Zahrani",
+          company: "Elite Safety Solutions",
+        },
+      ],
+    },
+    stats: {
+      list: [
+        { value: "500+", label: "Work Orders Managed" },
+        { value: "99%", label: "On-Time Inspections" },
+        { value: "50+", label: "Active Contractors" },
+        { value: "10,000+", label: "Certificates Tracked" },
+      ],
+    },
+    cta: {
+      title: "Ready to Simplify Your Safety Operations?",
+      subtitle: "Join leading contractors who trust Tasheel for their business",
+      button: "Get Started Free",
+      disclaimer: "No credit card required • Free trial • Cancel anytime",
     },
   },
   ar: {
@@ -103,6 +240,9 @@ export const translations = {
       features: "المميزات",
       about: "من نحن",
       contact: "اتصل بنا",
+      or: "أو",
+      termsOfService: "شروط الخدمة",
+      privacyPolicy: "سياسة الخصوصية",
     },
     navbar: {
       features: "المميزات",
@@ -146,7 +286,7 @@ export const translations = {
       login: {
         title: "مرحباً بعودتك إلى تسهيل",
         subtitle: "سجل الدخول إلى حسابك",
-        emailLabel: "البريد الإلكتروني *",
+        emailLabel: "عنوان البريد الإلكتروني *",
         emailPlaceholder: "you@company.com",
         passwordLabel: "كلمة المرور *",
         passwordPlaceholder: "••••••••",
@@ -180,7 +320,141 @@ export const translations = {
         creatingAccount: "جاري إنشاء الحساب...",
         alreadyHaveAccount: "لديك حساب بالفعل؟",
         signIn: "تسجيل الدخول",
+        passwordStrength: {
+          minLength: "8 أحرف على الأقل",
+          upperLower: "يتضمن أحرف كبيرة وصغيرة",
+          number: "يتضمن رقم",
+        },
+        errors: {
+          termsRequired: "يجب الموافقة على شروط الخدمة وسياسة الخصوصية",
+          passwordMismatch: "كلمات المرور غير متطابقة",
+          passwordTooShort: "يجب أن تكون كلمة المرور 8 أحرف على الأقل",
+          passwordNoUppercase: "يجب أن تتضمن كلمة المرور حرفاً كبيراً",
+          passwordNoLowercase: "يجب أن تتضمن كلمة المرور حرفاً صغيراً",
+          passwordNoNumber: "يجب أن تتضمن كلمة المرور رقماً",
+        },
       },
+    },
+    problemSolution: {
+      title: "توقف عن التعامل مع جداول البيانات والبريد الإلكتروني والمكالمات الهاتفية",
+      solutionTitle: "تسهيل يجعل الأمر سهلاً",
+      problems: [
+        "التتبع اليدوي يؤدي إلى تفويت الفحوصات",
+        "فقدان الشهادات ومشاكل الامتثال",
+        "التواصل البطيء يحبط العملاء",
+      ],
+      solutions: [
+        "تذكيرات وجدولة تلقائية",
+        "إدارة مركزية للشهادات",
+        "وصول فوري لبوابة العملاء",
+      ],
+    },
+    howItWorks: {
+      title: "ابدأ في دقائق",
+      subtitle: "ثلاث خطوات بسيطة لتحويل عمليات السلامة الخاصة بك",
+      steps: [
+        {
+          title: "التسجيل",
+          description: "أنشئ حساب المقاول الخاص بك في أقل من دقيقتين",
+        },
+        {
+          title: "إضافة العملاء",
+          description: "استورد عملائك ومنشآتهم",
+        },
+        {
+          title: "ابدأ الإدارة",
+          description: "أنشئ أوامر العمل، جدول الفحوصات، تتبع كل شيء",
+        },
+      ],
+    },
+    features: {
+      title: "كل ما تحتاجه في منصة واحدة",
+      subtitle: "ميزات قوية مصممة لمقاولي السلامة الحديثين",
+      list: [
+        {
+          title: "إدارة أوامر العمل",
+          description: "أنشئ وعيّن وتتبع أوامر العمل من البداية إلى النهاية",
+        },
+        {
+          title: "تتبع المعدات",
+          description: "راقب حالة المعدات ومواقعها وجداول الصيانة",
+        },
+        {
+          title: "إدارة الشهادات",
+          description: "تنبيهات انتهاء الصلاحية التلقائية. لن تفوت موعد تجديد أبداً",
+        },
+        {
+          title: "بوابة العملاء",
+          description: "امنح العملاء وصولاً على مدار الساعة لمشاريعهم وتقاريرهم وفواتيرهم",
+        },
+        {
+          title: "التقارير والتحليلات",
+          description: "أنشئ تقارير فحص احترافية في ثوانٍ",
+        },
+        {
+          title: "الفوترة والمحاسبة",
+          description: "تتبع المدفوعات، أرسل الفواتير، أدر الشؤون المالية بسهولة",
+        },
+      ],
+    },
+    benefits: {
+      title: "مصمم لكل من المقاولين وعملائهم",
+      subtitle: "منصة تفيد الجميع في نظام السلامة",
+      contractors: {
+        title: "لمقاولي السلامة",
+        list: [
+          "وفر أكثر من 10 ساعات أسبوعياً في الأعمال الإدارية",
+          "لن تفوت موعد فحص أبداً",
+          "تقارير احترافية بعلامتك التجارية",
+          "تحصيل مدفوعات أسرع",
+          "وصول عبر الجوال للعمل الميداني",
+        ],
+      },
+      clients: {
+        title: "لعملائك",
+        list: [
+          "وصول للبوابة على مدار الساعة",
+          "تحديثات المشروع في الوقت الفعلي",
+          "تخزين رقمي للشهادات",
+          "تسعير شفاف",
+          "تواصل سهل",
+        ],
+      },
+    },
+    testimonials: {
+      title: "موثوق به من قبل محترفي السلامة",
+      subtitle: "شاهد ما يقوله المقاولون عن تسهيل",
+      list: [
+        {
+          quote: "تسهيل غيّر طريقة إدارتنا لعمليات السلامة. ما كان يستغرق ساعات أصبح يستغرق دقائق. عملاؤنا يحبون الشفافية.",
+          author: "أحمد الراشد",
+          company: "مقاولات السلامة أولاً",
+        },
+        {
+          quote: "ميزة تتبع الشهادات وحدها تستحق. لم نفوت تجديداً واحداً منذ التحول إلى تسهيل.",
+          author: "فاطمة المنصور",
+          company: "أنظمة السلامة الحارسة",
+        },
+        {
+          quote: "عملاؤنا أكثر سعادة، فريقنا أكثر كفاءة، وننمو بشكل أسرع. تسهيل جعل كل ذلك ممكناً.",
+          author: "محمد الزهراني",
+          company: "حلول السلامة المتميزة",
+        },
+      ],
+    },
+    stats: {
+      list: [
+        { value: "500+", label: "أمر عمل تمت إدارته" },
+        { value: "99%", label: "فحوصات في الوقت المحدد" },
+        { value: "50+", label: "مقاول نشط" },
+        { value: "10,000+", label: "شهادة متتبعة" },
+      ],
+    },
+    cta: {
+      title: "هل أنت مستعد لتبسيط عمليات السلامة الخاصة بك؟",
+      subtitle: "انضم إلى المقاولين الرائدين الذين يثقون في تسهيل لأعمالهم",
+      button: "ابدأ مجاناً",
+      disclaimer: "لا حاجة لبطاقة ائتمان • تجربة مجانية • إلغاء في أي وقت",
     },
   },
 } as const

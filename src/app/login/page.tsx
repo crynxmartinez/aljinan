@@ -10,8 +10,10 @@ import { Button } from '@/components/ui/button'
 import { Checkbox } from '@/components/ui/checkbox'
 import { PasswordInput } from '@/components/ui/password-input'
 import { Loader2 } from 'lucide-react'
+import { useTranslation } from '@/lib/i18n/use-translation'
 
 export default function LoginPage() {
+  const { t } = useTranslation()
   const router = useRouter()
   const [email, setEmail] = useState('')
   const [password, setPassword] = useState('')
@@ -48,8 +50,8 @@ export default function LoginPage() {
     <div className="w-full max-w-md">
       <div className="bg-white p-8 rounded-lg shadow-sm border">
         <div className="text-center mb-8">
-          <h1 className="text-2xl font-bold mb-2">Welcome Back to Tasheel</h1>
-          <p className="text-sm text-muted-foreground">Sign in to your account</p>
+          <h1 className="text-2xl font-bold mb-2">{t.auth.login.title}</h1>
+          <p className="text-sm text-muted-foreground">{t.auth.login.subtitle}</p>
         </div>
 
         <form onSubmit={handleSubmit} className="space-y-6">
@@ -61,24 +63,24 @@ export default function LoginPage() {
 
           <div className="space-y-4">
             <div className="space-y-2">
-              <Label htmlFor="email">Email Address *</Label>
+              <Label htmlFor="email">{t.auth.login.emailLabel}</Label>
               <Input
                 id="email"
                 type="email"
                 value={email}
                 onChange={(e) => setEmail(e.target.value)}
-                placeholder="you@company.com"
+                placeholder={t.auth.login.emailPlaceholder}
                 required
               />
             </div>
 
             <div className="space-y-2">
-              <Label htmlFor="password">Password *</Label>
+              <Label htmlFor="password">{t.auth.login.passwordLabel}</Label>
               <PasswordInput
                 id="password"
                 value={password}
                 onChange={(e) => setPassword(e.target.value)}
-                placeholder="••••••••"
+                placeholder={t.auth.login.passwordPlaceholder}
                 required
               />
             </div>
@@ -94,22 +96,22 @@ export default function LoginPage() {
                   htmlFor="remember"
                   className="text-sm font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70"
                 >
-                  Remember me
+                  {t.auth.login.rememberMe}
                 </label>
               </div>
               <button 
                 type="button"
-                onClick={() => alert('Please contact support@tasheel.sa to reset your password.')}
+                onClick={() => alert(t.auth.login.forgotPasswordMessage)}
                 className="text-sm text-primary hover:underline"
               >
-                Forgot password?
+                {t.auth.login.forgotPassword}
               </button>
             </div>
           </div>
 
           <Button type="submit" className="w-full" disabled={loading}>
             {loading && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
-            {loading ? 'Signing in...' : 'Sign In'}
+            {loading ? t.auth.login.signingIn : t.auth.login.signInButton}
           </Button>
 
           <div className="relative">
@@ -117,14 +119,14 @@ export default function LoginPage() {
               <span className="w-full border-t" />
             </div>
             <div className="relative flex justify-center text-xs uppercase">
-              <span className="bg-white px-2 text-muted-foreground">or</span>
+              <span className="bg-white px-2 text-muted-foreground">{t.common.or}</span>
             </div>
           </div>
 
           <div className="text-center text-sm">
-            <span className="text-muted-foreground">Don't have an account? </span>
+            <span className="text-muted-foreground">{t.auth.login.noAccount} </span>
             <Link href="/register" className="text-primary font-medium hover:underline">
-              Create Account
+              {t.auth.login.createAccount}
             </Link>
           </div>
         </form>

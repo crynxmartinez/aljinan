@@ -1,17 +1,10 @@
+'use client'
+
 import { X, Check } from 'lucide-react'
+import { useTranslation } from '@/lib/i18n/use-translation'
 
 export function ProblemSolution() {
-  const problems = [
-    'Manual tracking leads to missed inspections',
-    'Lost certificates and compliance headaches',
-    'Slow communication frustrates clients',
-  ]
-
-  const solutions = [
-    'Automated reminders and scheduling',
-    'Centralized certificate management',
-    'Real-time client portal access',
-  ]
+  const { t } = useTranslation()
 
   return (
     <section className="py-16 md:py-24 bg-white">
@@ -20,14 +13,14 @@ export function ProblemSolution() {
           {/* Problem Section */}
           <div className="text-center mb-12">
             <h2 className="text-3xl md:text-4xl font-bold mb-4">
-              Stop Juggling Spreadsheets, Emails, and Phone Calls
+              {t.problemSolution.title}
             </h2>
           </div>
 
           <div className="flex flex-col md:flex-row gap-8 items-center">
             {/* Problems */}
             <div className="flex-1 space-y-4 w-full">
-              {problems.map((problem, index) => (
+              {t.problemSolution.problems.map((problem, index) => (
                 <div key={index} className="flex items-start gap-3 p-4 bg-red-50 border border-red-200 rounded-lg">
                   <X className="h-5 w-5 text-red-600 flex-shrink-0 mt-0.5" />
                   <p className="text-gray-700">{problem}</p>
@@ -44,9 +37,9 @@ export function ProblemSolution() {
             {/* Solutions */}
             <div className="flex-1 space-y-4 w-full">
               <h3 className="text-2xl font-bold text-center md:text-left mb-6">
-                Tasheel Makes It Easy
+                {t.problemSolution.solutionTitle}
               </h3>
-              {solutions.map((solution, index) => (
+              {t.problemSolution.solutions.map((solution, index) => (
                 <div key={index} className="flex items-start gap-3 p-4 bg-green-50 border border-green-200 rounded-lg">
                   <Check className="h-5 w-5 text-green-600 flex-shrink-0 mt-0.5" />
                   <p className="text-gray-700">{solution}</p>

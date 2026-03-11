@@ -1,39 +1,28 @@
+'use client'
+
 import { UserPlus, Building, Rocket } from 'lucide-react'
+import { useTranslation } from '@/lib/i18n/use-translation'
 
 export function HowItWorks() {
-  const steps = [
-    {
-      icon: UserPlus,
-      title: 'Sign Up',
-      description: 'Create your contractor account in under 2 minutes',
-    },
-    {
-      icon: Building,
-      title: 'Add Clients',
-      description: 'Import your clients and their facilities',
-    },
-    {
-      icon: Rocket,
-      title: 'Start Managing',
-      description: 'Create work orders, schedule inspections, track everything',
-    },
-  ]
+  const { t } = useTranslation()
+  
+  const icons = [UserPlus, Building, Rocket]
 
   return (
     <section className="py-16 md:py-24 bg-gray-50">
       <div className="container mx-auto px-4">
         <div className="text-center mb-12">
           <h2 className="text-3xl md:text-4xl font-bold mb-4">
-            Get Started in Minutes
+            {t.howItWorks.title}
           </h2>
           <p className="text-lg text-muted-foreground max-w-2xl mx-auto">
-            Three simple steps to transform your safety operations
+            {t.howItWorks.subtitle}
           </p>
         </div>
 
         <div className="grid md:grid-cols-3 gap-8 max-w-5xl mx-auto">
-          {steps.map((step, index) => {
-            const Icon = step.icon
+          {t.howItWorks.steps.map((step, index) => {
+            const Icon = icons[index]
             return (
               <div key={index} className="relative">
                 {/* Step Number */}
@@ -53,7 +42,7 @@ export function HowItWorks() {
                 </div>
 
                 {/* Arrow (desktop only) */}
-                {index < steps.length - 1 && (
+                {index < t.howItWorks.steps.length - 1 && (
                   <div className="hidden md:block absolute top-1/2 -right-4 transform -translate-y-1/2 text-orange-300 text-3xl z-0">
                     →
                   </div>

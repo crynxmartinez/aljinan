@@ -1,44 +1,20 @@
+'use client'
+
 import { ClipboardList, Wrench, FileCheck, Users, BarChart3, DollarSign } from 'lucide-react'
 import Image from 'next/image'
+import { useTranslation } from '@/lib/i18n/use-translation'
 
 export function FeaturesGrid() {
-  const features = [
-    {
-      icon: ClipboardList,
-      title: 'Work Order Management',
-      description: 'Create, assign, and track work orders from start to finish',
-      image: '/images/marketing/feature-work-orders.jpg',
-    },
-    {
-      icon: Wrench,
-      title: 'Equipment Tracking',
-      description: 'Monitor equipment status, locations, and maintenance schedules',
-      image: '/images/marketing/feature-equipment.jpg',
-    },
-    {
-      icon: FileCheck,
-      title: 'Certificate Management',
-      description: 'Automated expiry alerts. Never miss a renewal deadline',
-      image: '/images/marketing/feature-certificates.jpg',
-    },
-    {
-      icon: Users,
-      title: 'Client Portal',
-      description: 'Give clients 24/7 access to their projects, reports, and invoices',
-      image: '/images/marketing/feature-client-portal.jpg',
-    },
-    {
-      icon: BarChart3,
-      title: 'Reports & Analytics',
-      description: 'Generate professional inspection reports in seconds',
-      image: '/images/marketing/feature-reports.jpg',
-    },
-    {
-      icon: DollarSign,
-      title: 'Billing & Invoicing',
-      description: 'Track payments, send invoices, manage finances effortlessly',
-      image: '/images/marketing/feature-billing.jpg',
-    },
+  const { t } = useTranslation()
+  
+  const icons = [ClipboardList, Wrench, FileCheck, Users, BarChart3, DollarSign]
+  const images = [
+    '/images/marketing/feature-work-orders.jpg',
+    '/images/marketing/feature-equipment.jpg',
+    '/images/marketing/feature-certificates.jpg',
+    '/images/marketing/feature-client-portal.jpg',
+    '/images/marketing/feature-reports.jpg',
+    '/images/marketing/feature-billing.jpg',
   ]
 
   return (
@@ -46,16 +22,16 @@ export function FeaturesGrid() {
       <div className="container mx-auto px-4">
         <div className="text-center mb-12">
           <h2 className="text-3xl md:text-4xl font-bold mb-4">
-            Everything You Need in One Platform
+            {t.features.title}
           </h2>
           <p className="text-lg text-muted-foreground max-w-2xl mx-auto">
-            Powerful features designed for modern safety contractors
+            {t.features.subtitle}
           </p>
         </div>
 
         <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-8 max-w-6xl mx-auto">
-          {features.map((feature, index) => {
-            const Icon = feature.icon
+          {t.features.list.map((feature, index) => {
+            const Icon = icons[index]
             return (
               <div
                 key={index}
@@ -63,7 +39,7 @@ export function FeaturesGrid() {
               >
                 <div className="relative h-48 overflow-hidden">
                   <Image
-                    src={feature.image}
+                    src={images[index]}
                     alt={feature.title}
                     fill
                     className="object-cover group-hover:scale-105 transition-transform duration-300"
