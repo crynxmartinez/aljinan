@@ -1,7 +1,10 @@
+'use client'
+
 import { Metadata } from 'next'
 import Link from 'next/link'
 import { Button } from '@/components/ui/button'
 import { Target, Users, Zap, Shield, ArrowRight } from 'lucide-react'
+import { useTranslation } from '@/lib/i18n/use-translation'
 
 export const metadata: Metadata = {
   title: 'About Tasheel - Saudi Arabia\'s Leading Safety Management Platform',
@@ -37,26 +40,28 @@ export const metadata: Metadata = {
 }
 
 export default function AboutPage() {
+  const { t } = useTranslation()
+  
   const values = [
     {
       icon: Zap,
-      title: 'Simplicity First',
-      description: 'We believe powerful software should be easy to use. No complexity, no confusion.',
+      title: t.pages.about.values[0].title,
+      description: t.pages.about.values[0].description,
     },
     {
       icon: Shield,
-      title: 'Built for Saudi Arabia',
-      description: 'Designed specifically for the Saudi market with local compliance and regulations in mind.',
+      title: t.pages.about.values[1].title,
+      description: t.pages.about.values[1].description,
     },
     {
       icon: Users,
-      title: 'Customer Success',
-      description: 'Your success is our success. We\'re committed to helping you grow your business.',
+      title: t.pages.about.values[2].title,
+      description: t.pages.about.values[2].description,
     },
     {
       icon: Target,
-      title: 'Continuous Innovation',
-      description: 'We constantly improve and add features based on your feedback and needs.',
+      title: t.pages.about.values[3].title,
+      description: t.pages.about.values[3].description,
     },
   ]
 
@@ -66,10 +71,10 @@ export default function AboutPage() {
       <section className="container mx-auto px-4 mb-16">
         <div className="max-w-3xl mx-auto text-center">
           <h1 className="text-4xl md:text-5xl font-bold mb-6">
-            Our Mission: Making Safety Management Effortless
+            {t.pages.about.title}
           </h1>
           <p className="text-xl text-muted-foreground">
-            Simplifying every transaction between safety contractors and their clients
+            {t.pages.about.subtitle}
           </p>
         </div>
       </section>
@@ -79,21 +84,16 @@ export default function AboutPage() {
         <div className="max-w-4xl mx-auto">
           <div className="prose prose-lg max-w-none">
             <p className="text-lg text-muted-foreground mb-6">
-              <Link href="/" className="text-primary hover:underline font-semibold">Tasheel</Link> was born from a simple observation: safety contractors spend too much time on paperwork 
-              and not enough time on what matters—keeping people safe in Saudi Arabia.
+              {t.pages.about.story[0]}
             </p>
             <p className="text-lg text-muted-foreground mb-6">
-              We built Tasheel to change that. Our platform automates the tedious tasks, streamlines communication, 
-              and ensures compliance—so contractors can focus on delivering exceptional service in KSA.
+              {t.pages.about.story[1]}
             </p>
             <p className="text-lg text-muted-foreground mb-6">
-              Today, Tasheel serves safety contractors across Saudi Arabia, helping them manage thousands of 
-              inspections, certificates, and client relationships with ease in Riyadh and beyond.
-              inspections, certificates, and client relationships with ease.
+              {t.pages.about.story[2]}
             </p>
             <p className="text-lg text-muted-foreground">
-              Whether you're managing fire safety, electrical inspections, HVAC maintenance, or building compliance, 
-              Tasheel makes every transaction easy, fast, and compliant.
+              {t.pages.about.story[3]}
             </p>
           </div>
         </div>
@@ -102,9 +102,9 @@ export default function AboutPage() {
       {/* Values Section */}
       <section className="container mx-auto px-4 mb-24">
         <div className="text-center mb-12">
-          <h2 className="text-3xl md:text-4xl font-bold mb-4">Our Values</h2>
+          <h2 className="text-3xl md:text-4xl font-bold mb-4">{t.pages.about.valuesTitle}</h2>
           <p className="text-lg text-muted-foreground max-w-2xl mx-auto">
-            The principles that guide everything we do
+            {t.pages.about.valuesSubtitle}
           </p>
         </div>
 
@@ -130,19 +130,19 @@ export default function AboutPage() {
           <div className="grid grid-cols-2 md:grid-cols-4 gap-8 max-w-5xl mx-auto">
             <div className="text-center">
               <div className="text-4xl md:text-5xl font-bold text-orange-400 mb-2">50+</div>
-              <div className="text-sm md:text-base text-gray-300">Active Contractors</div>
+              <div className="text-sm md:text-base text-gray-300">{t.stats.list[2].label}</div>
             </div>
             <div className="text-center">
               <div className="text-4xl md:text-5xl font-bold text-orange-400 mb-2">500+</div>
-              <div className="text-sm md:text-base text-gray-300">Work Orders</div>
+              <div className="text-sm md:text-base text-gray-300">{t.stats.list[0].label}</div>
             </div>
             <div className="text-center">
               <div className="text-4xl md:text-5xl font-bold text-orange-400 mb-2">10K+</div>
-              <div className="text-sm md:text-base text-gray-300">Certificates</div>
+              <div className="text-sm md:text-base text-gray-300">{t.stats.list[3].label}</div>
             </div>
             <div className="text-center">
               <div className="text-4xl md:text-5xl font-bold text-orange-400 mb-2">99%</div>
-              <div className="text-sm md:text-base text-gray-300">On-Time Rate</div>
+              <div className="text-sm md:text-base text-gray-300">{t.stats.list[1].label}</div>
             </div>
           </div>
         </div>
@@ -152,14 +152,14 @@ export default function AboutPage() {
       <section className="container mx-auto px-4 mt-24">
         <div className="bg-gradient-to-br from-orange-500 to-orange-600 text-white rounded-2xl p-12 text-center">
           <h2 className="text-3xl md:text-4xl font-bold mb-4">
-            Join Our Growing Community
+            {t.pages.about.ctaTitle}
           </h2>
           <p className="text-xl mb-8 text-orange-50">
-            Start simplifying your safety operations with <Link href="/" className="text-white hover:underline font-semibold">Tasheel</Link> today
+            {t.pages.about.ctaSubtitle}
           </p>
           <Button size="lg" className="bg-white text-orange-600 hover:bg-gray-100" asChild>
             <Link href="/register">
-              Get Started Free
+              {t.cta.button}
               <ArrowRight className="ml-2 h-4 w-4" />
             </Link>
           </Button>

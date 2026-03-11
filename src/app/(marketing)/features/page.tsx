@@ -1,9 +1,12 @@
+'use client'
+
 import { Metadata } from 'next'
 import Link from 'next/link'
 import Image from 'next/image'
 import { Button } from '@/components/ui/button'
 import { ServiceSchema } from '@/components/seo/service-schema'
 import { ClipboardList, Wrench, FileCheck, Users, BarChart3, DollarSign, Bell, Shield, Smartphone, CheckCircle, ArrowRight } from 'lucide-react'
+import { useTranslation } from '@/lib/i18n/use-translation'
 
 export const metadata: Metadata = {
   title: 'Safety Inspection Features - Work Orders, Certificates & Compliance | Tasheel',
@@ -150,6 +153,8 @@ const features = [
 ]
 
 export default function FeaturesPage() {
+  const { t } = useTranslation()
+  
   return (
     <div className="py-16 md:py-24">
       <ServiceSchema />
@@ -157,14 +162,14 @@ export default function FeaturesPage() {
       <section className="container mx-auto px-4 mb-16">
         <div className="max-w-3xl mx-auto text-center">
           <h1 className="text-4xl md:text-5xl font-bold mb-6">
-            Powerful Features for Modern Safety Contractors
+            {t.pages.features.title}
           </h1>
           <p className="text-xl text-muted-foreground mb-8">
-            Everything you need to streamline operations, ensure compliance, and grow your business. Discover why <Link href="/" className="text-primary hover:underline">Tasheel</Link> is the leading safety platform in Saudi Arabia.
+            {t.pages.features.subtitle}
           </p>
           <Button size="lg" asChild>
             <Link href="/register">
-              Start Free Trial
+              {t.pages.features.ctaButton}
               <ArrowRight className="ml-2 h-4 w-4" />
             </Link>
           </Button>
@@ -222,14 +227,14 @@ export default function FeaturesPage() {
       <section className="container mx-auto px-4 mt-24">
         <div className="bg-gradient-to-br from-orange-500 to-orange-600 text-white rounded-2xl p-12 text-center">
           <h2 className="text-3xl md:text-4xl font-bold mb-4">
-            Ready to Transform Your Operations?
+            {t.pages.features.ctaTitle}
           </h2>
           <p className="text-xl mb-8 text-orange-50">
-            Join 50+ contractors already using <Link href="/" className="text-white hover:underline font-semibold">Tasheel</Link> across Saudi Arabia
+            {t.pages.features.ctaSubtitle}
           </p>
           <Button size="lg" className="bg-white text-orange-600 hover:bg-gray-100" asChild>
             <Link href="/register">
-              Get Started Free
+              {t.cta.button}
               <ArrowRight className="ml-2 h-4 w-4" />
             </Link>
           </Button>

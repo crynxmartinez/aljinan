@@ -1,3 +1,5 @@
+'use client'
+
 import { Metadata } from 'next'
 import Link from 'next/link'
 import { Button } from '@/components/ui/button'
@@ -8,6 +10,7 @@ import {
   AccordionItem,
   AccordionTrigger,
 } from '@/components/ui/accordion'
+import { useTranslation } from '@/lib/i18n/use-translation'
 
 export const metadata: Metadata = {
   title: 'FAQ - Safety Management Software Questions | Tasheel Saudi Arabia',
@@ -118,16 +121,18 @@ const faqs = [
 ]
 
 export default function FAQPage() {
+  const { t } = useTranslation()
+  
   return (
     <div className="py-16 md:py-24">
       <FAQSchema />
       <div className="container mx-auto px-4">
         <div className="max-w-3xl mx-auto text-center mb-12">
           <h1 className="text-4xl md:text-5xl font-bold mb-6">
-            Frequently Asked Questions
+            {t.pages.faq.title}
           </h1>
           <p className="text-xl text-muted-foreground">
-            Find answers to common questions about <Link href="/" className="text-primary hover:underline">Tasheel</Link> and our safety management platform
+            {t.pages.faq.subtitle}
           </p>
         </div>
 
@@ -153,12 +158,12 @@ export default function FAQPage() {
 
         <div className="max-w-4xl mx-auto mt-16 text-center">
           <div className="bg-gray-50 p-8 rounded-lg border">
-            <h3 className="text-xl font-bold mb-2">Still have questions?</h3>
+            <h3 className="text-xl font-bold mb-2">{t.pages.faq.stillHaveQuestions}</h3>
             <p className="text-muted-foreground mb-6">
-              Can't find the answer you're looking for? <Link href="/" className="text-primary hover:underline">Visit our homepage</Link> or contact our support team.
+              {t.pages.faq.cantFind}
             </p>
             <Button asChild>
-              <Link href="/contact">Contact Support</Link>
+              <Link href="/contact">{t.pages.faq.contactButton}</Link>
             </Button>
           </div>
         </div>
