@@ -82,6 +82,7 @@
   },
   "devDependencies": {
     "@types/bcryptjs": "^2.4.6",
+    "@types/js-cookie": "^3.0.6",
     "@types/pg": "^8.16.0",
     "electron": "^40.8.0",
     "electron-builder": "^26.8.1",
