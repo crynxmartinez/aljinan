@@ -1,16 +1,14 @@
-'use client'
-
 import { Metadata } from 'next'
 import Link from 'next/link'
 import { Button } from '@/components/ui/button'
-import { FAQSchema } from '@/components/seo/faq-schema'
 import {
   Accordion,
   AccordionContent,
   AccordionItem,
   AccordionTrigger,
 } from '@/components/ui/accordion'
-import { useTranslation } from '@/lib/i18n/use-translation'
+import { FAQSchema } from '@/components/seo/faq-schema'
+import { TranslatedContent } from '@/components/i18n/translated-content'
 
 export const metadata: Metadata = {
   title: 'FAQ - Safety Management Software Questions | Tasheel Saudi Arabia',
@@ -46,10 +44,10 @@ export const metadata: Metadata = {
 }
 
 export default function FAQPage() {
-  const { t } = useTranslation()
-  
   return (
-    <div className="py-16 md:py-24">
+    <TranslatedContent>
+      {(t) => (
+        <div className="py-16 md:py-24">
       <FAQSchema />
       <div className="container mx-auto px-4">
         <div className="max-w-3xl mx-auto text-center mb-12">
@@ -94,5 +92,7 @@ export default function FAQPage() {
         </div>
       </div>
     </div>
+      )}
+    </TranslatedContent>
   )
 }

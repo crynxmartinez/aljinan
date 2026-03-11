@@ -1,8 +1,6 @@
-'use client'
-
 import { Metadata } from 'next'
 import Link from 'next/link'
-import { useTranslation } from '@/lib/i18n/use-translation'
+import { TranslatedContent } from '@/components/i18n/translated-content'
 
 export const metadata: Metadata = {
   title: 'Terms of Service - User Agreement | Tasheel Saudi Arabia',
@@ -38,10 +36,10 @@ export const metadata: Metadata = {
 }
 
 export default function TermsPage() {
-  const { t } = useTranslation()
-  
   return (
-    <div className="py-16 md:py-24">
+    <TranslatedContent>
+      {(t) => (
+        <div className="py-16 md:py-24">
       <div className="container mx-auto px-4">
         <div className="max-w-4xl mx-auto">
           <h1 className="text-4xl md:text-5xl font-bold mb-4">{t.pages.terms.title}</h1>
@@ -72,5 +70,7 @@ export default function TermsPage() {
         </div>
       </div>
     </div>
+      )}
+    </TranslatedContent>
   )
 }

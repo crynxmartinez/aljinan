@@ -1,10 +1,8 @@
-'use client'
-
 import { Metadata } from 'next'
 import Link from 'next/link'
 import { Button } from '@/components/ui/button'
 import { Target, Users, Zap, Shield, ArrowRight } from 'lucide-react'
-import { useTranslation } from '@/lib/i18n/use-translation'
+import { TranslatedContent } from '@/components/i18n/translated-content'
 
 export const metadata: Metadata = {
   title: 'About Tasheel - Saudi Arabia\'s Leading Safety Management Platform',
@@ -40,33 +38,34 @@ export const metadata: Metadata = {
 }
 
 export default function AboutPage() {
-  const { t } = useTranslation()
-  
-  const values = [
-    {
-      icon: Zap,
-      title: t.pages.about.values[0].title,
-      description: t.pages.about.values[0].description,
-    },
-    {
-      icon: Shield,
-      title: t.pages.about.values[1].title,
-      description: t.pages.about.values[1].description,
-    },
-    {
-      icon: Users,
-      title: t.pages.about.values[2].title,
-      description: t.pages.about.values[2].description,
-    },
-    {
-      icon: Target,
-      title: t.pages.about.values[3].title,
-      description: t.pages.about.values[3].description,
-    },
-  ]
-
   return (
-    <div className="py-16 md:py-24">
+    <TranslatedContent>
+      {(t) => {
+        const values = [
+          {
+            icon: Zap,
+            title: t.pages.about.values[0].title,
+            description: t.pages.about.values[0].description,
+          },
+          {
+            icon: Shield,
+            title: t.pages.about.values[1].title,
+            description: t.pages.about.values[1].description,
+          },
+          {
+            icon: Users,
+            title: t.pages.about.values[2].title,
+            description: t.pages.about.values[2].description,
+          },
+          {
+            icon: Target,
+            title: t.pages.about.values[3].title,
+            description: t.pages.about.values[3].description,
+          },
+        ]
+
+        return (
+          <div className="py-16 md:py-24">
       {/* Hero Section */}
       <section className="container mx-auto px-4 mb-16">
         <div className="max-w-3xl mx-auto text-center">
@@ -166,5 +165,8 @@ export default function AboutPage() {
         </div>
       </section>
     </div>
+        )
+      }}
+    </TranslatedContent>
   )
 }

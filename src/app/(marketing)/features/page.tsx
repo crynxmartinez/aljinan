@@ -1,12 +1,10 @@
-'use client'
-
 import { Metadata } from 'next'
 import Link from 'next/link'
 import Image from 'next/image'
 import { Button } from '@/components/ui/button'
-import { ServiceSchema } from '@/components/seo/service-schema'
 import { ClipboardList, Wrench, FileCheck, Users, BarChart3, DollarSign, Bell, Shield, Smartphone, CheckCircle, ArrowRight } from 'lucide-react'
-import { useTranslation } from '@/lib/i18n/use-translation'
+import { ServiceSchema } from '@/components/seo/service-schema'
+import { TranslatedContent } from '@/components/i18n/translated-content'
 
 export const metadata: Metadata = {
   title: 'Safety Inspection Features - Work Orders, Certificates & Compliance | Tasheel',
@@ -42,31 +40,32 @@ export const metadata: Metadata = {
 }
 
 export default function FeaturesPage() {
-  const { t } = useTranslation()
-  
-  const icons = [ClipboardList, Wrench, FileCheck, Users, BarChart3, DollarSign, Bell, Shield, Smartphone]
-  const images = [
-    '/images/marketing/feature-work-orders.jpg',
-    '/images/marketing/feature-equipment.jpg',
-    '/images/marketing/feature-certificates.jpg',
-    '/images/marketing/feature-client-portal.jpg',
-    '/images/marketing/feature-reports.jpg',
-    '/images/marketing/feature-billing.jpg',
-    '/images/marketing/feature-notifications.jpg',
-    '/images/marketing/feature-security.jpg',
-    '/images/marketing/feature-mobile.jpg',
-  ]
-  
-  const features = t.features.list.map((feature, index) => ({
-    icon: icons[index],
-    title: feature.title,
-    description: feature.description,
-    image: images[index],
-    benefits: feature.benefits,
-  }))
-  
   return (
-    <div className="py-16 md:py-24">
+    <TranslatedContent>
+      {(t) => {
+        const icons = [ClipboardList, Wrench, FileCheck, Users, BarChart3, DollarSign, Bell, Shield, Smartphone]
+        const images = [
+          '/images/marketing/feature-work-orders.jpg',
+          '/images/marketing/feature-equipment.jpg',
+          '/images/marketing/feature-certificates.jpg',
+          '/images/marketing/feature-client-portal.jpg',
+          '/images/marketing/feature-reports.jpg',
+          '/images/marketing/feature-billing.jpg',
+          '/images/marketing/feature-notifications.jpg',
+          '/images/marketing/feature-security.jpg',
+          '/images/marketing/feature-mobile.jpg',
+        ]
+        
+        const features = t.features.list.map((feature, index) => ({
+          icon: icons[index],
+          title: feature.title,
+          description: feature.description,
+          image: images[index],
+          benefits: feature.benefits,
+        }))
+        
+        return (
+          <div className="py-16 md:py-24">
       <ServiceSchema />
       {/* Hero Section */}
       <section className="container mx-auto px-4 mb-16">
@@ -151,5 +150,8 @@ export default function FeaturesPage() {
         </div>
       </section>
     </div>
+        )
+      }}
+    </TranslatedContent>
   )
 }
