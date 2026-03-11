@@ -1,8 +1,12 @@
+'use client'
+
 import Link from 'next/link'
 import { Button } from '@/components/ui/button'
 import { ArrowRight } from 'lucide-react'
+import { useTranslation } from '@/lib/i18n/use-translation'
 
 export function Hero() {
+  const { t } = useTranslation()
   return (
     <section className="relative bg-gradient-to-br from-gray-900 via-gray-800 to-gray-900 text-white overflow-hidden">
       {/* Background Image */}
@@ -18,35 +22,34 @@ export function Hero() {
           {/* Tagline */}
           <div className="inline-block mb-6">
             <span className="text-orange-400 font-semibold text-sm md:text-base">
-              Simplifying Safety, One Transaction at a Time
+              {t.hero.tagline}
             </span>
           </div>
 
           {/* Main Headline */}
           <h1 className="text-4xl md:text-5xl lg:text-6xl font-bold mb-6 leading-tight">
-            Making Safety Management{' '}
-            <span className="text-orange-400">Effortless</span>
+            {t.hero.title}{' '}
+            <span className="text-orange-400">{t.hero.titleHighlight}</span>
           </h1>
 
           {/* Subheadline */}
           <p className="text-lg md:text-xl text-gray-300 mb-8 max-w-2xl mx-auto">
-            The complete platform for safety contractors and their clients. 
-            Manage inspections, track certificates, and ensure compliance—all in one place.
+            {t.hero.subtitle}
           </p>
 
           {/* Value Props */}
           <div className="flex flex-wrap justify-center gap-4 md:gap-8 mb-10 text-sm md:text-base">
             <div className="flex items-center gap-2">
               <div className="w-2 h-2 bg-orange-400 rounded-full" />
-              <span>Easy</span>
+              <span>{t.hero.easy}</span>
             </div>
             <div className="flex items-center gap-2">
               <div className="w-2 h-2 bg-orange-400 rounded-full" />
-              <span>Fast</span>
+              <span>{t.hero.fast}</span>
             </div>
             <div className="flex items-center gap-2">
               <div className="w-2 h-2 bg-orange-400 rounded-full" />
-              <span>Compliant</span>
+              <span>{t.hero.compliant}</span>
             </div>
           </div>
 
@@ -54,20 +57,20 @@ export function Hero() {
           <div className="flex flex-col sm:flex-row gap-4 justify-center mb-12">
             <Button size="lg" className="bg-orange-500 hover:bg-orange-600 text-white" asChild>
               <Link href="/register">
-                Get Started Free
+                {t.hero.ctaPrimary}
                 <ArrowRight className="ml-2 h-4 w-4" />
               </Link>
             </Button>
             <Button size="lg" variant="outline" className="bg-white/10 border-white/20 text-white hover:bg-white/20" asChild>
               <Link href="/features">
-                Explore Features
+                {t.hero.ctaSecondary}
               </Link>
             </Button>
           </div>
 
           {/* Trust Badge */}
           <p className="text-sm text-gray-400">
-            Trusted by <span className="font-semibold text-white">50+ Safety Contractors</span> across Saudi Arabia
+            {t.hero.noCreditCard}
           </p>
         </div>
       </div>
