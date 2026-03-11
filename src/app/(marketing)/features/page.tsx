@@ -41,119 +41,29 @@ export const metadata: Metadata = {
   },
 }
 
-const features = [
-  {
-    icon: ClipboardList,
-    title: 'Work Order Management',
-    description: 'Create, assign, and track work orders from start to finish. Manage schedules, priorities, and team assignments all in one place.',
-    image: '/images/marketing/feature-work-orders.jpg',
-    benefits: [
-      'Drag-and-drop kanban board',
-      'Automated task assignments',
-      'Real-time status updates',
-      'Priority management',
-    ],
-  },
-  {
-    icon: Wrench,
-    title: 'Equipment Tracking',
-    description: 'Monitor all your equipment status, locations, and maintenance schedules. Never lose track of critical assets.',
-    image: '/images/marketing/feature-equipment.jpg',
-    benefits: [
-      'Equipment inventory management',
-      'Location tracking',
-      'Maintenance history',
-      'Status monitoring',
-    ],
-  },
-  {
-    icon: FileCheck,
-    title: 'Certificate Management',
-    description: 'Automated expiry alerts ensure you never miss a renewal deadline. Keep all compliance documents organized.',
-    image: '/images/marketing/feature-certificates.jpg',
-    benefits: [
-      'Automated expiry notifications',
-      'Digital certificate storage',
-      'Compliance tracking',
-      'Quick certificate lookup',
-    ],
-  },
-  {
-    icon: Users,
-    title: 'Client Portal',
-    description: 'Give your clients 24/7 access to their projects, reports, and invoices. Improve transparency and communication.',
-    image: '/images/marketing/feature-client-portal.jpg',
-    benefits: [
-      'Secure client access',
-      'Real-time project visibility',
-      'Document sharing',
-      'Direct messaging',
-    ],
-  },
-  {
-    icon: BarChart3,
-    title: 'Reports & Analytics',
-    description: 'Generate professional inspection reports in seconds. Track performance metrics and business insights.',
-    image: '/images/marketing/feature-reports.jpg',
-    benefits: [
-      'One-click report generation',
-      'Custom templates',
-      'Performance analytics',
-      'Export to PDF',
-    ],
-  },
-  {
-    icon: DollarSign,
-    title: 'Billing & Invoicing',
-    description: 'Track payments, send invoices, and manage finances effortlessly. Get paid faster with integrated billing.',
-    image: '/images/marketing/feature-billing.jpg',
-    benefits: [
-      'Automated invoice generation',
-      'Payment tracking',
-      'Financial reports',
-      'Multiple payment methods',
-    ],
-  },
-  {
-    icon: Bell,
-    title: 'Smart Notifications',
-    description: 'Stay informed with intelligent alerts for deadlines, updates, and important events.',
-    image: '/images/marketing/feature-notifications.jpg',
-    benefits: [
-      'Email notifications',
-      'In-app alerts',
-      'Custom notification rules',
-      'Priority alerts',
-    ],
-  },
-  {
-    icon: Shield,
-    title: 'Security & Compliance',
-    description: 'Enterprise-grade security with role-based access control and audit trails.',
-    image: '/images/marketing/feature-security.jpg',
-    benefits: [
-      'Data encryption',
-      'Role-based permissions',
-      'Audit logs',
-      'Secure backups',
-    ],
-  },
-  {
-    icon: Smartphone,
-    title: 'Mobile Access',
-    description: 'Work from anywhere with our mobile-responsive platform. Perfect for field work.',
-    image: '/images/marketing/feature-mobile.jpg',
-    benefits: [
-      'Works on any device',
-      'Offline mode',
-      'Photo uploads',
-      'GPS location tracking',
-    ],
-  },
-]
-
 export default function FeaturesPage() {
   const { t } = useTranslation()
+  
+  const icons = [ClipboardList, Wrench, FileCheck, Users, BarChart3, DollarSign, Bell, Shield, Smartphone]
+  const images = [
+    '/images/marketing/feature-work-orders.jpg',
+    '/images/marketing/feature-equipment.jpg',
+    '/images/marketing/feature-certificates.jpg',
+    '/images/marketing/feature-client-portal.jpg',
+    '/images/marketing/feature-reports.jpg',
+    '/images/marketing/feature-billing.jpg',
+    '/images/marketing/feature-notifications.jpg',
+    '/images/marketing/feature-security.jpg',
+    '/images/marketing/feature-mobile.jpg',
+  ]
+  
+  const features = t.features.list.map((feature, index) => ({
+    icon: icons[index],
+    title: feature.title,
+    description: feature.description,
+    image: images[index],
+    benefits: feature.benefits,
+  }))
   
   return (
     <div className="py-16 md:py-24">
