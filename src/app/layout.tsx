@@ -1,5 +1,6 @@
 import type { Metadata } from "next";
 import { SessionProvider } from "@/components/providers/session-provider";
+import { TranslationProvider } from "@/lib/i18n/use-translation";
 import { Analytics } from '@vercel/analytics/react';
 import { SpeedInsights } from '@vercel/speed-insights/next';
 import { OrganizationSchema } from "@/components/seo/organization-schema";
@@ -35,12 +36,14 @@ export default function RootLayout({
         <OrganizationSchema />
       </head>
       <body className="antialiased">
-        <SessionProvider>
-          {children}
-        </SessionProvider>
-        <RegisterServiceWorker />
-        <Analytics />
-        <SpeedInsights />
+        <TranslationProvider>
+          <SessionProvider>
+            {children}
+          </SessionProvider>
+          <RegisterServiceWorker />
+          <Analytics />
+          <SpeedInsights />
+        </TranslationProvider>
       </body>
     </html>
   );

@@ -7,6 +7,8 @@ import { Menu, X } from 'lucide-react'
 import { Logo } from './logo'
 import { Button } from '@/components/ui/button'
 import { InstallPWAButton } from '@/components/pwa/install-pwa-button'
+import { LanguageToggle } from '@/components/language-toggle'
+import { useTranslation } from '@/lib/i18n/use-translation'
 import { cn } from '@/lib/utils'
 
 interface NavbarProps {
@@ -14,15 +16,16 @@ interface NavbarProps {
   showHomeButton?: boolean
 }
 
-const navLinks = [
-  { href: '/features', label: 'Features' },
-  { href: '/about', label: 'About' },
-  { href: '/contact', label: 'Contact' },
-]
-
 export function Navbar({ variant = 'marketing', showHomeButton = false }: NavbarProps) {
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false)
   const pathname = usePathname()
+  const { t } = useTranslation()
+
+  const navLinks = [
+    { href: '/features', label: t.navbar.features },
+    { href: '/about', label: t.navbar.about },
+    { href: '/contact', label: t.navbar.contact },
+  ]
 
   if (variant === 'auth') {
     return (
@@ -35,7 +38,7 @@ export function Navbar({ variant = 'marketing', showHomeButton = false }: Navbar
                 className="flex items-center gap-2 text-sm text-muted-foreground hover:text-foreground transition-colors"
               >
                 <span>←</span>
-                <span>Home</span>
+                <span>{t.navbar.home}</span>
               </Link>
             )}
             <Logo size="md" />
@@ -72,12 +75,13 @@ export function Navbar({ variant = 'marketing', showHomeButton = false }: Navbar
 
           {/* Desktop Auth Buttons */}
           <div className="hidden md:flex items-center gap-4">
+            <LanguageToggle />
             <InstallPWAButton />
             <Button variant="ghost" asChild>
-              <Link href="/login">Login</Link>
+              <Link href="/login">{t.navbar.login}</Link>
             </Button>
             <Button asChild>
-              <Link href="/register">Sign Up</Link>
+              <Link href="/register">{t.navbar.signUp}</Link>
             </Button>
           </div>
 
@@ -114,14 +118,15 @@ export function Navbar({ variant = 'marketing', showHomeButton = false }: Navbar
                 </Link>
               ))}
               <div className="flex flex-col gap-2 px-4 pt-4 border-t">
-                <div className="mb-2">
+                <div className="flex items-center justify-between mb-2">
+                  <LanguageToggle />
                   <InstallPWAButton />
                 </div>
                 <Button variant="ghost" asChild className="w-full">
-                  <Link href="/login">Login</Link>
+                  <Link href="/login">{t.navbar.login}</Link>
                 </Button>
                 <Button asChild className="w-full">
-                  <Link href="/register">Sign Up</Link>
+                  <Link href="/register">{t.navbar.signUp}</Link>
                 </Button>
               </div>
             </div>
