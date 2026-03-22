@@ -767,7 +767,7 @@ export function RequestsList({ branchId, userRole, projectId, userId }: Requests
           needsCertificate: contractorNewRequest.needsCertificate,
           quotedPrice: parseFloat(contractorNewRequest.quotedPrice),
           quotedDate: contractorNewRequest.quotedDate,
-          assignedTo: contractorNewRequest.assignedTo || null,
+          assignedTo: contractorNewRequest.assignedTo && contractorNewRequest.assignedTo !== 'unassigned' ? contractorNewRequest.assignedTo : null,
           quotationUrl: quotationFile?.url || null,
           quotationFileName: quotationFile?.name || null,
           priority: 'MEDIUM',
@@ -1249,7 +1249,7 @@ export function RequestsList({ branchId, userRole, projectId, userId }: Requests
                       <SelectValue placeholder="Select team member (optional)" />
                     </SelectTrigger>
                     <SelectContent>
-                      <SelectItem value="">Unassigned</SelectItem>
+                      <SelectItem value="unassigned">Unassigned</SelectItem>
                       {teamMembers.map((member) => (
                         <SelectItem key={member.id} value={member.userId}>
                           <span className="flex items-center gap-2">
