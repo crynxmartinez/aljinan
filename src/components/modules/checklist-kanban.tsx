@@ -557,7 +557,7 @@ export function ChecklistKanban({ branchId, projectId, readOnly = false, userRol
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
           action: 'update_inspection',
-          itemId: selectedItem.id,
+          workOrderId: selectedItem.id,
           ...inspectionData,
           photoUrls: inspectionPhotos.map(p => ({ url: p.url, type: p.type })),
         }),
@@ -1178,7 +1178,7 @@ export function ChecklistKanban({ branchId, projectId, readOnly = false, userRol
                     <div>
                       <p className="text-sm text-muted-foreground mb-2">Photos ({selectedItem.photos.length})</p>
                       <div className="flex flex-wrap gap-2">
-                        {selectedItem.photos.map((photo) => (
+                        {selectedItem.photos.map((photo) => photo?.url ? (
                           <a key={photo.id} href={photo.url} target="_blank" rel="noopener noreferrer">
                             <img
                               src={photo.url}
@@ -1186,7 +1186,7 @@ export function ChecklistKanban({ branchId, projectId, readOnly = false, userRol
                               className="h-20 w-20 object-cover rounded-lg border hover:opacity-80"
                             />
                           </a>
-                        ))}
+                        ) : null)}
                       </div>
                     </div>
                   )}

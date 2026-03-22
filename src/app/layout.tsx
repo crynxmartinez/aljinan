@@ -1,4 +1,4 @@
-import type { Metadata } from "next";
+import type { Metadata, Viewport } from "next";
 import { SessionProvider } from "@/components/providers/session-provider";
 import { TranslationProvider } from "@/lib/i18n/use-translation";
 import { Analytics } from '@vercel/analytics/react';
@@ -12,17 +12,18 @@ export const metadata: Metadata = {
   title: "Tasheel - Safety Contractor Management Platform",
   description: "Complete safety management platform for contractors in Saudi Arabia",
   manifest: "/manifest.json",
-  themeColor: "#0f172a",
   appleWebApp: {
     capable: true,
     statusBarStyle: "default",
     title: "Tasheel",
   },
-  viewport: {
-    width: "device-width",
-    initialScale: 1,
-    maximumScale: 1,
-  },
+};
+
+export const viewport: Viewport = {
+  width: "device-width",
+  initialScale: 1,
+  maximumScale: 1,
+  themeColor: "#0f172a",
 };
 
 export default function RootLayout({
