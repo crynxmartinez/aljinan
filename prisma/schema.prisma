@@ -177,6 +177,10 @@ model Contractor {
   // Service Areas
   serviceAreas      Json?         // Array of cities/regions served
 
+  // Auto-increment counters for human-readable reference numbers
+  nextRequestNumber   Int       @default(1)  // Counter for REQ-0001, REQ-0002...
+  nextWorkOrderNumber Int       @default(1)  // Counter for WO-0001, WO-0002...
+
   // Relations
   clients       Client[]
   teamMembers   TeamMember[]
@@ -354,6 +358,13 @@ model Request {
   rejectedAt          DateTime?       // When client rejected
   rejectedById        String?         // Client who rejected
   rejectionNote       String?         // Reason for rejection
+  
+  // Auto-generated reference number
+  requestNumber       Int?            // Human-readable number: REQ-0001
+  
+  // Quotation document
+  quotationUrl        String?         // URL to uploaded quotation PDF/image
+  quotationFileName   String?         // Original filename
   
   // Link to created work order
   workOrderId         String?         // ChecklistItem ID once accepted
@@ -727,6 +738,7 @@ model ChecklistItem {
   recurringType   RecurringType      @default(ONCE)
   parentItemId    String?            // For recurring: links to original work order
   occurrenceIndex Int?               // For recurring: which occurrence (1, 2, 3...)
+  workOrderNumber Int?               // Human-readable number: WO-0001
   scheduledDate   DateTime?
   price           Float?
   isCompleted     Boolean            @default(false)

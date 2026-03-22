@@ -68,6 +68,8 @@ export async function PATCH(
       // New quote fields (contractor sets these)
       quotedPrice,
       quotedDate,
+      quotationUrl,
+      quotationFileName,
       // Action fields
       action, // 'quote', 'accept', 'reject'
       rejectionNote,
@@ -113,6 +115,8 @@ export async function PATCH(
       updateData.quotedDate = new Date(quotedDate)
       updateData.quotedById = session.user.id
       updateData.quotedAt = new Date()
+      if (quotationUrl !== undefined) updateData.quotationUrl = quotationUrl || null
+      if (quotationFileName !== undefined) updateData.quotationFileName = quotationFileName || null
     }
     // ACTION: Client accepts quote
     else if (action === 'accept') {
@@ -149,6 +153,12 @@ export async function PATCH(
         })
       }
 
+      // Get contractor for WO number generation
+      const branchData = await prisma.branch.findUnique({
+        where: { id: branchId },
+        include: { client: { select: { contractorId: true } } }
+      })
+
       // Determine number of work orders to create based on recurring type
       const recurringType = currentRequest.recurringType || 'ONCE'
       let occurrenceCount = 1
@@ -157,6 +167,17 @@ export async function PATCH(
 
       const startDate = currentRequest.quotedDate ? new Date(currentRequest.quotedDate) : new Date()
       const createdWorkOrders: string[] = []
+
+      // Atomically increment the contractor's WO counter for all occurrences
+      let startingWoNumber = 1
+      if (branchData) {
+        const contractor = await prisma.contractor.update({
+          where: { id: branchData.client.contractorId },
+          data: { nextWorkOrderNumber: { increment: occurrenceCount } },
+          select: { nextWorkOrderNumber: true }
+        })
+        startingWoNumber = contractor.nextWorkOrderNumber - occurrenceCount
+      }
 
       // Create work orders for each occurrence
       for (let i = 0; i < occurrenceCount; i++) {
@@ -180,6 +201,7 @@ export async function PATCH(
             workOrderType: currentRequest.workOrderType,
             recurringType: recurringType,
             occurrenceIndex: i + 1,
+            workOrderNumber: startingWoNumber + i,
             scheduledDate: scheduledDate,
             price: currentRequest.quotedPrice,
             linkedRequestId: requestId,

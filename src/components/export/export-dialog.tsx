@@ -3,6 +3,7 @@
 import { useState } from 'react'
 import { Download, FileText, FileSpreadsheet, File } from 'lucide-react'
 import { Button } from '@/components/ui/button'
+import { Input } from '@/components/ui/input'
 import {
   Dialog,
   DialogContent,
@@ -20,7 +21,8 @@ interface ExportDialogProps {
   title?: string
   description?: string
   itemCount: number
-  onExport: (format: string, options: Record<string, boolean>) => void
+  onExport: (format: string, options: Record<string, boolean>, dateRange?: { from: string; to: string }) => void
+  showDateRange?: boolean
 }
 
 export function ExportDialog({
@@ -28,6 +30,7 @@ export function ExportDialog({
   description = 'Choose export format and options',
   itemCount,
   onExport,
+  showDateRange = false,
 }: ExportDialogProps) {
   const [format, setFormat] = useState('excel')
   const [options, setOptions] = useState({
@@ -39,11 +42,16 @@ export function ExportDialog({
   })
   const [isOpen, setIsOpen] = useState(false)
   const [exporting, setExporting] = useState(false)
+  const [dateFrom, setDateFrom] = useState('')
+  const [dateTo, setDateTo] = useState('')
 
   const handleExport = async () => {
     setExporting(true)
     try {
-      await onExport(format, options)
+      const dateRange = (showDateRange && dateFrom && dateTo)
+        ? { from: dateFrom, to: dateTo }
+        : undefined
+      await onExport(format, options, dateRange)
       setIsOpen(false)
     } catch (error) {
       console.error('Export failed:', error)
@@ -88,6 +96,31 @@ export function ExportDialog({
         </DialogHeader>
 
         <div className="space-y-6 py-4">
+          {/* Date Range Filter */}
+          {showDateRange && (
+            <div className="space-y-3">
+              <Label>Date Range</Label>
+              <div className="grid grid-cols-2 gap-3">
+                <div className="space-y-1">
+                  <label className="text-xs text-muted-foreground">From</label>
+                  <Input
+                    type="date"
+                    value={dateFrom}
+                    onChange={(e) => setDateFrom(e.target.value)}
+                  />
+                </div>
+                <div className="space-y-1">
+                  <label className="text-xs text-muted-foreground">To</label>
+                  <Input
+                    type="date"
+                    value={dateTo}
+                    onChange={(e) => setDateTo(e.target.value)}
+                  />
+                </div>
+              </div>
+            </div>
+          )}
+
           {/* Format Selection */}
           <div className="space-y-3">
             <Label>Select Format</Label>

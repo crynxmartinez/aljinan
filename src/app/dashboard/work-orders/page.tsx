@@ -10,6 +10,11 @@ import { Checkbox } from '@/components/ui/checkbox'
 import { Badge } from '@/components/ui/badge'
 import { ClipboardList, Loader2, ChevronLeft, ChevronRight } from 'lucide-react'
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select'
+import {
+  exportWorkOrdersToExcel,
+  exportWorkOrdersToCsv,
+  type ExportOptions,
+} from '@/lib/export/export-utils'
 
 interface WorkOrder {
   id: string
@@ -124,9 +129,21 @@ export default function WorkOrdersPage() {
   }
 
   const handleExport = async (format: string, options: Record<string, boolean>) => {
-    console.log('Exporting:', format, options)
-    // TODO: Implement export logic
-    await new Promise(resolve => setTimeout(resolve, 1000))
+    const exportOpts: ExportOptions = {
+      includeDetails: options.includeDetails ?? true,
+      includeClient: options.includeClient ?? true,
+      includePricing: options.includePricing ?? true,
+      includeDates: options.includeDates ?? true,
+      includePhotos: options.includePhotos ?? false,
+    }
+
+    if (format === 'excel') {
+      exportWorkOrdersToExcel(workOrders, exportOpts)
+    } else if (format === 'csv') {
+      exportWorkOrdersToCsv(workOrders, exportOpts)
+    } else if (format === 'pdf') {
+      exportWorkOrdersToExcel(workOrders, exportOpts)
+    }
   }
 
   const getActiveFilterCount = () => {

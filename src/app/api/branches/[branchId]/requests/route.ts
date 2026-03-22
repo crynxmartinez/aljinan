@@ -72,6 +72,7 @@ export async function POST(
       quotedPrice,
       quotedDate,
       status, // Can be 'QUOTED' for contractor-created requests
+      assignedTo, // Personnel assignment
       // Equipment for sticker inspections
       equipment,
     } = body
@@ -92,50 +93,71 @@ export async function POST(
     // Determine if this is a contractor-created request (already quoted)
     const isContractorCreated = session.user.role === 'CONTRACTOR' && status === 'QUOTED' && quotedPrice && quotedDate
 
-    // Create request with photos and equipment
-    const newRequest = await prisma.request.create({
-      data: {
-        branchId,
-        title,
-        description,
-        priority: priority || 'MEDIUM',
-        status: isContractorCreated ? 'QUOTED' : 'REQUESTED',
-        createdById: session.user.id,
-        createdByRole: session.user.role as 'CONTRACTOR' | 'CLIENT' | 'TEAM_MEMBER',
-        dueDate: dueDate ? new Date(dueDate) : null,
-        workOrderType: workOrderType || null,
-        recurringType: recurringType || 'ONCE',
-        needsCertificate: needsCertificate || false,
-        preferredDate: preferredDate ? new Date(preferredDate) : null,
-        preferredTimeSlot: preferredTimeSlot || null,
-        // Contractor quote fields (for contractor-created requests)
-        quotedPrice: isContractorCreated ? quotedPrice : null,
-        quotedDate: isContractorCreated ? new Date(quotedDate) : null,
-        quotedById: isContractorCreated ? session.user.id : null,
-        quotedAt: isContractorCreated ? new Date() : null,
-        photos: photoUrls && photoUrls.length > 0 ? {
-          create: photoUrls.map((url: string) => ({ url }))
-        } : undefined,
-        // Equipment for sticker inspections - linked to branch for permanent records
-        equipment: equipment && equipment.length > 0 ? {
-          create: equipment.map((eq: { equipmentNumber: string; equipmentType: string; location?: string; dateAdded?: string; expectedExpiry?: string; notes?: string; brand?: string; model?: string; serialNumber?: string }) => ({
-            branchId: branchId, // Link to branch for permanent equipment records
-            equipmentNumber: eq.equipmentNumber,
-            equipmentType: eq.equipmentType as 'FIRE_EXTINGUISHER' | 'FIRE_ALARM_PANEL' | 'SPRINKLER_SYSTEM' | 'EMERGENCY_LIGHTING' | 'EXIT_SIGN' | 'FIRE_DOOR' | 'SMOKE_DETECTOR' | 'HEAT_DETECTOR' | 'GAS_DETECTOR' | 'KITCHEN_HOOD_SUPPRESSION' | 'FIRE_PUMP' | 'FIRE_HOSE_REEL' | 'OTHER',
-            brand: eq.brand || null,
-            model: eq.model || null,
-            serialNumber: eq.serialNumber || null,
-            location: eq.location || null,
-            dateAdded: eq.dateAdded ? new Date(eq.dateAdded) : new Date(),
-            expectedExpiry: eq.expectedExpiry ? new Date(eq.expectedExpiry) : null,
-            notes: eq.notes || null,
-          }))
-        } : undefined
-      },
-      include: {
-        photos: true,
-        equipment: true
-      }
+    // Get the contractor for this branch (Branch → Client → Contractor)
+    const branch = await prisma.branch.findUnique({
+      where: { id: branchId },
+      include: { client: { select: { contractorId: true } } }
+    })
+    if (!branch) {
+      return NextResponse.json({ error: 'Branch not found' }, { status: 404 })
+    }
+
+    // Auto-generate request number using atomic increment
+    const newRequest = await prisma.$transaction(async (tx) => {
+      // Atomically increment the contractor's request counter
+      const contractor = await tx.contractor.update({
+        where: { id: branch.client.contractorId },
+        data: { nextRequestNumber: { increment: 1 } },
+        select: { nextRequestNumber: true }
+      })
+      const requestNumber = contractor.nextRequestNumber - 1 // Use the value before increment
+
+      return tx.request.create({
+        data: {
+          branchId,
+          title,
+          description,
+          priority: priority || 'MEDIUM',
+          status: isContractorCreated ? 'QUOTED' : 'REQUESTED',
+          createdById: session.user.id,
+          createdByRole: session.user.role as 'CONTRACTOR' | 'CLIENT' | 'TEAM_MEMBER',
+          dueDate: dueDate ? new Date(dueDate) : null,
+          workOrderType: workOrderType || null,
+          recurringType: recurringType || 'ONCE',
+          needsCertificate: needsCertificate || false,
+          preferredDate: preferredDate ? new Date(preferredDate) : null,
+          preferredTimeSlot: preferredTimeSlot || null,
+          assignedTo: assignedTo || null,
+          requestNumber,
+          // Contractor quote fields (for contractor-created requests)
+          quotedPrice: isContractorCreated ? quotedPrice : null,
+          quotedDate: isContractorCreated ? new Date(quotedDate) : null,
+          quotedById: isContractorCreated ? session.user.id : null,
+          quotedAt: isContractorCreated ? new Date() : null,
+          photos: photoUrls && photoUrls.length > 0 ? {
+            create: photoUrls.map((url: string) => ({ url }))
+          } : undefined,
+          // Equipment for sticker inspections - linked to branch for permanent records
+          equipment: equipment && equipment.length > 0 ? {
+            create: equipment.map((eq: { equipmentNumber: string; equipmentType: string; location?: string; dateAdded?: string; expectedExpiry?: string; notes?: string; brand?: string; model?: string; serialNumber?: string }) => ({
+              branchId: branchId, // Link to branch for permanent equipment records
+              equipmentNumber: eq.equipmentNumber,
+              equipmentType: eq.equipmentType as 'FIRE_EXTINGUISHER' | 'FIRE_ALARM_PANEL' | 'SPRINKLER_SYSTEM' | 'EMERGENCY_LIGHTING' | 'EXIT_SIGN' | 'FIRE_DOOR' | 'SMOKE_DETECTOR' | 'HEAT_DETECTOR' | 'GAS_DETECTOR' | 'KITCHEN_HOOD_SUPPRESSION' | 'FIRE_PUMP' | 'FIRE_HOSE_REEL' | 'OTHER',
+              brand: eq.brand || null,
+              model: eq.model || null,
+              serialNumber: eq.serialNumber || null,
+              location: eq.location || null,
+              dateAdded: eq.dateAdded ? new Date(eq.dateAdded) : new Date(),
+              expectedExpiry: eq.expectedExpiry ? new Date(eq.expectedExpiry) : null,
+              notes: eq.notes || null,
+            }))
+          } : undefined
+        },
+        include: {
+          photos: true,
+          equipment: true
+        }
+      })
     })
 
     return NextResponse.json(newRequest, { status: 201 })

@@ -66,6 +66,13 @@ import {
 } from 'lucide-react'
 import { SignaturePad } from '@/components/ui/signature-pad'
 import { RequestComments } from '@/components/modules/request-comments'
+import { ExportDialog } from '@/components/export/export-dialog'
+import {
+  exportRequestsToExcel,
+  exportRequestsToCsv,
+  type ExportOptions,
+  type ExportableRequest,
+} from '@/lib/export/export-utils'
 
 interface WorkOrder {
   id: string
@@ -119,6 +126,7 @@ interface Request {
   updatedAt: string
   projectId?: string
   project?: Project
+  requestNumber?: number | null
   // Service request fields
   workOrderType?: 'SERVICE' | 'INSPECTION' | 'MAINTENANCE' | 'INSTALLATION' | 'STICKER_INSPECTION' | null
   recurringType?: 'ONCE' | 'MONTHLY' | 'QUARTERLY' | 'SEMI_ANNUALLY' | 'ANNUALLY'
@@ -132,6 +140,8 @@ interface Request {
   clientAcceptedAt?: string | null
   clientRejectedAt?: string | null
   clientRejectionReason?: string | null
+  quotationUrl?: string | null
+  quotationFileName?: string | null
   photos?: RequestPhoto[]
   equipment?: Equipment[]
 }
@@ -286,6 +296,7 @@ function WorkOrdersGroupedView({ workOrders }: { workOrders: WorkOrder[] }) {
 export function ClientBranchRequests({ branchId, projectId, onDataChange, userId }: ClientBranchRequestsProps) {
   const router = useRouter()
   const [requests, setRequests] = useState<Request[]>([])
+  const [allRequests, setAllRequests] = useState<Request[]>([])
   const [projects, setProjects] = useState<Project[]>([])
   const [loading, setLoading] = useState(true)
   const [createDialogOpen, setCreateDialogOpen] = useState(false)
@@ -355,8 +366,7 @@ export function ClientBranchRequests({ branchId, projectId, onDataChange, userId
       const response = await fetch(`/api/branches/${branchId}/requests`)
       if (response.ok) {
         const data = await response.json()
-        // Only show requests still in request phase (REQUESTED, QUOTED)
-        // Once accepted (SCHEDULED+), they become work orders and appear in Kanban
+        setAllRequests(data)
         const activeRequestStatuses = ['REQUESTED', 'QUOTED']
         let filtered = data.filter((r: Request) => activeRequestStatuses.includes(r.status))
         setRequests(filtered)
@@ -581,6 +591,38 @@ export function ClientBranchRequests({ branchId, projectId, onDataChange, userId
     return type.charAt(0) + type.slice(1).toLowerCase()
   }
 
+  const handleExportRequests = async (
+    format: string,
+    options: Record<string, boolean>,
+    dateRange?: { from: string; to: string }
+  ) => {
+    let dataToExport = allRequests as ExportableRequest[]
+
+    if (dateRange?.from && dateRange?.to) {
+      const fromDate = new Date(dateRange.from)
+      const toDate = new Date(dateRange.to)
+      toDate.setHours(23, 59, 59, 999)
+      dataToExport = dataToExport.filter(r => {
+        const created = new Date(r.createdAt)
+        return created >= fromDate && created <= toDate
+      })
+    }
+
+    const exportOpts: ExportOptions = {
+      includeDetails: options.includeDetails ?? true,
+      includeClient: options.includeClient ?? true,
+      includePricing: options.includePricing ?? true,
+      includeDates: options.includeDates ?? true,
+      includePhotos: options.includePhotos ?? false,
+    }
+
+    if (format === 'excel' || format === 'pdf') {
+      exportRequestsToExcel(dataToExport, exportOpts)
+    } else if (format === 'csv') {
+      exportRequestsToCsv(dataToExport, exportOpts)
+    }
+  }
+
   const handleCreateRequest = async (e: React.FormEvent) => {
     e.preventDefault()
     setCreating(true)
@@ -669,10 +711,19 @@ export function ClientBranchRequests({ branchId, projectId, onDataChange, userId
               View and submit service requests for this branch
             </CardDescription>
           </div>
-          <Button onClick={() => setCreateDialogOpen(true)}>
-            <Plus className="mr-2 h-4 w-4" />
-            Submit Request
-          </Button>
+          <div className="flex items-center gap-2">
+            <ExportDialog
+              title="Export Request History"
+              description="Download your request history as Excel or CSV"
+              itemCount={allRequests.length}
+              onExport={handleExportRequests}
+              showDateRange={true}
+            />
+            <Button onClick={() => setCreateDialogOpen(true)}>
+              <Plus className="mr-2 h-4 w-4" />
+              Submit Request
+            </Button>
+          </div>
         </CardHeader>
         <CardContent>
           {error && (
@@ -710,6 +761,11 @@ export function ClientBranchRequests({ branchId, projectId, onDataChange, userId
                     }}
                   >
                     <div className="flex items-center gap-2 flex-wrap">
+                      {request.requestNumber && (
+                        <span className="text-xs font-mono bg-muted px-1.5 py-0.5 rounded text-muted-foreground">
+                          REQ-{String(request.requestNumber).padStart(4, '0')}
+                        </span>
+                      )}
                       <h4 className="font-medium">{request.title}</h4>
                       {getPriorityBadge(request.priority)}
                       {getStatusBadge(request.status)}
@@ -1276,6 +1332,19 @@ export function ClientBranchRequests({ branchId, projectId, onDataChange, userId
                       </div>
                     )}
                   </div>
+                  {selectedRequest.quotationUrl && (
+                    <div className="mt-2">
+                      <a
+                        href={selectedRequest.quotationUrl}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className="inline-flex items-center gap-1.5 text-sm font-medium text-purple-800 hover:text-purple-900 underline"
+                      >
+                        <FileText className="h-4 w-4" />
+                        {selectedRequest.quotationFileName || 'View Quotation'}
+                      </a>
+                    </div>
+                  )}
                   <div className="flex gap-2">
                     <Button 
                       size="sm"
@@ -1684,6 +1753,20 @@ export function ClientBranchRequests({ branchId, projectId, onDataChange, userId
                   <div>
                     <p className="text-xs text-purple-600 mb-1">Assigned Technician</p>
                     <p className="text-sm font-medium text-purple-800">{quoteResponseRequest.assignedTo}</p>
+                  </div>
+                )}
+                {quoteResponseRequest.quotationUrl && (
+                  <div>
+                    <p className="text-xs text-purple-600 mb-1">Quotation Document</p>
+                    <a
+                      href={quoteResponseRequest.quotationUrl}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="inline-flex items-center gap-1.5 text-sm font-medium text-purple-800 hover:text-purple-900 underline"
+                    >
+                      <FileText className="h-4 w-4" />
+                      {quoteResponseRequest.quotationFileName || 'View Quotation'}
+                    </a>
                   </div>
                 )}
               </div>

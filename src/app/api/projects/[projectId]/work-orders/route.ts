@@ -45,6 +45,7 @@ export async function GET(
         notes: item.notes,
         stage: item.stage,
         type: item.type,
+        workOrderNumber: item.workOrderNumber,
         scheduledDate: item.scheduledDate,
         price: item.price,
         isCompleted: item.isCompleted,
@@ -121,6 +122,12 @@ export async function POST(
     })
     let orderIndex = (maxOrder._max.order || 0) + 1
 
+    // Get contractor for WO number generation (Project → Branch → Client → Contractor)
+    const branchData = await prisma.branch.findUnique({
+      where: { id: project.branchId },
+      include: { client: { select: { contractorId: true } } }
+    })
+
     const createdWorkOrders: Array<{
       id: string
       checklistId: string
@@ -128,6 +135,7 @@ export async function POST(
       notes: string | null
       stage: string
       type: string
+      workOrderNumber: number | null
       scheduledDate: Date | null
       price: number | null
       isCompleted: boolean
@@ -138,6 +146,28 @@ export async function POST(
 
     // Handle recurring work orders
     const recType = recurringType || 'ONCE'
+
+    // Calculate total WOs to create for atomic counter increment
+    let totalToCreate = 1
+    if (recType !== 'ONCE') {
+      const baseDate = scheduledDate ? new Date(scheduledDate) : (project.startDate || new Date())
+      const projectEndDate = project.endDate || new Date(baseDate.getTime() + 365 * 24 * 60 * 60 * 1000)
+      const monthsBetween = Math.max(1, Math.ceil((projectEndDate.getTime() - baseDate.getTime()) / (30 * 24 * 60 * 60 * 1000)))
+      const interval = recType === 'MONTHLY' ? 1 : 3
+      totalToCreate = Math.ceil(monthsBetween / interval)
+    }
+
+    // Atomically increment the contractor's WO counter
+    let startingWoNumber = 1
+    if (branchData) {
+      const contractor = await prisma.contractor.update({
+        where: { id: branchData.client.contractorId },
+        data: { nextWorkOrderNumber: { increment: totalToCreate } },
+        select: { nextWorkOrderNumber: true }
+      })
+      startingWoNumber = contractor.nextWorkOrderNumber - totalToCreate
+    }
+    let woNumberIndex = 0
     
     if (recType === 'ONCE') {
       // Single work order
@@ -151,6 +181,7 @@ export async function POST(
           scheduledDate: scheduledDate ? new Date(scheduledDate) : null,
           price: price ? parseFloat(price) : null,
           recurringType: 'ONCE',
+          workOrderNumber: startingWoNumber + woNumberIndex++,
           order: orderIndex,
         }
       })
@@ -182,6 +213,7 @@ export async function POST(
             price: price ? parseFloat(price) : null,
             recurringType: recType,
             occurrenceIndex: i + 1,
+            workOrderNumber: startingWoNumber + woNumberIndex++,
             order: orderIndex++,
           }
         })

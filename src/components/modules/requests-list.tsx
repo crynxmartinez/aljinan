@@ -58,7 +58,10 @@ import {
   Send,
   Image as ImageIcon,
   User,
+  Upload,
+  Paperclip,
 } from 'lucide-react'
+import { FileUploadDropzone } from '@/components/ui/file-upload-dropzone'
 import { RequestComments } from './request-comments'
 
 // Helper function to extract base name from work order title (removes Q1, Q2, Month1, etc.)
@@ -134,6 +137,7 @@ interface Request {
   createdAt: string
   updatedAt: string
   projectId?: string
+  requestNumber?: number | null
   // Service request fields
   workOrderType?: 'SERVICE' | 'INSPECTION' | 'MAINTENANCE' | 'INSTALLATION' | 'STICKER_INSPECTION' | null
   recurringType?: 'ONCE' | 'MONTHLY' | 'QUARTERLY' | 'SEMI_ANNUALLY' | 'ANNUALLY'
@@ -147,6 +151,8 @@ interface Request {
   clientAcceptedAt?: string | null
   clientRejectedAt?: string | null
   clientRejectionReason?: string | null
+  quotationUrl?: string | null
+  quotationFileName?: string | null
   photos?: RequestPhoto[]
   equipment?: Equipment[]
 }
@@ -469,6 +475,28 @@ export function RequestsList({ branchId, userRole, projectId, userId }: Requests
     quotedDate: '',
   })
   const [submittingQuote, setSubmittingQuote] = useState(false)
+  const [quoteQuotationFile, setQuoteQuotationFile] = useState<{ url: string; name: string } | null>(null)
+  const [uploadingQuoteQuotation, setUploadingQuoteQuotation] = useState(false)
+
+  const handleQuoteQuotationUpload = async (files: File[]) => {
+    if (files.length === 0) return
+    setUploadingQuoteQuotation(true)
+    try {
+      const formData = new FormData()
+      formData.append('file', files[0])
+      formData.append('type', 'document')
+      formData.append('folder', 'quotations')
+      const response = await fetch('/api/upload', { method: 'POST', body: formData })
+      if (!response.ok) throw new Error('Upload failed')
+      const data = await response.json()
+      setQuoteQuotationFile({ url: data.url, name: data.filename })
+    } catch (err) {
+      console.error('Failed to upload quotation:', err)
+      setError('Failed to upload quotation file')
+    } finally {
+      setUploadingQuoteQuotation(false)
+    }
+  }
 
   // Contractor create request dialog state
   const [contractorCreateDialogOpen, setContractorCreateDialogOpen] = useState(false)
@@ -480,6 +508,7 @@ export function RequestsList({ branchId, userRole, projectId, userId }: Requests
     needsCertificate: boolean
     quotedPrice: string
     quotedDate: string
+    assignedTo: string
   }>({
     title: '',
     description: '',
@@ -488,8 +517,36 @@ export function RequestsList({ branchId, userRole, projectId, userId }: Requests
     needsCertificate: false,
     quotedPrice: '',
     quotedDate: '',
+    assignedTo: '',
   })
   const [contractorCreating, setContractorCreating] = useState(false)
+
+  // Team members for assignment
+  const [teamMembers, setTeamMembers] = useState<Array<{ id: string; userId: string; user: { name: string | null; email: string }; teamRole: string }>>([])
+
+  // Quotation upload state
+  const [quotationFile, setQuotationFile] = useState<{ url: string; name: string } | null>(null)
+  const [uploadingQuotation, setUploadingQuotation] = useState(false)
+
+  const handleQuotationUpload = async (files: File[]) => {
+    if (files.length === 0) return
+    setUploadingQuotation(true)
+    try {
+      const formData = new FormData()
+      formData.append('file', files[0])
+      formData.append('type', 'document')
+      formData.append('folder', 'quotations')
+      const response = await fetch('/api/upload', { method: 'POST', body: formData })
+      if (!response.ok) throw new Error('Upload failed')
+      const data = await response.json()
+      setQuotationFile({ url: data.url, name: data.filename })
+    } catch (err) {
+      console.error('Failed to upload quotation:', err)
+      setError('Failed to upload quotation file')
+    } finally {
+      setUploadingQuotation(false)
+    }
+  }
 
   const fetchRequests = async () => {
     try {
@@ -524,9 +581,23 @@ export function RequestsList({ branchId, userRole, projectId, userId }: Requests
     }
   }
 
+  const fetchTeamMembers = async () => {
+    if (userRole !== 'CONTRACTOR') return
+    try {
+      const response = await fetch('/api/team-members')
+      if (response.ok) {
+        const data = await response.json()
+        setTeamMembers(data)
+      }
+    } catch (err) {
+      console.error('Failed to fetch team members:', err)
+    }
+  }
+
   useEffect(() => {
     fetchRequests()
     fetchProjects()
+    fetchTeamMembers()
   }, [branchId, projectId])
 
   // Get project for a request
@@ -696,6 +767,9 @@ export function RequestsList({ branchId, userRole, projectId, userId }: Requests
           needsCertificate: contractorNewRequest.needsCertificate,
           quotedPrice: parseFloat(contractorNewRequest.quotedPrice),
           quotedDate: contractorNewRequest.quotedDate,
+          assignedTo: contractorNewRequest.assignedTo || null,
+          quotationUrl: quotationFile?.url || null,
+          quotationFileName: quotationFile?.name || null,
           priority: 'MEDIUM',
           // These fields indicate it's contractor-created and already quoted
           status: 'QUOTED',
@@ -716,6 +790,7 @@ export function RequestsList({ branchId, userRole, projectId, userId }: Requests
         needsCertificate: false,
         quotedPrice: '',
         quotedDate: '',
+        assignedTo: '',
       })
       setSuccessMessage('Work order request sent to client for approval')
       setTimeout(() => setSuccessMessage(''), 3000)
@@ -785,6 +860,8 @@ export function RequestsList({ branchId, userRole, projectId, userId }: Requests
           action: 'quote',
           quotedPrice: parseFloat(quoteData.quotedPrice),
           quotedDate: quoteData.quotedDate,
+          quotationUrl: quoteQuotationFile?.url || null,
+          quotationFileName: quoteQuotationFile?.name || null,
         }),
       })
 
@@ -796,6 +873,7 @@ export function RequestsList({ branchId, userRole, projectId, userId }: Requests
       setQuoteDialogOpen(false)
       setQuoteRequest(null)
       setQuoteData({ quotedPrice: '', quotedDate: '' })
+      setQuoteQuotationFile(null)
       setSuccessMessage('Quote sent to client for approval')
       setTimeout(() => setSuccessMessage(''), 3000)
       fetchRequests()
@@ -920,6 +998,11 @@ export function RequestsList({ branchId, userRole, projectId, userId }: Requests
                 >
                   <div className="space-y-1 flex-1">
                     <div className="flex items-center gap-2">
+                      {request.requestNumber && (
+                        <span className="text-xs font-mono bg-muted px-1.5 py-0.5 rounded text-muted-foreground">
+                          REQ-{String(request.requestNumber).padStart(4, '0')}
+                        </span>
+                      )}
                       <h4 className="font-medium">{request.title}</h4>
                       {getPriorityBadge(request.priority)}
                       {getStatusBadge(request.status)}
@@ -1152,6 +1235,47 @@ export function RequestsList({ branchId, userRole, projectId, userId }: Requests
                   Certificate Required
                   <span className="text-muted-foreground ml-1">(auto-generated on completion)</span>
                 </Label>
+              </div>
+
+              {/* Assigned Personnel */}
+              {teamMembers.length > 0 && (
+                <div className="space-y-2">
+                  <Label htmlFor="contractor-assignedTo">Assign Personnel</Label>
+                  <Select
+                    value={contractorNewRequest.assignedTo}
+                    onValueChange={(value) => setContractorNewRequest({ ...contractorNewRequest, assignedTo: value })}
+                  >
+                    <SelectTrigger>
+                      <SelectValue placeholder="Select team member (optional)" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="">Unassigned</SelectItem>
+                      {teamMembers.map((member) => (
+                        <SelectItem key={member.id} value={member.userId}>
+                          <span className="flex items-center gap-2">
+                            {member.user.name || member.user.email}
+                            <span className="text-xs text-muted-foreground capitalize">({member.teamRole.toLowerCase()})</span>
+                          </span>
+                        </SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                </div>
+              )}
+
+              {/* Quotation Upload */}
+              <div className="space-y-2">
+                <Label>Upload Quotation <span className="text-xs text-muted-foreground">(optional)</span></Label>
+                <FileUploadDropzone
+                  onFilesSelected={handleQuotationUpload}
+                  accept=".pdf,.jpg,.jpeg,.png"
+                  multiple={false}
+                  uploading={uploadingQuotation}
+                  uploadedFiles={quotationFile ? [quotationFile] : []}
+                  onRemoveFile={() => setQuotationFile(null)}
+                  label="Upload quotation (PDF or image)"
+                  maxFiles={1}
+                />
               </div>
 
               {/* Price and Date */}
@@ -1753,6 +1877,21 @@ export function RequestsList({ branchId, userRole, projectId, userId }: Requests
                       </div>
                     </div>
                   )}
+
+                  {/* Quotation Upload */}
+                  <div className="space-y-2">
+                    <Label>Upload Quotation <span className="text-xs text-muted-foreground">(optional)</span></Label>
+                    <FileUploadDropzone
+                      onFilesSelected={handleQuoteQuotationUpload}
+                      accept=".pdf,.jpg,.jpeg,.png"
+                      multiple={false}
+                      uploading={uploadingQuoteQuotation}
+                      uploadedFiles={quoteQuotationFile ? [quoteQuotationFile] : []}
+                      onRemoveFile={() => setQuoteQuotationFile(null)}
+                      label="Upload quotation (PDF or image)"
+                      maxFiles={1}
+                    />
+                  </div>
 
                   </div>
               </div>
