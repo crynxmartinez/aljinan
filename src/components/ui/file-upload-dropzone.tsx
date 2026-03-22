@@ -176,6 +176,7 @@ export function FileUploadDropzone({
       {showPreview && uploadedFiles.length > 0 && (
         <div className="flex flex-wrap gap-2">
           {uploadedFiles.map((file, index) => {
+            if (!file?.url) return null
             const isImage = file.url.match(/\.(jpg|jpeg|png|gif|webp)$/i)
             const isPdf = file.url.match(/\.pdf$/i)
             

@@ -1270,7 +1270,7 @@ export function ClientBranchRequests({ branchId, projectId, onDataChange, userId
                 <div>
                   <p className="text-sm font-medium text-muted-foreground mb-2">Attached Photos</p>
                   <div className="grid grid-cols-3 gap-2">
-                    {selectedRequest.photos.map((photo, idx) => (
+                    {selectedRequest.photos.map((photo, idx) => photo?.url ? (
                       <img 
                         key={idx} 
                         src={photo.url} 
@@ -1278,7 +1278,7 @@ export function ClientBranchRequests({ branchId, projectId, onDataChange, userId
                         className="w-full h-24 object-cover rounded-lg cursor-pointer hover:opacity-80"
                         onClick={() => window.open(photo.url, '_blank')}
                       />
-                    ))}
+                    ) : null)}
                   </div>
                 </div>
               )}

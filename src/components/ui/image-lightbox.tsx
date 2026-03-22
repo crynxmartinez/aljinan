@@ -21,6 +21,8 @@ export function ImageLightbox({ images, initialIndex = 0, open, onOpenChange }: 
 
   const currentImage = images[currentIndex]
 
+  if (!currentImage?.url) return null
+
   const handlePrevious = () => {
     setCurrentIndex((prev) => (prev > 0 ? prev - 1 : images.length - 1))
     setZoom(1)

@@ -325,16 +325,16 @@ export function InspectionReportDocument({ data }: { data: InspectionReportData 
         )}
 
         {/* Photos */}
-        {data.photos.length > 0 && (
+        {data.photos && data.photos.length > 0 && (
           <View style={styles.section}>
             <Text style={styles.sectionTitle}>PHOTOS</Text>
             <View style={styles.photoGrid}>
-              {data.photos.slice(0, 6).map((photo, index) => (
+              {data.photos.slice(0, 6).map((photo, index) => photo?.url ? (
                 <View key={index} style={styles.photoItem}>
                   <Image src={photo.url} style={styles.photo} />
                   {photo.caption && <Text style={styles.photoCaption}>{photo.caption}</Text>}
                 </View>
-              ))}
+              ) : null)}
             </View>
           </View>
         )}

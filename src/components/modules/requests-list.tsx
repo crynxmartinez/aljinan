@@ -1399,7 +1399,7 @@ export function RequestsList({ branchId, userRole, projectId, userId }: Requests
                 <div>
                   <p className="text-sm font-medium text-muted-foreground mb-2">Attached Photos</p>
                   <div className="grid grid-cols-3 gap-2">
-                    {selectedRequest.photos.map((photo, idx) => (
+                    {selectedRequest.photos.map((photo, idx) => photo?.url ? (
                       <img 
                         key={idx} 
                         src={photo.url} 
@@ -1407,7 +1407,7 @@ export function RequestsList({ branchId, userRole, projectId, userId }: Requests
                         className="w-full h-24 object-cover rounded-lg cursor-pointer hover:opacity-80"
                         onClick={() => window.open(photo.url, '_blank')}
                       />
-                    ))}
+                    ) : null)}
                   </div>
                 </div>
               )}
@@ -1762,7 +1762,7 @@ export function RequestsList({ branchId, userRole, projectId, userId }: Requests
                       Attached Photos ({quoteRequest.photos.length})
                     </p>
                     <div className="flex flex-wrap gap-2">
-                      {quoteRequest.photos.map((photo) => (
+                      {quoteRequest.photos.map((photo) => photo?.url ? (
                         <a
                           key={photo.id}
                           href={photo.url}
@@ -1776,7 +1776,7 @@ export function RequestsList({ branchId, userRole, projectId, userId }: Requests
                             className="h-20 w-20 object-cover rounded-lg border hover:opacity-80 transition-opacity"
                           />
                         </a>
-                      ))}
+                      ) : null)}
                     </div>
                   </div>
                 )}
