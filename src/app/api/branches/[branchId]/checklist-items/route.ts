@@ -3,6 +3,129 @@ import { NextResponse } from 'next/server'
 import { authOptions } from '@/lib/auth'
 import { prisma } from '@/lib/prisma'
 
+async function generateCertificatesForWorkOrder(
+  workOrderId: string,
+  workOrder: {
+    description: string
+    workOrderType: string | null
+    recurringType: string
+    linkedRequestId: string | null
+    findings: string | null
+    recommendations: string | null
+    checklist: {
+      projectId: string | null
+      project: { branchId: string } | null
+    }
+  },
+  sessionUserId: string,
+  sessionUserRole: string
+) {
+  const branchId = workOrder.checklist?.project?.branchId
+  if (!branchId) return
+
+  let needsCertificate = false
+  if (workOrder.linkedRequestId) {
+    const linkedRequest = await prisma.request.findUnique({
+      where: { id: workOrder.linkedRequestId }
+    })
+    needsCertificate = linkedRequest?.needsCertificate || false
+  }
+
+  if (workOrder.workOrderType === 'INSPECTION' || workOrder.workOrderType === 'MAINTENANCE' || workOrder.workOrderType === 'STICKER_INSPECTION') {
+    needsCertificate = true
+  }
+
+  if (!needsCertificate) return
+
+  const existingCert = await prisma.certificate.findFirst({
+    where: { workOrderId }
+  })
+  if (existingCert) return
+
+  let certType: 'PREVENTIVE_MAINTENANCE' | 'COMPLETION' | 'COMPLIANCE' | 'INSPECTION' | 'CIVIL_DEFENSE' = 'COMPLETION'
+  if (workOrder.workOrderType === 'INSPECTION' || workOrder.workOrderType === 'STICKER_INSPECTION') certType = 'INSPECTION'
+  else if (workOrder.workOrderType === 'MAINTENANCE') certType = 'PREVENTIVE_MAINTENANCE'
+
+  const calcExpiry = (recurringType: string) => {
+    const expiry = new Date()
+    if (recurringType === 'MONTHLY') expiry.setMonth(expiry.getMonth() + 1)
+    else if (recurringType === 'QUARTERLY') expiry.setMonth(expiry.getMonth() + 3)
+    else expiry.setFullYear(expiry.getFullYear() + 1)
+    return expiry
+  }
+
+  if (workOrder.workOrderType === 'STICKER_INSPECTION') {
+    const equipment = await prisma.equipment.findMany({
+      where: {
+        OR: [
+          { requestId: workOrder.linkedRequestId || undefined },
+          { workOrderId }
+        ]
+      }
+    })
+
+    for (const eq of equipment) {
+      const expiryDate = calcExpiry(workOrder.recurringType)
+      const cert = await prisma.certificate.create({
+        data: {
+          branchId,
+          projectId: workOrder.checklist.projectId,
+          workOrderId,
+          equipmentId: eq.id,
+          type: certType,
+          title: `${eq.equipmentType.replace(/_/g, ' ')} ${eq.equipmentNumber} - Inspection Certificate`,
+          description: `Sticker inspection certificate for ${eq.equipmentNumber}`,
+          issueDate: new Date(),
+          expiryDate,
+          issuedBy: 'System (Auto-generated)',
+          issuedById: sessionUserId,
+        }
+      })
+
+      await prisma.equipment.update({
+        where: { id: eq.id },
+        data: {
+          certificateId: cert.id,
+          certificateIssued: true,
+          lastInspected: new Date(),
+          expectedExpiry: expiryDate,
+          isInspected: true,
+          inspectionResult: 'PASS',
+          status: 'ACTIVE',
+        }
+      })
+    }
+  } else {
+    const expiryDate = calcExpiry(workOrder.recurringType)
+    await prisma.certificate.create({
+      data: {
+        branchId,
+        projectId: workOrder.checklist.projectId,
+        workOrderId,
+        type: certType,
+        title: `${certType.charAt(0) + certType.slice(1).toLowerCase().replace('_', ' ')} Certificate - ${workOrder.description}`,
+        description: workOrder.findings || workOrder.recommendations || `Certificate for completed work: ${workOrder.description}`,
+        issueDate: new Date(),
+        expiryDate,
+        issuedBy: 'System (Auto-generated)',
+        issuedById: sessionUserId,
+      }
+    })
+  }
+
+  if (workOrder.checklist?.projectId) {
+    await prisma.activity.create({
+      data: {
+        projectId: workOrder.checklist.projectId,
+        type: 'UPDATED',
+        content: `Certificate auto-generated for work order "${workOrder.description}"`,
+        createdById: sessionUserId,
+        createdByRole: sessionUserRole as 'CONTRACTOR' | 'CLIENT' | 'TEAM_MEMBER',
+      }
+    })
+  }
+}
+
 // GET - Fetch all checklist items for a branch (for Kanban view)
 export async function GET(
   request: Request,
@@ -146,6 +269,7 @@ export async function GET(
           stickerApplied: eq.stickerApplied,
           notes: eq.notes,
           deficiencies: eq.deficiencies,
+          certificateId: eq.certificateId,
         })),
       }
     })
@@ -321,73 +445,12 @@ export async function PATCH(
 
       // Check if client already signed - auto-complete if both parties signed
       if (currentWorkOrder.clientSignature) {
-        // Both parties signed - auto-move to COMPLETED
         await prisma.checklistItem.update({
           where: { id: workOrderId },
           data: { stage: 'COMPLETED' }
         })
 
-        // Check if certificate is needed and auto-generate
-        let needsCertificate = false
-        if (currentWorkOrder.linkedRequestId) {
-          const linkedRequest = await prisma.request.findUnique({
-            where: { id: currentWorkOrder.linkedRequestId }
-          })
-          needsCertificate = linkedRequest?.needsCertificate || false
-        }
-
-        if (currentWorkOrder.workOrderType === 'INSPECTION' || currentWorkOrder.workOrderType === 'MAINTENANCE') {
-          needsCertificate = true
-        }
-
-        if (needsCertificate && currentWorkOrder.checklist?.project?.branchId) {
-          const existingCert = await prisma.certificate.findFirst({
-            where: { workOrderId: workOrderId }
-          })
-
-          if (!existingCert) {
-            let certType: 'PREVENTIVE_MAINTENANCE' | 'COMPLETION' | 'COMPLIANCE' | 'INSPECTION' | 'CIVIL_DEFENSE' = 'COMPLETION'
-            if (currentWorkOrder.workOrderType === 'INSPECTION') certType = 'INSPECTION'
-            else if (currentWorkOrder.workOrderType === 'MAINTENANCE') certType = 'PREVENTIVE_MAINTENANCE'
-
-            let expiryDate: Date | null = new Date()
-            if (currentWorkOrder.recurringType === 'MONTHLY') {
-              expiryDate.setMonth(expiryDate.getMonth() + 1)
-            } else if (currentWorkOrder.recurringType === 'QUARTERLY') {
-              expiryDate.setMonth(expiryDate.getMonth() + 3)
-            } else {
-              expiryDate.setFullYear(expiryDate.getFullYear() + 1)
-            }
-
-            await prisma.certificate.create({
-              data: {
-                branchId: currentWorkOrder.checklist.project.branchId,
-                projectId: currentWorkOrder.checklist.projectId,
-                workOrderId: workOrderId,
-                type: certType,
-                title: `${certType.charAt(0) + certType.slice(1).toLowerCase().replace('_', ' ')} Certificate - ${currentWorkOrder.description}`,
-                description: currentWorkOrder.findings || currentWorkOrder.recommendations || `Certificate for completed work: ${currentWorkOrder.description}`,
-                fileUrl: '',
-                issueDate: new Date(),
-                expiryDate: expiryDate,
-                issuedBy: 'System (Auto-generated)',
-                issuedById: session.user.id,
-              }
-            })
-
-            if (currentWorkOrder.checklist?.projectId) {
-              await prisma.activity.create({
-                data: {
-                  projectId: currentWorkOrder.checklist.projectId,
-                  type: 'UPDATED',
-                  content: `Certificate auto-generated for work order "${currentWorkOrder.description}" after supervisor signature`,
-                  createdById: session.user.id,
-                  createdByRole: session.user.role as 'CONTRACTOR' | 'CLIENT' | 'TEAM_MEMBER',
-                }
-              })
-            }
-          }
-        }
+        await generateCertificatesForWorkOrder(workOrderId, currentWorkOrder, session.user.id, session.user.role)
 
         if (currentWorkOrder.checklist?.projectId) {
           await prisma.activity.create({
@@ -446,81 +509,13 @@ export async function PATCH(
       const hasTechnicianOrSupervisorSignature = currentWorkOrder.technicianSignature || currentWorkOrder.supervisorSignature
       
       if (hasTechnicianOrSupervisorSignature) {
-        // Both parties signed - auto-move to COMPLETED
         await prisma.checklistItem.update({
           where: { id: workOrderId },
           data: { stage: 'COMPLETED' }
         })
 
-        // Check if certificate is needed and auto-generate
-        let needsCertificate = false
-        if (currentWorkOrder.linkedRequestId) {
-          const linkedRequest = await prisma.request.findUnique({
-            where: { id: currentWorkOrder.linkedRequestId }
-          })
-          needsCertificate = linkedRequest?.needsCertificate || false
-        }
+        await generateCertificatesForWorkOrder(workOrderId, currentWorkOrder, session.user.id, session.user.role)
 
-        // Also check work order type
-        if (currentWorkOrder.workOrderType === 'INSPECTION' || currentWorkOrder.workOrderType === 'MAINTENANCE') {
-          needsCertificate = true
-        }
-
-        if (needsCertificate && currentWorkOrder.checklist?.project?.branchId) {
-          // Check if certificate already exists
-          const existingCert = await prisma.certificate.findFirst({
-            where: { workOrderId: workOrderId }
-          })
-
-          if (!existingCert) {
-            // Determine certificate type
-            let certType: 'PREVENTIVE_MAINTENANCE' | 'COMPLETION' | 'COMPLIANCE' | 'INSPECTION' | 'CIVIL_DEFENSE' = 'COMPLETION'
-            if (currentWorkOrder.workOrderType === 'INSPECTION') certType = 'INSPECTION'
-            else if (currentWorkOrder.workOrderType === 'MAINTENANCE') certType = 'PREVENTIVE_MAINTENANCE'
-
-            // Calculate expiry date
-            let expiryDate: Date | null = new Date()
-            if (currentWorkOrder.recurringType === 'MONTHLY') {
-              expiryDate.setMonth(expiryDate.getMonth() + 1)
-            } else if (currentWorkOrder.recurringType === 'QUARTERLY') {
-              expiryDate.setMonth(expiryDate.getMonth() + 3)
-            } else {
-              expiryDate.setFullYear(expiryDate.getFullYear() + 1)
-            }
-
-            // Create certificate
-            await prisma.certificate.create({
-              data: {
-                branchId: currentWorkOrder.checklist.project.branchId,
-                projectId: currentWorkOrder.checklist.projectId,
-                workOrderId: workOrderId,
-                type: certType,
-                title: `${certType.charAt(0) + certType.slice(1).toLowerCase().replace('_', ' ')} Certificate - ${currentWorkOrder.description}`,
-                description: currentWorkOrder.findings || currentWorkOrder.recommendations || `Certificate for completed work: ${currentWorkOrder.description}`,
-                fileUrl: '',
-                issueDate: new Date(),
-                expiryDate: expiryDate,
-                issuedBy: 'System (Auto-generated)',
-                issuedById: session.user.id,
-              }
-            })
-
-            // Create activity
-            if (currentWorkOrder.checklist?.projectId) {
-              await prisma.activity.create({
-                data: {
-                  projectId: currentWorkOrder.checklist.projectId,
-                  type: 'UPDATED',
-                  content: `Certificate auto-generated for work order "${currentWorkOrder.description}" after client signature`,
-                  createdById: session.user.id,
-                  createdByRole: 'CLIENT',
-                }
-              })
-            }
-          }
-        }
-
-        // Create activity for completion
         if (currentWorkOrder.checklist?.projectId) {
           await prisma.activity.create({
             data: {

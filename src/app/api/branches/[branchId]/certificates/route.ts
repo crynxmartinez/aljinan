@@ -25,7 +25,8 @@ export async function GET(
     const certificates = await prisma.certificate.findMany({
       where: { branchId },
       include: {
-        project: { select: { id: true, title: true } }
+        project: { select: { id: true, title: true } },
+        equipment: { select: { id: true, equipmentNumber: true, equipmentType: true } }
       },
       orderBy: { createdAt: 'desc' }
     })
@@ -67,9 +68,9 @@ export async function POST(
       notes
     } = body
 
-    if (!type || !title || !fileUrl || !issueDate) {
+    if (!type || !title || !issueDate) {
       return NextResponse.json(
-        { error: 'Type, title, file URL, and issue date are required' },
+        { error: 'Type, title, and issue date are required' },
         { status: 400 }
       )
     }

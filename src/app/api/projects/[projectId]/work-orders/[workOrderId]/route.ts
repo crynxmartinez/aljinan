@@ -266,7 +266,7 @@ export async function PATCH(
                 type: certType,
                 title: `${certType.charAt(0) + certType.slice(1).toLowerCase()} Certificate - ${fullWorkOrder.description}`,
                 description: fullWorkOrder.findings || fullWorkOrder.recommendations || `Certificate for completed ${workOrderType?.toLowerCase() || 'work'}: ${fullWorkOrder.description}`,
-                fileUrl: '', // Will be generated/uploaded later
+                fileUrl: null,
                 issueDate: new Date(),
                 expiryDate: expiryDate,
                 issuedBy: session.user.name || 'System',

@@ -55,6 +55,9 @@ export async function GET(
       include: {
         request: {
           select: { id: true, title: true, status: true }
+        },
+        certificate: {
+          select: { id: true, title: true, type: true, issueDate: true, expiryDate: true, fileUrl: true }
         }
       },
       orderBy: [

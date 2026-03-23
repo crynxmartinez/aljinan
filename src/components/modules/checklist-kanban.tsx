@@ -94,6 +94,7 @@ interface Equipment {
   stickerApplied: boolean
   notes: string | null
   deficiencies: string | null
+  certificateId?: string | null
 }
 
 interface ChecklistItem {
@@ -1077,9 +1078,13 @@ export function ChecklistKanban({ branchId, projectId, readOnly = false, userRol
                                 </div>
                                 {eq.isInspected && (
                                   <div className="mt-2 pt-2 border-t flex items-center gap-4 text-xs">
-                                    {eq.certificateIssued && (
+                                    {eq.certificateId ? (
                                       <span className="flex items-center gap-1 text-green-600">
-                                        <Check className="h-3 w-3" /> Certificate
+                                        <Award className="h-3 w-3" /> Cert Issued
+                                      </span>
+                                    ) : (
+                                      <span className="flex items-center gap-1 text-muted-foreground">
+                                        <Award className="h-3 w-3" /> No Cert
                                       </span>
                                     )}
                                     {eq.stickerApplied && (

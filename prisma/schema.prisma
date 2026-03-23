@@ -477,6 +477,10 @@ model Equipment {
   notes           String?
   deficiencies    String?          // Issues found during inspection
   
+  // Certificate link
+  certificateId   String?          @unique  // FK to issued Certificate
+  certificate     Certificate?     @relation("EquipmentCertificate", fields: [certificateId], references: [id], onDelete: SetNull)
+  
   createdAt       DateTime         @default(now())
   updatedAt       DateTime         @updatedAt
   
@@ -772,6 +776,9 @@ model ChecklistItem {
   // Photos
   photos                InspectionPhoto[]
   
+  // Certificates generated from this work order
+  certificates          Certificate[]
+  
   // Payment tracking
   paymentStatus           PaymentStatus  @default(UNPAID)
   paymentProofUrl         String?        // URL to uploaded image/PDF or external link
@@ -816,10 +823,13 @@ model Certificate {
   projectId   String?
   project     Project?        @relation(fields: [projectId], references: [id], onDelete: SetNull)
   workOrderId String?         // Link to specific work order if applicable
+  workOrder   ChecklistItem?  @relation(fields: [workOrderId], references: [id], onDelete: SetNull)
+  equipmentId String?         @unique  // FK back to Equipment (if cert is per-item)
+  equipment   Equipment?      @relation("EquipmentCertificate")
   type        CertificateType
   title       String
   description String?
-  fileUrl     String          // URL to certificate PDF
+  fileUrl     String?         // URL to certificate PDF (optional for auto-generated)
   issueDate   DateTime
   expiryDate  DateTime?
   issuedBy    String?         // Who issued (contractor name or "Civil Defense")

@@ -43,6 +43,9 @@ import {
   Loader2,
   Edit,
   Trash2,
+  Award,
+  Download,
+  Eye,
 } from 'lucide-react'
 import { Checkbox } from '@/components/ui/checkbox'
 import { Textarea } from '@/components/ui/textarea'
@@ -66,6 +69,14 @@ interface Equipment {
   stickerApplied: boolean
   notes: string | null
   deficiencies: string | null
+  certificate?: {
+    id: string
+    title: string
+    type: string
+    issueDate: string
+    expiryDate: string | null
+    fileUrl: string | null
+  } | null
   request?: {
     id: string
     title: string
@@ -418,7 +429,7 @@ export function EquipmentList({ branchId, userRole = 'CONTRACTOR' }: EquipmentLi
                     <TableHead>Expiry Date</TableHead>
                     <TableHead>Last Inspected</TableHead>
                     <TableHead>Status</TableHead>
-                    <TableHead>Inspection</TableHead>
+                    <TableHead>Certificate</TableHead>
                     {userRole !== 'CLIENT' && <TableHead className="text-right">Actions</TableHead>}
                   </TableRow>
                 </TableHeader>
@@ -463,22 +474,71 @@ export function EquipmentList({ branchId, userRole = 'CONTRACTOR' }: EquipmentLi
                       <TableCell>{getStatusDisplay(eq)}</TableCell>
                       <TableCell>
                         <div className="flex items-center gap-2">
-                          {eq.certificateIssued && (
-                            <Badge variant="outline" className="text-xs text-green-600 border-green-300">
-                              Cert
+                          {eq.certificate ? (() => {
+                            const certExpiry = eq.certificate.expiryDate ? new Date(eq.certificate.expiryDate) : null
+                            const now = new Date()
+                            const thirtyDays = new Date()
+                            thirtyDays.setDate(thirtyDays.getDate() + 30)
+                            const isExpired = certExpiry && certExpiry < now
+                            const isExpiring = certExpiry && !isExpired && certExpiry <= thirtyDays
+
+                            return (
+                              <div className="flex flex-col gap-1">
+                                <div className="flex items-center gap-1">
+                                  {isExpired ? (
+                                    <Badge variant="destructive" className="text-xs">
+                                      <AlertTriangle className="h-3 w-3 mr-1" />
+                                      Expired
+                                    </Badge>
+                                  ) : isExpiring ? (
+                                    <Badge className="text-xs bg-orange-100 text-orange-700 border-0">
+                                      <Clock className="h-3 w-3 mr-1" />
+                                      Expiring
+                                    </Badge>
+                                  ) : (
+                                    <Badge className="text-xs bg-green-100 text-green-700 border-0">
+                                      <CheckCircle className="h-3 w-3 mr-1" />
+                                      Valid
+                                    </Badge>
+                                  )}
+                                </div>
+                                {certExpiry && (
+                                  <span className="text-xs text-muted-foreground">
+                                    {certExpiry.toLocaleDateString()}
+                                  </span>
+                                )}
+                                <div className="flex items-center gap-1">
+                                  {eq.certificate.fileUrl && (
+                                    <>
+                                      <Button
+                                        variant="ghost"
+                                        size="sm"
+                                        className="h-6 px-1"
+                                        onClick={(e) => { e.stopPropagation(); window.open(eq.certificate!.fileUrl!, '_blank'); }}
+                                      >
+                                        <Eye className="h-3 w-3" />
+                                      </Button>
+                                      <Button
+                                        variant="ghost"
+                                        size="sm"
+                                        className="h-6 px-1"
+                                        onClick={(e) => { e.stopPropagation(); window.open(eq.certificate!.fileUrl!, '_blank'); }}
+                                      >
+                                        <Download className="h-3 w-3" />
+                                      </Button>
+                                    </>
+                                  )}
+                                </div>
+                              </div>
+                            )
+                          })() : (
+                            <Badge variant="outline" className="text-xs text-muted-foreground">
+                              No Cert
                             </Badge>
                           )}
                           {eq.stickerApplied && (
                             <Badge variant="outline" className="text-xs text-blue-600 border-blue-300">
                               Sticker
-                            </Badge>
-                          )}
-                          {eq.inspectionResult !== 'PENDING' && (
-                            <Badge 
-                              variant={eq.inspectionResult === 'PASS' ? 'default' : 'destructive'}
-                              className="text-xs"
-                            >
-                              {eq.inspectionResult}
                             </Badge>
                           )}
                         </div>

@@ -75,6 +75,11 @@ interface Certificate {
     id: string
     title: string
   } | null
+  equipment?: {
+    id: string
+    equipmentNumber: string
+    equipmentType: string
+  } | null
 }
 
 interface CertificatesListProps {
@@ -326,6 +331,7 @@ export function CertificatesList({ branchId, userRole }: CertificatesListProps) 
                 <TableRow>
                   <TableHead>Certificate</TableHead>
                   <TableHead>Type</TableHead>
+                  <TableHead>Equipment</TableHead>
                   <TableHead>Issue Date</TableHead>
                   <TableHead>Expiry</TableHead>
                   <TableHead>Status</TableHead>
@@ -349,6 +355,15 @@ export function CertificatesList({ branchId, userRole }: CertificatesListProps) 
                         <Badge variant="outline">
                           {getCertificateTypeIcon(certificate.type)} {getCertificateTypeLabel(certificate.type)}
                         </Badge>
+                      </TableCell>
+                      <TableCell>
+                        {certificate.equipment ? (
+                          <Badge variant="outline" className="text-xs">
+                            {certificate.equipment.equipmentNumber} · {certificate.equipment.equipmentType.replace(/_/g, ' ')}
+                          </Badge>
+                        ) : (
+                          <span className="text-xs text-muted-foreground">Site Certificate</span>
+                        )}
                       </TableCell>
                       <TableCell>
                         {new Date(certificate.issueDate).toLocaleDateString()}
@@ -613,6 +628,15 @@ export function CertificatesList({ branchId, userRole }: CertificatesListProps) 
                 <div>
                   <p className="text-sm text-muted-foreground">Related Project</p>
                   <p className="text-sm font-medium">{selectedCertificate.project.title}</p>
+                </div>
+              )}
+
+              {selectedCertificate.equipment && (
+                <div>
+                  <p className="text-sm text-muted-foreground">Covers Equipment</p>
+                  <p className="text-sm font-medium">
+                    {selectedCertificate.equipment.equipmentNumber} ({selectedCertificate.equipment.equipmentType.replace(/_/g, ' ')})
+                  </p>
                 </div>
               )}
 
