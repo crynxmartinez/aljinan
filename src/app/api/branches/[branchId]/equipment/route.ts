@@ -50,21 +50,37 @@ export async function GET(
       }
     }
 
-    const equipment = await prisma.equipment.findMany({
-      where,
-      include: {
-        request: {
-          select: { id: true, title: true, status: true }
+    let equipment
+    try {
+      equipment = await prisma.equipment.findMany({
+        where,
+        include: {
+          request: {
+            select: { id: true, title: true, status: true }
+          },
+          certificate: {
+            select: { id: true, title: true, type: true, issueDate: true, expiryDate: true, fileUrl: true }
+          }
         },
-        certificate: {
-          select: { id: true, title: true, type: true, issueDate: true, expiryDate: true, fileUrl: true }
-        }
-      },
-      orderBy: [
-        { expectedExpiry: 'asc' },
-        { createdAt: 'desc' }
-      ]
-    })
+        orderBy: [
+          { expectedExpiry: 'asc' },
+          { createdAt: 'desc' }
+        ]
+      })
+    } catch {
+      equipment = await prisma.equipment.findMany({
+        where,
+        include: {
+          request: {
+            select: { id: true, title: true, status: true }
+          }
+        },
+        orderBy: [
+          { expectedExpiry: 'asc' },
+          { createdAt: 'desc' }
+        ]
+      })
+    }
 
     // Calculate status based on expiry date for each equipment
     const equipmentWithCalculatedStatus = equipment.map(eq => {

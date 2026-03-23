@@ -152,11 +152,11 @@ export function BranchWorkspace({ clientId, branchId, branch, userRole, teamMemb
     { id: 'requests', label: 'Requests', icon: FileText },
     { id: 'checklists', label: 'Kanban Board', icon: ClipboardList },
     { id: 'calendar', label: 'Calendar', icon: Calendar },
-    { id: 'equipment', label: 'Equipment', icon: Tag },
     { id: 'billing', label: 'Billing', icon: DollarSign, restrictedForTechnician: true },
     { id: 'contracts', label: 'Contracts', icon: FileCheck, restrictedForTechnician: true },
     { id: 'certificates', label: 'Certificates', icon: Award, restrictedForTechnician: true },
     { id: 'settings', label: 'Settings', icon: Settings, restrictedForTechnician: true },
+    { id: 'equipment', label: 'Equipment', icon: Tag },
   ]
   
   const modules = isTechnician 
