@@ -212,7 +212,7 @@ export function BranchWorkspace({ clientId, branchId, branch, userRole, teamMemb
         </TabsContent>
 
         <TabsContent value="checklists" className="mt-0">
-          <ChecklistsList branchId={branchId} projectId={selectedProjectId} />
+          <ChecklistsList branchId={branchId} projectId={selectedProjectId} userRole="CONTRACTOR" />
         </TabsContent>
 
         <TabsContent value="requests" className="mt-0">

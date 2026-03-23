@@ -539,7 +539,7 @@ export function ClientBranchWorkspace({ branchId, branch }: ClientBranchWorkspac
           {/* Kanban Board Tab - Read-only Kanban view for client */}
           {hasActiveProject && (
             <TabsContent value="checklist" className="mt-0">
-              <ChecklistKanban branchId={branchId} projectId={selectedProjectId} />
+              <ChecklistKanban branchId={branchId} projectId={selectedProjectId} userRole="CLIENT" />
             </TabsContent>
           )}
 
