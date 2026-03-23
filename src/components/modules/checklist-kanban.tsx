@@ -113,6 +113,7 @@ interface ChecklistItem {
   deletedReason: string | null
   // Inspection fields
   workOrderType?: 'SERVICE' | 'INSPECTION' | 'MAINTENANCE' | 'INSTALLATION' | 'STICKER_INSPECTION' | null
+  workOrderNumber?: number | null
   linkedRequestId?: string | null
   inspectionDate?: string | null
   systemsChecked?: string | null
@@ -222,6 +223,11 @@ function DraggableCard({
           </div>
         )}
         <div className="flex-1 min-w-0">
+          {item.workOrderNumber && (
+            <span className="text-xs font-mono bg-muted px-1.5 py-0.5 rounded text-muted-foreground mb-1 inline-block">
+              WO-{String(item.workOrderNumber).padStart(4, '0')}
+            </span>
+          )}
           <p className="font-medium text-sm line-clamp-2 mb-2">
             {item.description}
           </p>

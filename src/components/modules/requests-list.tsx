@@ -62,6 +62,13 @@ import {
   Paperclip,
 } from 'lucide-react'
 import { FileUploadDropzone } from '@/components/ui/file-upload-dropzone'
+import { ExportDialog } from '@/components/export/export-dialog'
+import {
+  exportRequestsToExcel,
+  exportRequestsToCsv,
+  type ExportOptions,
+  type ExportableRequest,
+} from '@/lib/export/export-utils'
 import { RequestComments } from './request-comments'
 
 // Helper function to extract base name from work order title (removes Q1, Q2, Month1, etc.)
@@ -923,6 +930,38 @@ export function RequestsList({ branchId, userRole, projectId, userId }: Requests
     )
   }
 
+  const handleExportRequests = (
+    format: string,
+    options: Record<string, boolean>,
+    dateRange?: { from: string; to: string }
+  ) => {
+    let dataToExport = requests as ExportableRequest[]
+
+    if (dateRange?.from && dateRange?.to) {
+      const fromDate = new Date(dateRange.from)
+      const toDate = new Date(dateRange.to)
+      toDate.setHours(23, 59, 59, 999)
+      dataToExport = dataToExport.filter(r => {
+        const created = new Date(r.createdAt)
+        return created >= fromDate && created <= toDate
+      })
+    }
+
+    const exportOpts: ExportOptions = {
+      includeDetails: options.includeDetails ?? true,
+      includeClient: options.includeClient ?? true,
+      includePricing: options.includePricing ?? true,
+      includeDates: options.includeDates ?? true,
+      includePhotos: options.includePhotos ?? false,
+    }
+
+    if (format === 'excel' || format === 'pdf') {
+      exportRequestsToExcel(dataToExport, exportOpts)
+    } else if (format === 'csv') {
+      exportRequestsToCsv(dataToExport, exportOpts)
+    }
+  }
+
   if (loading) {
     return (
       <Card>
@@ -947,10 +986,19 @@ export function RequestsList({ branchId, userRole, projectId, userId }: Requests
           </div>
           <div className="flex items-center gap-2">
             {userRole === 'CONTRACTOR' && (
-              <Button onClick={() => setContractorCreateDialogOpen(true)}>
-                <Plus className="mr-2 h-4 w-4" />
-                Create Work Order Request
-              </Button>
+              <>
+                <ExportDialog
+                  title="Export Request History"
+                  description="Download your request history as Excel or CSV"
+                  itemCount={requests.length}
+                  onExport={handleExportRequests}
+                  showDateRange={true}
+                />
+                <Button onClick={() => setContractorCreateDialogOpen(true)}>
+                  <Plus className="mr-2 h-4 w-4" />
+                  Create Work Order Request
+                </Button>
+              </>
             )}
             {userRole !== 'CONTRACTOR' && (
               <Button onClick={() => setCreateDialogOpen(true)}>

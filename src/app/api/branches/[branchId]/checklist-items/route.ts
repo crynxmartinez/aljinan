@@ -98,6 +98,7 @@ export async function GET(
         stage: item.stage,
         type: item.type,
         workOrderType: item.workOrderType,
+        workOrderNumber: item.workOrderNumber,
         scheduledDate: item.scheduledDate?.toISOString() || null,
         price: item.price,
         isCompleted: item.isCompleted,
