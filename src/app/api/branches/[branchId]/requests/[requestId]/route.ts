@@ -205,6 +205,7 @@ export async function PATCH(
             scheduledDate: scheduledDate,
             price: currentRequest.quotedPrice,
             linkedRequestId: requestId,
+            assignedTo: currentRequest.assignedTo || null,
             // Save client signature from quote acceptance
             clientSignature: clientSignature || null,
             clientSignedAt: clientSignature ? new Date() : null,

@@ -131,6 +131,7 @@ interface ChecklistItem {
   reportUrl?: string | null
   photos?: InspectionPhoto[]
   certificateId?: string | null
+  assignedTo?: string | null
   equipment?: Equipment[]
 }
 
@@ -172,11 +173,13 @@ function canTransition(from: ChecklistItemStage, to: ChecklistItemStage, isClien
 function DraggableCard({ 
   item, 
   onClick, 
-  disabled 
+  disabled,
+  assigneeName,
 }: { 
   item: ChecklistItem
   onClick: () => void
   disabled: boolean
+  assigneeName?: string | null
 }) {
   const { attributes, listeners, setNodeRef, transform, isDragging } = useDraggable({
     id: item.id,
@@ -292,6 +295,13 @@ function DraggableCard({
           {item.projectTitle && (
             <div className="mt-2 text-xs text-muted-foreground truncate">
               {item.projectTitle}
+            </div>
+          )}
+          
+          {assigneeName && (
+            <div className="mt-1 flex items-center gap-1 text-xs text-muted-foreground">
+              <User className="h-3 w-3" />
+              <span className="truncate">{assigneeName}</span>
             </div>
           )}
         </div>
@@ -463,6 +473,14 @@ export function ChecklistKanban({ branchId, projectId, readOnly = false, userRol
   const [uploadingPhoto, setUploadingPhoto] = useState(false)
   const [savingInspection, setSavingInspection] = useState(false)
 
+  // Team members for assignment
+  const [teamMembers, setTeamMembers] = useState<{ userId: string; user: { name: string | null; email: string }; teamRole: string }[]>([])
+
+  const teamMemberMap: Record<string, string> = {}
+  for (const tm of teamMembers) {
+    teamMemberMap[tm.userId] = tm.user.name || tm.user.email
+  }
+
   // DnD sensors
   const sensors = useSensors(
     useSensor(PointerSensor, {
@@ -475,6 +493,12 @@ export function ChecklistKanban({ branchId, projectId, readOnly = false, userRol
 
   useEffect(() => {
     fetchItems()
+    if (userRole === 'CONTRACTOR') {
+      fetch('/api/team-members')
+        .then(r => r.ok ? r.json() : [])
+        .then(data => setTeamMembers(data))
+        .catch(() => {})
+    }
   }, [branchId, projectId])
 
   async function fetchItems() {
@@ -491,6 +515,30 @@ export function ChecklistKanban({ branchId, projectId, readOnly = false, userRol
       console.error('Failed to fetch checklist items:', error)
     } finally {
       setLoading(false)
+    }
+  }
+
+  async function handleAssignPersonnel(workOrderId: string, userId: string | null) {
+    try {
+      const response = await fetch(`/api/branches/${branchId}/checklist-items`, {
+        method: 'PATCH',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          action: 'assign_personnel',
+          workOrderId,
+          assignedTo: userId,
+        }),
+      })
+      if (response.ok) {
+        setItems(prev => prev.map(item => 
+          item.id === workOrderId ? { ...item, assignedTo: userId } : item
+        ))
+        if (selectedItem?.id === workOrderId) {
+          setSelectedItem(prev => prev ? { ...prev, assignedTo: userId } : prev)
+        }
+      }
+    } catch (error) {
+      console.error('Failed to assign personnel:', error)
     }
   }
 
@@ -871,6 +919,7 @@ export function ChecklistKanban({ branchId, projectId, readOnly = false, userRol
                           item={item}
                           onClick={() => handleItemClick(item)}
                           disabled={readOnly}
+                          assigneeName={item.assignedTo ? teamMemberMap[item.assignedTo] || null : null}
                         />
                       ))}
                       
@@ -957,6 +1006,34 @@ export function ChecklistKanban({ branchId, projectId, readOnly = false, userRol
                     <p className="text-muted-foreground">Project</p>
                     <p className="font-medium">{selectedItem.projectTitle}</p>
                   </div>
+                )}
+              </div>
+
+              {/* Assigned Personnel */}
+              <div className="p-4 bg-muted/50 rounded-lg">
+                <Label className="text-sm text-muted-foreground mb-2 block">Assigned Personnel</Label>
+                {userRole === 'CONTRACTOR' ? (
+                  <Select
+                    value={selectedItem.assignedTo || 'unassigned'}
+                    onValueChange={(value) => handleAssignPersonnel(selectedItem.id, value === 'unassigned' ? null : value)}
+                  >
+                    <SelectTrigger className="w-full">
+                      <SelectValue placeholder="Unassigned" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="unassigned">Unassigned</SelectItem>
+                      {teamMembers.map((member) => (
+                        <SelectItem key={member.userId} value={member.userId}>
+                          {member.user.name || member.user.email} ({member.teamRole.toLowerCase()})
+                        </SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                ) : (
+                  <p className="font-medium flex items-center gap-1">
+                    <User className="h-4 w-4" />
+                    {selectedItem.assignedTo ? (teamMemberMap[selectedItem.assignedTo] || 'Assigned') : 'Unassigned'}
+                  </p>
                 )}
               </div>
 

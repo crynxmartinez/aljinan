@@ -229,6 +229,7 @@ export async function GET(
         checklistTitle: item.checklist.title,
         projectTitle: item.checklist.project?.title || null,
         linkedRequestId: item.linkedRequestId,
+        assignedTo: item.assignedTo,
         // Inspection fields
         inspectionDate: item.inspectionDate?.toISOString() || null,
         systemsChecked: item.systemsChecked,
@@ -314,7 +315,9 @@ export async function PATCH(
       recommendations,
       // Photo management
       photoUrls,
-      removePhotoIds
+      removePhotoIds,
+      // Assignment
+      assignedTo,
     } = body
 
     const hasAccess = await verifyBranchAccess(branchId, session.user.id, session.user.role)
@@ -530,6 +533,29 @@ export async function PATCH(
       }
 
       return NextResponse.json(updatedWorkOrder)
+    }
+
+    // Handle personnel assignment
+    if (action === 'assign_personnel') {
+      if (!workOrderId) {
+        return NextResponse.json({ error: 'Work order ID required' }, { status: 400 })
+      }
+
+      if (session.user.role !== 'CONTRACTOR') {
+        const teamMember = await prisma.teamMember.findUnique({
+          where: { userId: session.user.id }
+        })
+        if (!teamMember || teamMember.teamRole !== 'SUPERVISOR') {
+          return NextResponse.json({ error: 'Only contractors or supervisors can assign personnel' }, { status: 403 })
+        }
+      }
+
+      await prisma.checklistItem.update({
+        where: { id: workOrderId },
+        data: { assignedTo: assignedTo || null }
+      })
+
+      return NextResponse.json({ success: true })
     }
 
     // For bulk payment actions, require workOrderIds array

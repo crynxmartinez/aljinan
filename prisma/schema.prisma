@@ -751,6 +751,9 @@ model ChecklistItem {
   // Link to original request (if created from request)
   linkedRequestId String?            // Request ID that created this work order
   
+  // Assignment
+  assignedTo      String?            // User ID of assigned team member
+  
   // Inspection Report Fields
   inspectionDate        DateTime?     // When inspection was performed
   systemsChecked        Json?         // Array of systems inspected ["Fire Alarm", "Sprinklers", ...]
