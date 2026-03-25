@@ -73,6 +73,8 @@ export async function POST(
       quotedDate,
       status, // Can be 'QUOTED' for contractor-created requests
       assignedTo, // Personnel assignment
+      quotationUrl, // Quotation document URL (uploaded to S3)
+      quotationFileName, // Original quotation filename
       // Equipment for sticker inspections
       equipment,
     } = body
@@ -129,6 +131,9 @@ export async function POST(
           preferredTimeSlot: preferredTimeSlot || null,
           assignedTo: assignedTo || null,
           requestNumber,
+          // Quotation document
+          quotationUrl: quotationUrl || null,
+          quotationFileName: quotationFileName || null,
           // Contractor quote fields (for contractor-created requests)
           quotedPrice: isContractorCreated ? quotedPrice : null,
           quotedDate: isContractorCreated ? new Date(quotedDate) : null,
