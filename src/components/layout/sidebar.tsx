@@ -13,7 +13,6 @@ import {
   ChevronDown,
   ChevronRight,
   MapPin,
-  Bell,
   UserCog,
   Loader2,
   BarChart3,
@@ -62,11 +61,6 @@ const mainNavItems = [
     title: 'Analytics',
     href: '/dashboard/analytics',
     icon: BarChart3,
-  },
-  {
-    title: 'Notifications',
-    href: '/dashboard/notifications',
-    icon: Bell,
   },
   {
     title: 'Company Profile',
