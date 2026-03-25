@@ -32,20 +32,38 @@ export default function ContactPage() {
     e.preventDefault()
     setLoading(true)
 
-    // Simulate form submission
-    await new Promise(resolve => setTimeout(resolve, 1000))
+    try {
+      const response = await fetch('/api/contact', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          name: formData.name,
+          email: formData.email,
+          phone: formData.phone,
+          companyName: formData.company,
+          message: formData.message,
+        }),
+      })
 
-    setSuccess(true)
-    setLoading(false)
-    setFormData({
-      name: '',
-      email: '',
-      phone: '',
-      company: '',
-      message: '',
-    })
+      if (!response.ok) {
+        throw new Error('Failed to submit')
+      }
 
-    setTimeout(() => setSuccess(false), 5000)
+      setSuccess(true)
+      setFormData({
+        name: '',
+        email: '',
+        phone: '',
+        company: '',
+        message: '',
+      })
+
+      setTimeout(() => setSuccess(false), 5000)
+    } catch (err) {
+      console.error('Contact form error:', err)
+    } finally {
+      setLoading(false)
+    }
   }
 
   return (
