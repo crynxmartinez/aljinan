@@ -9,6 +9,8 @@ declare module 'next-auth' {
       teamMemberRole?: string
       assignedBranchIds?: string[]
       contractorId?: string
+      adminRole?: string
+      mustChangePassword?: boolean
     } & DefaultSession['user']
   }
 
@@ -17,6 +19,8 @@ declare module 'next-auth' {
     teamMemberRole?: string
     assignedBranchIds?: string[]
     contractorId?: string
+    adminRole?: string
+    mustChangePassword?: boolean
   }
 }
 
@@ -27,5 +31,7 @@ declare module 'next-auth/jwt' {
     teamMemberRole?: string
     assignedBranchIds?: string[]
     contractorId?: string
+    adminRole?: string
+    mustChangePassword?: boolean
   }
 }

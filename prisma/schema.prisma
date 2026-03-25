@@ -7,9 +7,16 @@ datasource db {
 }
 
 enum UserRole {
+  ADMIN
   CONTRACTOR
   CLIENT
   TEAM_MEMBER
+}
+
+enum AdminRole {
+  SUPER_ADMIN
+  SUPPORT_ADMIN
+  CUSTOM
 }
 
 enum TeamMemberRole {
@@ -140,8 +147,32 @@ model User {
   // Team member-specific relations
   teamMember     TeamMember?
   
+  // Admin-specific relations
+  admin          AdminUser?
+
   // Request comments
   requestComments RequestComment[]
+
+  // Password management
+  mustChangePassword Boolean @default(false)
+}
+
+model AdminUser {
+  id              String    @id @default(cuid())
+  userId          String    @unique
+  user            User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+  adminRole       AdminRole @default(SUPER_ADMIN)
+  
+  // Granular permissions
+  canManageContractors  Boolean @default(true)
+  canManageAdmins       Boolean @default(true)
+  canImpersonateUsers   Boolean @default(true)
+  canViewAnalytics      Boolean @default(true)
+  canManageMessages     Boolean @default(true)
+  canManagePlatform     Boolean @default(true)
+  
+  createdAt       DateTime  @default(now())
+  updatedAt       DateTime  @updatedAt
 }
 
 model Contractor {
@@ -961,4 +992,30 @@ model TeamMemberBranch {
   createdAt     DateTime    @default(now())
 
   @@unique([teamMemberId, branchId])
+}
+
+enum InquiryStatus {
+  NEW
+  CONTACTED
+  IN_PROGRESS
+  CONVERTED
+  DECLINED
+}
+
+// Contact form inquiries from potential contractors
+model ContactInquiry {
+  id            String        @id @default(cuid())
+  name          String
+  email         String
+  phone         String?
+  companyName   String?
+  message       String
+  status        InquiryStatus @default(NEW)
+  adminNotes    String?
+  convertedToId String?       // User ID if converted to contractor account
+  createdAt     DateTime      @default(now())
+  updatedAt     DateTime      @updatedAt
+
+  @@index([status])
+  @@index([createdAt])
 }

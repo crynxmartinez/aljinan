@@ -36,7 +36,16 @@ export default function LoginPage() {
       if (result?.error) {
         setError(result.error)
       } else {
-        router.push('/dashboard')
+        // Fetch session to determine role-based redirect
+        const sessionRes = await fetch('/api/auth/session')
+        const session = await sessionRes.json()
+        if (session?.user?.mustChangePassword) {
+          router.push('/change-password')
+        } else if (session?.user?.role === 'ADMIN') {
+          router.push('/admin')
+        } else {
+          router.push('/dashboard')
+        }
         router.refresh()
       }
     } catch {
@@ -124,9 +133,9 @@ export default function LoginPage() {
           </div>
 
           <div className="text-center text-sm">
-            <span className="text-muted-foreground">{t.auth.login.noAccount} </span>
-            <Link href="/register" className="text-primary font-medium hover:underline">
-              {t.auth.login.createAccount}
+            <span className="text-muted-foreground">Need an account? </span>
+            <Link href="/contact" className="text-primary font-medium hover:underline">
+              Contact our support team
             </Link>
           </div>
         </form>

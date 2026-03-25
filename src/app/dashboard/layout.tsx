@@ -103,6 +103,11 @@ export default async function DashboardLayout({
     redirect('/portal')
   }
 
+  // Redirect ADMIN role to admin dashboard
+  if (session.user.role === 'ADMIN') {
+    redirect('/admin')
+  }
+
   // Get clients based on user role
   let clients
   if (session.user.role === 'TEAM_MEMBER' && session.user.assignedBranchIds) {

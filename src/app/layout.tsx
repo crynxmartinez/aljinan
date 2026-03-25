@@ -5,6 +5,7 @@ import { Analytics } from '@vercel/analytics/react';
 import { SpeedInsights } from '@vercel/speed-insights/next';
 import { OrganizationSchema } from "@/components/seo/organization-schema";
 import { RegisterServiceWorker } from "@/components/pwa/register-sw";
+import { ImpersonationBanner } from "@/components/layout/impersonation-banner";
 import "./globals.css";
 
 export const metadata: Metadata = {
@@ -39,6 +40,7 @@ export default function RootLayout({
       <body className="antialiased">
         <TranslationProvider>
           <SessionProvider>
+            <ImpersonationBanner />
             {children}
           </SessionProvider>
           <RegisterServiceWorker />

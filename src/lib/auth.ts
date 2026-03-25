@@ -28,6 +28,7 @@ export const authOptions: NextAuthOptions = {
           include: {
             contractor: true,
             client: true,
+            admin: true,
             teamMember: {
               include: {
                 branchAccess: {
@@ -65,7 +66,7 @@ export const authOptions: NextAuthOptions = {
           })
         }
 
-        // Build user object with team member info if applicable
+        // Build user object with role-specific info
         const userResponse: {
           id: string
           email: string
@@ -74,11 +75,14 @@ export const authOptions: NextAuthOptions = {
           teamMemberRole?: string
           assignedBranchIds?: string[]
           contractorId?: string
+          adminRole?: string
+          mustChangePassword?: boolean
         } = {
           id: user.id,
           email: user.email,
           name: user.name,
           role: user.role,
+          mustChangePassword: user.mustChangePassword,
         }
 
         // Add team member specific data
@@ -86,6 +90,11 @@ export const authOptions: NextAuthOptions = {
           userResponse.teamMemberRole = user.teamMember.teamRole
           userResponse.assignedBranchIds = user.teamMember.branchAccess.map(ba => ba.branchId)
           userResponse.contractorId = user.teamMember.contractorId
+        }
+
+        // Add admin specific data
+        if (user.role === 'ADMIN' && user.admin) {
+          userResponse.adminRole = user.admin.adminRole
         }
 
         return userResponse
@@ -114,6 +123,12 @@ export const authOptions: NextAuthOptions = {
         if ('contractorId' in user) {
           token.contractorId = user.contractorId
         }
+        if ('adminRole' in user) {
+          token.adminRole = user.adminRole
+        }
+        if ('mustChangePassword' in user) {
+          token.mustChangePassword = user.mustChangePassword
+        }
       }
       return token
     },
@@ -130,6 +145,12 @@ export const authOptions: NextAuthOptions = {
         }
         if (token.contractorId) {
           session.user.contractorId = token.contractorId as string
+        }
+        if (token.adminRole) {
+          session.user.adminRole = token.adminRole as string
+        }
+        if (token.mustChangePassword !== undefined) {
+          session.user.mustChangePassword = token.mustChangePassword as boolean
         }
       }
       return session
