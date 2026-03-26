@@ -20,7 +20,8 @@ import { Button } from '@/components/ui/button'
 import { Avatar, AvatarFallback } from '@/components/ui/avatar'
 import { ScrollArea } from '@/components/ui/scroll-area'
 import { Separator } from '@/components/ui/separator'
-import { useState } from 'react'
+import { Badge } from '@/components/ui/badge'
+import { useState, useEffect } from 'react'
 
 interface AdminSidebarProps {
   adminRole?: string
@@ -67,6 +68,26 @@ export function AdminSidebar({ adminRole }: AdminSidebarProps) {
   const router = useRouter()
   const { data: session } = useSession()
   const [loadingHref, setLoadingHref] = useState<string | null>(null)
+  const [unreadCount, setUnreadCount] = useState(0)
+
+  useEffect(() => {
+    fetchUnreadCount()
+    // Poll every 30 seconds
+    const interval = setInterval(fetchUnreadCount, 30000)
+    return () => clearInterval(interval)
+  }, [])
+
+  const fetchUnreadCount = async () => {
+    try {
+      const response = await fetch('/api/admin/messages/unread-count')
+      if (response.ok) {
+        const data = await response.json()
+        setUnreadCount(data.count || 0)
+      }
+    } catch (err) {
+      console.error('Failed to fetch unread count:', err)
+    }
+  }
 
   const handleNavClick = (e: React.MouseEvent, href: string) => {
     if (pathname === href) return
@@ -129,7 +150,12 @@ export function AdminSidebar({ adminRole }: AdminSidebarProps) {
               ) : (
                 <item.icon className="h-4 w-4" />
               )}
-              {item.title}
+              <span className="flex-1">{item.title}</span>
+              {item.href === '/admin/messages' && unreadCount > 0 && (
+                <Badge variant="destructive" className="h-5 px-1.5 text-xs">
+                  {unreadCount > 99 ? '99+' : unreadCount}
+                </Badge>
+              )}
             </Link>
           ))}
         </div>
