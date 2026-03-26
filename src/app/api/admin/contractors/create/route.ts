@@ -2,7 +2,7 @@ import { NextResponse } from 'next/server'
 import { getServerSession } from 'next-auth'
 import { authOptions } from '@/lib/auth'
 import { prisma } from '@/lib/prisma'
-import bcrypt from 'bcryptjs'
+import { sendVerificationEmail } from '@/lib/email'
 import crypto from 'crypto'
 
 export async function POST(request: Request) {
@@ -32,20 +32,21 @@ export async function POST(request: Request) {
       )
     }
 
-    // Generate a temporary password
-    const tempPassword = crypto.randomBytes(6).toString('hex') // 12 char random password
-    const hashedPassword = await bcrypt.hash(tempPassword, 12)
+    // Generate email verification token (24-hour expiry)
+    const verificationToken = crypto.randomBytes(32).toString('hex')
+    const verificationExpiry = new Date(Date.now() + 86400000) // 24 hours
 
     // Create user + contractor in a transaction
     const user = await prisma.$transaction(async (tx) => {
       const newUser = await tx.user.create({
         data: {
           email: email.toLowerCase().trim(),
-          password: hashedPassword,
+          password: '', // Will be set after email verification
           name,
           role: 'CONTRACTOR',
-          status: 'ACTIVE',
-          mustChangePassword: true,
+          status: 'PENDING', // Changed from ACTIVE
+          emailVerificationToken: verificationToken,
+          emailVerificationExpiry: verificationExpiry,
           contractor: {
             create: {
               companyName: companyName || name,
@@ -61,8 +62,8 @@ export async function POST(request: Request) {
       return newUser
     })
 
-    // TODO: Send email with credentials (Phase 4 enhancement)
-    // For now, return the temp password so admin can share it manually
+    // Send verification email
+    await sendVerificationEmail(user.email, user.name || 'there', verificationToken)
 
     return NextResponse.json({
       success: true,
@@ -72,8 +73,7 @@ export async function POST(request: Request) {
         name: user.name,
         contractorId: user.contractor?.id,
       },
-      tempPassword, // Admin will share this with the contractor
-      message: `Contractor account created. Temporary password: ${tempPassword}`,
+      message: `Verification email sent to ${user.email}`,
     })
   } catch (error) {
     console.error('Error creating contractor:', error)

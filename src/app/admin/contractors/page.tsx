@@ -2,6 +2,7 @@
 
 import { useState, useEffect } from 'react'
 import { useRouter } from 'next/navigation'
+import { toast } from 'sonner'
 import {
   ChevronDown,
   ChevronRight,
@@ -14,6 +15,8 @@ import {
   Loader2,
   Search,
   AlertCircle,
+  Mail,
+  RefreshCw,
 } from 'lucide-react'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Badge } from '@/components/ui/badge'
@@ -102,8 +105,6 @@ export default function ContractorsPage() {
   const [createDialogOpen, setCreateDialogOpen] = useState(false)
   const [creating, setCreating] = useState(false)
   const [newContractor, setNewContractor] = useState({ name: '', email: '', phone: '', companyName: '' })
-  const [createdResult, setCreatedResult] = useState<{ email: string; tempPassword: string } | null>(null)
-  const [copied, setCopied] = useState(false)
 
   useEffect(() => {
     fetchContractors()
@@ -170,27 +171,41 @@ export default function ContractorsPage() {
       })
       const data = await response.json()
       if (!response.ok) throw new Error(data.error)
-      setCreatedResult({ email: data.user.email, tempPassword: data.tempPassword })
+      
+      toast.success('Contractor account created!', {
+        description: `Verification email sent to ${data.user.email}`,
+      })
+      
+      resetCreateDialog()
       fetchContractors()
     } catch (err) {
-      console.error('Failed to create contractor:', err)
+      const errorMsg = err instanceof Error ? err.message : 'Failed to create contractor'
+      toast.error('Failed to create account', { description: errorMsg })
     } finally {
       setCreating(false)
     }
   }
 
-  const handleCopyCredentials = () => {
-    if (!createdResult) return
-    navigator.clipboard.writeText(`Email: ${createdResult.email}\nTemporary Password: ${createdResult.tempPassword}`)
-    setCopied(true)
-    setTimeout(() => setCopied(false), 2000)
+  const handleResendVerification = async (contractorId: string, email: string) => {
+    try {
+      const response = await fetch(`/api/admin/contractors/${contractorId}/resend-verification`, {
+        method: 'POST',
+      })
+      const data = await response.json()
+      if (!response.ok) throw new Error(data.error)
+      
+      toast.success('Verification email resent!', {
+        description: `Sent to ${email}`,
+      })
+    } catch (err) {
+      const errorMsg = err instanceof Error ? err.message : 'Failed to resend email'
+      toast.error('Failed to resend verification', { description: errorMsg })
+    }
   }
 
   const resetCreateDialog = () => {
     setCreateDialogOpen(false)
     setNewContractor({ name: '', email: '', phone: '', companyName: '' })
-    setCreatedResult(null)
-    setCopied(false)
   }
 
   const filteredContractors = contractors.filter((c) => {
@@ -206,9 +221,9 @@ export default function ContractorsPage() {
   const statusBadge = (status: string) => {
     switch (status) {
       case 'ACTIVE':
-        return <Badge className="bg-green-100 text-green-800 hover:bg-green-100">Active</Badge>
+        return <Badge className="bg-green-100 text-green-800 hover:bg-green-100">Verified</Badge>
       case 'PENDING':
-        return <Badge className="bg-amber-100 text-amber-800 hover:bg-amber-100">Pending</Badge>
+        return <Badge className="bg-amber-100 text-amber-800 hover:bg-amber-100">Pending Verification</Badge>
       case 'ARCHIVED':
         return <Badge className="bg-gray-100 text-gray-800 hover:bg-gray-100">Archived</Badge>
       default:
@@ -531,45 +546,13 @@ export default function ContractorsPage() {
       <Dialog open={createDialogOpen} onOpenChange={(open) => !open && resetCreateDialog()}>
         <DialogContent className="sm:max-w-[480px]">
           <DialogHeader>
-            <DialogTitle>{createdResult ? 'Contractor Created!' : 'Add New Contractor'}</DialogTitle>
+            <DialogTitle>Add New Contractor</DialogTitle>
             <DialogDescription>
-              {createdResult
-                ? 'Share these credentials with the contractor. They will be asked to change their password on first login.'
-                : 'Create a new contractor account. They will receive a temporary password.'}
+              Create a new contractor account. They will receive a verification email to activate their account.
             </DialogDescription>
           </DialogHeader>
 
-          {createdResult ? (
-            <div className="space-y-4 py-4">
-              <div className="bg-green-50 border border-green-200 rounded-lg p-4 space-y-3">
-                <div>
-                  <p className="text-xs text-green-600 font-medium mb-1">Email</p>
-                  <p className="text-sm font-mono font-medium">{createdResult.email}</p>
-                </div>
-                <div>
-                  <p className="text-xs text-green-600 font-medium mb-1">Temporary Password</p>
-                  <p className="text-sm font-mono font-medium">{createdResult.tempPassword}</p>
-                </div>
-              </div>
-              <Button onClick={handleCopyCredentials} variant="outline" className="w-full">
-                {copied ? (
-                  <>
-                    <Check className="h-4 w-4 mr-2 text-green-600" />
-                    Copied!
-                  </>
-                ) : (
-                  <>
-                    <Copy className="h-4 w-4 mr-2" />
-                    Copy Credentials
-                  </>
-                )}
-              </Button>
-              <DialogFooter>
-                <Button onClick={resetCreateDialog} className="w-full">Done</Button>
-              </DialogFooter>
-            </div>
-          ) : (
-            <form onSubmit={handleCreateContractor} className="space-y-4 py-2">
+          <form onSubmit={handleCreateContractor} className="space-y-4 py-2">
               <div className="space-y-2">
                 <Label htmlFor="create-name">Contact Name *</Label>
                 <Input
@@ -628,7 +611,6 @@ export default function ContractorsPage() {
                 </Button>
               </DialogFooter>
             </form>
-          )}
         </DialogContent>
       </Dialog>
     </div>

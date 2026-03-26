@@ -157,6 +157,10 @@ model User {
   mustChangePassword Boolean @default(false)
   passwordResetToken String? @unique
   passwordResetExpiry DateTime?
+  
+  // Email verification
+  emailVerificationToken String? @unique
+  emailVerificationExpiry DateTime?
 }
 
 model AdminUser {

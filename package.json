@@ -78,6 +78,7 @@
     "react-leaflet": "^5.0.0",
     "recharts": "^3.8.0",
     "resend": "^6.9.4",
+    "sonner": "^2.0.7",
     "tailwind-merge": "^3.4.0",
     "tailwindcss": "^4.1.18",
     "tsx": "^4.21.0",
