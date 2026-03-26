@@ -6,9 +6,9 @@ export async function POST(request: Request) {
   try {
     const { name, email, phone, companyName, message } = await request.json()
 
-    if (!name || !email || !message) {
+    if (!name || !email || !phone || !message) {
       return NextResponse.json(
-        { error: 'Name, email, and message are required' },
+        { error: 'Name, email, phone, and message are required' },
         { status: 400 }
       )
     }
@@ -17,7 +17,7 @@ export async function POST(request: Request) {
       data: {
         name,
         email: email.toLowerCase().trim(),
-        phone: phone || null,
+        phone,
         companyName: companyName || null,
         message,
       },
