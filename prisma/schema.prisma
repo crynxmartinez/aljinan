@@ -230,6 +230,7 @@ model Client {
   contractorId  String
   contractor    Contractor @relation(fields: [contractorId], references: [id], onDelete: Cascade)
   companyName   String
+  displayName   String?    // Custom nickname/label set by contractor
   companyPhone  String?
   companyEmail  String?
   

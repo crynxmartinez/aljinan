@@ -29,6 +29,7 @@ async function getClientsForContractor(userId: string) {
   return contractor?.clients.map(client => ({
     id: client.id,
     companyName: client.companyName,
+    displayName: client.displayName,
     branches: client.branches.map(branch => ({
       id: branch.id,
       name: branch.name,
@@ -60,6 +61,7 @@ async function getClientsForTeamMember(assignedBranchIds: string[]) {
   const clientMap = new Map<string, {
     id: string
     companyName: string
+    displayName?: string | null
     branches: { id: string; name: string; address: string }[]
   }>()
 
@@ -71,6 +73,7 @@ async function getClientsForTeamMember(assignedBranchIds: string[]) {
       clientMap.set(branch.client.id, {
         id: branch.client.id,
         companyName: branch.client.companyName,
+        displayName: branch.client.displayName,
         branches: []
       })
     }
