@@ -7,7 +7,7 @@ export async function sendPasswordResetEmail(email: string, resetToken: string) 
 
   try {
     await resend.emails.send({
-      from: 'Tasheel <noreply@tasheel.live>',
+      from: 'Tasheel <info@tasheel.live>',
       to: email,
       subject: 'Reset Your Password - Tasheel',
       html: `
