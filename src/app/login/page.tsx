@@ -108,13 +108,12 @@ export default function LoginPage() {
                   {t.auth.login.rememberMe}
                 </label>
               </div>
-              <button 
-                type="button"
-                onClick={() => alert(t.auth.login.forgotPasswordMessage)}
+              <Link 
+                href="/forgot-password"
                 className="text-sm text-primary hover:underline"
               >
                 {t.auth.login.forgotPassword}
-              </button>
+              </Link>
             </div>
           </div>
 

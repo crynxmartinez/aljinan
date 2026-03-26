@@ -155,6 +155,8 @@ model User {
 
   // Password management
   mustChangePassword Boolean @default(false)
+  passwordResetToken String? @unique
+  passwordResetExpiry DateTime?
 }
 
 model AdminUser {
