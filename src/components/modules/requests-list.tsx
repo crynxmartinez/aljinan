@@ -1998,6 +1998,6 @@ export function RequestsList({ branchId, userRole, projectId, userId }: Requests
           />
         </div>
       )}
-    </div>
+    </>
   )
 }
