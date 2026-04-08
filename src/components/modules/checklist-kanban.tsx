@@ -37,6 +37,7 @@ import {
   Check,
   Archive,
   RotateCcw,
+  Printer,
 } from 'lucide-react'
 import {
   Select,
@@ -52,6 +53,7 @@ import { FileUploadDropzone } from '@/components/ui/file-upload-dropzone'
 import { Textarea } from '@/components/ui/textarea'
 import { cn } from '@/lib/utils'
 import { ColumnDetailModal } from './column-detail-modal'
+import { WorkOrderPrint } from '@/components/print/work-order-print'
 import {
   DndContext,
   DragOverlay,
@@ -459,6 +461,7 @@ export function ChecklistKanban({ branchId, projectId, readOnly = false, userRol
   const [updating, setUpdating] = useState(false)
   const [activeId, setActiveId] = useState<string | null>(null)
   const [overId, setOverId] = useState<string | null>(null)
+  const [printingWorkOrderId, setPrintingWorkOrderId] = useState<string | null>(null)
   
   // Inspection form state
   const [inspectionMode, setInspectionMode] = useState(false)
@@ -1408,6 +1411,18 @@ export function ChecklistKanban({ branchId, projectId, readOnly = false, userRol
                 </div>
               )}
 
+              {/* Print Work Order Button - Available for all stages */}
+              <div className="border-t pt-4">
+                <Button
+                  variant="outline"
+                  className="w-full"
+                  onClick={() => setPrintingWorkOrderId(selectedItem.id)}
+                >
+                  <Printer className="mr-2 h-4 w-4" />
+                  Print Work Order
+                </Button>
+              </div>
+
               {/* View Certificate Button - Show for completed work orders with certificate */}
               {selectedItem.stage === 'COMPLETED' && selectedItem.certificateId && (
                 <div className="border-t pt-4">
@@ -1441,6 +1456,16 @@ export function ChecklistKanban({ branchId, projectId, readOnly = false, userRol
             handleItemClick(item)
           }}
         />
+      )}
+
+      {/* Print Dialog */}
+      {printingWorkOrderId && (
+        <div className="fixed inset-0 z-50">
+          <WorkOrderPrint
+            workOrderId={printingWorkOrderId}
+            onClose={() => setPrintingWorkOrderId(null)}
+          />
+        </div>
       )}
     </>
   )
