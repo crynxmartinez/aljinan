@@ -1,45 +1,29 @@
-// Service Worker for Tasheel PWA
-const CACHE_NAME = 'tasheel-v1';
-const urlsToCache = [
-  '/',
-  '/manifest.json',
-];
+// Service Worker Unregister Script
+// This clears all caches and unregisters the service worker
 
-// Install event - cache resources
-self.addEventListener('install', (event) => {
-  event.waitUntil(
-    caches.open(CACHE_NAME)
-      .then((cache) => cache.addAll(urlsToCache))
-      .then(() => self.skipWaiting())
-  );
+self.addEventListener('install', () => {
+  // Skip waiting and activate immediately
+  self.skipWaiting();
 });
 
-// Activate event - clean up old caches
 self.addEventListener('activate', (event) => {
   event.waitUntil(
+    // Delete all caches
     caches.keys().then((cacheNames) => {
       return Promise.all(
         cacheNames.map((cacheName) => {
-          if (cacheName !== CACHE_NAME) {
-            return caches.delete(cacheName);
-          }
+          console.log('Deleting cache:', cacheName);
+          return caches.delete(cacheName);
         })
       );
-    }).then(() => self.clients.claim())
-  );
-});
-
-// Fetch event - serve from cache, fallback to network
-self.addEventListener('fetch', (event) => {
-  event.respondWith(
-    caches.match(event.request)
-      .then((response) => {
-        // Cache hit - return response
-        if (response) {
-          return response;
-        }
-        return fetch(event.request);
-      }
-    )
+    }).then(() => {
+      // Unregister this service worker
+      return self.registration.unregister();
+    }).then(() => {
+      // Reload all clients to get fresh content
+      return self.clients.matchAll();
+    }).then((clients) => {
+      clients.forEach(client => client.navigate(client.url));
+    })
   );
 });

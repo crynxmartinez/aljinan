@@ -4,7 +4,6 @@ import { TranslationProvider } from "@/lib/i18n/use-translation";
 import { Analytics } from '@vercel/analytics/react';
 import { SpeedInsights } from '@vercel/speed-insights/next';
 import { OrganizationSchema } from "@/components/seo/organization-schema";
-import { RegisterServiceWorker } from "@/components/pwa/register-sw";
 import { ImpersonationBanner } from "@/components/layout/impersonation-banner";
 import { Toaster } from 'sonner';
 import "./globals.css";
@@ -45,7 +44,6 @@ export default function RootLayout({
             {children}
           </SessionProvider>
           <Toaster position="top-right" richColors />
-          <RegisterServiceWorker />
           <Analytics />
           <SpeedInsights />
         </TranslationProvider>
