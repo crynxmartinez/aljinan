@@ -60,6 +60,7 @@ import {
   User,
   Upload,
   Paperclip,
+  Printer,
 } from 'lucide-react'
 import { FileUploadDropzone } from '@/components/ui/file-upload-dropzone'
 import { ExportDialog } from '@/components/export/export-dialog'
@@ -70,6 +71,7 @@ import {
   type ExportableRequest,
 } from '@/lib/export/export-utils'
 import { RequestComments } from './request-comments'
+import { RequestQuotePrint } from '@/components/print/request-quote-print'
 
 // Helper function to extract base name from work order title (removes Q1, Q2, Month1, etc.)
 function getBaseWorkOrderName(title: string): string {
@@ -450,6 +452,7 @@ export function RequestsList({ branchId, userRole, projectId, userId }: Requests
   const [projectDialogOpen, setProjectDialogOpen] = useState(false)
   const [selectedRequest, setSelectedRequest] = useState<Request | null>(null)
   const [selectedProject, setSelectedProject] = useState<Project | null>(null)
+  const [printingRequestId, setPrintingRequestId] = useState<string | null>(null)
   const [creating, setCreating] = useState(false)
   const [saving, setSaving] = useState(false)
   const [error, setError] = useState('')
@@ -1582,6 +1585,20 @@ export function RequestsList({ branchId, userRole, projectId, userId }: Requests
                 </div>
               )}
 
+              {/* Print Button */}
+              {(selectedRequest.status === 'QUOTED' || selectedRequest.status === 'SCHEDULED') && (
+                <div className="pt-4 border-t">
+                  <Button
+                    variant="outline"
+                    onClick={() => setPrintingRequestId(selectedRequest.id)}
+                    className="w-full"
+                  >
+                    <Printer className="mr-2 h-4 w-4" />
+                    Print {selectedRequest.status === 'QUOTED' ? 'Quotation' : 'Work Order'}
+                  </Button>
+                </div>
+              )}
+
               {/* Comments Section */}
               <div className="pt-4 border-t">
                 <RequestComments 
@@ -1970,6 +1987,17 @@ export function RequestsList({ branchId, userRole, projectId, userId }: Requests
           </DialogFooter>
         </DialogContent>
       </Dialog>
-    </>
+
+      {/* Print Dialog */}
+      {printingRequestId && (
+        <div className="fixed inset-0 z-50">
+          <RequestQuotePrint
+            requestId={printingRequestId}
+            branchId={branchId}
+            onClose={() => setPrintingRequestId(null)}
+          />
+        </div>
+      )}
+    </div>
   )
 }
