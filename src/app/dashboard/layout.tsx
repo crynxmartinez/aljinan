@@ -28,10 +28,12 @@ async function getClientsForContractor(userId: string) {
 
   return contractor?.clients.map(client => ({
     id: client.id,
+    slug: client.slug,
     companyName: client.companyName,
     displayName: client.displayName,
     branches: client.branches.map(branch => ({
       id: branch.id,
+      slug: branch.slug,
       name: branch.name,
       address: branch.address
     }))
@@ -60,9 +62,10 @@ async function getClientsForTeamMember(assignedBranchIds: string[]) {
   // Group branches by client
   const clientMap = new Map<string, {
     id: string
+    slug: string | null
     companyName: string
     displayName?: string | null
-    branches: { id: string; name: string; address: string }[]
+    branches: { id: string; slug: string | null; name: string; address: string }[]
   }>()
 
   branches.forEach(branch => {
@@ -72,6 +75,7 @@ async function getClientsForTeamMember(assignedBranchIds: string[]) {
     if (!clientMap.has(branch.client.id)) {
       clientMap.set(branch.client.id, {
         id: branch.client.id,
+        slug: branch.client.slug,
         companyName: branch.client.companyName,
         displayName: branch.client.displayName,
         branches: []
@@ -79,6 +83,7 @@ async function getClientsForTeamMember(assignedBranchIds: string[]) {
     }
     clientMap.get(branch.client.id)!.branches.push({
       id: branch.id,
+      slug: branch.slug,
       name: branch.name,
       address: branch.address
     })
