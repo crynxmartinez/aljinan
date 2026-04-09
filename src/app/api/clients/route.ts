@@ -4,6 +4,7 @@ import { authOptions } from '@/lib/auth'
 import { prisma } from '@/lib/prisma'
 import bcrypt from 'bcryptjs'
 import { generateStrongPassword } from '@/lib/password-validation'
+import { generateSlug, generateUniqueSlug } from '@/lib/utils/slugify'
 
 export async function GET() {
   try {
@@ -86,9 +87,19 @@ export async function POST(request: Request) {
     const tempPassword = generateStrongPassword(12)
     const hashedPassword = await bcrypt.hash(tempPassword, 10)
 
+    // Generate unique slug for client
+    const baseSlug = generateSlug(companyName)
+    const existingClients = await prisma.client.findMany({
+      where: { contractorId: contractor.id },
+      select: { slug: true }
+    })
+    const existingSlugs = existingClients.map(c => c.slug).filter((s): s is string => s !== null)
+    const uniqueSlug = generateUniqueSlug(baseSlug, existingSlugs)
+
     const client = await prisma.client.create({
       data: {
         companyName,
+        slug: uniqueSlug,
         companyPhone,
         companyEmail,
         contractor: {

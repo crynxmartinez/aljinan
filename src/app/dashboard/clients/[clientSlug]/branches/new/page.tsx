@@ -6,7 +6,7 @@ import Link from 'next/link'
 import { ArrowLeft } from 'lucide-react'
 import { AddBranchForm } from './add-branch-form'
 
-async function getClient(clientId: string, userId: string) {
+async function getClient(clientSlug: string, userId: string) {
   const contractor = await prisma.contractor.findUnique({
     where: { userId }
   })
@@ -15,7 +15,7 @@ async function getClient(clientId: string, userId: string) {
 
   const client = await prisma.client.findFirst({
     where: {
-      id: clientId,
+      slug: clientSlug,
       contractorId: contractor.id,
     }
   })
@@ -26,7 +26,7 @@ async function getClient(clientId: string, userId: string) {
 export default async function AddBranchPage({
   params,
 }: {
-  params: Promise<{ clientId: string }>
+  params: Promise<{ clientSlug: string }>
 }) {
   const session = await getServerSession(authOptions)
 
@@ -34,8 +34,8 @@ export default async function AddBranchPage({
     redirect('/login')
   }
 
-  const { clientId } = await params
-  const client = await getClient(clientId, session.user.id)
+  const { clientSlug } = await params
+  const client = await getClient(clientSlug, session.user.id)
 
   if (!client) {
     notFound()
@@ -45,7 +45,7 @@ export default async function AddBranchPage({
     <div className="p-8">
       <div className="mb-6">
         <Link
-          href={`/dashboard/clients/${clientId}`}
+          href={`/dashboard/clients/${client.slug}`}
           className="inline-flex items-center text-sm text-muted-foreground hover:text-foreground mb-4"
         >
           <ArrowLeft className="mr-2 h-4 w-4" />
@@ -60,7 +60,7 @@ export default async function AddBranchPage({
         </p>
       </div>
 
-      <AddBranchForm clientId={clientId} />
+      <AddBranchForm clientId={client.id} />
     </div>
   )
 }

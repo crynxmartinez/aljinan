@@ -6,7 +6,7 @@ import Link from 'next/link'
 import { ArrowLeft, MapPin } from 'lucide-react'
 import { BranchWorkspace } from './branch-workspace'
 
-async function getBranchForContractor(clientId: string, branchId: string, userId: string) {
+async function getBranchForContractor(clientSlug: string, branchSlug: string, userId: string) {
   const contractor = await prisma.contractor.findUnique({
     where: { userId }
   })
@@ -15,12 +15,12 @@ async function getBranchForContractor(clientId: string, branchId: string, userId
 
   const client = await prisma.client.findFirst({
     where: {
-      id: clientId,
+      slug: clientSlug,
       contractorId: contractor.id,
     },
     include: {
       branches: {
-        where: { id: branchId }
+        where: { slug: branchSlug }
       }
     }
   })
@@ -30,25 +30,27 @@ async function getBranchForContractor(clientId: string, branchId: string, userId
   return {
     client: {
       id: client.id,
+      slug: client.slug,
       companyName: client.companyName,
     },
     branch: client.branches[0],
   }
 }
 
-async function getBranchForTeamMember(clientId: string, branchId: string, assignedBranchIds: string[]) {
-  // Check if team member has access to this branch
-  if (!assignedBranchIds.includes(branchId)) return null
-
+async function getBranchForTeamMember(clientSlug: string, branchSlug: string, assignedBranchIds: string[]) {
+  // First get the branch by slug to check access
   const branch = await prisma.branch.findFirst({
     where: {
-      id: branchId,
-      clientId: clientId,
+      slug: branchSlug,
+      client: {
+        slug: clientSlug
+      }
     },
     include: {
       client: {
         select: {
           id: true,
+          slug: true,
           companyName: true,
         }
       }
@@ -56,10 +58,14 @@ async function getBranchForTeamMember(clientId: string, branchId: string, assign
   })
 
   if (!branch) return null
+  
+  // Check if team member has access to this branch
+  if (!assignedBranchIds.includes(branch.id)) return null
 
   return {
     client: {
       id: branch.client.id,
+      slug: branch.client.slug,
       companyName: branch.client.companyName,
     },
     branch: branch,
@@ -69,7 +75,7 @@ async function getBranchForTeamMember(clientId: string, branchId: string, assign
 export default async function BranchPage({
   params,
 }: {
-  params: Promise<{ clientId: string; branchId: string }>
+  params: Promise<{ clientSlug: string; branchSlug: string }>
 }) {
   const session = await getServerSession(authOptions)
 
@@ -77,14 +83,14 @@ export default async function BranchPage({
     redirect('/login')
   }
 
-  const { clientId, branchId } = await params
+  const { clientSlug, branchSlug } = await params
   
   // Get branch data based on user role
   let data
   if (session.user.role === 'TEAM_MEMBER' && session.user.assignedBranchIds) {
-    data = await getBranchForTeamMember(clientId, branchId, session.user.assignedBranchIds)
+    data = await getBranchForTeamMember(clientSlug, branchSlug, session.user.assignedBranchIds)
   } else {
-    data = await getBranchForContractor(clientId, branchId, session.user.id)
+    data = await getBranchForContractor(clientSlug, branchSlug, session.user.id)
   }
 
   if (!data) {
@@ -97,7 +103,7 @@ export default async function BranchPage({
     <div className="p-8">
       <div className="mb-6">
         <Link
-          href={`/dashboard/clients/${clientId}`}
+          href={`/dashboard/clients/${client.slug}`}
           className="inline-flex items-center text-sm text-muted-foreground hover:text-foreground mb-4"
         >
           <ArrowLeft className="mr-2 h-4 w-4" />
@@ -119,8 +125,8 @@ export default async function BranchPage({
       </div>
 
       <BranchWorkspace 
-        clientId={clientId} 
-        branchId={branchId} 
+        clientId={client.id} 
+        branchId={branch.id} 
         branch={{
           ...branch,
           cdCertificateExpiry: branch.cdCertificateExpiry?.toISOString() || null,

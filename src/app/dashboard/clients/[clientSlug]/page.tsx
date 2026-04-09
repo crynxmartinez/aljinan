@@ -9,7 +9,7 @@ import { Badge } from '@/components/ui/badge'
 import { ArrowLeft, MapPin, Plus, Building2 } from 'lucide-react'
 import { ClientProfileCard } from '@/components/clients/client-profile-card'
 
-async function getClient(clientId: string, userId: string) {
+async function getClient(clientSlug: string, userId: string) {
   const contractor = await prisma.contractor.findUnique({
     where: { userId }
   })
@@ -18,7 +18,7 @@ async function getClient(clientId: string, userId: string) {
 
   const client = await prisma.client.findFirst({
     where: {
-      id: clientId,
+      slug: clientSlug,
       contractorId: contractor.id,
     },
     include: {
@@ -40,7 +40,7 @@ async function getClient(clientId: string, userId: string) {
 export default async function ClientDetailPage({
   params,
 }: {
-  params: Promise<{ clientId: string }>
+  params: Promise<{ clientSlug: string }>
 }) {
   const session = await getServerSession(authOptions)
 
@@ -48,8 +48,8 @@ export default async function ClientDetailPage({
     redirect('/login')
   }
 
-  const { clientId } = await params
-  const client = await getClient(clientId, session.user.id)
+  const { clientSlug } = await params
+  const client = await getClient(clientSlug, session.user.id)
 
   if (!client) {
     notFound()
@@ -95,7 +95,7 @@ export default async function ClientDetailPage({
             </p>
           </div>
         </div>
-        <Link href={`/dashboard/clients/${clientId}/branches/new`}>
+        <Link href={`/dashboard/clients/${client.slug}/branches/new`}>
           <Button>
             <Plus className="mr-2 h-4 w-4" />
             Add Branch
@@ -117,7 +117,7 @@ export default async function ClientDetailPage({
                 <div className="text-center py-8 bg-muted/50 rounded-lg">
                   <MapPin className="h-10 w-10 text-muted-foreground/50 mx-auto mb-3" />
                   <p className="text-muted-foreground mb-3">No branches yet</p>
-                  <Link href={`/dashboard/clients/${clientId}/branches/new`}>
+                  <Link href={`/dashboard/clients/${client.slug}/branches/new`}>
                     <Button>
                       <Plus className="mr-2 h-4 w-4" />
                       Add First Branch
@@ -129,7 +129,7 @@ export default async function ClientDetailPage({
                   {client.branches.map((branch) => (
                     <Link
                       key={branch.id}
-                      href={`/dashboard/clients/${clientId}/branches/${branch.id}`}
+                      href={`/dashboard/clients/${client.slug}/branches/${branch.slug}`}
                       className="flex items-center justify-between p-4 rounded-lg border hover:bg-muted/50 transition-colors"
                     >
                       <div className="flex items-center gap-3">

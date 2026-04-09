@@ -2,6 +2,7 @@ import { getServerSession } from 'next-auth'
 import { NextResponse } from 'next/server'
 import { authOptions } from '@/lib/auth'
 import { prisma } from '@/lib/prisma'
+import { generateSlug, generateUniqueSlug } from '@/lib/utils/slugify'
 
 export async function GET(
   request: Request,
@@ -101,10 +102,20 @@ export async function POST(
       return NextResponse.json({ error: 'Client not found' }, { status: 404 })
     }
 
+    // Generate unique slug for branch (unique per client)
+    const baseSlug = generateSlug(name)
+    const existingBranches = await prisma.branch.findMany({
+      where: { clientId: client.id },
+      select: { slug: true }
+    })
+    const existingSlugs = existingBranches.map(b => b.slug).filter((s): s is string => s !== null)
+    const uniqueSlug = generateUniqueSlug(baseSlug, existingSlugs)
+
     const branch = await prisma.branch.create({
       data: {
         clientId: client.id,
         name,
+        slug: uniqueSlug,
         address,
         city,
         state,

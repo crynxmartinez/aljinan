@@ -36,10 +36,12 @@ import { useState, useEffect } from 'react'
 
 interface Client {
   id: string
+  slug: string | null
   companyName: string
   displayName?: string | null
   branches: {
     id: string
+    slug: string | null
     name: string
     address: string
   }[]
@@ -373,16 +375,16 @@ export function Sidebar({ clients = [], userRole, teamMemberRole }: SidebarProps
                     {client.branches.map((branch) => (
                       <Link
                         key={branch.id}
-                        href={`/dashboard/clients/${client.id}/branches/${branch.id}`}
-                        onClick={(e) => handleNavClick(e, `/dashboard/clients/${client.id}/branches/${branch.id}`)}
+                        href={`/dashboard/clients/${client.slug}/branches/${branch.slug}`}
+                        onClick={(e) => handleNavClick(e, `/dashboard/clients/${client.slug}/branches/${branch.slug}`)}
                         className={cn(
                           'flex items-center gap-2 rounded-lg px-3 py-2 text-sm transition-colors',
-                          pathname === `/dashboard/clients/${client.id}/branches/${branch.id}`
+                          pathname === `/dashboard/clients/${client.slug}/branches/${branch.slug}`
                             ? 'bg-sidebar-accent text-sidebar-accent-foreground'
                             : 'text-sidebar-foreground/60 hover:bg-sidebar-accent hover:text-sidebar-accent-foreground'
                         )}
                       >
-                        {loadingHref === `/dashboard/clients/${client.id}/branches/${branch.id}` ? (
+                        {loadingHref === `/dashboard/clients/${client.slug}/branches/${branch.slug}` ? (
                           <Loader2 className="h-3 w-3 animate-spin" />
                         ) : (
                           <MapPin className="h-3 w-3" />
