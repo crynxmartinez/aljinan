@@ -44,6 +44,7 @@ interface Client {
     slug: string | null
     name: string
     address: string
+    displayName?: string | null
   }[]
 }
 
@@ -103,8 +104,10 @@ export function Sidebar({ clients = [], userRole, teamMemberRole }: SidebarProps
   const [expandedClients, setExpandedClients] = useState<string[]>([])
   const [loadingHref, setLoadingHref] = useState<string | null>(null)
   const [editingClientId, setEditingClientId] = useState<string | null>(null)
+  const [editingBranchId, setEditingBranchId] = useState<string | null>(null)
   const [editingValue, setEditingValue] = useState('')
   const [savingClientId, setSavingClientId] = useState<string | null>(null)
+  const [savingBranchId, setSavingBranchId] = useState<string | null>(null)
   const [unreadNotifications, setUnreadNotifications] = useState(0)
 
   useEffect(() => {
@@ -153,8 +156,16 @@ export function Sidebar({ clients = [], userRole, teamMemberRole }: SidebarProps
     setEditingValue(client.displayName || client.companyName)
   }
 
+  const startEditingBranch = (branch: Client['branches'][0], e: React.MouseEvent) => {
+    e.preventDefault()
+    e.stopPropagation()
+    setEditingBranchId(branch.id)
+    setEditingValue(branch.displayName || branch.address)
+  }
+
   const cancelEditing = () => {
     setEditingClientId(null)
+    setEditingBranchId(null)
     setEditingValue('')
   }
 
@@ -188,10 +199,49 @@ export function Sidebar({ clients = [], userRole, teamMemberRole }: SidebarProps
     }
   }
 
+  const saveBranchDisplayName = async (branchId: string) => {
+    if (savingBranchId) return
+    
+    setSavingBranchId(branchId)
+    try {
+      const response = await fetch(`/api/branches/${branchId}/display-name`, {
+        method: 'PATCH',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ displayName: editingValue.trim() || null }),
+      })
+
+      if (!response.ok) {
+        const data = await response.json()
+        throw new Error(data.error || 'Failed to update')
+      }
+
+      toast.success('Branch name updated!')
+      
+      cancelEditing()
+      
+      // Refresh to get updated data
+      router.refresh()
+    } catch (err) {
+      const errorMsg = err instanceof Error ? err.message : 'Failed to update'
+      toast.error('Update failed', { description: errorMsg })
+    } finally {
+      setSavingBranchId(null)
+    }
+  }
+
   const handleKeyDown = (e: React.KeyboardEvent, clientId: string) => {
     if (e.key === 'Enter') {
       e.preventDefault()
       saveDisplayName(clientId)
+    } else if (e.key === 'Escape') {
+      cancelEditing()
+    }
+  }
+
+  const handleBranchKeyDown = (e: React.KeyboardEvent, branchId: string) => {
+    if (e.key === 'Enter') {
+      e.preventDefault()
+      saveBranchDisplayName(branchId)
     } else if (e.key === 'Escape') {
       cancelEditing()
     }
@@ -373,24 +423,73 @@ export function Sidebar({ clients = [], userRole, teamMemberRole }: SidebarProps
                   </div>
                   <CollapsibleContent className="pl-6">
                     {client.branches.map((branch) => (
-                      <Link
-                        key={branch.id}
-                        href={`/dashboard/clients/${client.slug || client.id}/branches/${branch.slug || branch.id}`}
-                        onClick={(e) => handleNavClick(e, `/dashboard/clients/${client.slug || client.id}/branches/${branch.slug || branch.id}`)}
-                        className={cn(
-                          'flex items-center gap-2 rounded-lg px-3 py-2 text-sm transition-colors',
-                          pathname === `/dashboard/clients/${client.slug || client.id}/branches/${branch.slug || branch.id}`
-                            ? 'bg-sidebar-accent text-sidebar-accent-foreground'
-                            : 'text-sidebar-foreground/60 hover:bg-sidebar-accent hover:text-sidebar-accent-foreground'
-                        )}
-                      >
-                        {loadingHref === `/dashboard/clients/${client.slug || client.id}/branches/${branch.slug || branch.id}` ? (
-                          <Loader2 className="h-3 w-3 animate-spin" />
+                      <div key={branch.id} className="flex items-center group">
+                        {editingBranchId === branch.id ? (
+                          <div className="flex flex-1 items-center gap-1 px-3 py-2">
+                            <MapPin className="h-3 w-3 text-sidebar-foreground/70 flex-shrink-0" />
+                            <input
+                              type="text"
+                              value={editingValue}
+                              onChange={(e) => setEditingValue(e.target.value)}
+                              onKeyDown={(e) => handleBranchKeyDown(e, branch.id)}
+                              onBlur={() => saveBranchDisplayName(branch.id)}
+                              className="flex-1 bg-sidebar-accent text-sidebar-accent-foreground text-sm px-2 py-1 rounded outline-none focus:ring-2 focus:ring-primary"
+                              autoFocus
+                              disabled={savingBranchId === branch.id}
+                            />
+                            {savingBranchId === branch.id ? (
+                              <Loader2 className="h-3 w-3 animate-spin text-sidebar-foreground/50" />
+                            ) : (
+                              <>
+                                <button
+                                  onClick={() => saveBranchDisplayName(branch.id)}
+                                  className="p-1 hover:bg-sidebar-accent rounded"
+                                  title="Save"
+                                >
+                                  <Check className="h-3 w-3 text-green-600" />
+                                </button>
+                                <button
+                                  onClick={cancelEditing}
+                                  className="p-1 hover:bg-sidebar-accent rounded"
+                                  title="Cancel"
+                                >
+                                  <X className="h-3 w-3 text-red-600" />
+                                </button>
+                              </>
+                            )}
+                          </div>
                         ) : (
-                          <MapPin className="h-3 w-3" />
+                          <>
+                            <Link
+                              href={`/dashboard/clients/${client.slug || client.id}/branches/${branch.slug || branch.id}`}
+                              onClick={(e) => handleNavClick(e, `/dashboard/clients/${client.slug || client.id}/branches/${branch.slug || branch.id}`)}
+                              className={cn(
+                                'flex flex-1 items-center gap-2 rounded-lg px-3 py-2 text-sm transition-colors',
+                                pathname === `/dashboard/clients/${client.slug || client.id}/branches/${branch.slug || branch.id}`
+                                  ? 'bg-sidebar-accent text-sidebar-accent-foreground'
+                                  : 'text-sidebar-foreground/60 hover:bg-sidebar-accent hover:text-sidebar-accent-foreground'
+                              )}
+                              title={branch.displayName ? `${branch.displayName} (${branch.address})` : branch.address}
+                            >
+                              {loadingHref === `/dashboard/clients/${client.slug || client.id}/branches/${branch.slug || branch.id}` ? (
+                                <Loader2 className="h-3 w-3 animate-spin" />
+                              ) : (
+                                <MapPin className="h-3 w-3" />
+                              )}
+                              <span className="truncate">{branch.displayName || branch.address}</span>
+                            </Link>
+                            {!isTeamMember && (
+                              <button
+                                onClick={(e) => startEditingBranch(branch, e)}
+                                className="opacity-0 group-hover:opacity-100 p-1.5 hover:bg-sidebar-accent rounded transition-opacity"
+                                title="Edit nickname"
+                              >
+                                <Pencil className="h-3 w-3 text-sidebar-foreground/50" />
+                              </button>
+                            )}
+                          </>
                         )}
-                        <span className="truncate">{branch.address}</span>
-                      </Link>
+                      </div>
                     ))}
                   </CollapsibleContent>
                 </Collapsible>

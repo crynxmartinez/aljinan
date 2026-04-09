@@ -35,7 +35,8 @@ async function getClientsForContractor(userId: string) {
       id: branch.id,
       slug: branch.slug,
       name: branch.name,
-      address: branch.address
+      address: branch.address,
+      displayName: branch.displayName
     }))
   })) || []
 }
@@ -65,7 +66,7 @@ async function getClientsForTeamMember(assignedBranchIds: string[]) {
     slug: string | null
     companyName: string
     displayName?: string | null
-    branches: { id: string; slug: string | null; name: string; address: string }[]
+    branches: { id: string; slug: string | null; name: string; address: string; displayName?: string | null }[]
   }>()
 
   branches.forEach(branch => {
@@ -85,7 +86,8 @@ async function getClientsForTeamMember(assignedBranchIds: string[]) {
       id: branch.id,
       slug: branch.slug,
       name: branch.name,
-      address: branch.address
+      address: branch.address,
+      displayName: branch.displayName
     })
   })
 

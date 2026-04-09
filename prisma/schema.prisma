@@ -255,6 +255,7 @@ model Branch {
   client      Client   @relation(fields: [clientId], references: [id], onDelete: Cascade)
   name        String
   slug        String?  // URL-friendly slug generated from name
+  displayName String?  // Custom nickname/label set by contractor
   address     String
   city        String?
   state       String?
