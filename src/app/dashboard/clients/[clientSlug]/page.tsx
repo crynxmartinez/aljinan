@@ -9,16 +9,20 @@ import { Badge } from '@/components/ui/badge'
 import { ArrowLeft, MapPin, Plus, Building2 } from 'lucide-react'
 import { ClientProfileCard } from '@/components/clients/client-profile-card'
 
-async function getClient(clientSlug: string, userId: string) {
+async function getClient(clientSlugOrId: string, userId: string) {
   const contractor = await prisma.contractor.findUnique({
     where: { userId }
   })
 
   if (!contractor) return null
 
+  // Try to find by slug first, then by ID (for backwards compatibility)
   const client = await prisma.client.findFirst({
     where: {
-      slug: clientSlug,
+      OR: [
+        { slug: clientSlugOrId },
+        { id: clientSlugOrId }
+      ],
       contractorId: contractor.id,
     },
     include: {
@@ -95,7 +99,7 @@ export default async function ClientDetailPage({
             </p>
           </div>
         </div>
-        <Link href={`/dashboard/clients/${client.slug}/branches/new`}>
+        <Link href={`/dashboard/clients/${client.slug || client.id}/branches/new`}>
           <Button>
             <Plus className="mr-2 h-4 w-4" />
             Add Branch
@@ -117,7 +121,7 @@ export default async function ClientDetailPage({
                 <div className="text-center py-8 bg-muted/50 rounded-lg">
                   <MapPin className="h-10 w-10 text-muted-foreground/50 mx-auto mb-3" />
                   <p className="text-muted-foreground mb-3">No branches yet</p>
-                  <Link href={`/dashboard/clients/${client.slug}/branches/new`}>
+                  <Link href={`/dashboard/clients/${client.slug || client.id}/branches/new`}>
                     <Button>
                       <Plus className="mr-2 h-4 w-4" />
                       Add First Branch
@@ -129,7 +133,7 @@ export default async function ClientDetailPage({
                   {client.branches.map((branch) => (
                     <Link
                       key={branch.id}
-                      href={`/dashboard/clients/${client.slug}/branches/${branch.slug}`}
+                      href={`/dashboard/clients/${client.slug || client.id}/branches/${branch.slug || branch.id}`}
                       className="flex items-center justify-between p-4 rounded-lg border hover:bg-muted/50 transition-colors"
                     >
                       <div className="flex items-center gap-3">

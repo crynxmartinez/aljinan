@@ -375,16 +375,16 @@ export function Sidebar({ clients = [], userRole, teamMemberRole }: SidebarProps
                     {client.branches.map((branch) => (
                       <Link
                         key={branch.id}
-                        href={`/dashboard/clients/${client.slug}/branches/${branch.slug}`}
-                        onClick={(e) => handleNavClick(e, `/dashboard/clients/${client.slug}/branches/${branch.slug}`)}
+                        href={`/dashboard/clients/${client.slug || client.id}/branches/${branch.slug || branch.id}`}
+                        onClick={(e) => handleNavClick(e, `/dashboard/clients/${client.slug || client.id}/branches/${branch.slug || branch.id}`)}
                         className={cn(
                           'flex items-center gap-2 rounded-lg px-3 py-2 text-sm transition-colors',
-                          pathname === `/dashboard/clients/${client.slug}/branches/${branch.slug}`
+                          pathname === `/dashboard/clients/${client.slug || client.id}/branches/${branch.slug || branch.id}`
                             ? 'bg-sidebar-accent text-sidebar-accent-foreground'
                             : 'text-sidebar-foreground/60 hover:bg-sidebar-accent hover:text-sidebar-accent-foreground'
                         )}
                       >
-                        {loadingHref === `/dashboard/clients/${client.slug}/branches/${branch.slug}` ? (
+                        {loadingHref === `/dashboard/clients/${client.slug || client.id}/branches/${branch.slug || branch.id}` ? (
                           <Loader2 className="h-3 w-3 animate-spin" />
                         ) : (
                           <MapPin className="h-3 w-3" />

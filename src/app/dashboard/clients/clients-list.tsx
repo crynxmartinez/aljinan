@@ -256,7 +256,7 @@ export function ClientsList({ clients }: ClientsListProps) {
                             </Link>
                           </DropdownMenuItem>
                           <DropdownMenuItem asChild>
-                            <Link href={`/dashboard/clients/${client.slug}/branches/new`}>
+                            <Link href={`/dashboard/clients/${client.slug || client.id}/branches/new`}>
                               <MapPin className="mr-2 h-4 w-4" />
                               Add Branch
                             </Link>
@@ -286,7 +286,7 @@ export function ClientsList({ clients }: ClientsListProps) {
                       <div className="text-center py-6 bg-muted/50 rounded-lg">
                         <MapPin className="h-8 w-8 text-muted-foreground/50 mx-auto mb-2" />
                         <p className="text-sm text-muted-foreground mb-2">No branches yet</p>
-                        <Link href={`/dashboard/clients/${client.slug}/branches/new`}>
+                        <Link href={`/dashboard/clients/${client.slug || client.id}/branches/new`}>
                           <Button variant="outline" size="sm">
                             <Plus className="mr-2 h-4 w-4" />
                             Add Branch
@@ -298,7 +298,7 @@ export function ClientsList({ clients }: ClientsListProps) {
                         {client.branches.map((branch) => (
                           <Link
                             key={branch.id}
-                            href={`/dashboard/clients/${client.slug}/branches/${branch.slug}`}
+                            href={`/dashboard/clients/${client.slug || client.id}/branches/${branch.slug || branch.id}`}
                             className="flex items-center justify-between p-3 rounded-lg border hover:bg-muted/50 transition-colors"
                           >
                             <div className="flex items-center gap-3">
@@ -315,7 +315,7 @@ export function ClientsList({ clients }: ClientsListProps) {
                             )}
                           </Link>
                         ))}
-                        <Link href={`/dashboard/clients/${client.slug}/branches/new`}>
+                        <Link href={`/dashboard/clients/${client.slug || client.id}/branches/new`}>
                           <Button variant="ghost" size="sm" className="w-full mt-2">
                             <Plus className="mr-2 h-4 w-4" />
                             Add Another Branch

@@ -6,21 +6,30 @@ import Link from 'next/link'
 import { ArrowLeft, MapPin } from 'lucide-react'
 import { BranchWorkspace } from './branch-workspace'
 
-async function getBranchForContractor(clientSlug: string, branchSlug: string, userId: string) {
+async function getBranchForContractor(clientSlugOrId: string, branchSlugOrId: string, userId: string) {
   const contractor = await prisma.contractor.findUnique({
     where: { userId }
   })
 
   if (!contractor) return null
 
+  // Try to find by slug first, then by ID (for backwards compatibility)
   const client = await prisma.client.findFirst({
     where: {
-      slug: clientSlug,
+      OR: [
+        { slug: clientSlugOrId },
+        { id: clientSlugOrId }
+      ],
       contractorId: contractor.id,
     },
     include: {
       branches: {
-        where: { slug: branchSlug }
+        where: {
+          OR: [
+            { slug: branchSlugOrId },
+            { id: branchSlugOrId }
+          ]
+        }
       }
     }
   })
@@ -37,13 +46,19 @@ async function getBranchForContractor(clientSlug: string, branchSlug: string, us
   }
 }
 
-async function getBranchForTeamMember(clientSlug: string, branchSlug: string, assignedBranchIds: string[]) {
-  // First get the branch by slug to check access
+async function getBranchForTeamMember(clientSlugOrId: string, branchSlugOrId: string, assignedBranchIds: string[]) {
+  // First get the branch by slug or ID to check access
   const branch = await prisma.branch.findFirst({
     where: {
-      slug: branchSlug,
+      OR: [
+        { slug: branchSlugOrId },
+        { id: branchSlugOrId }
+      ],
       client: {
-        slug: clientSlug
+        OR: [
+          { slug: clientSlugOrId },
+          { id: clientSlugOrId }
+        ]
       }
     },
     include: {
@@ -103,7 +118,7 @@ export default async function BranchPage({
     <div className="p-8">
       <div className="mb-6">
         <Link
-          href={`/dashboard/clients/${client.slug}`}
+          href={`/dashboard/clients/${client.slug || client.id}`}
           className="inline-flex items-center text-sm text-muted-foreground hover:text-foreground mb-4"
         >
           <ArrowLeft className="mr-2 h-4 w-4" />

@@ -6,16 +6,20 @@ import Link from 'next/link'
 import { ArrowLeft } from 'lucide-react'
 import { AddBranchForm } from './add-branch-form'
 
-async function getClient(clientSlug: string, userId: string) {
+async function getClient(clientSlugOrId: string, userId: string) {
   const contractor = await prisma.contractor.findUnique({
     where: { userId }
   })
 
   if (!contractor) return null
 
+  // Try to find by slug first, then by ID (for backwards compatibility)
   const client = await prisma.client.findFirst({
     where: {
-      slug: clientSlug,
+      OR: [
+        { slug: clientSlugOrId },
+        { id: clientSlugOrId }
+      ],
       contractorId: contractor.id,
     }
   })
@@ -45,7 +49,7 @@ export default async function AddBranchPage({
     <div className="p-8">
       <div className="mb-6">
         <Link
-          href={`/dashboard/clients/${client.slug}`}
+          href={`/dashboard/clients/${client.slug || client.id}`}
           className="inline-flex items-center text-sm text-muted-foreground hover:text-foreground mb-4"
         >
           <ArrowLeft className="mr-2 h-4 w-4" />

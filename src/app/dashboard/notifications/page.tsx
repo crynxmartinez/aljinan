@@ -98,7 +98,7 @@ async function getRecentActivity(userId: string): Promise<ActivityItem[]> {
           description: `New request from ${client.companyName}`,
           timestamp: request.createdAt,
           status: request.status,
-          link: `/dashboard/clients/${client.slug}/branches/${branch.slug}?tab=requests`,
+          link: `/dashboard/clients/${client.slug || client.id}/branches/${branch.slug || branch.id}?tab=requests`,
           clientName: client.companyName,
           branchAddress: branch.address
         })
@@ -112,7 +112,7 @@ async function getRecentActivity(userId: string): Promise<ActivityItem[]> {
           description: `Quotation for ${client.companyName}`,
           timestamp: quotation.createdAt,
           status: quotation.status,
-          link: `/dashboard/clients/${client.slug}/branches/${branch.slug}?tab=quotations`,
+          link: `/dashboard/clients/${client.slug || client.id}/branches/${branch.slug || branch.id}?tab=quotations`,
           clientName: client.companyName,
           branchAddress: branch.address
         })
@@ -126,7 +126,7 @@ async function getRecentActivity(userId: string): Promise<ActivityItem[]> {
           description: `Appointment at ${branch.address}`,
           timestamp: appointment.createdAt,
           status: appointment.status,
-          link: `/dashboard/clients/${client.slug}/branches/${branch.slug}?tab=appointments`,
+          link: `/dashboard/clients/${client.slug || client.id}/branches/${branch.slug || branch.id}?tab=appointments`,
           clientName: client.companyName,
           branchAddress: branch.address
         })
