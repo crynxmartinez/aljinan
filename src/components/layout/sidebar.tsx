@@ -346,7 +346,7 @@ export function Sidebar({ clients = [], userRole, teamMemberRole }: SidebarProps
                   open={expandedClients.includes(client.id)}
                   onOpenChange={() => toggleClient(client.id)}
                 >
-                  <div className="flex items-center group">
+                  <div className="flex items-center group relative">
                     <CollapsibleTrigger className="flex items-center justify-center rounded-lg p-2 text-sidebar-foreground/70 hover:bg-sidebar-accent hover:text-sidebar-accent-foreground">
                       {expandedClients.includes(client.id) ? (
                         <ChevronDown className="h-4 w-4" />
@@ -395,7 +395,7 @@ export function Sidebar({ clients = [], userRole, teamMemberRole }: SidebarProps
                           href={`/dashboard/clients/${client.id}`}
                           onClick={(e) => handleNavClick(e, `/dashboard/clients/${client.id}`)}
                           className={cn(
-                            'flex items-center gap-2 rounded-lg px-2 py-2 text-sm transition-colors min-w-0',
+                            'flex flex-1 items-center gap-2 rounded-lg px-2 py-2 text-sm transition-colors',
                             pathname === `/dashboard/clients/${client.id}` || pathname.startsWith(`/dashboard/clients/${client.id}/`)
                               ? 'bg-sidebar-accent text-sidebar-accent-foreground'
                               : 'text-sidebar-foreground/70 hover:bg-sidebar-accent hover:text-sidebar-accent-foreground'
@@ -412,7 +412,7 @@ export function Sidebar({ clients = [], userRole, teamMemberRole }: SidebarProps
                         {!isTeamMember && (
                           <button
                             onClick={(e) => startEditing(client, e)}
-                            className="opacity-40 group-hover:opacity-100 p-1 hover:bg-sidebar-accent rounded transition-all shrink-0"
+                            className="absolute right-1 opacity-0 group-hover:opacity-100 p-1.5 bg-sidebar hover:bg-sidebar-accent rounded transition-all z-10"
                             title="Edit nickname"
                           >
                             <Pencil className="h-3 w-3 text-sidebar-foreground" />
@@ -423,7 +423,7 @@ export function Sidebar({ clients = [], userRole, teamMemberRole }: SidebarProps
                   </div>
                   <CollapsibleContent className="pl-6">
                     {client.branches.map((branch) => (
-                      <div key={branch.id} className="flex items-center group">
+                      <div key={branch.id} className="flex items-center group relative">
                         {editingBranchId === branch.id ? (
                           <div className="flex flex-1 items-center gap-1 px-3 py-2">
                             <MapPin className="h-3 w-3 text-sidebar-foreground/70 flex-shrink-0" />
@@ -464,7 +464,7 @@ export function Sidebar({ clients = [], userRole, teamMemberRole }: SidebarProps
                               href={`/dashboard/clients/${client.slug || client.id}/branches/${branch.slug || branch.id}`}
                               onClick={(e) => handleNavClick(e, `/dashboard/clients/${client.slug || client.id}/branches/${branch.slug || branch.id}`)}
                               className={cn(
-                                'flex items-center gap-2 rounded-lg px-3 py-2 text-sm transition-colors min-w-0',
+                                'flex flex-1 items-center gap-2 rounded-lg px-3 py-2 text-sm transition-colors',
                                 pathname === `/dashboard/clients/${client.slug || client.id}/branches/${branch.slug || branch.id}`
                                   ? 'bg-sidebar-accent text-sidebar-accent-foreground'
                                   : 'text-sidebar-foreground/60 hover:bg-sidebar-accent hover:text-sidebar-accent-foreground'
@@ -481,7 +481,7 @@ export function Sidebar({ clients = [], userRole, teamMemberRole }: SidebarProps
                             {!isTeamMember && (
                               <button
                                 onClick={(e) => startEditingBranch(branch, e)}
-                                className="opacity-40 group-hover:opacity-100 p-1 hover:bg-sidebar-accent rounded transition-all shrink-0"
+                                className="absolute right-1 opacity-0 group-hover:opacity-100 p-1.5 bg-sidebar hover:bg-sidebar-accent rounded transition-all z-10"
                                 title="Edit nickname"
                               >
                                 <Pencil className="h-3 w-3 text-sidebar-foreground" />
