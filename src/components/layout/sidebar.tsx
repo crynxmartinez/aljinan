@@ -395,7 +395,7 @@ export function Sidebar({ clients = [], userRole, teamMemberRole }: SidebarProps
                           href={`/dashboard/clients/${client.id}`}
                           onClick={(e) => handleNavClick(e, `/dashboard/clients/${client.id}`)}
                           className={cn(
-                            'flex flex-1 items-center gap-2 rounded-lg px-2 py-2 text-sm transition-colors',
+                            'flex items-center gap-2 rounded-lg px-2 py-2 text-sm transition-colors min-w-0',
                             pathname === `/dashboard/clients/${client.id}` || pathname.startsWith(`/dashboard/clients/${client.id}/`)
                               ? 'bg-sidebar-accent text-sidebar-accent-foreground'
                               : 'text-sidebar-foreground/70 hover:bg-sidebar-accent hover:text-sidebar-accent-foreground'
@@ -464,7 +464,7 @@ export function Sidebar({ clients = [], userRole, teamMemberRole }: SidebarProps
                               href={`/dashboard/clients/${client.slug || client.id}/branches/${branch.slug || branch.id}`}
                               onClick={(e) => handleNavClick(e, `/dashboard/clients/${client.slug || client.id}/branches/${branch.slug || branch.id}`)}
                               className={cn(
-                                'flex flex-1 items-center gap-2 rounded-lg px-3 py-2 text-sm transition-colors',
+                                'flex items-center gap-2 rounded-lg px-3 py-2 text-sm transition-colors min-w-0',
                                 pathname === `/dashboard/clients/${client.slug || client.id}/branches/${branch.slug || branch.id}`
                                   ? 'bg-sidebar-accent text-sidebar-accent-foreground'
                                   : 'text-sidebar-foreground/60 hover:bg-sidebar-accent hover:text-sidebar-accent-foreground'
