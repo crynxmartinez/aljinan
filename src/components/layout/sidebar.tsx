@@ -395,7 +395,7 @@ export function Sidebar({ clients = [], userRole, teamMemberRole }: SidebarProps
                           href={`/dashboard/clients/${client.id}`}
                           onClick={(e) => handleNavClick(e, `/dashboard/clients/${client.id}`)}
                           className={cn(
-                            'flex flex-1 items-center gap-2 rounded-lg px-2 py-2 text-sm transition-colors',
+                            'flex flex-1 items-center gap-2 rounded-lg px-2 py-2 pr-10 text-sm transition-colors',
                             pathname === `/dashboard/clients/${client.id}` || pathname.startsWith(`/dashboard/clients/${client.id}/`)
                               ? 'bg-sidebar-accent text-sidebar-accent-foreground'
                               : 'text-sidebar-foreground/70 hover:bg-sidebar-accent hover:text-sidebar-accent-foreground'
@@ -412,7 +412,7 @@ export function Sidebar({ clients = [], userRole, teamMemberRole }: SidebarProps
                         {!isTeamMember && (
                           <button
                             onClick={(e) => startEditing(client, e)}
-                            className="absolute right-1 opacity-0 group-hover:opacity-100 p-1.5 bg-sidebar hover:bg-sidebar-accent rounded transition-all z-10"
+                            className="absolute right-2 opacity-0 group-hover:opacity-100 p-1.5 bg-sidebar hover:bg-sidebar-accent rounded transition-all z-10 shadow-sm"
                             title="Edit nickname"
                           >
                             <Pencil className="h-3 w-3 text-sidebar-foreground" />
@@ -464,7 +464,7 @@ export function Sidebar({ clients = [], userRole, teamMemberRole }: SidebarProps
                               href={`/dashboard/clients/${client.slug || client.id}/branches/${branch.slug || branch.id}`}
                               onClick={(e) => handleNavClick(e, `/dashboard/clients/${client.slug || client.id}/branches/${branch.slug || branch.id}`)}
                               className={cn(
-                                'flex flex-1 items-center gap-2 rounded-lg px-3 py-2 text-sm transition-colors',
+                                'flex flex-1 items-center gap-2 rounded-lg px-3 py-2 pr-10 text-sm transition-colors',
                                 pathname === `/dashboard/clients/${client.slug || client.id}/branches/${branch.slug || branch.id}`
                                   ? 'bg-sidebar-accent text-sidebar-accent-foreground'
                                   : 'text-sidebar-foreground/60 hover:bg-sidebar-accent hover:text-sidebar-accent-foreground'
@@ -481,7 +481,7 @@ export function Sidebar({ clients = [], userRole, teamMemberRole }: SidebarProps
                             {!isTeamMember && (
                               <button
                                 onClick={(e) => startEditingBranch(branch, e)}
-                                className="absolute right-1 opacity-0 group-hover:opacity-100 p-1.5 bg-sidebar hover:bg-sidebar-accent rounded transition-all z-10"
+                                className="absolute right-2 opacity-0 group-hover:opacity-100 p-1.5 bg-sidebar hover:bg-sidebar-accent rounded transition-all z-10 shadow-sm"
                                 title="Edit nickname"
                               >
                                 <Pencil className="h-3 w-3 text-sidebar-foreground" />
