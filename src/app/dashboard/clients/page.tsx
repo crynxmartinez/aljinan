@@ -17,7 +17,16 @@ async function getClients(userId: string) {
             }
           },
           branches: {
-            orderBy: { createdAt: 'asc' }
+            orderBy: { createdAt: 'asc' },
+            select: {
+              id: true,
+              slug: true,
+              name: true,
+              address: true,
+              city: true,
+              isActive: true,
+              displayName: true,
+            }
           }
         },
         orderBy: { companyName: 'asc' }

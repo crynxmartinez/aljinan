@@ -1,6 +1,6 @@
 'use client'
 
-import { useState } from 'react'
+import { useState, useRef } from 'react'
 import Link from 'next/link'
 import { useRouter } from 'next/navigation'
 import {
@@ -17,6 +17,10 @@ import {
   Copy,
   CheckCircle,
   Key,
+  Pencil,
+  Check,
+  X,
+  Loader2,
 } from 'lucide-react'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
@@ -43,6 +47,7 @@ import {
 } from '@/components/ui/dialog'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
+import { toast } from 'sonner'
 
 interface Branch {
   id: string
@@ -51,12 +56,14 @@ interface Branch {
   address: string
   city: string | null
   isActive: boolean
+  displayName?: string | null
 }
 
 interface Client {
   id: string
   slug: string | null
   companyName: string
+  displayName?: string | null
   companyPhone: string | null
   companyEmail: string | null
   user: {
@@ -80,6 +87,11 @@ export function ClientsList({ clients }: ClientsListProps) {
   const [copiedField, setCopiedField] = useState<'email' | 'password' | null>(null)
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState('')
+
+  const [editingClientId, setEditingClientId] = useState<string | null>(null)
+  const [editingBranchId, setEditingBranchId] = useState<string | null>(null)
+  const [editingValue, setEditingValue] = useState('')
+  const [savingId, setSavingId] = useState<string | null>(null)
 
   const [newClient, setNewClient] = useState({
     companyName: '',
@@ -169,6 +181,83 @@ export function ClientsList({ clients }: ClientsListProps) {
     }
   }
 
+  const startEditingClient = (client: Client, e: React.MouseEvent) => {
+    e.preventDefault()
+    e.stopPropagation()
+    setEditingClientId(client.id)
+    setEditingBranchId(null)
+    setEditingValue(client.displayName || '')
+  }
+
+  const startEditingBranch = (branch: Branch, e: React.MouseEvent) => {
+    e.preventDefault()
+    e.stopPropagation()
+    setEditingBranchId(branch.id)
+    setEditingClientId(null)
+    setEditingValue(branch.displayName || '')
+  }
+
+  const cancelEditing = () => {
+    setEditingClientId(null)
+    setEditingBranchId(null)
+    setEditingValue('')
+  }
+
+  const saveClientDisplayName = async (clientId: string) => {
+    if (savingId) return
+    setSavingId(clientId)
+    try {
+      const response = await fetch(`/api/clients/${clientId}/display-name`, {
+        method: 'PATCH',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ displayName: editingValue.trim() || null }),
+      })
+      if (!response.ok) {
+        const data = await response.json()
+        throw new Error(data.error || 'Failed to update')
+      }
+      toast.success('Client nickname updated!')
+      cancelEditing()
+      router.refresh()
+    } catch (err) {
+      toast.error(err instanceof Error ? err.message : 'Failed to update')
+    } finally {
+      setSavingId(null)
+    }
+  }
+
+  const saveBranchDisplayName = async (branchId: string) => {
+    if (savingId) return
+    setSavingId(branchId)
+    try {
+      const response = await fetch(`/api/branches/${branchId}/display-name`, {
+        method: 'PATCH',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ displayName: editingValue.trim() || null }),
+      })
+      if (!response.ok) {
+        const data = await response.json()
+        throw new Error(data.error || 'Failed to update')
+      }
+      toast.success('Branch nickname updated!')
+      cancelEditing()
+      router.refresh()
+    } catch (err) {
+      toast.error(err instanceof Error ? err.message : 'Failed to update')
+    } finally {
+      setSavingId(null)
+    }
+  }
+
+  const handleEditKeyDown = (e: React.KeyboardEvent, id: string, type: 'client' | 'branch') => {
+    if (e.key === 'Enter') {
+      e.preventDefault()
+      type === 'client' ? saveClientDisplayName(id) : saveBranchDisplayName(id)
+    } else if (e.key === 'Escape') {
+      cancelEditing()
+    }
+  }
+
   const getStatusBadge = (status: string) => {
     switch (status) {
       case 'ACTIVE':
@@ -241,6 +330,44 @@ export function ClientsList({ clients }: ClientsListProps) {
                         </div>
                       </div>
                     </CollapsibleTrigger>
+                    <div className="flex items-center gap-2 ml-2">
+                      {editingClientId === client.id ? (
+                        <div className="flex items-center gap-1">
+                          <Input
+                            value={editingValue}
+                            onChange={(e) => setEditingValue(e.target.value)}
+                            onKeyDown={(e) => handleEditKeyDown(e, client.id, 'client')}
+                            placeholder="Enter nickname..."
+                            className="h-8 w-40 text-sm"
+                            autoFocus
+                            disabled={savingId === client.id}
+                          />
+                          {savingId === client.id ? (
+                            <Loader2 className="h-4 w-4 animate-spin text-muted-foreground" />
+                          ) : (
+                            <>
+                              <Button size="icon" variant="ghost" className="h-8 w-8" onClick={() => saveClientDisplayName(client.id)}>
+                                <Check className="h-4 w-4 text-green-600" />
+                              </Button>
+                              <Button size="icon" variant="ghost" className="h-8 w-8" onClick={cancelEditing}>
+                                <X className="h-4 w-4 text-red-600" />
+                              </Button>
+                            </>
+                          )}
+                        </div>
+                      ) : (
+                        <>
+                          {client.displayName && (
+                            <Badge variant="outline" className="text-xs font-normal">
+                              Nickname: {client.displayName}
+                            </Badge>
+                          )}
+                          <Button size="icon" variant="ghost" className="h-8 w-8" onClick={(e) => startEditingClient(client, e)} title="Set nickname">
+                            <Pencil className="h-3.5 w-3.5 text-muted-foreground" />
+                          </Button>
+                        </>
+                      )}
+                    </div>
                     <div className="flex items-center gap-2">
                       {getStatusBadge(client.user.status)}
                       <DropdownMenu>
@@ -296,24 +423,64 @@ export function ClientsList({ clients }: ClientsListProps) {
                     ) : (
                       <div className="space-y-2">
                         {client.branches.map((branch) => (
-                          <Link
+                          <div
                             key={branch.id}
-                            href={`/dashboard/clients/${client.slug || client.id}/branches/${branch.slug || branch.id}`}
                             className="flex items-center justify-between p-3 rounded-lg border hover:bg-muted/50 transition-colors"
                           >
-                            <div className="flex items-center gap-3">
-                              <MapPin className="h-4 w-4 text-muted-foreground" />
-                              <div>
-                                <p className="font-medium">{branch.address}</p>
+                            <Link
+                              href={`/dashboard/clients/${client.slug || client.id}/branches/${branch.slug || branch.id}`}
+                              className="flex items-center gap-3 flex-1 min-w-0"
+                            >
+                              <MapPin className="h-4 w-4 text-muted-foreground shrink-0" />
+                              <div className="min-w-0">
+                                <p className="font-medium truncate">{branch.address}</p>
                                 {branch.city && (
                                   <p className="text-sm text-muted-foreground">{branch.city}</p>
                                 )}
                               </div>
+                            </Link>
+                            <div className="flex items-center gap-2 ml-2 shrink-0">
+                              {editingBranchId === branch.id ? (
+                                <div className="flex items-center gap-1">
+                                  <Input
+                                    value={editingValue}
+                                    onChange={(e) => setEditingValue(e.target.value)}
+                                    onKeyDown={(e) => handleEditKeyDown(e, branch.id, 'branch')}
+                                    placeholder="Enter nickname..."
+                                    className="h-8 w-40 text-sm"
+                                    autoFocus
+                                    disabled={savingId === branch.id}
+                                  />
+                                  {savingId === branch.id ? (
+                                    <Loader2 className="h-4 w-4 animate-spin text-muted-foreground" />
+                                  ) : (
+                                    <>
+                                      <Button size="icon" variant="ghost" className="h-8 w-8" onClick={() => saveBranchDisplayName(branch.id)}>
+                                        <Check className="h-4 w-4 text-green-600" />
+                                      </Button>
+                                      <Button size="icon" variant="ghost" className="h-8 w-8" onClick={cancelEditing}>
+                                        <X className="h-4 w-4 text-red-600" />
+                                      </Button>
+                                    </>
+                                  )}
+                                </div>
+                              ) : (
+                                <>
+                                  {branch.displayName && (
+                                    <Badge variant="outline" className="text-xs font-normal">
+                                      Nickname: {branch.displayName}
+                                    </Badge>
+                                  )}
+                                  <Button size="icon" variant="ghost" className="h-8 w-8" onClick={(e) => startEditingBranch(branch, e)} title="Set nickname">
+                                    <Pencil className="h-3.5 w-3.5 text-muted-foreground" />
+                                  </Button>
+                                </>
+                              )}
+                              {!branch.isActive && (
+                                <Badge variant="secondary">Inactive</Badge>
+                              )}
                             </div>
-                            {!branch.isActive && (
-                              <Badge variant="secondary">Inactive</Badge>
-                            )}
-                          </Link>
+                          </div>
                         ))}
                         <Link href={`/dashboard/clients/${client.slug || client.id}/branches/new`}>
                           <Button variant="ghost" size="sm" className="w-full mt-2">
