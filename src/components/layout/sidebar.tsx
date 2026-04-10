@@ -311,7 +311,7 @@ export function Sidebar({ clients = [], userRole, teamMemberRole }: SidebarProps
 
         {/* Clients Section */}
         <div className="space-y-1">
-          <div className="flex items-center justify-between px-3 py-2 relative z-10">
+          <div className="sticky top-0 bg-sidebar flex items-center justify-between px-3 py-2 z-10">
             <span className="text-xs font-semibold uppercase text-sidebar-foreground/50">
               {isTeamMember ? 'Assigned Branches' : 'Clients'}
             </span>
