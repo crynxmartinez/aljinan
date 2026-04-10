@@ -269,20 +269,6 @@ export function Sidebar({ clients = [], userRole, teamMemberRole }: SidebarProps
         </Link>
       </div>
 
-      {/* Clients Header - Outside ScrollArea so it stays visible */}
-      <div className="flex items-center justify-between px-6 py-3 border-b">
-        <span className="text-xs font-semibold uppercase text-sidebar-foreground/50">
-          {isTeamMember ? 'Assigned Branches' : 'Clients'}
-        </span>
-        {!isTeamMember && (
-          <Link href="/dashboard/clients">
-            <Button variant="ghost" size="sm" className="h-6 px-2 text-xs">
-              View All
-            </Button>
-          </Link>
-        )}
-      </div>
-
       <ScrollArea className="flex-1 px-3 py-4">
         {/* Main Navigation */}
         <div className="space-y-1">
@@ -325,6 +311,19 @@ export function Sidebar({ clients = [], userRole, teamMemberRole }: SidebarProps
 
         {/* Clients Section */}
         <div className="space-y-1">
+          <div className="flex items-center justify-between px-3 py-2">
+            <span className="text-xs font-semibold uppercase text-sidebar-foreground/50">
+              {isTeamMember ? 'Assigned Branches' : 'Clients'}
+            </span>
+            {!isTeamMember && (
+              <Link href="/dashboard/clients">
+                <Button variant="ghost" size="sm" className="h-6 px-2 text-xs">
+                  View All
+                </Button>
+              </Link>
+            )}
+          </div>
+
           {clients.length === 0 ? (
             <div className="px-3 py-4 text-center">
               <p className="text-sm text-sidebar-foreground/50">
