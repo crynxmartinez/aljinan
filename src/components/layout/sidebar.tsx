@@ -412,10 +412,10 @@ export function Sidebar({ clients = [], userRole, teamMemberRole }: SidebarProps
                         {!isTeamMember && (
                           <button
                             onClick={(e) => startEditing(client, e)}
-                            className="invisible group-hover:visible p-1 hover:bg-sidebar-accent rounded transition-all shrink-0"
+                            className="opacity-40 group-hover:opacity-100 p-1 hover:bg-sidebar-accent rounded transition-all shrink-0"
                             title="Edit nickname"
                           >
-                            <Pencil className="h-3 w-3 text-sidebar-foreground/50" />
+                            <Pencil className="h-3 w-3 text-sidebar-foreground" />
                           </button>
                         )}
                       </>
@@ -481,10 +481,10 @@ export function Sidebar({ clients = [], userRole, teamMemberRole }: SidebarProps
                             {!isTeamMember && (
                               <button
                                 onClick={(e) => startEditingBranch(branch, e)}
-                                className="invisible group-hover:visible p-1 hover:bg-sidebar-accent rounded transition-all shrink-0"
+                                className="opacity-40 group-hover:opacity-100 p-1 hover:bg-sidebar-accent rounded transition-all shrink-0"
                                 title="Edit nickname"
                               >
-                                <Pencil className="h-3 w-3 text-sidebar-foreground/50" />
+                                <Pencil className="h-3 w-3 text-sidebar-foreground" />
                               </button>
                             )}
                           </>
