@@ -311,13 +311,13 @@ export function Sidebar({ clients = [], userRole, teamMemberRole }: SidebarProps
 
         {/* Clients Section */}
         <div className="space-y-1">
-          <div className="flex items-center justify-between px-3 py-2">
+          <div className="flex items-center justify-between px-3 py-2 relative z-10">
             <span className="text-xs font-semibold uppercase text-sidebar-foreground/50">
               {isTeamMember ? 'Assigned Branches' : 'Clients'}
             </span>
             {!isTeamMember && (
               <Link href="/dashboard/clients">
-                <Button variant="ghost" size="sm" className="h-6 px-2 text-xs">
+                <Button variant="ghost" size="sm" className="h-6 px-2 text-xs shrink-0">
                   View All
                 </Button>
               </Link>
@@ -356,7 +356,7 @@ export function Sidebar({ clients = [], userRole, teamMemberRole }: SidebarProps
                     </CollapsibleTrigger>
                     
                     {editingClientId === client.id ? (
-                      <div className="flex flex-1 items-center gap-1 px-2 py-1">
+                      <div className="flex flex-1 items-center gap-1 px-2 py-1 relative">
                         <Users className="h-4 w-4 text-sidebar-foreground/70 flex-shrink-0" />
                         <input
                           type="text"
@@ -481,7 +481,7 @@ export function Sidebar({ clients = [], userRole, teamMemberRole }: SidebarProps
                             {!isTeamMember && (
                               <button
                                 onClick={(e) => startEditingBranch(branch, e)}
-                                className="opacity-0 group-hover:opacity-100 p-1.5 hover:bg-sidebar-accent rounded transition-opacity"
+                                className="opacity-0 group-hover:opacity-100 p-1 hover:bg-sidebar-accent rounded transition-opacity shrink-0"
                                 title="Edit nickname"
                               >
                                 <Pencil className="h-3 w-3 text-sidebar-foreground/50" />
