@@ -2,6 +2,8 @@ import { getServerSession } from 'next-auth'
 import { NextResponse } from 'next/server'
 import { authOptions } from '@/lib/auth'
 import { prisma } from '@/lib/prisma'
+import { verifyBranchAccess } from '@/lib/permissions'
+import { getCached, CACHE_TAGS } from '@/lib/cache'
 
 // GET - Fetch all projects for a branch
 export async function GET(
@@ -22,28 +24,56 @@ export async function GET(
       return NextResponse.json({ error: 'Access denied' }, { status: 403 })
     }
 
-    const projects = await prisma.project.findMany({
-      where: { branchId },
-      include: {
-        checklists: {
-          include: {
-            items: true
+    // Use caching for projects
+    const cacheKey = CACHE_TAGS.PROJECTS(branchId)
+    const projects = await getCached(cacheKey, async () => {
+      return prisma.project.findMany({
+        where: { branchId },
+        select: {  // Use select instead of include
+          id: true,
+          title: true,
+          description: true,
+          status: true,
+          startDate: true,
+          endDate: true,
+          completedAt: true,
+          createdAt: true,
+          _count: {
+            select: {
+              requests: true,
+              quotations: true,
+              appointments: true,
+              invoices: true,
+              checklists: true,
+              contracts: true,
+            }
           },
-          orderBy: { createdAt: 'asc' }
-        },
-        _count: {
-          select: {
-            requests: true,
-            quotations: true,
-            appointments: true,
-            invoices: true,
-            checklists: true,
-            contracts: true,
+          checklists: {
+            select: {
+              id: true,
+              title: true,
+              items: {
+                select: {
+                  id: true,
+                  description: true,
+                  notes: true,
+                  scheduledDate: true,
+                  stage: true,
+                  type: true,
+                  price: true,
+                  recurringType: true
+                },
+                take: 200  // Limit items
+              }
+            },
+            orderBy: { createdAt: 'asc' },
+            take: 50  // Limit checklists
           }
-        }
-      },
-      orderBy: { createdAt: 'desc' }
-    })
+        },
+        orderBy: { createdAt: 'desc' },
+        take: 100  // Limit projects
+      })
+    }, 60) // Cache for 1 minute
 
     // Transform projects to include work orders from checklists
     const transformedProjects = projects.map(project => {
@@ -301,36 +331,4 @@ export async function POST(
       { status: 500 }
     )
   }
-}
-
-// Helper function to verify branch access
-async function verifyBranchAccess(branchId: string, userId: string, role: string): Promise<boolean> {
-  if (role === 'CONTRACTOR') {
-    const contractor = await prisma.contractor.findUnique({
-      where: { userId },
-      include: {
-        clients: {
-          include: {
-            branches: { where: { id: branchId } }
-          }
-        }
-      }
-    })
-    return contractor?.clients.some(client => client.branches.length > 0) || false
-  } else if (role === 'CLIENT') {
-    const client = await prisma.client.findUnique({
-      where: { userId },
-      include: { branches: { where: { id: branchId } } }
-    })
-    return (client?.branches.length || 0) > 0
-  } else if (role === 'TEAM_MEMBER') {
-    const teamMember = await prisma.teamMember.findUnique({
-      where: { userId },
-      include: {
-        branchAccess: { where: { branchId } }
-      }
-    })
-    return (teamMember?.branchAccess.length || 0) > 0
-  }
-  return false
 }
