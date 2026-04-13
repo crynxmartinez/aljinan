@@ -247,6 +247,11 @@ model Client {
   // Relations
   branches        Branch[]
   branchRequests  BranchRequest[]
+  
+  @@index([companyName])
+  @@index([companyEmail])
+  @@index([contractorId, companyName])
+  @@index([displayName])
 }
 
 model Branch {
@@ -425,6 +430,11 @@ model Request {
   @@index([status])
   @@index([createdAt])
   @@index([branchId, status])
+  @@index([title])
+  @@index([assignedTo])
+  @@index([workOrderType])
+  @@index([projectId])
+  @@index([branchId, createdAt])
 }
 
 // Photos attached to service requests
@@ -531,6 +541,10 @@ model Equipment {
   @@index([expectedExpiry])
   @@index([status])
   @@index([branchId, status])
+  @@index([equipmentNumber])
+  @@index([equipmentType])
+  @@index([workOrderId])
+  @@index([requestId])
 }
 
 // Quotation statuses
@@ -568,6 +582,12 @@ model Quotation {
   createdById   String
   createdAt     DateTime        @default(now())
   updatedAt     DateTime        @updatedAt
+  
+  @@index([branchId])
+  @@index([status])
+  @@index([branchId, createdAt])
+  @@index([requestId])
+  @@index([projectId])
 }
 
 // Quotation line items
@@ -661,6 +681,12 @@ model Invoice {
   createdById   String
   createdAt     DateTime      @default(now())
   updatedAt     DateTime      @updatedAt
+  
+  @@index([branchId])
+  @@index([status])
+  @@index([dueDate])
+  @@index([projectId])
+  @@index([branchId, createdAt])
 }
 
 // Invoice line items
@@ -848,6 +874,11 @@ model ChecklistItem {
   @@index([scheduledDate])
   @@index([deletedAt])
   @@index([checklistId, stage])
+  @@index([description])
+  @@index([assignedTo])
+  @@index([checklistId, order])
+  @@index([linkedRequestId])
+  @@index([workOrderNumber])
 }
 
 // Photos attached to work order inspections
@@ -883,6 +914,12 @@ model Certificate {
   notes       String?
   createdAt   DateTime        @default(now())
   updatedAt   DateTime        @updatedAt
+  
+  @@index([branchId])
+  @@index([title])
+  @@index([type])
+  @@index([expiryDate])
+  @@index([projectId])
 }
 
 // Activity types for tracking

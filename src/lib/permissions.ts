@@ -4,7 +4,8 @@
  * All permission checks in one place for consistency and maintainability
  */
 
-import { prisma } from '@/lib/prisma'
+import { prisma } from './prisma'
+import { getCached, CACHE_TAGS } from './cache'
 import { UserRole } from '@prisma/client'
 
 /**
@@ -45,6 +46,63 @@ export async function canAccessBranch(
   }
 
   return false
+}
+
+/**
+ * Verify branch access with caching (for API routes)
+ * This is the optimized version used in all API endpoints
+ */
+export async function verifyBranchAccess(
+  branchId: string,
+  userId: string,
+  role: string
+): Promise<boolean> {
+  const cacheKey = CACHE_TAGS.BRANCH_ACCESS(branchId, userId, role)
+  
+  return getCached(cacheKey, async () => {
+    if (role === 'CONTRACTOR') {
+      const contractor = await prisma.contractor.findUnique({
+        where: { userId },
+        select: { 
+          id: true,
+          clients: {
+            select: {
+              branches: {
+                where: { id: branchId },
+                select: { id: true }
+              }
+            }
+          }
+        }
+      })
+      return contractor?.clients.some(c => c.branches.length > 0) ?? false
+    }
+
+    if (role === 'CLIENT') {
+      const branch = await prisma.branch.findUnique({
+        where: { id: branchId },
+        select: { 
+          client: {
+            select: { userId: true }
+          }
+        }
+      })
+      return branch?.client.userId === userId
+    }
+
+    if (role === 'TEAM_MEMBER') {
+      const access = await prisma.teamMemberBranch.findFirst({
+        where: {
+          teamMember: { userId },
+          branchId
+        },
+        select: { id: true }
+      })
+      return !!access
+    }
+
+    return false
+  }, 300) // Cache for 5 minutes
 }
 
 /**

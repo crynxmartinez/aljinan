@@ -4,41 +4,51 @@ import { authOptions } from '@/lib/auth'
 import { prisma } from '@/lib/prisma'
 import { Sidebar } from '@/components/layout/sidebar'
 import { DashboardHeader } from '@/components/layout/dashboard-header'
+import { getCached, CACHE_TAGS } from '@/lib/cache'
 
 async function getClientsForContractor(userId: string) {
-  const contractor = await prisma.contractor.findUnique({
-    where: { userId },
-    include: {
-      clients: {
-        where: {
-          user: {
-            status: { not: 'ARCHIVED' }
-          }
-        },
-        include: {
-          branches: {
-            where: { isActive: true },
-            orderBy: { createdAt: 'asc' }
-          }
-        },
-        orderBy: { companyName: 'asc' }
+  return getCached(CACHE_TAGS.CONTRACTOR_CLIENTS(userId), async () => {
+    const contractor = await prisma.contractor.findUnique({
+      where: { userId },
+      select: {  // Use select instead of include for better performance
+        clients: {
+          where: {
+            user: {
+              status: { not: 'ARCHIVED' }
+            }
+          },
+          select: {  // Only select what's needed
+            id: true,
+            slug: true,
+            companyName: true,
+            displayName: true,
+            branches: {
+              where: { isActive: true },
+              select: {  // Only select what's needed
+                id: true,
+                slug: true,
+                name: true,
+                address: true,
+                displayName: true
+              },
+              orderBy: { createdAt: 'asc' },
+              take: 100  // Limit branches per client
+            }
+          },
+          orderBy: { companyName: 'asc' },
+          take: 200  // Limit total clients
+        }
       }
-    }
-  })
+    })
 
-  return contractor?.clients.map(client => ({
-    id: client.id,
-    slug: client.slug,
-    companyName: client.companyName,
-    displayName: client.displayName,
-    branches: client.branches.map(branch => ({
-      id: branch.id,
-      slug: branch.slug,
-      name: branch.name,
-      address: branch.address,
-      displayName: branch.displayName
-    }))
-  })) || []
+    return contractor?.clients.map(client => ({
+      id: client.id,
+      slug: client.slug,
+      companyName: client.companyName,
+      displayName: client.displayName,
+      branches: client.branches
+    })) || []
+  }, 300) // Cache for 5 minutes
 }
 
 async function getClientsForTeamMember(assignedBranchIds: string[]) {
