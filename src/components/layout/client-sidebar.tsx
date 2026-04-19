@@ -12,16 +12,29 @@ import {
   Settings,
   Loader2,
   ClipboardList,
+  Pencil,
 } from 'lucide-react'
 import { cn } from '@/lib/utils'
 import { Button } from '@/components/ui/button'
 import { Avatar, AvatarFallback } from '@/components/ui/avatar'
 import { ScrollArea } from '@/components/ui/scroll-area'
 import { Separator } from '@/components/ui/separator'
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogFooter,
+  DialogHeader,
+  DialogTitle,
+} from '@/components/ui/dialog'
+import { Input } from '@/components/ui/input'
+import { Label } from '@/components/ui/label'
+import { toast } from 'sonner'
 
 interface Branch {
   id: string
   name: string
+  clientNickname: string | null
   address: string
   city: string | null
 }
@@ -44,6 +57,10 @@ export function ClientSidebar({ client }: ClientSidebarProps) {
   const router = useRouter()
   const { data: session } = useSession()
   const [loadingHref, setLoadingHref] = useState<string | null>(null)
+  const [nicknameDialogOpen, setNicknameDialogOpen] = useState(false)
+  const [editingBranch, setEditingBranch] = useState<Branch | null>(null)
+  const [nickname, setNickname] = useState('')
+  const [saving, setSaving] = useState(false)
 
   const handleNavClick = (e: React.MouseEvent, href: string) => {
     if (pathname === href) return
@@ -65,6 +82,48 @@ export function ClientSidebar({ client }: ClientSidebarProps) {
       .join('')
       .toUpperCase()
       .slice(0, 2)
+  }
+
+  const handleEditNickname = (e: React.MouseEvent, branch: Branch) => {
+    e.preventDefault()
+    e.stopPropagation()
+    setEditingBranch(branch)
+    setNickname(branch.clientNickname || '')
+    setNicknameDialogOpen(true)
+  }
+
+  const handleSaveNickname = async () => {
+    if (!editingBranch) return
+
+    setSaving(true)
+    try {
+      const response = await fetch(`/api/branches/${editingBranch.id}/client-nickname`, {
+        method: 'PATCH',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ nickname: nickname.trim() || null })
+      })
+
+      if (!response.ok) {
+        const error = await response.json()
+        throw new Error(error.error || 'Failed to update nickname')
+      }
+
+      // Update the branch in the client data
+      const updatedBranch = await response.json()
+      
+      // Force a page refresh to update the sidebar
+      router.refresh()
+      
+      toast.success('Branch nickname updated successfully')
+      setNicknameDialogOpen(false)
+      setEditingBranch(null)
+      setNickname('')
+    } catch (error) {
+      console.error('Error updating nickname:', error)
+      toast.error(error instanceof Error ? error.message : 'Failed to update nickname')
+    } finally {
+      setSaving(false)
+    }
   }
 
   return (
@@ -156,29 +215,48 @@ export function ClientSidebar({ client }: ClientSidebarProps) {
             </div>
           ) : (
             client.branches.map((branch) => (
-              <Link
-                key={branch.id}
-                href={`/portal/branches/${branch.id}`}
-                onClick={(e) => handleNavClick(e, `/portal/branches/${branch.id}`)}
-                className={cn(
-                  'flex items-center gap-2 rounded-lg px-3 py-2 text-sm transition-colors',
-                  pathname === `/portal/branches/${branch.id}`
-                    ? 'bg-sidebar-accent text-sidebar-accent-foreground'
-                    : 'text-sidebar-foreground/70 hover:bg-sidebar-accent hover:text-sidebar-accent-foreground'
-                )}
-              >
-                {loadingHref === `/portal/branches/${branch.id}` ? (
-                  <Loader2 className="h-4 w-4 flex-shrink-0 animate-spin" />
-                ) : (
-                  <MapPin className="h-4 w-4 flex-shrink-0" />
-                )}
-                <div className="flex-1 min-w-0">
-                  <p className="truncate">{branch.address}</p>
-                  {branch.city && (
-                    <p className="text-xs text-sidebar-foreground/50 truncate">{branch.city}</p>
+              <div key={branch.id} className="group relative">
+                <Link
+                  href={`/portal/branches/${branch.id}`}
+                  onClick={(e) => handleNavClick(e, `/portal/branches/${branch.id}`)}
+                  className={cn(
+                    'flex items-center gap-2 rounded-lg px-3 py-2 text-sm transition-colors',
+                    pathname === `/portal/branches/${branch.id}`
+                      ? 'bg-sidebar-accent text-sidebar-accent-foreground'
+                      : 'text-sidebar-foreground/70 hover:bg-sidebar-accent hover:text-sidebar-accent-foreground'
                   )}
-                </div>
-              </Link>
+                >
+                  {loadingHref === `/portal/branches/${branch.id}` ? (
+                    <Loader2 className="h-4 w-4 flex-shrink-0 animate-spin" />
+                  ) : (
+                    <MapPin className="h-4 w-4 flex-shrink-0" />
+                  )}
+                  <div className="flex-1 min-w-0">
+                    {branch.clientNickname ? (
+                      <>
+                        <p className="truncate font-medium">{branch.clientNickname}</p>
+                        <p className="text-xs text-sidebar-foreground/50 truncate">
+                          {branch.address}{branch.city ? `, ${branch.city}` : ''}
+                        </p>
+                      </>
+                    ) : (
+                      <>
+                        <p className="truncate">{branch.address}</p>
+                        {branch.city && (
+                          <p className="text-xs text-sidebar-foreground/50 truncate">{branch.city}</p>
+                        )}
+                      </>
+                    )}
+                  </div>
+                  <button
+                    onClick={(e) => handleEditNickname(e, branch)}
+                    className="opacity-0 group-hover:opacity-100 transition-opacity p-1 hover:bg-sidebar-accent-foreground/10 rounded"
+                    title="Edit nickname"
+                  >
+                    <Pencil className="h-3 w-3" />
+                  </button>
+                </Link>
+              </div>
             ))
           )}
         </div>
@@ -233,6 +311,65 @@ export function ClientSidebar({ client }: ClientSidebarProps) {
           </Button>
         </div>
       </div>
+
+      {/* Nickname Edit Dialog */}
+      <Dialog open={nicknameDialogOpen} onOpenChange={setNicknameDialogOpen}>
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle>Edit Branch Nickname</DialogTitle>
+            <DialogDescription>
+              Give this branch a custom name for easier identification
+            </DialogDescription>
+          </DialogHeader>
+          
+          {editingBranch && (
+            <div className="space-y-4 py-4">
+              <div className="space-y-2">
+                <Label className="text-sm font-medium">Branch Address</Label>
+                <p className="text-sm text-muted-foreground">
+                  {editingBranch.address}
+                  {editingBranch.city && `, ${editingBranch.city}`}
+                </p>
+              </div>
+              
+              <div className="space-y-2">
+                <Label htmlFor="nickname">Custom Nickname</Label>
+                <Input
+                  id="nickname"
+                  value={nickname}
+                  onChange={(e) => setNickname(e.target.value)}
+                  placeholder="e.g., Head Office, Main Branch, Downtown Location"
+                  maxLength={50}
+                  disabled={saving}
+                />
+                <p className="text-xs text-muted-foreground">
+                  {nickname.length}/50 characters
+                </p>
+              </div>
+            </div>
+          )}
+          
+          <DialogFooter>
+            <Button
+              variant="outline"
+              onClick={() => setNicknameDialogOpen(false)}
+              disabled={saving}
+            >
+              Cancel
+            </Button>
+            <Button onClick={handleSaveNickname} disabled={saving}>
+              {saving ? (
+                <>
+                  <Loader2 className="h-4 w-4 mr-2 animate-spin" />
+                  Saving...
+                </>
+              ) : (
+                'Save Nickname'
+              )}
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
     </div>
   )
 }

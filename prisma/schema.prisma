@@ -261,6 +261,7 @@ model Branch {
   name        String
   slug        String?  // URL-friendly slug generated from name
   displayName String?  // Custom nickname/label set by contractor
+  clientNickname String?  // Custom nickname set by client for easier identification
   address     String
   city        String?
   state       String?
