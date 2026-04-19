@@ -502,6 +502,13 @@ export function ChecklistKanban({ branchId, projectId, readOnly = false, userRol
         .then(data => setTeamMembers(data))
         .catch(() => {})
     }
+
+    // Auto-refresh every 30 seconds to keep board updated
+    const refreshInterval = setInterval(() => {
+      fetchItems()
+    }, 30000) // 30 seconds
+
+    return () => clearInterval(refreshInterval)
   }, [branchId, projectId])
 
   async function fetchItems() {
