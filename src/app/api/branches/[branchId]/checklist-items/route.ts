@@ -450,7 +450,11 @@ export async function PATCH(
       if (currentWorkOrder.clientSignature) {
         await prisma.checklistItem.update({
           where: { id: workOrderId },
-          data: { stage: 'COMPLETED' }
+          data: { 
+            stage: 'COMPLETED',
+            isCompleted: true,
+            completedAt: new Date()
+          }
         })
 
         await generateCertificatesForWorkOrder(workOrderId, currentWorkOrder, session.user.id, session.user.role)
@@ -514,7 +518,11 @@ export async function PATCH(
       if (hasTechnicianOrSupervisorSignature) {
         await prisma.checklistItem.update({
           where: { id: workOrderId },
-          data: { stage: 'COMPLETED' }
+          data: { 
+            stage: 'COMPLETED',
+            isCompleted: true,
+            completedAt: new Date()
+          }
         })
 
         await generateCertificatesForWorkOrder(workOrderId, currentWorkOrder, session.user.id, session.user.role)

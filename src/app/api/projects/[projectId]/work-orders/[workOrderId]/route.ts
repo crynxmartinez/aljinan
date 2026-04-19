@@ -96,8 +96,10 @@ export async function PATCH(
       stage?: 'SCHEDULED' | 'IN_PROGRESS' | 'FOR_REVIEW' | 'COMPLETED' | 'ARCHIVED'
       type?: 'SCHEDULED' | 'ADHOC'
       isCompleted?: boolean
+      completedAt?: Date | null
       deletedAt?: Date | null
       deletedBy?: string | null
+      deletedReason?: string | null
     } = {}
 
     if (description !== undefined) updateData.description = sanitizePlainText(description)
