@@ -264,10 +264,6 @@ export function AppointmentsList({ branchId, projectId }: AppointmentsListProps)
                 List
               </Button>
             </div>
-            <Button onClick={() => setCreateDialogOpen(true)}>
-              <Plus className="mr-2 h-4 w-4" />
-              Schedule
-            </Button>
           </div>
         </div>
 
@@ -288,13 +284,9 @@ export function AppointmentsList({ branchId, projectId }: AppointmentsListProps)
             <div className="flex flex-col items-center justify-center py-12 text-center">
               <Calendar className="h-12 w-12 text-muted-foreground/30 mb-4" />
               <h3 className="text-lg font-semibold mb-2">No appointments scheduled</h3>
-              <p className="text-muted-foreground max-w-md mb-4">
-                Schedule your first appointment for this branch. The client will be notified and can confirm.
+              <p className="text-muted-foreground max-w-md">
+                Appointments can be scheduled from the Kanban board or by clicking on dates in the calendar view.
               </p>
-              <Button onClick={() => setCreateDialogOpen(true)}>
-                <Plus className="mr-2 h-4 w-4" />
-                Schedule Appointment
-              </Button>
             </div>
           ) : (
             <div className="space-y-6">

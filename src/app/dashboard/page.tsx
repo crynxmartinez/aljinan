@@ -53,13 +53,10 @@ async function getDashboardStats(userId: string) {
     }
   }
 
-  // Calculate date range for upcoming appointments (next 7 days)
+  // Calculate date range for this month's appointments
   const today = new Date()
-  const sevenDaysFromNow = new Date()
-  sevenDaysFromNow.setDate(today.getDate() + 7)
-  
-  // Calculate first day of current month for completed work orders
   const firstDayOfMonth = new Date(today.getFullYear(), today.getMonth(), 1)
+  const lastDayOfMonth = new Date(today.getFullYear(), today.getMonth() + 1, 0)
 
   // Run all stat queries in parallel for better performance
   const [
@@ -88,13 +85,13 @@ async function getDashboardStats(userId: string) {
         }
       }),
       
-      // Count appointments scheduled in next 7 days
+      // Count appointments scheduled this month
       prisma.appointment.count({
         where: { 
           branchId: { in: branchIds },
           date: {
-            gte: today,
-            lte: sevenDaysFromNow
+            gte: firstDayOfMonth,
+            lte: lastDayOfMonth
           }
         }
       }),
@@ -220,9 +217,9 @@ export default async function DashboardPage() {
       bgColor: 'bg-purple-100',
     },
     {
-      title: 'Upcoming Appointments',
+      title: 'Appointments This Month',
       value: stats.upcomingAppointments,
-      description: 'Next 7 days',
+      description: 'Scheduled this month',
       icon: Calendar,
       color: 'text-cyan-600',
       bgColor: 'bg-cyan-100',
