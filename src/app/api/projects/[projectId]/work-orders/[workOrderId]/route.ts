@@ -124,6 +124,12 @@ export async function PATCH(
       updateData.stage = stage
       if (stage === 'COMPLETED') {
         updateData.isCompleted = true
+        updateData.completedAt = new Date() // Track when completed for auto-archive
+      }
+      if (stage === 'ARCHIVED') {
+        updateData.deletedAt = new Date()
+        updateData.deletedBy = session.user.id
+        updateData.deletedReason = 'MANUAL' // Manual archive by contractor
       }
     }
     if (type !== undefined) updateData.type = type
@@ -257,6 +263,26 @@ export async function PATCH(
               title: 'Work Order Needs Revision',
               message: `Client requested changes to "${workOrder.description}"`,
               link: `/dashboard/clients/${project.branch.client.slug}/branches/${project.branch.slug}?tab=checklist`,
+              relatedId: workOrder.id,
+              relatedType: 'ChecklistItem'
+            }
+          })
+        }
+      }
+
+      // NOTIFICATION 5: Contractor manually archives work (COMPLETED → ARCHIVED)
+      if (stage === 'ARCHIVED' && previousStage === 'COMPLETED' && session.user.role === 'CONTRACTOR') {
+        if (project?.branch?.client?.user) {
+          // Get contractor name
+          const contractorName = project.branch.client.contractor?.user?.name || 'Contractor'
+          
+          await prisma.notification.create({
+            data: {
+              userId: project.branch.client.user.id,
+              type: 'WORK_ORDER_COMPLETED',
+              title: 'Work Order Archived',
+              message: `"${workOrder.description}" was archived by ${contractorName}`,
+              link: `/portal/branches/${project.branchId}?tab=checklist`,
               relatedId: workOrder.id,
               relatedType: 'ChecklistItem'
             }

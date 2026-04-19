@@ -815,6 +815,7 @@ model ChecklistItem {
   scheduledDate   DateTime?
   price           Float?
   isCompleted     Boolean            @default(false)
+  completedAt     DateTime?          // When work order was completed (moved to COMPLETED stage)
   order           Int                @default(0)
   
   // Link to original request (if created from request)
