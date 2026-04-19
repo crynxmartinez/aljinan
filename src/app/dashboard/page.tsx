@@ -3,7 +3,7 @@ import { redirect } from 'next/navigation'
 import { authOptions } from '@/lib/auth'
 import { prisma } from '@/lib/prisma'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
-import { Users, MapPin, FileText, Calendar, AlertCircle, DollarSign } from 'lucide-react'
+import { Users, MapPin, FileText, Calendar, AlertCircle, DollarSign, Wrench, Eye, CheckCircle, AlertTriangle } from 'lucide-react'
 import { PendingBranchRequests } from './pending-branch-requests'
 import { ActionCenterTable } from '@/components/dashboard/action-center-table'
 
@@ -46,6 +46,10 @@ async function getDashboardStats(userId: string) {
       pendingQuotes: 0,
       upcomingAppointments: 0,
       overdueInvoices: 0,
+      workOrdersInProgress: 0,
+      workOrdersForReview: 0,
+      workOrdersCompletedThisMonth: 0,
+      overdueWorkOrders: 0,
     }
   }
 
@@ -53,10 +57,21 @@ async function getDashboardStats(userId: string) {
   const today = new Date()
   const sevenDaysFromNow = new Date()
   sevenDaysFromNow.setDate(today.getDate() + 7)
+  
+  // Calculate first day of current month for completed work orders
+  const firstDayOfMonth = new Date(today.getFullYear(), today.getMonth(), 1)
 
   // Run all stat queries in parallel for better performance
-  const [pendingRequests, pendingQuotes, upcomingAppointments, overdueInvoices] = 
-    await Promise.all([
+  const [
+    pendingRequests, 
+    pendingQuotes, 
+    upcomingAppointments, 
+    overdueInvoices,
+    workOrdersInProgress,
+    workOrdersForReview,
+    workOrdersCompletedThisMonth,
+    overdueWorkOrders
+  ] = await Promise.all([
       // Count requests with status REQUESTED (waiting for contractor)
       prisma.request.count({
         where: { 
@@ -91,6 +106,60 @@ async function getDashboardStats(userId: string) {
           status: { in: ['SENT', 'OVERDUE'] },
           dueDate: { lt: today }
         }
+      }),
+      
+      // Count work orders currently in progress
+      prisma.checklistItem.count({
+        where: {
+          checklist: {
+            project: {
+              branchId: { in: branchIds }
+            }
+          },
+          stage: 'IN_PROGRESS',
+          deletedAt: null
+        }
+      }),
+      
+      // Count work orders awaiting client review
+      prisma.checklistItem.count({
+        where: {
+          checklist: {
+            project: {
+              branchId: { in: branchIds }
+            }
+          },
+          stage: 'FOR_REVIEW',
+          deletedAt: null
+        }
+      }),
+      
+      // Count work orders completed this month
+      prisma.checklistItem.count({
+        where: {
+          checklist: {
+            project: {
+              branchId: { in: branchIds }
+            }
+          },
+          stage: 'COMPLETED',
+          updatedAt: { gte: firstDayOfMonth },
+          deletedAt: null
+        }
+      }),
+      
+      // Count overdue work orders (past scheduled date, not completed)
+      prisma.checklistItem.count({
+        where: {
+          checklist: {
+            project: {
+              branchId: { in: branchIds }
+            }
+          },
+          scheduledDate: { lt: today },
+          stage: { notIn: ['COMPLETED', 'ARCHIVED'] },
+          deletedAt: null
+        }
       })
     ])
 
@@ -101,6 +170,10 @@ async function getDashboardStats(userId: string) {
     pendingQuotes,
     upcomingAppointments,
     overdueInvoices,
+    workOrdersInProgress,
+    workOrdersForReview,
+    workOrdersCompletedThisMonth,
+    overdueWorkOrders,
   }
 }
 
@@ -162,6 +235,38 @@ export default async function DashboardPage() {
       color: 'text-red-600',
       bgColor: 'bg-red-100',
     },
+    {
+      title: 'Active Work Orders',
+      value: stats.workOrdersInProgress,
+      description: 'Currently in progress',
+      icon: Wrench,
+      color: 'text-orange-600',
+      bgColor: 'bg-orange-100',
+    },
+    {
+      title: 'Awaiting Review',
+      value: stats.workOrdersForReview,
+      description: 'Ready for client approval',
+      icon: Eye,
+      color: 'text-purple-600',
+      bgColor: 'bg-purple-100',
+    },
+    {
+      title: 'Completed This Month',
+      value: stats.workOrdersCompletedThisMonth,
+      description: 'Work orders finished',
+      icon: CheckCircle,
+      color: 'text-green-600',
+      bgColor: 'bg-green-100',
+    },
+    {
+      title: 'Overdue Work',
+      value: stats.overdueWorkOrders,
+      description: 'Past scheduled date',
+      icon: AlertTriangle,
+      color: 'text-red-600',
+      bgColor: 'bg-red-100',
+    },
   ]
 
   return (
@@ -173,7 +278,7 @@ export default async function DashboardPage() {
         </p>
       </div>
 
-      <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
+      <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4 xl:grid-cols-5">
         {statCards.map((stat) => (
           <Card key={stat.title}>
             <CardHeader className="flex flex-row items-center justify-between pb-2">
