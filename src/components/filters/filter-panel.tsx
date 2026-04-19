@@ -1,7 +1,7 @@
 'use client'
 
 import { useState } from 'react'
-import { Filter, X, Calendar as CalendarIcon, Users } from 'lucide-react'
+import { Filter, X, Calendar as CalendarIcon, Users, ChevronDown } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { Label } from '@/components/ui/label'
 import { Checkbox } from '@/components/ui/checkbox'
@@ -18,6 +18,13 @@ import {
   SheetFooter,
 } from '@/components/ui/sheet'
 import { Badge } from '@/components/ui/badge'
+import {
+  Popover,
+  PopoverContent,
+  PopoverTrigger,
+} from '@/components/ui/popover'
+import { cn } from '@/lib/utils'
+import { Check } from 'lucide-react'
 
 interface FilterOption {
   value: string
@@ -114,12 +121,9 @@ export function FilterPanel({
             {/* Date Range Filter */}
             {onDateRangeChange && (
               <>
-                <div className="space-y-4">
-                  <div className="flex items-center gap-3 px-1">
-                    <CalendarIcon className="h-4 w-4 text-primary" />
-                    <Label className="text-sm font-semibold text-foreground">Date Range</Label>
-                  </div>
-                  <div className="space-y-4 px-4">
+                <div className="space-y-3 px-4">
+                  <Label className="text-sm font-medium text-foreground">Date Range</Label>
+                  <div className="space-y-3">
                     <div className="space-y-2">
                       <Label htmlFor="date-from" className="text-xs font-medium text-muted-foreground">From</Label>
                       <Input
@@ -149,66 +153,110 @@ export function FilterPanel({
             {/* Client Filter */}
             {clients && clients.length > 0 && onClientChange && (
               <>
-                <div className="space-y-4">
-                  <div className="flex items-center gap-3 px-1">
-                    <Users className="h-4 w-4 text-primary" />
-                    <Label className="text-sm font-semibold text-foreground">Clients</Label>
-                  </div>
-                  <div className="px-4">
-                    <div className="max-h-[200px] overflow-y-auto space-y-2 pr-2">
-                      {clients.map((client) => (
-                        <label
-                          key={client.id}
-                          htmlFor={`client-${client.id}`}
-                          className="flex items-center space-x-3 cursor-pointer hover:bg-accent/50 rounded-md p-2 -mx-2 transition-colors"
-                        >
-                          <Checkbox
-                            id={`client-${client.id}`}
-                            checked={selectedClients?.includes(client.id)}
-                            onCheckedChange={(checked) => {
-                              if (checked) {
-                                onClientChange([...(selectedClients || []), client.id])
+                <div className="space-y-3 px-4">
+                  <Label className="text-sm font-medium text-foreground">Clients</Label>
+                  <Popover>
+                    <PopoverTrigger asChild>
+                      <Button
+                        variant="outline"
+                        className="w-full justify-between h-10"
+                      >
+                        <span className="text-sm">
+                          {selectedClients && selectedClients.length > 0
+                            ? `${selectedClients.length} selected`
+                            : 'Select clients...'}
+                        </span>
+                        <ChevronDown className="h-4 w-4 opacity-50" />
+                      </Button>
+                    </PopoverTrigger>
+                    <PopoverContent className="w-[280px] p-0" align="start">
+                      <div className="max-h-[300px] overflow-y-auto p-2">
+                        {clients.map((client) => (
+                          <div
+                            key={client.id}
+                            className={cn(
+                              "flex items-center space-x-2 rounded-sm px-2 py-2 cursor-pointer hover:bg-accent",
+                              selectedClients?.includes(client.id) && "bg-accent"
+                            )}
+                            onClick={() => {
+                              if (selectedClients?.includes(client.id)) {
+                                onClientChange(selectedClients.filter(id => id !== client.id))
                               } else {
-                                onClientChange(selectedClients?.filter(id => id !== client.id) || [])
+                                onClientChange([...(selectedClients || []), client.id])
                               }
                             }}
-                          />
-                          <span className="text-sm font-normal flex-1">
-                            {client.name}
-                          </span>
-                        </label>
-                      ))}
-                    </div>
-                  </div>
+                          >
+                            <div className={cn(
+                              "flex h-4 w-4 items-center justify-center rounded-sm border border-primary",
+                              selectedClients?.includes(client.id)
+                                ? "bg-primary text-primary-foreground"
+                                : "opacity-50"
+                            )}>
+                              {selectedClients?.includes(client.id) && (
+                                <Check className="h-3 w-3" />
+                              )}
+                            </div>
+                            <span className="text-sm">{client.name}</span>
+                          </div>
+                        ))}
+                      </div>
+                    </PopoverContent>
+                  </Popover>
                 </div>
                 <Separator className="my-2" />
               </>
             )}
 
             {/* Status and Type Filters */}
-            {localFilters.map((group) => (
-              <div key={group.id} className="space-y-4">
-                <Label className="text-sm font-semibold text-foreground px-1">{group.label}</Label>
-                <div className="space-y-2 px-4">
-                  {group.options.map((option) => (
-                    <label
-                      key={option.value}
-                      htmlFor={`${group.id}-${option.value}`}
-                      className="flex items-center space-x-3 cursor-pointer hover:bg-accent/50 rounded-md p-2 -mx-2 transition-colors"
-                    >
-                      <Checkbox
-                        id={`${group.id}-${option.value}`}
-                        checked={option.checked}
-                        onCheckedChange={() => handleToggle(group.id, option.value)}
-                      />
-                      <span className="text-sm font-normal flex-1">
-                        {option.label}
-                      </span>
-                    </label>
-                  ))}
+            {localFilters.map((group) => {
+              const selectedCount = group.options.filter(opt => opt.checked).length
+              return (
+                <div key={group.id} className="space-y-3 px-4">
+                  <Label className="text-sm font-medium text-foreground">{group.label}</Label>
+                  <Popover>
+                    <PopoverTrigger asChild>
+                      <Button
+                        variant="outline"
+                        className="w-full justify-between h-10"
+                      >
+                        <span className="text-sm">
+                          {selectedCount > 0
+                            ? `${selectedCount} selected`
+                            : `Select ${group.label.toLowerCase()}...`}
+                        </span>
+                        <ChevronDown className="h-4 w-4 opacity-50" />
+                      </Button>
+                    </PopoverTrigger>
+                    <PopoverContent className="w-[280px] p-0" align="start">
+                      <div className="max-h-[300px] overflow-y-auto p-2">
+                        {group.options.map((option) => (
+                          <div
+                            key={option.value}
+                            className={cn(
+                              "flex items-center space-x-2 rounded-sm px-2 py-2 cursor-pointer hover:bg-accent",
+                              option.checked && "bg-accent"
+                            )}
+                            onClick={() => handleToggle(group.id, option.value)}
+                          >
+                            <div className={cn(
+                              "flex h-4 w-4 items-center justify-center rounded-sm border border-primary",
+                              option.checked
+                                ? "bg-primary text-primary-foreground"
+                                : "opacity-50"
+                            )}>
+                              {option.checked && (
+                                <Check className="h-3 w-3" />
+                              )}
+                            </div>
+                            <span className="text-sm">{option.label}</span>
+                          </div>
+                        ))}
+                      </div>
+                    </PopoverContent>
+                  </Popover>
                 </div>
-              </div>
-            ))}
+              )
+            })}
           </div>
         </ScrollArea>
 
