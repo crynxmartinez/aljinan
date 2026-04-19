@@ -2,6 +2,7 @@
 
 import { useState, useEffect } from 'react'
 import { useRouter } from 'next/navigation'
+import { toast } from 'sonner'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
 import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
@@ -164,10 +165,16 @@ const ALLOWED_TRANSITIONS: Record<ChecklistItemStage, { contractor: ChecklistIte
   'ARCHIVED': { contractor: ['SCHEDULED', 'IN_PROGRESS', 'FOR_REVIEW', 'COMPLETED'], client: [] }, // Can restore to any stage
 }
 
-function canTransition(from: ChecklistItemStage, to: ChecklistItemStage, isClient: boolean): boolean {
+function canTransition(from: ChecklistItemStage, to: ChecklistItemStage, isClient: boolean, item?: ChecklistItem): boolean {
   const allowed = isClient 
     ? ALLOWED_TRANSITIONS[from].client 
     : ALLOWED_TRANSITIONS[from].contractor
+  
+  // Can't move to FOR_REVIEW if price is null (contractor must add price first)
+  if (to === 'FOR_REVIEW' && item && item.price === null) {
+    return false
+  }
+  
   return allowed.includes(to)
 }
 
@@ -256,7 +263,7 @@ function DraggableCard({
           )}
           
           <div className="flex items-center justify-between text-xs text-muted-foreground">
-            <div className="flex items-center gap-1">
+            <div className="flex items-center gap-1 flex-wrap">
               {isArchived ? (
                 <Badge variant="outline" className="text-xs border-gray-400 text-gray-600 bg-gray-200">
                   <Archive className="h-3 w-3 mr-1" />
@@ -269,6 +276,11 @@ function DraggableCard({
               ) : (
                 <Badge variant="outline" className="text-xs border-blue-300 text-blue-700 bg-blue-50">
                   Scheduled
+                </Badge>
+              )}
+              {!isArchived && item.price === null && (
+                <Badge variant="outline" className="text-xs border-orange-300 text-orange-700 bg-orange-50">
+                  Pending Price
                 </Badge>
               )}
             </div>
@@ -822,8 +834,13 @@ export function ChecklistKanban({ branchId, projectId, readOnly = false, userRol
 
     // Check if transition is allowed
     const isClient = userRole === 'CLIENT' // Use actual userRole prop
-    if (!canTransition(item.stage, targetStage, isClient)) {
-      console.log(`Transition from ${item.stage} to ${targetStage} not allowed for ${isClient ? 'client' : 'contractor'}`)
+    if (!canTransition(item.stage, targetStage, isClient, item)) {
+      // Show specific message if trying to move to FOR_REVIEW without price
+      if (targetStage === 'FOR_REVIEW' && item.price === null) {
+        toast.error('Please add a price before submitting for review')
+      } else {
+        console.log(`Transition from ${item.stage} to ${targetStage} not allowed for ${isClient ? 'client' : 'contractor'}`)
+      }
       return
     }
 

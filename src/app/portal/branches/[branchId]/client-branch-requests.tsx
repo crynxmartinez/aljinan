@@ -360,6 +360,12 @@ export function ClientBranchRequests({ branchId, projectId, onDataChange, userId
   const [clientSignature, setClientSignature] = useState<string | null>(null)
   const [cancelDialogOpen, setCancelDialogOpen] = useState(false)
   const [cancelling, setCancelling] = useState(false)
+  
+  // Start Immediately state
+  const [startImmediatelyDialogOpen, setStartImmediatelyDialogOpen] = useState(false)
+  const [startImmediatelyRequest, setStartImmediatelyRequest] = useState<Request | null>(null)
+  const [startImmediatelyDate, setStartImmediatelyDate] = useState('')
+  const [startingImmediately, setStartingImmediately] = useState(false)
 
   const fetchRequests = async () => {
     try {
@@ -582,6 +588,54 @@ export function ClientBranchRequests({ branchId, projectId, onDataChange, userId
       setError(err instanceof Error ? err.message : 'An error occurred')
     } finally {
       setRespondingToQuote(false)
+    }
+  }
+
+  // Open start immediately dialog
+  const openStartImmediatelyDialog = (request: Request) => {
+    setStartImmediatelyRequest(request)
+    setStartImmediatelyDialogOpen(true)
+    setStartImmediatelyDate('')
+  }
+
+  // Start work immediately without quotation
+  const handleStartImmediately = async () => {
+    if (!startImmediatelyRequest || !startImmediatelyDate) {
+      setError('Please select a scheduled date')
+      return
+    }
+    
+    setStartingImmediately(true)
+    setError('')
+
+    try {
+      const response = await fetch(`/api/branches/${branchId}/requests/${startImmediatelyRequest.id}`, {
+        method: 'PATCH',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ 
+          action: 'start_immediately',
+          quotedDate: startImmediatelyDate
+        }),
+      })
+
+      if (!response.ok) {
+        const data = await response.json()
+        throw new Error(data.error || 'Failed to start work order')
+      }
+
+      setStartImmediatelyDialogOpen(false)
+      setStartImmediatelyRequest(null)
+      setStartImmediatelyDate('')
+      fetchRequests()
+      onDataChange?.()
+      router.refresh()
+      
+      toast.success('Work order created successfully! Check the Checklist tab.')
+    } catch (err) {
+      setError(err instanceof Error ? err.message : 'An error occurred')
+      toast.error(err instanceof Error ? err.message : 'Failed to create work order')
+    } finally {
+      setStartingImmediately(false)
     }
   }
 
@@ -1375,10 +1429,29 @@ export function ClientBranchRequests({ branchId, projectId, onDataChange, userId
 
               {/* Status Messages */}
               {selectedRequest.status === 'REQUESTED' && (
-                <div className="bg-yellow-50 border border-yellow-200 p-3 rounded-lg">
-                  <p className="text-sm text-yellow-800">
-                    ⏳ Waiting for contractor to review your request...
-                  </p>
+                <div className="space-y-3">
+                  <div className="bg-yellow-50 border border-yellow-200 p-3 rounded-lg">
+                    <p className="text-sm text-yellow-800">
+                      ⏳ Waiting for contractor to review your request...
+                    </p>
+                  </div>
+                  <div className="bg-blue-50 border border-blue-200 p-4 rounded-lg">
+                    <p className="text-sm font-medium text-blue-900 mb-2">Need this done urgently?</p>
+                    <p className="text-sm text-blue-700 mb-3">
+                      Skip the quotation process and start work immediately. The contractor will add pricing later.
+                    </p>
+                    <Button 
+                      size="sm"
+                      onClick={() => {
+                        openStartImmediatelyDialog(selectedRequest)
+                        setSelectedRequest(null)
+                      }}
+                      className="bg-blue-600 hover:bg-blue-700"
+                    >
+                      <Calendar className="mr-2 h-4 w-4" />
+                      Start Immediately
+                    </Button>
+                  </div>
                 </div>
               )}
               {selectedRequest.status === 'SCHEDULED' && (
@@ -1922,6 +1995,105 @@ export function ClientBranchRequests({ branchId, projectId, onDataChange, userId
                   </div>
                 </>
               )}
+            </div>
+          )}
+        </DialogContent>
+      </Dialog>
+
+      {/* Start Immediately Dialog - Skip quotation and create work order */}
+      <Dialog open={startImmediatelyDialogOpen} onOpenChange={(open) => { if (!open) { setStartImmediatelyDialogOpen(false); setStartImmediatelyRequest(null); setStartImmediatelyDate(''); setError(''); } }}>
+        <DialogContent className="sm:max-w-[500px]">
+          <DialogHeader>
+            <DialogTitle>Start Work Immediately</DialogTitle>
+            <DialogDescription>
+              Create a work order without waiting for a quotation. The contractor will add pricing later.
+            </DialogDescription>
+          </DialogHeader>
+          
+          {startImmediatelyRequest && (
+            <div className="space-y-4 py-4">
+              {error && (
+                <div className="bg-destructive/10 text-destructive p-3 rounded-lg text-sm">
+                  {error}
+                </div>
+              )}
+
+              <div className="p-4 bg-amber-50 border border-amber-200 rounded-lg">
+                <p className="text-sm text-amber-800">
+                  <strong>Request:</strong> {startImmediatelyRequest.title}
+                </p>
+                {startImmediatelyRequest.recurringType && startImmediatelyRequest.recurringType !== 'ONCE' && (
+                  <p className="text-sm text-amber-800 mt-1">
+                    <strong>Recurring:</strong> {startImmediatelyRequest.recurringType === 'MONTHLY' ? '12 monthly' : '4 quarterly'} work orders will be created
+                  </p>
+                )}
+              </div>
+
+              <div className="space-y-2">
+                <Label htmlFor="start-date" className="flex items-center gap-2">
+                  <Calendar className="h-4 w-4" />
+                  Scheduled Date *
+                </Label>
+                <Input
+                  id="start-date"
+                  type="date"
+                  value={startImmediatelyDate}
+                  onChange={(e) => setStartImmediatelyDate(e.target.value)}
+                  min={new Date().toISOString().split('T')[0]}
+                  required
+                />
+                <p className="text-xs text-muted-foreground">
+                  {startImmediatelyRequest.recurringType === 'MONTHLY' 
+                    ? 'This will be the start date for the first monthly occurrence'
+                    : startImmediatelyRequest.recurringType === 'QUARTERLY'
+                    ? 'This will be the start date for the first quarterly occurrence'
+                    : 'When should the work be scheduled?'}
+                </p>
+              </div>
+
+              <div className="p-4 bg-blue-50 border border-blue-200 rounded-lg">
+                <p className="text-sm text-blue-800">
+                  <strong>What happens next?</strong>
+                </p>
+                <ul className="text-sm text-blue-700 mt-2 space-y-1 list-disc list-inside">
+                  <li>Work order will be created and appear in the Checklist tab</li>
+                  <li>Contractor can start work on the scheduled date</li>
+                  <li>Contractor will add pricing before submitting for review</li>
+                  <li>You'll review and approve the work when completed</li>
+                </ul>
+              </div>
+
+              <div className="flex gap-3">
+                <Button 
+                  variant="outline"
+                  onClick={() => {
+                    setStartImmediatelyDialogOpen(false)
+                    setStartImmediatelyRequest(null)
+                    setStartImmediatelyDate('')
+                  }}
+                  className="flex-1"
+                  disabled={startingImmediately}
+                >
+                  Cancel
+                </Button>
+                <Button 
+                  onClick={handleStartImmediately}
+                  disabled={startingImmediately || !startImmediatelyDate}
+                  className="flex-1 bg-blue-600 hover:bg-blue-700"
+                >
+                  {startingImmediately ? (
+                    <>
+                      <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                      Creating...
+                    </>
+                  ) : (
+                    <>
+                      <CheckCircle className="mr-2 h-4 w-4" />
+                      Create Work Order
+                    </>
+                  )}
+                </Button>
+              </div>
             </div>
           )}
         </DialogContent>

@@ -118,6 +118,109 @@ export async function PATCH(
       if (quotationUrl !== undefined) updateData.quotationUrl = quotationUrl || null
       if (quotationFileName !== undefined) updateData.quotationFileName = quotationFileName || null
     }
+    // ACTION: Client starts work immediately (without quotation)
+    else if (action === 'start_immediately') {
+      if (session.user.role !== 'CLIENT') {
+        return NextResponse.json({ error: 'Only clients can start work immediately' }, { status: 403 })
+      }
+      if (currentRequest.status !== 'REQUESTED') {
+        return NextResponse.json({ error: 'Can only start immediately from requested status' }, { status: 400 })
+      }
+      if (!quotedDate) {
+        return NextResponse.json({ error: 'Scheduled date is required' }, { status: 400 })
+      }
+      
+      updateData.status = 'SCHEDULED'
+      updateData.quotedDate = new Date(quotedDate) // Store scheduled date
+      updateData.quotedPrice = null // No price yet - contractor will add later
+      updateData.acceptedAt = new Date()
+      updateData.acceptedById = session.user.id
+
+      // Create work order (ChecklistItem) from request
+      // First, find or create a checklist for this branch
+      let checklist = await prisma.checklist.findFirst({
+        where: { 
+          branchId,
+          projectId: currentRequest.projectId,
+          status: 'IN_PROGRESS'
+        }
+      })
+
+      if (!checklist) {
+        checklist = await prisma.checklist.create({
+          data: {
+            branchId,
+            projectId: currentRequest.projectId,
+            title: 'Service Requests',
+            description: 'Work orders from client requests',
+            status: 'IN_PROGRESS',
+            createdById: session.user.id,
+          }
+        })
+      }
+
+      // Get contractor for WO number generation
+      const branchData = await prisma.branch.findUnique({
+        where: { id: branchId },
+        include: { client: { select: { contractorId: true } } }
+      })
+
+      // Determine number of work orders to create based on recurring type
+      const recurringType = currentRequest.recurringType || 'ONCE'
+      let occurrenceCount = 1
+      if (recurringType === 'MONTHLY') occurrenceCount = 12
+      else if (recurringType === 'QUARTERLY') occurrenceCount = 4
+
+      const startDate = new Date(quotedDate)
+      const createdWorkOrders: string[] = []
+
+      // Atomically increment the contractor's WO counter for all occurrences
+      let startingWoNumber = 1
+      if (branchData) {
+        const contractor = await prisma.contractor.update({
+          where: { id: branchData.client.contractorId },
+          data: { nextWorkOrderNumber: { increment: occurrenceCount } },
+          select: { nextWorkOrderNumber: true }
+        })
+        startingWoNumber = contractor.nextWorkOrderNumber - occurrenceCount
+      }
+
+      // Create work orders for each occurrence
+      for (let i = 0; i < occurrenceCount; i++) {
+        // Calculate scheduled date for this occurrence
+        const scheduledDate = new Date(startDate)
+        if (recurringType === 'MONTHLY') {
+          scheduledDate.setMonth(scheduledDate.getMonth() + i)
+        } else if (recurringType === 'QUARTERLY') {
+          scheduledDate.setMonth(scheduledDate.getMonth() + (i * 3))
+        }
+
+        const workOrder = await prisma.checklistItem.create({
+          data: {
+            checklistId: checklist.id,
+            description: recurringType !== 'ONCE' 
+              ? `${currentRequest.title} (${i + 1}/${occurrenceCount})`
+              : currentRequest.title,
+            notes: currentRequest.description,
+            stage: 'SCHEDULED',
+            type: 'ADHOC',
+            workOrderType: currentRequest.workOrderType,
+            recurringType: recurringType,
+            occurrenceIndex: i + 1,
+            workOrderNumber: startingWoNumber + i,
+            scheduledDate: scheduledDate,
+            price: null, // Price will be added by contractor later
+            linkedRequestId: requestId,
+            assignedTo: currentRequest.assignedTo || null,
+          }
+        })
+        createdWorkOrders.push(workOrder.id)
+      }
+
+      workOrderCreated = true
+      workOrderId = createdWorkOrders[0] // First work order ID
+      updateData.workOrderId = createdWorkOrders[0]
+    }
     // ACTION: Client accepts quote
     else if (action === 'accept') {
       if (session.user.role !== 'CLIENT') {
