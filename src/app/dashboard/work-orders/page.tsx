@@ -29,10 +29,14 @@ interface WorkOrder {
 
 export default function WorkOrdersPage() {
   const [workOrders, setWorkOrders] = useState<WorkOrder[]>([])
+  const [filteredWorkOrders, setFilteredWorkOrders] = useState<WorkOrder[]>([])
   const [loading, setLoading] = useState(true)
   const [selectedIds, setSelectedIds] = useState<string[]>([])
   const [currentPage, setCurrentPage] = useState(1)
   const [itemsPerPage, setItemsPerPage] = useState(10)
+  const [dateRange, setDateRange] = useState({ from: '', to: '' })
+  const [selectedClients, setSelectedClients] = useState<string[]>([])
+  const [availableClients, setAvailableClients] = useState<{ id: string; name: string }[]>([])
   const [filters, setFilters] = useState([
     {
       id: 'status',
@@ -66,6 +70,86 @@ export default function WorkOrdersPage() {
     fetchWorkOrders()
   }, [])
 
+  useEffect(() => {
+    applyFilters()
+  }, [workOrders, filters, quickFilters, dateRange, selectedClients])
+
+  const applyFilters = () => {
+    let filtered = [...workOrders]
+    
+    // 1. Status filter
+    const activeStatuses = filters
+      .find(f => f.id === 'status')
+      ?.options.filter(o => o.checked)
+      .map(o => o.value) || []
+    if (activeStatuses.length > 0) {
+      filtered = filtered.filter(wo => activeStatuses.includes(wo.stage))
+    }
+    
+    // 2. Type filter
+    const activeTypes = filters
+      .find(f => f.id === 'type')
+      ?.options.filter(o => o.checked)
+      .map(o => o.value) || []
+    if (activeTypes.length > 0) {
+      filtered = filtered.filter(wo => activeTypes.includes(wo.workOrderType))
+    }
+    
+    // 3. Date range filter
+    if (dateRange.from) {
+      filtered = filtered.filter(wo => 
+        wo.scheduledDate && new Date(wo.scheduledDate) >= new Date(dateRange.from)
+      )
+    }
+    if (dateRange.to) {
+      filtered = filtered.filter(wo => 
+        wo.scheduledDate && new Date(wo.scheduledDate) <= new Date(dateRange.to)
+      )
+    }
+    
+    // 4. Client filter
+    if (selectedClients.length > 0) {
+      filtered = filtered.filter(wo => selectedClients.includes(wo.clientName))
+    }
+    
+    // 5. Quick filters
+    const today = new Date()
+    today.setHours(0, 0, 0, 0)
+    
+    if (quickFilters.find(f => f.value === 'due_today' && f.active)) {
+      filtered = filtered.filter(wo => {
+        if (!wo.scheduledDate) return false
+        const woDate = new Date(wo.scheduledDate)
+        woDate.setHours(0, 0, 0, 0)
+        return woDate.getTime() === today.getTime()
+      })
+    }
+    
+    if (quickFilters.find(f => f.value === 'overdue' && f.active)) {
+      filtered = filtered.filter(wo => {
+        if (!wo.scheduledDate) return false
+        return new Date(wo.scheduledDate) < today && wo.stage !== 'COMPLETED'
+      })
+    }
+    
+    if (quickFilters.find(f => f.value === 'in_progress' && f.active)) {
+      filtered = filtered.filter(wo => wo.stage === 'IN_PROGRESS')
+    }
+    
+    if (quickFilters.find(f => f.value === 'this_week' && f.active)) {
+      const weekEnd = new Date(today)
+      weekEnd.setDate(weekEnd.getDate() + 7)
+      filtered = filtered.filter(wo => {
+        if (!wo.scheduledDate) return false
+        const woDate = new Date(wo.scheduledDate)
+        return woDate >= today && woDate <= weekEnd
+      })
+    }
+    
+    setFilteredWorkOrders(filtered)
+    setCurrentPage(1) // Reset to first page when filters change
+  }
+
   const fetchWorkOrders = async () => {
     try {
       const response = await fetch('/api/work-orders')
@@ -74,6 +158,13 @@ export default function WorkOrdersPage() {
       }
       const data = await response.json()
       setWorkOrders(data)
+      setFilteredWorkOrders(data)
+      
+      // Extract unique clients
+      const uniqueClients = Array.from(
+        new Map(data.map((wo: WorkOrder) => [wo.clientName, { id: wo.clientName, name: wo.clientName }])).values()
+      )
+      setAvailableClients(uniqueClients)
     } catch (error) {
       console.error('Failed to fetch work orders:', error)
     } finally {
@@ -82,10 +173,10 @@ export default function WorkOrdersPage() {
   }
 
   // Pagination calculations
-  const totalPages = Math.ceil(workOrders.length / itemsPerPage)
+  const totalPages = Math.ceil(filteredWorkOrders.length / itemsPerPage)
   const startIndex = (currentPage - 1) * itemsPerPage
   const endIndex = startIndex + itemsPerPage
-  const paginatedWorkOrders = workOrders.slice(startIndex, endIndex)
+  const paginatedWorkOrders = filteredWorkOrders.slice(startIndex, endIndex)
 
   const handleSelectAll = (checked: boolean) => {
     if (checked) {
@@ -118,14 +209,20 @@ export default function WorkOrdersPage() {
 
   const handleFilterChange = (newFilters: typeof filters) => {
     setFilters(newFilters)
-    // TODO: Apply filters to work orders
   }
 
   const handleQuickFilterClick = (value: string) => {
     setQuickFilters(prev =>
       prev.map(f => f.value === value ? { ...f, active: !f.active } : f)
     )
-    // TODO: Apply quick filter
+  }
+
+  const handleDateRangeChange = (range: { from: string; to: string }) => {
+    setDateRange(range)
+  }
+
+  const handleClientChange = (clients: string[]) => {
+    setSelectedClients(clients)
   }
 
   const handleExport = async (format: string, options: Record<string, boolean>) => {
@@ -137,12 +234,15 @@ export default function WorkOrdersPage() {
       includePhotos: options.includePhotos ?? false,
     }
 
+    // Export filtered data only
+    const dataToExport = filteredWorkOrders.length > 0 ? filteredWorkOrders : workOrders
+
     if (format === 'excel') {
-      exportWorkOrdersToExcel(workOrders, exportOpts)
+      exportWorkOrdersToExcel(dataToExport, exportOpts)
     } else if (format === 'csv') {
-      exportWorkOrdersToCsv(workOrders, exportOpts)
+      exportWorkOrdersToCsv(dataToExport, exportOpts)
     } else if (format === 'pdf') {
-      exportWorkOrdersToExcel(workOrders, exportOpts)
+      exportWorkOrdersToExcel(dataToExport, exportOpts)
     }
   }
 
@@ -200,6 +300,11 @@ export default function WorkOrdersPage() {
           filters={filters}
           onFilterChange={handleFilterChange}
           activeFilterCount={getActiveFilterCount()}
+          dateRange={dateRange}
+          onDateRangeChange={handleDateRangeChange}
+          clients={availableClients}
+          selectedClients={selectedClients}
+          onClientChange={handleClientChange}
         />
         <div className="flex items-center gap-4 ml-auto">
           <div className="flex items-center gap-2">
@@ -218,7 +323,7 @@ export default function WorkOrdersPage() {
             </Select>
           </div>
           <div className="text-sm text-muted-foreground">
-            {workOrders.length} total work orders
+            {filteredWorkOrders.length} of {workOrders.length} work orders
           </div>
         </div>
       </div>
@@ -310,10 +415,13 @@ export default function WorkOrdersPage() {
           )}
 
           {/* Pagination Controls */}
-          {!loading && workOrders.length > 0 && (
+          {!loading && filteredWorkOrders.length > 0 && (
             <div className="flex items-center justify-between px-4 py-4 border-t">
               <div className="text-sm text-muted-foreground">
-                Showing {startIndex + 1} to {Math.min(endIndex, workOrders.length)} of {workOrders.length} work orders
+                Showing {startIndex + 1} to {Math.min(endIndex, filteredWorkOrders.length)} of {filteredWorkOrders.length} work orders
+                {filteredWorkOrders.length < workOrders.length && (
+                  <span className="text-muted-foreground/70"> (filtered from {workOrders.length})</span>
+                )}
               </div>
               <div className="flex items-center gap-2">
                 <Button
