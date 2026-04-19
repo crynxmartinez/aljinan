@@ -8,6 +8,8 @@
     "build": "next build",
     "start": "next start",
     "lint": "next lint",
+    "type-check": "tsc --noEmit",
+    "validate": "npm run type-check && npm run lint",
     "postinstall": "prisma generate",
     "electron": "electron electron/main.js",
     "electron:build": "electron-builder",

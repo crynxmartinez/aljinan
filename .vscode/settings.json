@@ -1,0 +1,23 @@
+{
+  "typescript.tsdk": "node_modules/typescript/lib",
+  "typescript.enablePromptUseWorkspaceTsdk": true,
+  
+  // Auto-save and format
+  "editor.formatOnSave": true,
+  "editor.codeActionsOnSave": {
+    "source.fixAll.eslint": "explicit"
+  },
+  
+  // TypeScript validation
+  "typescript.validate.enable": true,
+  "javascript.validate.enable": true,
+  
+  // Show errors inline
+  "typescript.showAllErrors": true,
+  "problems.showCurrentInStatus": true,
+  
+  // Prisma
+  "[prisma]": {
+    "editor.defaultFormatter": "Prisma.prisma"
+  }
+}
