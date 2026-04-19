@@ -101,63 +101,67 @@ export function FilterPanel({
           )}
         </Button>
       </SheetTrigger>
-      <SheetContent>
-        <SheetHeader>
+      <SheetContent className="w-80">
+        <SheetHeader className="px-1">
           <SheetTitle>Filters</SheetTitle>
           <SheetDescription>
             Refine your results by applying filters
           </SheetDescription>
         </SheetHeader>
 
-        <ScrollArea className="h-[calc(100vh-200px)] pr-4">
-          <div className="py-6 space-y-6">
+        <ScrollArea className="h-[calc(100vh-200px)] pr-2">
+          <div className="py-6 space-y-6 px-1">
             {/* Date Range Filter */}
             {onDateRangeChange && (
               <>
-                <div className="space-y-3">
-                  <div className="flex items-center gap-2">
-                    <CalendarIcon className="h-4 w-4 text-muted-foreground" />
-                    <Label className="text-sm font-semibold">Date Range</Label>
+                <div className="space-y-4">
+                  <div className="flex items-center gap-3 px-1">
+                    <CalendarIcon className="h-4 w-4 text-primary" />
+                    <Label className="text-sm font-semibold text-foreground">Date Range</Label>
                   </div>
-                  <div className="space-y-3 pl-6">
-                    <div className="space-y-1.5">
-                      <Label htmlFor="date-from" className="text-xs text-muted-foreground">From</Label>
+                  <div className="space-y-4 px-4">
+                    <div className="space-y-2">
+                      <Label htmlFor="date-from" className="text-xs font-medium text-muted-foreground">From</Label>
                       <Input
                         id="date-from"
                         type="date"
                         value={dateRange?.from || ''}
                         onChange={(e) => onDateRangeChange?.({ from: e.target.value, to: dateRange?.to ?? '' })}
-                        className="h-9"
+                        className="h-10"
                       />
                     </div>
-                    <div className="space-y-1.5">
-                      <Label htmlFor="date-to" className="text-xs text-muted-foreground">To</Label>
+                    <div className="space-y-2">
+                      <Label htmlFor="date-to" className="text-xs font-medium text-muted-foreground">To</Label>
                       <Input
                         id="date-to"
                         type="date"
                         value={dateRange?.to || ''}
                         onChange={(e) => onDateRangeChange?.({ from: dateRange?.from ?? '', to: e.target.value })}
-                        className="h-9"
+                        className="h-10"
                       />
                     </div>
                   </div>
                 </div>
-                <Separator />
+                <Separator className="my-2" />
               </>
             )}
 
             {/* Client Filter */}
             {clients && clients.length > 0 && onClientChange && (
               <>
-                <div className="space-y-3">
-                  <div className="flex items-center gap-2">
-                    <Users className="h-4 w-4 text-muted-foreground" />
-                    <Label className="text-sm font-semibold">Clients</Label>
+                <div className="space-y-4">
+                  <div className="flex items-center gap-3 px-1">
+                    <Users className="h-4 w-4 text-primary" />
+                    <Label className="text-sm font-semibold text-foreground">Clients</Label>
                   </div>
-                  <div className="pl-6">
+                  <div className="px-4">
                     <div className="max-h-[200px] overflow-y-auto space-y-2 pr-2">
                       {clients.map((client) => (
-                        <div key={client.id} className="flex items-center space-x-2">
+                        <label
+                          key={client.id}
+                          htmlFor={`client-${client.id}`}
+                          className="flex items-center space-x-3 cursor-pointer hover:bg-accent/50 rounded-md p-2 -mx-2 transition-colors"
+                        >
                           <Checkbox
                             id={`client-${client.id}`}
                             checked={selectedClients?.includes(client.id)}
@@ -169,40 +173,38 @@ export function FilterPanel({
                               }
                             }}
                           />
-                          <label
-                            htmlFor={`client-${client.id}`}
-                            className="text-sm font-normal cursor-pointer flex-1"
-                          >
+                          <span className="text-sm font-normal flex-1">
                             {client.name}
-                          </label>
-                        </div>
+                          </span>
+                        </label>
                       ))}
                     </div>
                   </div>
                 </div>
-                <Separator />
+                <Separator className="my-2" />
               </>
             )}
 
             {/* Status and Type Filters */}
             {localFilters.map((group) => (
-              <div key={group.id} className="space-y-3">
-                <Label className="text-sm font-semibold">{group.label}</Label>
-                <div className="space-y-2 pl-6">
+              <div key={group.id} className="space-y-4">
+                <Label className="text-sm font-semibold text-foreground px-1">{group.label}</Label>
+                <div className="space-y-2 px-4">
                   {group.options.map((option) => (
-                    <div key={option.value} className="flex items-center space-x-2">
+                    <label
+                      key={option.value}
+                      htmlFor={`${group.id}-${option.value}`}
+                      className="flex items-center space-x-3 cursor-pointer hover:bg-accent/50 rounded-md p-2 -mx-2 transition-colors"
+                    >
                       <Checkbox
                         id={`${group.id}-${option.value}`}
                         checked={option.checked}
                         onCheckedChange={() => handleToggle(group.id, option.value)}
                       />
-                      <label
-                        htmlFor={`${group.id}-${option.value}`}
-                        className="text-sm font-normal cursor-pointer"
-                      >
+                      <span className="text-sm font-normal flex-1">
                         {option.label}
-                      </label>
-                    </div>
+                      </span>
+                    </label>
                   ))}
                 </div>
               </div>
@@ -210,7 +212,7 @@ export function FilterPanel({
           </div>
         </ScrollArea>
 
-        <SheetFooter className="flex gap-2">
+        <SheetFooter className="flex gap-2 px-1">
           <Button variant="outline" onClick={handleClearAll} className="flex-1">
             <X className="h-4 w-4 mr-2" />
             Clear All
