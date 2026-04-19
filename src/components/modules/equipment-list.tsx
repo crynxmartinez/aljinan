@@ -54,21 +54,22 @@ interface Equipment {
   id: string
   equipmentNumber: string
   equipmentType: string
-  brand: string | null
-  model: string | null
-  serialNumber: string | null
-  location: string | null
-  dateAdded: string | null
-  expectedExpiry: string | null
-  lastInspected: string | null
+  customEquipmentType?: string
+  brand?: string
+  model?: string
+  serialNumber?: string
+  location?: string
+  dateAdded: string
+  expectedExpiry?: string
+  lastInspected?: string
   status: 'ACTIVE' | 'EXPIRING_SOON' | 'EXPIRED' | 'NEEDS_ATTENTION'
   calculatedStatus?: string
   inspectionResult: 'PASS' | 'FAIL' | 'NEEDS_REPAIR' | 'PENDING'
   isInspected: boolean
   certificateIssued: boolean
   stickerApplied: boolean
-  notes: string | null
-  deficiencies: string | null
+  notes?: string | null
+  deficiencies?: string | null
   certificate?: {
     id: string
     title: string
@@ -130,6 +131,7 @@ export function EquipmentList({ branchId, userRole = 'CONTRACTOR' }: EquipmentLi
   const [formData, setFormData] = useState({
     equipmentNumber: '',
     equipmentType: 'FIRE_EXTINGUISHER',
+    customEquipmentType: '',
     brand: '',
     model: '',
     serialNumber: '',
@@ -164,6 +166,11 @@ export function EquipmentList({ branchId, userRole = 'CONTRACTOR' }: EquipmentLi
   const handleAddEquipment = async () => {
     if (!formData.equipmentNumber || !formData.equipmentType) {
       setError('Equipment number and type are required')
+      return
+    }
+
+    if (formData.equipmentType === 'OTHER' && !formData.customEquipmentType.trim()) {
+      setError('Please specify the equipment type')
       return
     }
 
@@ -245,6 +252,7 @@ export function EquipmentList({ branchId, userRole = 'CONTRACTOR' }: EquipmentLi
     setFormData({
       equipmentNumber: eq.equipmentNumber,
       equipmentType: eq.equipmentType,
+      customEquipmentType: eq.customEquipmentType || '',
       brand: eq.brand || '',
       model: eq.model || '',
       serialNumber: eq.serialNumber || '',
@@ -259,6 +267,7 @@ export function EquipmentList({ branchId, userRole = 'CONTRACTOR' }: EquipmentLi
     setFormData({
       equipmentNumber: '',
       equipmentType: 'FIRE_EXTINGUISHER',
+      customEquipmentType: '',
       brand: '',
       model: '',
       serialNumber: '',
@@ -273,7 +282,8 @@ export function EquipmentList({ branchId, userRole = 'CONTRACTOR' }: EquipmentLi
     const matchesSearch = 
       eq.equipmentNumber.toLowerCase().includes(searchQuery.toLowerCase()) ||
       eq.location?.toLowerCase().includes(searchQuery.toLowerCase()) ||
-      eq.equipmentType.toLowerCase().includes(searchQuery.toLowerCase())
+      eq.equipmentType.toLowerCase().includes(searchQuery.toLowerCase()) ||
+      eq.customEquipmentType?.toLowerCase().includes(searchQuery.toLowerCase())
     
     const matchesStatus = statusFilter === 'all' || 
       eq.status === statusFilter || 
@@ -439,7 +449,9 @@ export function EquipmentList({ branchId, userRole = 'CONTRACTOR' }: EquipmentLi
                       <TableCell className="font-medium">{eq.equipmentNumber}</TableCell>
                       <TableCell>
                         <Badge variant="outline" className="text-xs">
-                          {eq.equipmentType.replace(/_/g, ' ')}
+                          {eq.equipmentType === 'OTHER' && eq.customEquipmentType
+                            ? eq.customEquipmentType
+                            : eq.equipmentType.replace(/_/g, ' ')}
                         </Badge>
                       </TableCell>
                       <TableCell>
@@ -600,7 +612,11 @@ export function EquipmentList({ branchId, userRole = 'CONTRACTOR' }: EquipmentLi
                 <Label htmlFor="equipmentType">Type *</Label>
                 <Select
                   value={formData.equipmentType}
-                  onValueChange={(value) => setFormData({ ...formData, equipmentType: value })}
+                  onValueChange={(value) => setFormData({ 
+                    ...formData, 
+                    equipmentType: value,
+                    customEquipmentType: value !== 'OTHER' ? '' : formData.customEquipmentType
+                  })}
                 >
                   <SelectTrigger>
                     <SelectValue />
@@ -613,6 +629,18 @@ export function EquipmentList({ branchId, userRole = 'CONTRACTOR' }: EquipmentLi
                 </Select>
               </div>
             </div>
+            {/* Custom Equipment Type - Show when OTHER is selected */}
+            {formData.equipmentType === 'OTHER' && (
+              <div className="space-y-2">
+                <Label htmlFor="customEquipmentType">Specify Equipment Type *</Label>
+                <Input
+                  id="customEquipmentType"
+                  value={formData.customEquipmentType}
+                  onChange={(e) => setFormData({ ...formData, customEquipmentType: e.target.value })}
+                  placeholder="e.g., CO2 Detector, Water Sprayer, etc."
+                />
+              </div>
+            )}
             <div className="grid grid-cols-2 gap-4">
               <div className="space-y-2">
                 <Label htmlFor="brand">Brand</Label>
@@ -709,7 +737,11 @@ export function EquipmentList({ branchId, userRole = 'CONTRACTOR' }: EquipmentLi
                 <Label htmlFor="edit-equipmentType">Type *</Label>
                 <Select
                   value={formData.equipmentType}
-                  onValueChange={(value) => setFormData({ ...formData, equipmentType: value })}
+                  onValueChange={(value) => setFormData({ 
+                    ...formData, 
+                    equipmentType: value,
+                    customEquipmentType: value !== 'OTHER' ? '' : formData.customEquipmentType
+                  })}
                 >
                   <SelectTrigger>
                     <SelectValue />
@@ -722,6 +754,18 @@ export function EquipmentList({ branchId, userRole = 'CONTRACTOR' }: EquipmentLi
                 </Select>
               </div>
             </div>
+            {/* Custom Equipment Type - Show when OTHER is selected */}
+            {formData.equipmentType === 'OTHER' && (
+              <div className="space-y-2">
+                <Label htmlFor="edit-customEquipmentType">Specify Equipment Type *</Label>
+                <Input
+                  id="edit-customEquipmentType"
+                  value={formData.customEquipmentType}
+                  onChange={(e) => setFormData({ ...formData, customEquipmentType: e.target.value })}
+                  placeholder="e.g., CO2 Detector, Water Sprayer, etc."
+                />
+              </div>
+            )}
             <div className="grid grid-cols-2 gap-4">
               <div className="space-y-2">
                 <Label htmlFor="edit-brand">Brand</Label>

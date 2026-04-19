@@ -130,6 +130,7 @@ export async function POST(
     const {
       equipmentNumber,
       equipmentType,
+      customEquipmentType,
       brand,
       model,
       serialNumber,
@@ -148,6 +149,13 @@ export async function POST(
       )
     }
 
+    if (equipmentType === 'OTHER' && !customEquipmentType?.trim()) {
+      return NextResponse.json(
+        { error: 'Custom equipment type is required when selecting "Other"' },
+        { status: 400 }
+      )
+    }
+
     // Verify user has access to this branch
     const hasAccess = await verifyBranchAccess(branchId, session.user.id, session.user.role)
     if (!hasAccess) {
@@ -159,6 +167,7 @@ export async function POST(
         branchId,
         equipmentNumber,
         equipmentType,
+        customEquipmentType: equipmentType === 'OTHER' ? customEquipmentType : null,
         brand: brand || null,
         model: model || null,
         serialNumber: serialNumber || null,

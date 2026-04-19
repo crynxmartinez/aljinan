@@ -509,6 +509,7 @@ model Equipment {
   // Equipment identification
   equipmentNumber String           // Client's tag/ID number (e.g., FE-001)
   equipmentType   EquipmentType
+  customEquipmentType String?      // Custom type name when equipmentType = OTHER
   brand           String?          // Brand name
   model           String?          // Model number
   serialNumber    String?          // Manufacturer serial number

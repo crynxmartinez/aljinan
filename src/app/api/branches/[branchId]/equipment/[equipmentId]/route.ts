@@ -85,9 +85,24 @@ export async function PATCH(
     // Build update data
     const updateData: any = {}
 
+    // Validate custom equipment type if OTHER is selected
+    if (body.equipmentType === 'OTHER' && !body.customEquipmentType?.trim()) {
+      return NextResponse.json(
+        { error: 'Custom equipment type is required when selecting "Other"' },
+        { status: 400 }
+      )
+    }
+
     // Basic fields
     if (body.equipmentNumber !== undefined) updateData.equipmentNumber = body.equipmentNumber
-    if (body.equipmentType !== undefined) updateData.equipmentType = body.equipmentType
+    if (body.equipmentType !== undefined) {
+      updateData.equipmentType = body.equipmentType
+      // Set or clear customEquipmentType based on type
+      updateData.customEquipmentType = body.equipmentType === 'OTHER' ? body.customEquipmentType : null
+    }
+    if (body.customEquipmentType !== undefined && body.equipmentType === 'OTHER') {
+      updateData.customEquipmentType = body.customEquipmentType
+    }
     if (body.brand !== undefined) updateData.brand = body.brand || null
     if (body.model !== undefined) updateData.model = body.model || null
     if (body.serialNumber !== undefined) updateData.serialNumber = body.serialNumber || null

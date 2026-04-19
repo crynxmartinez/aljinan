@@ -340,6 +340,7 @@ export function ClientBranchRequests({ branchId, projectId, onDataChange, userId
   const [newEquipment, setNewEquipment] = useState({
     equipmentNumber: '',
     equipmentType: 'FIRE_EXTINGUISHER',
+    customEquipmentType: '',
     location: '',
     dateAdded: new Date().toISOString().split('T')[0],
     expectedExpiry: '',
@@ -1043,7 +1044,11 @@ export function ClientBranchRequests({ branchId, projectId, onDataChange, userId
                           <Label className="text-xs">Type *</Label>
                           <Select
                             value={newEquipment.equipmentType}
-                            onValueChange={(value) => setNewEquipment({ ...newEquipment, equipmentType: value })}
+                            onValueChange={(value) => setNewEquipment({ 
+                              ...newEquipment, 
+                              equipmentType: value,
+                              customEquipmentType: value !== 'OTHER' ? '' : newEquipment.customEquipmentType
+                            })}
                           >
                             <SelectTrigger>
                               <SelectValue />
@@ -1066,6 +1071,17 @@ export function ClientBranchRequests({ branchId, projectId, onDataChange, userId
                           </Select>
                         </div>
                       </div>
+                      {/* Custom Equipment Type - Show when OTHER is selected */}
+                      {newEquipment.equipmentType === 'OTHER' && (
+                        <div className="space-y-1">
+                          <Label className="text-xs">Specify Equipment Type *</Label>
+                          <Input
+                            placeholder="e.g., CO2 Detector, Water Sprayer"
+                            value={newEquipment.customEquipmentType}
+                            onChange={(e) => setNewEquipment({ ...newEquipment, customEquipmentType: e.target.value })}
+                          />
+                        </div>
+                      )}
                       <div className="space-y-1">
                         <Label className="text-xs">Location</Label>
                         <Input
@@ -1110,6 +1126,7 @@ export function ClientBranchRequests({ branchId, projectId, onDataChange, userId
                             setNewEquipment({
                               equipmentNumber: '',
                               equipmentType: 'FIRE_EXTINGUISHER',
+                              customEquipmentType: '',
                               location: '',
                               dateAdded: new Date().toISOString().split('T')[0],
                               expectedExpiry: '',
@@ -1128,11 +1145,17 @@ export function ClientBranchRequests({ branchId, projectId, onDataChange, userId
                               setError('Equipment number is required')
                               return
                             }
+                            
+                            if (newEquipment.equipmentType === 'OTHER' && !newEquipment.customEquipmentType.trim()) {
+                              setError('Please specify the equipment type')
+                              return
+                            }
                             setEquipment([...equipment, { ...newEquipment }])
                             setShowEquipmentForm(false)
                             setNewEquipment({
                               equipmentNumber: '',
                               equipmentType: 'FIRE_EXTINGUISHER',
+                              customEquipmentType: '',
                               location: '',
                               dateAdded: new Date().toISOString().split('T')[0],
                               expectedExpiry: '',
