@@ -11,14 +11,40 @@ export async function GET() {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
     }
 
-    // Only contractors and team members can access this endpoint
-    if (session.user.role === 'CLIENT') {
-      return NextResponse.json({ error: 'Access denied' }, { status: 403 })
-    }
-
     let workOrders
 
-    if (session.user.role === 'CONTRACTOR') {
+    if (session.user.role === 'CLIENT') {
+      // Get all work orders for client's branches
+      const client = await prisma.client.findUnique({
+        where: { userId: session.user.id }
+      })
+
+      if (!client) {
+        return NextResponse.json({ error: 'Client not found' }, { status: 404 })
+      }
+
+      workOrders = await prisma.checklistItem.findMany({
+        where: {
+          checklist: {
+            branch: {
+              clientId: client.id
+            }
+          }
+        },
+        include: {
+          checklist: {
+            include: {
+              branch: true,
+              project: true
+            }
+          }
+        },
+        orderBy: [
+          { scheduledDate: 'asc' },
+          { createdAt: 'desc' }
+        ]
+      })
+    } else if (session.user.role === 'CONTRACTOR') {
       // First get the contractor record to get the contractor ID
       const contractor = await prisma.contractor.findUnique({
         where: { userId: session.user.id }
@@ -100,7 +126,7 @@ export async function GET() {
       workOrderType: wo.workOrderType,
       scheduledDate: wo.scheduledDate?.toISOString() || null,
       price: wo.price,
-      clientName: wo.checklist.branch.client.companyName,
+      clientName: wo.checklist.branch.client?.companyName || '',
       branchName: wo.checklist.branch.name,
       branchId: wo.checklist.branchId,
       clientId: wo.checklist.branch.clientId,
@@ -108,6 +134,7 @@ export async function GET() {
       isCompleted: wo.isCompleted,
       paymentStatus: wo.paymentStatus,
       recurringType: wo.recurringType,
+      contractorName: wo.checklist.branch.client?.contractor?.companyName || '',
     }))
 
     return NextResponse.json(transformedWorkOrders)

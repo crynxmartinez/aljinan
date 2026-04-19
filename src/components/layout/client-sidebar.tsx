@@ -11,6 +11,7 @@ import {
   Building2,
   Settings,
   Loader2,
+  ClipboardList,
 } from 'lucide-react'
 import { cn } from '@/lib/utils'
 import { Button } from '@/components/ui/button'
@@ -114,6 +115,24 @@ export function ClientSidebar({ client }: ClientSidebarProps) {
               <LayoutDashboard className="h-4 w-4" />
             )}
             Dashboard
+          </Link>
+
+          <Link
+            href="/portal/work-orders"
+            onClick={(e) => handleNavClick(e, '/portal/work-orders')}
+            className={cn(
+              'flex items-center gap-3 rounded-lg px-3 py-2 text-sm transition-colors',
+              pathname === '/portal/work-orders'
+                ? 'bg-sidebar-accent text-sidebar-accent-foreground'
+                : 'text-sidebar-foreground/70 hover:bg-sidebar-accent hover:text-sidebar-accent-foreground'
+            )}
+          >
+            {loadingHref === '/portal/work-orders' ? (
+              <Loader2 className="h-4 w-4 animate-spin" />
+            ) : (
+              <ClipboardList className="h-4 w-4" />
+            )}
+            Work Orders
           </Link>
         </div>
 
