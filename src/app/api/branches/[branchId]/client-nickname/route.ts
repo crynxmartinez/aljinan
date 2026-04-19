@@ -5,7 +5,7 @@ import { prisma } from '@/lib/prisma'
 
 export async function PATCH(
   request: NextRequest,
-  { params }: { params: { branchId: string } }
+  { params }: { params: Promise<{ branchId: string }> }
 ) {
   try {
     const session = await getServerSession(authOptions)
@@ -22,7 +22,7 @@ export async function PATCH(
       )
     }
 
-    const { branchId } = params
+    const { branchId } = await params
     const body = await request.json()
     const { nickname } = body
 
