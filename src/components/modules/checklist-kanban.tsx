@@ -821,7 +821,7 @@ export function ChecklistKanban({ branchId, projectId, readOnly = false, userRol
     if (item.stage === targetStage) return
 
     // Check if transition is allowed
-    const isClient = readOnly // readOnly means client view
+    const isClient = userRole === 'CLIENT' // Use actual userRole prop
     if (!canTransition(item.stage, targetStage, isClient)) {
       console.log(`Transition from ${item.stage} to ${targetStage} not allowed for ${isClient ? 'client' : 'contractor'}`)
       return
@@ -923,15 +923,24 @@ export function ChecklistKanban({ branchId, projectId, readOnly = false, userRol
                       isOver={overId === stage.id}
                       onHeaderClick={() => handleColumnHeaderClick(stage)}
                     >
-                      {stageItems.map((item) => (
-                        <DraggableCard
-                          key={item.id}
-                          item={item}
-                          onClick={() => handleItemClick(item)}
-                          disabled={readOnly}
-                          assigneeName={item.assignedTo ? teamMemberMap[item.assignedTo] || null : null}
-                        />
-                      ))}
+                      {stageItems.map((item) => {
+                        // Determine if this item can be dragged by current user
+                        const isClient = userRole === 'CLIENT'
+                        const allowedMoves = isClient 
+                          ? ALLOWED_TRANSITIONS[item.stage].client 
+                          : ALLOWED_TRANSITIONS[item.stage].contractor
+                        const canDrag = allowedMoves.length > 0
+                        
+                        return (
+                          <DraggableCard
+                            key={item.id}
+                            item={item}
+                            onClick={() => handleItemClick(item)}
+                            disabled={!canDrag}
+                            assigneeName={item.assignedTo ? teamMemberMap[item.assignedTo] || null : null}
+                          />
+                        )
+                      })}
                       
                       {stageItems.length === 0 && (
                         <div className="text-center py-8 text-muted-foreground text-sm">
