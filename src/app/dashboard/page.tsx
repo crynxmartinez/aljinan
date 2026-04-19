@@ -33,7 +33,7 @@ async function getDashboardStats(userId: string) {
   ) || 0
 
   // Get all branch IDs from contractor's clients
-  const branchIds = contractor?.clients.flatMap(client => 
+  const branchIds = contractor?.clients.flatMap(client =>
     client.branches.map(branch => branch.id)
   ) || []
 
@@ -60,105 +60,108 @@ async function getDashboardStats(userId: string) {
 
   // Run all stat queries in parallel for better performance
   const [
-    pendingRequests, 
-    pendingQuotes, 
-    upcomingAppointments, 
+    pendingRequests,
+    pendingQuotes,
+    upcomingAppointments,
     overdueInvoices,
     workOrdersInProgress,
     workOrdersForReview,
     workOrdersCompletedThisMonth,
     overdueWorkOrders
   ] = await Promise.all([
-      // Count requests with status REQUESTED (waiting for contractor)
-      prisma.request.count({
-        where: { 
-          branchId: { in: branchIds },
-          status: 'REQUESTED'
-        }
-      }),
-      
-      // Count quotations with status SENT (waiting for client approval)
-      prisma.quotation.count({
-        where: { 
-          branchId: { in: branchIds },
-          status: 'SENT'
-        }
-      }),
-      
-      // Count appointments scheduled this month
-      prisma.appointment.count({
-        where: { 
-          branchId: { in: branchIds },
-          date: {
-            gte: firstDayOfMonth,
-            lte: lastDayOfMonth
+    // Count requests with status REQUESTED (waiting for contractor)
+    prisma.request.count({
+      where: {
+        branchId: { in: branchIds },
+        status: 'REQUESTED'
+      }
+    }),
+
+    // Count quotations with status SENT (waiting for client approval)
+    prisma.quotation.count({
+      where: {
+        branchId: { in: branchIds },
+        status: 'SENT'
+      }
+    }),
+
+    // Count work orders scheduled this month (matches calendar view)
+    prisma.checklistItem.count({
+      where: {
+        checklist: {
+          branchId: { in: branchIds }
+        },
+        scheduledDate: {
+          gte: firstDayOfMonth,
+          lte: lastDayOfMonth
+        },
+        deletedAt: null
+      }
+    }),
+
+    // Count overdue invoices (past due date and not paid)
+    prisma.invoice.count({
+      where: {
+        branchId: { in: branchIds },
+        status: { in: ['SENT', 'OVERDUE'] },
+        dueDate: { lt: today }
+      }
+    }),
+
+    // Count work orders currently in progress
+    prisma.checklistItem.count({
+      where: {
+        checklist: {
+          project: {
+            branchId: { in: branchIds }
           }
-        }
-      }),
-      
-      // Count overdue invoices (past due date and not paid)
-      prisma.invoice.count({
-        where: { 
-          branchId: { in: branchIds },
-          status: { in: ['SENT', 'OVERDUE'] },
-          dueDate: { lt: today }
-        }
-      }),
-      
-      // Count work orders currently in progress
-      prisma.checklistItem.count({
-        where: {
-          checklist: {
-            project: {
-              branchId: { in: branchIds }
-            }
-          },
-          stage: 'IN_PROGRESS',
-          deletedAt: null
-        }
-      }),
-      
-      // Count work orders awaiting client review
-      prisma.checklistItem.count({
-        where: {
-          checklist: {
-            project: {
-              branchId: { in: branchIds }
-            }
-          },
-          stage: 'FOR_REVIEW',
-          deletedAt: null
-        }
-      }),
-      
-      // Count work orders completed this month
-      prisma.checklistItem.count({
-        where: {
-          checklist: {
-            project: {
-              branchId: { in: branchIds }
-            }
-          },
-          stage: 'COMPLETED',
-          updatedAt: { gte: firstDayOfMonth },
-          deletedAt: null
-        }
-      }),
-      
-      // Count overdue work orders (past scheduled date, not completed)
-      prisma.checklistItem.count({
-        where: {
-          checklist: {
-            project: {
-              branchId: { in: branchIds }
-            }
-          },
-          scheduledDate: { lt: today },
-          stage: { notIn: ['COMPLETED', 'ARCHIVED'] },
-          deletedAt: null
-        }
-      })
-    ])
+        },
+        stage: 'IN_PROGRESS',
+        deletedAt: null
+      }
+    }),
+
+    // Count work orders awaiting client review
+    prisma.checklistItem.count({
+      where: {
+        checklist: {
+          project: {
+            branchId: { in: branchIds }
+          }
+        },
+        stage: 'FOR_REVIEW',
+        deletedAt: null
+      }
+    }),
+
+    // Count work orders completed this month
+    prisma.checklistItem.count({
+      where: {
+        checklist: {
+          project: {
+            branchId: { in: branchIds }
+          }
+        },
+        stage: 'COMPLETED',
+        updatedAt: { gte: firstDayOfMonth },
+        deletedAt: null
+      }
+    }),
+
+    // Count overdue work orders (past scheduled date, not completed)
+    prisma.checklistItem.count({
+      where: {
+        checklist: {
+          project: {
+            branchId: { in: branchIds }
+          }
+        },
+        scheduledDate: { lt: today },
+        stage: { notIn: ['COMPLETED', 'ARCHIVED'] },
+        deletedAt: null
+      }
+    })
+  ])
 
   return {
     totalClients,

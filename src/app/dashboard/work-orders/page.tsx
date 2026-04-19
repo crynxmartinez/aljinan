@@ -76,7 +76,7 @@ export default function WorkOrdersPage() {
 
   const applyFilters = () => {
     let filtered = [...workOrders]
-    
+
     // 1. Status filter
     const activeStatuses = filters
       .find(f => f.id === 'status')
@@ -85,7 +85,7 @@ export default function WorkOrdersPage() {
     if (activeStatuses.length > 0) {
       filtered = filtered.filter(wo => activeStatuses.includes(wo.stage))
     }
-    
+
     // 2. Type filter
     const activeTypes = filters
       .find(f => f.id === 'type')
@@ -94,28 +94,28 @@ export default function WorkOrdersPage() {
     if (activeTypes.length > 0) {
       filtered = filtered.filter(wo => activeTypes.includes(wo.workOrderType))
     }
-    
+
     // 3. Date range filter
     if (dateRange.from) {
-      filtered = filtered.filter(wo => 
+      filtered = filtered.filter(wo =>
         wo.scheduledDate && new Date(wo.scheduledDate) >= new Date(dateRange.from)
       )
     }
     if (dateRange.to) {
-      filtered = filtered.filter(wo => 
+      filtered = filtered.filter(wo =>
         wo.scheduledDate && new Date(wo.scheduledDate) <= new Date(dateRange.to)
       )
     }
-    
+
     // 4. Client filter
     if (selectedClients.length > 0) {
       filtered = filtered.filter(wo => selectedClients.includes(wo.clientName))
     }
-    
+
     // 5. Quick filters
     const today = new Date()
     today.setHours(0, 0, 0, 0)
-    
+
     if (quickFilters.find(f => f.value === 'due_today' && f.active)) {
       filtered = filtered.filter(wo => {
         if (!wo.scheduledDate) return false
@@ -124,18 +124,18 @@ export default function WorkOrdersPage() {
         return woDate.getTime() === today.getTime()
       })
     }
-    
+
     if (quickFilters.find(f => f.value === 'overdue' && f.active)) {
       filtered = filtered.filter(wo => {
         if (!wo.scheduledDate) return false
         return new Date(wo.scheduledDate) < today && wo.stage !== 'COMPLETED'
       })
     }
-    
+
     if (quickFilters.find(f => f.value === 'in_progress' && f.active)) {
       filtered = filtered.filter(wo => wo.stage === 'IN_PROGRESS')
     }
-    
+
     if (quickFilters.find(f => f.value === 'this_week' && f.active)) {
       const weekEnd = new Date(today)
       weekEnd.setDate(weekEnd.getDate() + 7)
@@ -145,7 +145,7 @@ export default function WorkOrdersPage() {
         return woDate >= today && woDate <= weekEnd
       })
     }
-    
+
     setFilteredWorkOrders(filtered)
     setCurrentPage(1) // Reset to first page when filters change
   }
@@ -159,7 +159,7 @@ export default function WorkOrdersPage() {
       const data = await response.json()
       setWorkOrders(data)
       setFilteredWorkOrders(data)
-      
+
       // Extract unique clients
       const uniqueClients = Array.from(
         new Map(data.map((wo: WorkOrder) => [wo.clientName, { id: wo.clientName, name: wo.clientName }])).values()
@@ -283,7 +283,7 @@ export default function WorkOrdersPage() {
         <ExportDialog
           title="Export Work Orders"
           description="Choose format and options for export"
-          itemCount={workOrders.length}
+          itemCount={filteredWorkOrders.length}
           onExport={handleExport}
         />
       </div>

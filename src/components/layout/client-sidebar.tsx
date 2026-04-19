@@ -110,10 +110,10 @@ export function ClientSidebar({ client }: ClientSidebarProps) {
 
       // Update the branch in the client data
       const updatedBranch = await response.json()
-      
+
       // Force a page refresh to update the sidebar
       router.refresh()
-      
+
       toast.success('Branch nickname updated successfully')
       setNicknameDialogOpen(false)
       setEditingBranch(null)
@@ -216,46 +216,48 @@ export function ClientSidebar({ client }: ClientSidebarProps) {
           ) : (
             client.branches.map((branch) => (
               <div key={branch.id} className="group relative">
-                <Link
-                  href={`/portal/branches/${branch.id}`}
-                  onClick={(e) => handleNavClick(e, `/portal/branches/${branch.id}`)}
-                  className={cn(
-                    'flex items-center gap-2 rounded-lg px-3 py-2 text-sm transition-colors',
-                    pathname === `/portal/branches/${branch.id}`
-                      ? 'bg-sidebar-accent text-sidebar-accent-foreground'
-                      : 'text-sidebar-foreground/70 hover:bg-sidebar-accent hover:text-sidebar-accent-foreground'
-                  )}
-                >
-                  {loadingHref === `/portal/branches/${branch.id}` ? (
-                    <Loader2 className="h-4 w-4 flex-shrink-0 animate-spin" />
-                  ) : (
-                    <MapPin className="h-4 w-4 flex-shrink-0" />
-                  )}
-                  <div className="flex-1 min-w-0">
-                    {branch.clientNickname ? (
-                      <>
-                        <p className="truncate font-medium">{branch.clientNickname}</p>
-                        <p className="text-xs text-sidebar-foreground/50 truncate">
-                          {branch.address}{branch.city ? `, ${branch.city}` : ''}
-                        </p>
-                      </>
-                    ) : (
-                      <>
-                        <p className="truncate">{branch.address}</p>
-                        {branch.city && (
-                          <p className="text-xs text-sidebar-foreground/50 truncate">{branch.city}</p>
-                        )}
-                      </>
+                <div className="flex items-center gap-1">
+                  <Link
+                    href={`/portal/branches/${branch.id}`}
+                    onClick={(e) => handleNavClick(e, `/portal/branches/${branch.id}`)}
+                    className={cn(
+                      'flex items-center gap-2 rounded-lg px-3 py-2 text-sm transition-colors flex-1',
+                      pathname === `/portal/branches/${branch.id}`
+                        ? 'bg-sidebar-accent text-sidebar-accent-foreground'
+                        : 'text-sidebar-foreground/70 hover:bg-sidebar-accent hover:text-sidebar-accent-foreground'
                     )}
-                  </div>
+                  >
+                    {loadingHref === `/portal/branches/${branch.id}` ? (
+                      <Loader2 className="h-4 w-4 flex-shrink-0 animate-spin" />
+                    ) : (
+                      <MapPin className="h-4 w-4 flex-shrink-0" />
+                    )}
+                    <div className="flex-1 min-w-0">
+                      {branch.clientNickname ? (
+                        <>
+                          <p className="truncate font-medium">{branch.clientNickname}</p>
+                          <p className="text-xs text-sidebar-foreground/50 truncate">
+                            {branch.address}{branch.city ? `, ${branch.city}` : ''}
+                          </p>
+                        </>
+                      ) : (
+                        <>
+                          <p className="truncate">{branch.address}</p>
+                          {branch.city && (
+                            <p className="text-xs text-sidebar-foreground/50 truncate">{branch.city}</p>
+                          )}
+                        </>
+                      )}
+                    </div>
+                  </Link>
                   <button
                     onClick={(e) => handleEditNickname(e, branch)}
-                    className="opacity-0 group-hover:opacity-100 transition-opacity p-1 hover:bg-sidebar-accent-foreground/10 rounded"
+                    className="opacity-0 group-hover:opacity-100 transition-opacity p-1.5 hover:bg-sidebar-accent rounded mr-1"
                     title="Edit nickname"
                   >
-                    <Pencil className="h-3 w-3" />
+                    <Pencil className="h-3.5 w-3.5" />
                   </button>
-                </Link>
+                </div>
               </div>
             ))
           )}
@@ -321,7 +323,7 @@ export function ClientSidebar({ client }: ClientSidebarProps) {
               Give this branch a custom name for easier identification
             </DialogDescription>
           </DialogHeader>
-          
+
           {editingBranch && (
             <div className="space-y-4 py-4">
               <div className="space-y-2">
@@ -331,7 +333,7 @@ export function ClientSidebar({ client }: ClientSidebarProps) {
                   {editingBranch.city && `, ${editingBranch.city}`}
                 </p>
               </div>
-              
+
               <div className="space-y-2">
                 <Label htmlFor="nickname">Custom Nickname</Label>
                 <Input
@@ -348,7 +350,7 @@ export function ClientSidebar({ client }: ClientSidebarProps) {
               </div>
             </div>
           )}
-          
+
           <DialogFooter>
             <Button
               variant="outline"
