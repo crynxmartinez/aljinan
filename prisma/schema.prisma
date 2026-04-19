@@ -985,6 +985,8 @@ enum NotificationType {
   WORK_ORDER_STARTED     // Work order moved to IN_PROGRESS
   WORK_ORDER_FOR_REVIEW  // Work order sent for review
   WORK_ORDER_COMPLETED   // Work order completed
+  WORK_ORDER_APPROVED    // Client approved work order
+  WORK_ORDER_REJECTED    // Client rejected work order (needs revision)
   PAYMENT_SUBMITTED      // Client submitted payment proof
   PAYMENT_VERIFIED       // Contractor verified payment
   CONTRACT_SIGNED        // Client signed contract

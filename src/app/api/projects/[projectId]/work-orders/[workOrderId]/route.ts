@@ -113,6 +113,13 @@ export async function PATCH(
       }
       updateData.price = priceNum
     }
+    // Get current work order to track previous stage
+    const currentWorkOrder = await prisma.checklistItem.findUnique({
+      where: { id: workOrderId },
+      select: { stage: true }
+    })
+    const previousStage = currentWorkOrder?.stage
+
     if (stage !== undefined) {
       updateData.stage = stage
       if (stage === 'COMPLETED') {
@@ -170,21 +177,42 @@ export async function PATCH(
         }
       })
 
-      // Create notification for client when work order is sent for review
-      if (stage === 'FOR_REVIEW') {
-        const project = await prisma.project.findUnique({
-          where: { id: projectId },
-          include: {
-            branch: {
-              include: {
-                client: {
-                  include: { user: true }
+      // Get project with client and contractor info for notifications
+      const project = await prisma.project.findUnique({
+        where: { id: projectId },
+        include: {
+          branch: {
+            include: {
+              client: {
+                include: { 
+                  user: true,
+                  contractor: { include: { user: true } }
                 }
               }
             }
           }
-        })
+        }
+      })
 
+      // NOTIFICATION 1: Contractor starts work (IN_PROGRESS)
+      if (stage === 'IN_PROGRESS' && previousStage === 'SCHEDULED' && session.user.role === 'CONTRACTOR') {
+        if (project?.branch?.client?.user) {
+          await prisma.notification.create({
+            data: {
+              userId: project.branch.client.user.id,
+              type: 'WORK_ORDER_STARTED',
+              title: 'Work Started',
+              message: `Work has started on "${workOrder.description}"`,
+              link: `/portal/branches/${project.branchId}?tab=checklist`,
+              relatedId: workOrder.id,
+              relatedType: 'ChecklistItem'
+            }
+          })
+        }
+      }
+
+      // NOTIFICATION 2: Work ready for review (FOR_REVIEW)
+      if (stage === 'FOR_REVIEW' && session.user.role === 'CONTRACTOR') {
         if (project?.branch?.client?.user) {
           await prisma.notification.create({
             data: {
@@ -193,6 +221,42 @@ export async function PATCH(
               title: 'Work Order Ready for Review',
               message: `"${workOrder.description}" has been completed and is ready for your review`,
               link: `/portal/branches/${project.branchId}?tab=checklist`,
+              relatedId: workOrder.id,
+              relatedType: 'ChecklistItem'
+            }
+          })
+        }
+      }
+
+      // NOTIFICATION 3: Client approves work (COMPLETED)
+      if (stage === 'COMPLETED' && previousStage === 'FOR_REVIEW' && session.user.role === 'CLIENT') {
+        const contractorUserId = project?.branch?.client?.contractor?.user?.id
+        if (contractorUserId) {
+          await prisma.notification.create({
+            data: {
+              userId: contractorUserId,
+              type: 'WORK_ORDER_APPROVED',
+              title: 'Work Order Approved',
+              message: `Client approved "${workOrder.description}"`,
+              link: `/dashboard/clients/${project.branch.client.slug}/branches/${project.branch.slug}?tab=checklist`,
+              relatedId: workOrder.id,
+              relatedType: 'ChecklistItem'
+            }
+          })
+        }
+      }
+
+      // NOTIFICATION 4: Client rejects work (FOR_REVIEW → IN_PROGRESS)
+      if (stage === 'IN_PROGRESS' && previousStage === 'FOR_REVIEW' && session.user.role === 'CLIENT') {
+        const contractorUserId = project?.branch?.client?.contractor?.user?.id
+        if (contractorUserId) {
+          await prisma.notification.create({
+            data: {
+              userId: contractorUserId,
+              type: 'WORK_ORDER_REJECTED',
+              title: 'Work Order Needs Revision',
+              message: `Client requested changes to "${workOrder.description}"`,
+              link: `/dashboard/clients/${project.branch.client.slug}/branches/${project.branch.slug}?tab=checklist`,
               relatedId: workOrder.id,
               relatedType: 'ChecklistItem'
             }
