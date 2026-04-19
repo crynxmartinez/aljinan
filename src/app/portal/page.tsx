@@ -7,7 +7,7 @@ import { Button } from '@/components/ui/button'
 import { Badge } from '@/components/ui/badge'
 import { 
   MapPin, Calendar, DollarSign, Receipt, Building2, Phone, Mail, 
-  ChevronRight, Edit
+  ChevronRight, Edit, Wrench, Eye, CheckCircle, AlertTriangle
 } from 'lucide-react'
 import Link from 'next/link'
 import { BranchRequestForm } from './branch-request-form'
@@ -25,12 +25,144 @@ async function getClientDashboardData(userId: string) {
         }
       },
       branches: {
+        where: { isActive: true },
         orderBy: { createdAt: 'asc' }
       }
     }
   })
 
   return client
+}
+
+async function getClientDashboardStats(userId: string) {
+  const client = await prisma.client.findUnique({
+    where: { userId },
+    include: {
+      branches: {
+        where: { isActive: true }
+      }
+    }
+  })
+
+  const branchIds = client?.branches.map(b => b.id) || []
+
+  if (branchIds.length === 0) {
+    return {
+      pendingQuotes: 0,
+      upcomingAppointments: 0,
+      unpaidInvoices: 0,
+      workOrdersForReview: 0,
+      workOrdersInProgress: 0,
+      workOrdersCompletedThisMonth: 0,
+      overdueWorkOrders: 0,
+    }
+  }
+
+  const today = new Date()
+  const sevenDaysFromNow = new Date()
+  sevenDaysFromNow.setDate(today.getDate() + 7)
+  const firstDayOfMonth = new Date(today.getFullYear(), today.getMonth(), 1)
+
+  const [
+    pendingQuotes,
+    upcomingAppointments,
+    unpaidInvoices,
+    workOrdersForReview,
+    workOrdersInProgress,
+    workOrdersCompletedThisMonth,
+    overdueWorkOrders
+  ] = await Promise.all([
+    // Pending quotes waiting for client approval
+    prisma.quotation.count({
+      where: {
+        branchId: { in: branchIds },
+        status: 'SENT'
+      }
+    }),
+
+    // Upcoming appointments in next 7 days
+    prisma.appointment.count({
+      where: {
+        branchId: { in: branchIds },
+        date: {
+          gte: today,
+          lte: sevenDaysFromNow
+        }
+      }
+    }),
+
+    // Unpaid invoices
+    prisma.invoice.count({
+      where: {
+        branchId: { in: branchIds },
+        status: { in: ['SENT', 'OVERDUE', 'PARTIAL'] }
+      }
+    }),
+
+    // Work orders awaiting client review
+    prisma.checklistItem.count({
+      where: {
+        checklist: {
+          project: {
+            branchId: { in: branchIds }
+          }
+        },
+        stage: 'FOR_REVIEW',
+        deletedAt: null
+      }
+    }),
+
+    // Work orders currently in progress
+    prisma.checklistItem.count({
+      where: {
+        checklist: {
+          project: {
+            branchId: { in: branchIds }
+          }
+        },
+        stage: 'IN_PROGRESS',
+        deletedAt: null
+      }
+    }),
+
+    // Work orders completed this month
+    prisma.checklistItem.count({
+      where: {
+        checklist: {
+          project: {
+            branchId: { in: branchIds }
+          }
+        },
+        stage: 'COMPLETED',
+        updatedAt: { gte: firstDayOfMonth },
+        deletedAt: null
+      }
+    }),
+
+    // Overdue work orders
+    prisma.checklistItem.count({
+      where: {
+        checklist: {
+          project: {
+            branchId: { in: branchIds }
+          }
+        },
+        scheduledDate: { lt: today },
+        stage: { notIn: ['COMPLETED', 'ARCHIVED'] },
+        deletedAt: null
+      }
+    })
+  ])
+
+  return {
+    pendingQuotes,
+    upcomingAppointments,
+    unpaidInvoices,
+    workOrdersForReview,
+    workOrdersInProgress,
+    workOrdersCompletedThisMonth,
+    overdueWorkOrders,
+  }
 }
 
 export default async function PortalDashboardPage() {
@@ -45,6 +177,8 @@ export default async function PortalDashboardPage() {
   if (!client) {
     redirect('/login')
   }
+
+  const stats = await getClientDashboardStats(session.user.id)
 
   return (
     <div className="p-8 max-w-7xl mx-auto">
@@ -63,7 +197,7 @@ export default async function PortalDashboardPage() {
         </div>
       </div>
 
-      {/* Stats Grid */}
+      {/* Stats Grid - Basic Stats */}
       <div className="grid gap-4 md:grid-cols-4 mb-8">
         <Card>
           <CardContent className="pt-6">
@@ -83,7 +217,7 @@ export default async function PortalDashboardPage() {
             <div className="flex items-center justify-between">
               <div>
                 <p className="text-sm text-muted-foreground">Pending Quotes</p>
-                <p className="text-3xl font-bold">0</p>
+                <p className="text-3xl font-bold">{stats.pendingQuotes}</p>
               </div>
               <div className="p-3 rounded-full bg-amber-100">
                 <Receipt className="h-5 w-5 text-amber-600" />
@@ -96,7 +230,7 @@ export default async function PortalDashboardPage() {
             <div className="flex items-center justify-between">
               <div>
                 <p className="text-sm text-muted-foreground">Appointments</p>
-                <p className="text-3xl font-bold">0</p>
+                <p className="text-3xl font-bold">{stats.upcomingAppointments}</p>
               </div>
               <div className="p-3 rounded-full bg-green-100">
                 <Calendar className="h-5 w-5 text-green-600" />
@@ -109,10 +243,66 @@ export default async function PortalDashboardPage() {
             <div className="flex items-center justify-between">
               <div>
                 <p className="text-sm text-muted-foreground">Unpaid</p>
-                <p className="text-3xl font-bold">0</p>
+                <p className="text-3xl font-bold">{stats.unpaidInvoices}</p>
               </div>
               <div className="p-3 rounded-full bg-red-100">
                 <DollarSign className="h-5 w-5 text-red-600" />
+              </div>
+            </div>
+          </CardContent>
+        </Card>
+      </div>
+
+      {/* Work Order Stats */}
+      <div className="grid gap-4 md:grid-cols-4 mb-8">
+        <Card>
+          <CardContent className="pt-6">
+            <div className="flex items-center justify-between">
+              <div>
+                <p className="text-sm text-muted-foreground">Awaiting My Review</p>
+                <p className="text-3xl font-bold">{stats.workOrdersForReview}</p>
+              </div>
+              <div className="p-3 rounded-full bg-purple-100">
+                <Eye className="h-5 w-5 text-purple-600" />
+              </div>
+            </div>
+          </CardContent>
+        </Card>
+        <Card>
+          <CardContent className="pt-6">
+            <div className="flex items-center justify-between">
+              <div>
+                <p className="text-sm text-muted-foreground">Work In Progress</p>
+                <p className="text-3xl font-bold">{stats.workOrdersInProgress}</p>
+              </div>
+              <div className="p-3 rounded-full bg-orange-100">
+                <Wrench className="h-5 w-5 text-orange-600" />
+              </div>
+            </div>
+          </CardContent>
+        </Card>
+        <Card>
+          <CardContent className="pt-6">
+            <div className="flex items-center justify-between">
+              <div>
+                <p className="text-sm text-muted-foreground">Completed This Month</p>
+                <p className="text-3xl font-bold">{stats.workOrdersCompletedThisMonth}</p>
+              </div>
+              <div className="p-3 rounded-full bg-green-100">
+                <CheckCircle className="h-5 w-5 text-green-600" />
+              </div>
+            </div>
+          </CardContent>
+        </Card>
+        <Card>
+          <CardContent className="pt-6">
+            <div className="flex items-center justify-between">
+              <div>
+                <p className="text-sm text-muted-foreground">Overdue Work</p>
+                <p className="text-3xl font-bold">{stats.overdueWorkOrders}</p>
+              </div>
+              <div className="p-3 rounded-full bg-red-100">
+                <AlertTriangle className="h-5 w-5 text-red-600" />
               </div>
             </div>
           </CardContent>
