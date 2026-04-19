@@ -136,23 +136,28 @@ export async function canEditWorkOrder(
   userRole: UserRole,
   workOrderId: string
 ): Promise<boolean> {
-  // Only contractors and team members can edit work orders
-  if (userRole === 'CLIENT') {
-    return false
-  }
-
   if (userRole === 'CONTRACTOR') {
     return true
   }
 
-  // Team members can edit if they have access to the branch
+  // Fetch work order with branch info
   const workOrder = await prisma.checklistItem.findUnique({
     where: { id: workOrderId },
     select: {
+      stage: true,
       checklist: {
         select: {
           project: {
-            select: { branchId: true }
+            select: { 
+              branchId: true,
+              branch: {
+                select: {
+                  client: {
+                    select: { userId: true }
+                  }
+                }
+              }
+            }
           }
         }
       }
@@ -161,6 +166,15 @@ export async function canEditWorkOrder(
 
   if (!workOrder?.checklist.project) return false
 
+  // Clients can edit work orders in FOR_REVIEW stage (to approve/reject)
+  if (userRole === 'CLIENT') {
+    // Check if this is the client's work order
+    const isOwnWorkOrder = workOrder.checklist.project.branch.client.userId === userId
+    // Client can only edit if work order is in FOR_REVIEW stage
+    return isOwnWorkOrder && workOrder.stage === 'FOR_REVIEW'
+  }
+
+  // Team members can edit if they have access to the branch
   return canAccessBranch(userId, userRole, workOrder.checklist.project.branchId)
 }
 
