@@ -46,6 +46,7 @@ const colorMap = {
 export function NotificationCenter() {
   const [notifications, setNotifications] = useState<Notification[]>([])
   const [loading, setLoading] = useState(true)
+  const [error, setError] = useState(false)
 
   useEffect(() => {
     fetchNotifications()
@@ -56,20 +57,28 @@ export function NotificationCenter() {
       const response = await fetch('/api/notifications')
       if (response.ok) {
         const data = await response.json()
-        // Map API notifications to component format
-        const mappedNotifications = (data.notifications || []).map((n: any) => ({
-          id: n.id,
-          type: n.type?.toLowerCase() || 'alert',
-          title: n.title,
-          message: n.message,
-          link: n.link,
-          read: n.isRead,
-          createdAt: new Date(n.createdAt),
-        }))
+        // Map API notifications to component format with validation
+        const mappedNotifications = (data.notifications || [])
+          .filter((n: any) => n && n.id && n.title && n.message) // Filter out invalid entries
+          .map((n: any) => ({
+            id: n.id,
+            type: (n.type?.toLowerCase() || 'alert') as Notification['type'],
+            title: n.title || 'Notification',
+            message: n.message || '',
+            link: n.link || undefined,
+            read: n.isRead ?? false,
+            createdAt: n.createdAt ? new Date(n.createdAt) : new Date(),
+          }))
         setNotifications(mappedNotifications)
+      } else {
+        console.error('Failed to fetch notifications:', response.status)
+        setNotifications([])
+        setError(true)
       }
-    } catch (error) {
-      console.error('Failed to fetch notifications:', error)
+    } catch (err) {
+      console.error('Failed to fetch notifications:', err)
+      setNotifications([])
+      setError(true)
     } finally {
       setLoading(false)
     }
@@ -149,6 +158,23 @@ export function NotificationCenter() {
             <div className="flex items-center justify-center py-8">
               <Clock className="h-6 w-6 animate-spin text-muted-foreground" />
             </div>
+          ) : error ? (
+            <div className="flex flex-col items-center justify-center py-8 text-center">
+              <AlertCircle className="h-12 w-12 text-red-500/30 mb-2" />
+              <p className="text-sm text-muted-foreground">Failed to load notifications</p>
+              <Button
+                variant="ghost"
+                size="sm"
+                className="mt-2"
+                onClick={() => {
+                  setError(false)
+                  setLoading(true)
+                  fetchNotifications()
+                }}
+              >
+                Try again
+              </Button>
+            </div>
           ) : notifications.length === 0 ? (
             <div className="flex flex-col items-center justify-center py-8 text-center">
               <Bell className="h-12 w-12 text-muted-foreground/30 mb-2" />
@@ -156,8 +182,13 @@ export function NotificationCenter() {
             </div>
           ) : (
             notifications.map((notification) => {
-              const Icon = iconMap[notification.type]
-              const iconColor = colorMap[notification.type]
+              const Icon = iconMap[notification.type] || AlertCircle
+              const iconColor = colorMap[notification.type] || 'text-gray-600'
+
+              // Safety check: skip if notification is invalid
+              if (!notification || !notification.id) {
+                return null
+              }
 
               return (
                 <DropdownMenuItem
@@ -174,7 +205,7 @@ export function NotificationCenter() {
                   }}
                 >
                   <div className={cn('mt-0.5', iconColor)}>
-                    <Icon className="h-5 w-5" />
+                    {Icon && <Icon className="h-5 w-5" />}
                   </div>
                   <div className="flex-1 space-y-1">
                     <div className="flex items-start justify-between gap-2">
