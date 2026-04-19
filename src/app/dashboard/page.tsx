@@ -77,7 +77,7 @@ async function getDashboardStats(userId: string) {
       prisma.appointment.count({
         where: { 
           branchId: { in: branchIds },
-          scheduledDate: {
+          date: {
             gte: today,
             lte: sevenDaysFromNow
           }
