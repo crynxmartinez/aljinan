@@ -55,6 +55,7 @@ export default async function PortalLayout({
     branches: client.branches.map(branch => ({
       id: branch.id,
       name: branch.name,
+      clientNickname: branch.clientNickname,
       address: branch.address,
       city: branch.city,
     }))
