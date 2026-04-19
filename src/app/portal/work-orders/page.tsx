@@ -22,6 +22,7 @@ interface WorkOrder {
   workOrderType: string
   scheduledDate: string | null
   price: number | null
+  clientName: string
   branchName: string
   contractorName: string
 }
@@ -162,7 +163,7 @@ export default function ClientWorkOrdersPage() {
       // Extract unique branches
       const uniqueBranches = Array.from(
         new Map(data.map((wo: WorkOrder) => [wo.branchName, { id: wo.branchName, name: wo.branchName }])).values()
-      )
+      ) as { id: string; name: string }[]
       setAvailableBranches(uniqueBranches)
     } catch (error) {
       console.error('Failed to fetch work orders:', error)

@@ -126,7 +126,7 @@ export function FilterPanel({
                         id="date-from"
                         type="date"
                         value={dateRange?.from || ''}
-                        onChange={(e) => onDateRangeChange({ ...dateRange, from: e.target.value })}
+                        onChange={(e) => onDateRangeChange?.({ from: e.target.value, to: dateRange?.to ?? '' })}
                         className="h-9"
                       />
                     </div>
@@ -136,7 +136,7 @@ export function FilterPanel({
                         id="date-to"
                         type="date"
                         value={dateRange?.to || ''}
-                        onChange={(e) => onDateRangeChange({ ...dateRange, to: e.target.value })}
+                        onChange={(e) => onDateRangeChange?.({ from: dateRange?.from ?? '', to: e.target.value })}
                         className="h-9"
                       />
                     </div>

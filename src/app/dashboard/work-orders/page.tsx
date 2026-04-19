@@ -163,7 +163,7 @@ export default function WorkOrdersPage() {
       // Extract unique clients
       const uniqueClients = Array.from(
         new Map(data.map((wo: WorkOrder) => [wo.clientName, { id: wo.clientName, name: wo.clientName }])).values()
-      )
+      ) as { id: string; name: string }[]
       setAvailableClients(uniqueClients)
     } catch (error) {
       console.error('Failed to fetch work orders:', error)

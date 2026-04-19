@@ -36,7 +36,11 @@ export async function GET() {
             include: {
               branch: {
                 include: {
-                  client: true
+                  client: {
+                    include: {
+                      contractor: true
+                    }
+                  }
                 }
               },
               project: true
@@ -74,7 +78,11 @@ export async function GET() {
             include: {
               branch: {
                 include: {
-                  client: true
+                  client: {
+                    include: {
+                      contractor: true
+                    }
+                  }
                 }
               },
               project: true
@@ -108,7 +116,11 @@ export async function GET() {
             include: {
               branch: {
                 include: {
-                  client: true
+                  client: {
+                    include: {
+                      contractor: true
+                    }
+                  }
                 }
               },
               project: true
