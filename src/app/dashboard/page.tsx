@@ -32,13 +32,75 @@ async function getDashboardStats(userId: string) {
     0
   ) || 0
 
+  // Get all branch IDs from contractor's clients
+  const branchIds = contractor?.clients.flatMap(client => 
+    client.branches.map(branch => branch.id)
+  ) || []
+
+  // If no branches, return zeros
+  if (branchIds.length === 0) {
+    return {
+      totalClients,
+      totalBranches,
+      pendingRequests: 0,
+      pendingQuotes: 0,
+      upcomingAppointments: 0,
+      overdueInvoices: 0,
+    }
+  }
+
+  // Calculate date range for upcoming appointments (next 7 days)
+  const today = new Date()
+  const sevenDaysFromNow = new Date()
+  sevenDaysFromNow.setDate(today.getDate() + 7)
+
+  // Run all stat queries in parallel for better performance
+  const [pendingRequests, pendingQuotes, upcomingAppointments, overdueInvoices] = 
+    await Promise.all([
+      // Count requests with status REQUESTED (waiting for contractor)
+      prisma.request.count({
+        where: { 
+          branchId: { in: branchIds },
+          status: 'REQUESTED'
+        }
+      }),
+      
+      // Count quotations with status SENT (waiting for client approval)
+      prisma.quotation.count({
+        where: { 
+          branchId: { in: branchIds },
+          status: 'SENT'
+        }
+      }),
+      
+      // Count appointments scheduled in next 7 days
+      prisma.appointment.count({
+        where: { 
+          branchId: { in: branchIds },
+          scheduledDate: {
+            gte: today,
+            lte: sevenDaysFromNow
+          }
+        }
+      }),
+      
+      // Count overdue invoices (past due date and not paid)
+      prisma.invoice.count({
+        where: { 
+          branchId: { in: branchIds },
+          status: { in: ['SENT', 'OVERDUE'] },
+          dueDate: { lt: today }
+        }
+      })
+    ])
+
   return {
     totalClients,
     totalBranches,
-    pendingRequests: 0,
-    pendingQuotes: 0,
-    upcomingAppointments: 0,
-    overdueInvoices: 0,
+    pendingRequests,
+    pendingQuotes,
+    upcomingAppointments,
+    overdueInvoices,
   }
 }
 
