@@ -83,6 +83,12 @@ export async function GET(request: NextRequest) {
 
         archivedCount++
 
+        // Skip notifications if project is null
+        if (!workOrder.checklist.project) {
+          console.log(`[Auto-Archive] Skipping notifications for work order ${workOrder.id} - no project`)
+          continue
+        }
+
         // Create notification for client
         const clientUserId = workOrder.checklist.project.branch.client.user?.id
         if (clientUserId) {
