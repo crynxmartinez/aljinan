@@ -1,6 +1,8 @@
 'use client'
 
 import { useState, useEffect } from 'react'
+import { useRouter } from 'next/navigation'
+import { useSession } from 'next-auth/react'
 import { Bell, CheckCircle, Clock, DollarSign, FileText, AlertCircle } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import {
@@ -44,9 +46,12 @@ const colorMap = {
 }
 
 export function NotificationCenter() {
+  const router = useRouter()
+  const { data: session } = useSession()
   const [notifications, setNotifications] = useState<Notification[]>([])
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState(false)
+  const [open, setOpen] = useState(false)
 
   useEffect(() => {
     fetchNotifications()
@@ -124,7 +129,7 @@ export function NotificationCenter() {
   }
 
   return (
-    <DropdownMenu>
+    <DropdownMenu open={open} onOpenChange={setOpen}>
       <DropdownMenuTrigger asChild>
         <Button variant="ghost" size="icon" className="relative">
           <Bell className="h-5 w-5" />
@@ -200,7 +205,8 @@ export function NotificationCenter() {
                   onClick={() => {
                     markAsRead(notification.id)
                     if (notification.link) {
-                      window.location.href = notification.link
+                      router.push(notification.link)
+                      setOpen(false)
                     }
                   }}
                 >
@@ -231,7 +237,16 @@ export function NotificationCenter() {
         {notifications.length > 0 && (
           <>
             <DropdownMenuSeparator />
-            <DropdownMenuItem className="justify-center text-sm text-muted-foreground cursor-pointer">
+            <DropdownMenuItem 
+              className="justify-center text-sm text-primary cursor-pointer font-medium"
+              onClick={() => {
+                const notificationsPath = session?.user?.role === 'CLIENT' 
+                  ? '/portal/notifications' 
+                  : '/dashboard/notifications'
+                router.push(notificationsPath)
+                setOpen(false)
+              }}
+            >
               View all notifications
             </DropdownMenuItem>
           </>
