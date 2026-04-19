@@ -34,7 +34,11 @@ export async function GET() {
         include: {
           checklist: {
             include: {
-              branch: true,
+              branch: {
+                include: {
+                  client: true
+                }
+              },
               project: true
             }
           }
