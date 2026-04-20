@@ -43,7 +43,7 @@ export async function GET(request: Request) {
         }
       },
       orderBy: { createdAt: 'desc' },
-      take: 20
+      take: 50
     })
 
     // Get all projects for this branch
