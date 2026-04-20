@@ -58,12 +58,12 @@ export async function PATCH(
 
     const { branchId, requestId } = await params
     const body = await request.json()
-    const { 
-      title, 
-      description, 
-      priority, 
-      status, 
-      assignedTo, 
+    const {
+      title,
+      description,
+      priority,
+      status,
+      assignedTo,
       dueDate,
       // New quote fields (contractor sets these)
       quotedPrice,
@@ -129,7 +129,7 @@ export async function PATCH(
       if (!quotedDate) {
         return NextResponse.json({ error: 'Scheduled date is required' }, { status: 400 })
       }
-      
+
       updateData.status = 'SCHEDULED'
       updateData.quotedDate = new Date(quotedDate) // Store scheduled date
       updateData.quotedPrice = null // No price yet - contractor will add later
@@ -139,7 +139,7 @@ export async function PATCH(
       // Create work order (ChecklistItem) from request
       // First, find or create a checklist for this branch
       let checklist = await prisma.checklist.findFirst({
-        where: { 
+        where: {
           branchId,
           projectId: currentRequest.projectId,
           status: 'IN_PROGRESS'
@@ -198,7 +198,7 @@ export async function PATCH(
         const workOrder = await prisma.checklistItem.create({
           data: {
             checklistId: checklist.id,
-            description: recurringType !== 'ONCE' 
+            description: recurringType !== 'ONCE'
               ? `${currentRequest.title} (${i + 1}/${occurrenceCount})`
               : currentRequest.title,
             notes: currentRequest.description,
@@ -214,12 +214,22 @@ export async function PATCH(
             assignedTo: currentRequest.assignedTo || null,
           }
         })
+        console.log('✅ START IMMEDIATELY - Work order created:', {
+          id: workOrder.id,
+          description: workOrder.description,
+          stage: workOrder.stage,
+          scheduledDate: workOrder.scheduledDate,
+          checklistId: workOrder.checklistId,
+          branchId: checklist.branchId,
+          projectId: checklist.projectId
+        })
         createdWorkOrders.push(workOrder.id)
       }
 
       workOrderCreated = true
       workOrderId = createdWorkOrders[0] // First work order ID
       updateData.workOrderId = createdWorkOrders[0]
+      console.log('✅ START IMMEDIATELY - Total work orders created:', createdWorkOrders.length)
     }
     // ACTION: Client accepts quote
     else if (action === 'accept') {
@@ -236,7 +246,7 @@ export async function PATCH(
       // Create work order (ChecklistItem) from accepted request
       // First, find or create a checklist for this branch
       let checklist = await prisma.checklist.findFirst({
-        where: { 
+        where: {
           branchId,
           projectId: currentRequest.projectId,
           status: 'IN_PROGRESS'
@@ -295,7 +305,7 @@ export async function PATCH(
         const workOrder = await prisma.checklistItem.create({
           data: {
             checklistId: checklist.id,
-            description: recurringType !== 'ONCE' 
+            description: recurringType !== 'ONCE'
               ? `${currentRequest.title} (${i + 1}/${occurrenceCount})`
               : currentRequest.title,
             notes: currentRequest.description,
@@ -351,8 +361,8 @@ export async function PATCH(
       }
     })
 
-    return NextResponse.json({ 
-      ...updatedRequest, 
+    return NextResponse.json({
+      ...updatedRequest,
       workOrderCreated,
       workOrderId
     })

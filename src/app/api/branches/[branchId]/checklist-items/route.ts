@@ -153,7 +153,8 @@ export async function GET(
     const whereClause: Record<string, unknown> = {
       checklist: {
         branchId,
-      }
+      },
+      deletedAt: null // Exclude archived items
     }
 
     if (projectId) {
@@ -191,13 +192,13 @@ export async function GET(
         { createdAt: 'desc' }
       ]
     })
-    
+
     // Fetch equipment for sticker inspections
     // 1. Equipment linked to requests (from original request)
     // 2. Equipment linked directly to work orders (added during inspection)
     const linkedRequestIds = items.map(item => item.linkedRequestId).filter(Boolean) as string[]
     const workOrderIds = items.map(item => item.id)
-    
+
     const allEquipment = await prisma.equipment.findMany({
       where: {
         OR: [
@@ -210,10 +211,10 @@ export async function GET(
     // Transform to flat structure for Kanban
     const transformedItems = items.map(item => {
       // Get equipment for this work order (from linked request or directly linked)
-      const itemEquipment = allEquipment.filter(eq => 
+      const itemEquipment = allEquipment.filter(eq =>
         eq.requestId === item.linkedRequestId || eq.workOrderId === item.id
       )
-      
+
       return {
         id: item.id,
         description: item.description,
@@ -299,13 +300,13 @@ export async function PATCH(
 
     const { branchId } = await params
     const body = await request.json()
-    const { 
-      action, 
-      workOrderIds, 
+    const {
+      action,
+      workOrderIds,
       workOrderId, // Single work order for inspection updates
-      paymentProofUrl, 
-      paymentProofType, 
-      paymentProofFileName, 
+      paymentProofUrl,
+      paymentProofType,
+      paymentProofFileName,
       signature,
       // Inspection fields
       inspectionDate,
@@ -450,7 +451,7 @@ export async function PATCH(
       if (currentWorkOrder.clientSignature) {
         await prisma.checklistItem.update({
           where: { id: workOrderId },
-          data: { 
+          data: {
             stage: 'COMPLETED',
             isCompleted: true,
             completedAt: new Date()
@@ -514,11 +515,11 @@ export async function PATCH(
 
       // Check if both client and supervisor/technician have signed - auto-complete
       const hasTechnicianOrSupervisorSignature = currentWorkOrder.technicianSignature || currentWorkOrder.supervisorSignature
-      
+
       if (hasTechnicianOrSupervisorSignature) {
         await prisma.checklistItem.update({
           where: { id: workOrderId },
-          data: { 
+          data: {
             stage: 'COMPLETED',
             isCompleted: true,
             completedAt: new Date()
@@ -622,7 +623,7 @@ export async function PATCH(
       const contracts = firstWorkOrder.checklist.project?.contracts || []
       if (contracts.length > 0) {
         const contract = contracts[0]
-        
+
         // Get contractor user ID
         const branch = await prisma.branch.findUnique({
           where: { id: branchId },
@@ -679,7 +680,7 @@ export async function PATCH(
       const verifyContracts = verifyFirstWorkOrder.checklist.project?.contracts || []
       if (verifyContracts.length > 0) {
         const verifyContract = verifyContracts[0]
-        
+
         // Get client user ID
         const branch = await prisma.branch.findUnique({
           where: { id: branchId },
@@ -717,7 +718,7 @@ export async function PATCH(
             // Auto-complete the contract
             await prisma.contract.update({
               where: { id: verifyContract.id },
-              data: { 
+              data: {
                 status: 'SIGNED',
                 endSignedAt: new Date()
               }
@@ -726,7 +727,7 @@ export async function PATCH(
             // Also complete the project
             await prisma.project.update({
               where: { id: verifyContract.projectId },
-              data: { 
+              data: {
                 status: 'CLOSED',
                 completedAt: new Date()
               }
