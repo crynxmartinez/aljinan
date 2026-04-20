@@ -138,19 +138,16 @@ export async function PATCH(
       updateData.acceptedAt = new Date()
       updateData.acceptedById = session.user.id
 
-      // Determine projectId for the work order
-      // If request has no projectId (adhoc), link to active project
-      targetProjectId = currentRequest.projectId
-      if (!targetProjectId) {
-        const activeProject = await prisma.project.findFirst({
-          where: {
-            branchId,
-            status: 'ACTIVE'
-          },
-          select: { id: true }
-        })
-        targetProjectId = activeProject?.id || null
-      }
+      // ALWAYS use the active project for start_immediately work orders
+      // This ensures they appear on the Kanban board with other work orders
+      const activeProject = await prisma.project.findFirst({
+        where: {
+          branchId,
+          status: 'ACTIVE'
+        },
+        select: { id: true }
+      })
+      targetProjectId = activeProject?.id || null
 
       // Create work order (ChecklistItem) from request
       // First, find or create a checklist for this branch
