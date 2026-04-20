@@ -199,40 +199,50 @@ export async function PATCH(
       }
 
       // Create work orders for each occurrence
-      for (let i = 0; i < occurrenceCount; i++) {
-        // Calculate scheduled date for this occurrence
-        const scheduledDate = new Date(startDate)
-        if (recurringType === 'MONTHLY') {
-          scheduledDate.setMonth(scheduledDate.getMonth() + i)
-        } else if (recurringType === 'QUARTERLY') {
-          scheduledDate.setMonth(scheduledDate.getMonth() + (i * 3))
+      try {
+        for (let i = 0; i < occurrenceCount; i++) {
+          // Calculate scheduled date for this occurrence
+          const scheduledDate = new Date(startDate)
+          if (recurringType === 'MONTHLY') {
+            scheduledDate.setMonth(scheduledDate.getMonth() + i)
+          } else if (recurringType === 'QUARTERLY') {
+            scheduledDate.setMonth(scheduledDate.getMonth() + (i * 3))
+          }
+
+          const workOrder = await prisma.checklistItem.create({
+            data: {
+              checklistId: checklist.id,
+              description: recurringType !== 'ONCE'
+                ? `${currentRequest.title} (${i + 1}/${occurrenceCount})`
+                : currentRequest.title,
+              notes: currentRequest.description,
+              stage: 'SCHEDULED',
+              type: 'ADHOC',
+              workOrderType: currentRequest.workOrderType,
+              recurringType: recurringType,
+              occurrenceIndex: i + 1,
+              workOrderNumber: startingWoNumber + i,
+              scheduledDate: scheduledDate,
+              price: null, // Price will be added by contractor later
+              linkedRequestId: requestId,
+              assignedTo: currentRequest.assignedTo || null,
+            }
+          })
+          createdWorkOrders.push(workOrder.id)
         }
 
-        const workOrder = await prisma.checklistItem.create({
-          data: {
-            checklistId: checklist.id,
-            description: recurringType !== 'ONCE'
-              ? `${currentRequest.title} (${i + 1}/${occurrenceCount})`
-              : currentRequest.title,
-            notes: currentRequest.description,
-            stage: 'SCHEDULED',
-            type: 'ADHOC',
-            workOrderType: currentRequest.workOrderType,
-            recurringType: recurringType,
-            occurrenceIndex: i + 1,
-            workOrderNumber: startingWoNumber + i,
-            scheduledDate: scheduledDate,
-            price: null, // Price will be added by contractor later
-            linkedRequestId: requestId,
-            assignedTo: currentRequest.assignedTo || null,
-          }
-        })
-        createdWorkOrders.push(workOrder.id)
+        workOrderCreated = true
+        workOrderId = createdWorkOrders[0] // First work order ID
+        updateData.workOrderId = createdWorkOrders[0]
+      } catch (woError: any) {
+        // Return error in debug instead of failing the whole request
+        return NextResponse.json({
+          error: 'Failed to create work order',
+          details: woError.message,
+          code: woError.code,
+          meta: woError.meta
+        }, { status: 500 })
       }
-
-      workOrderCreated = true
-      workOrderId = createdWorkOrders[0] // First work order ID
-      updateData.workOrderId = createdWorkOrders[0]
     }
     // ACTION: Client accepts quote
     else if (action === 'accept') {
