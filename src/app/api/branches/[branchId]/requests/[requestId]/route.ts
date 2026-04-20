@@ -101,6 +101,8 @@ export async function PATCH(
     // Handle specific actions
     let workOrderCreated = false
     let workOrderId: string | null = null
+    let checklist: any = null
+    let targetProjectId: string | null = null
 
     // ACTION: Contractor sends quote
     if (action === 'quote') {
@@ -138,7 +140,7 @@ export async function PATCH(
 
       // Determine projectId for the work order
       // If request has no projectId (adhoc), link to active project
-      let targetProjectId = currentRequest.projectId
+      targetProjectId = currentRequest.projectId
       if (!targetProjectId) {
         const activeProject = await prisma.project.findFirst({
           where: {
@@ -152,7 +154,7 @@ export async function PATCH(
 
       // Create work order (ChecklistItem) from request
       // First, find or create a checklist for this branch
-      let checklist = await prisma.checklist.findFirst({
+      checklist = await prisma.checklist.findFirst({
         where: {
           branchId,
           projectId: targetProjectId,
@@ -249,7 +251,7 @@ export async function PATCH(
 
       // Create work order (ChecklistItem) from accepted request
       // First, find or create a checklist for this branch
-      let checklist = await prisma.checklist.findFirst({
+      checklist = await prisma.checklist.findFirst({
         where: {
           branchId,
           projectId: currentRequest.projectId,
