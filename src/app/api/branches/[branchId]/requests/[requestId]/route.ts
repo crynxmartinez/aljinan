@@ -147,14 +147,18 @@ export async function PATCH(
         },
         select: { id: true }
       })
-      targetProjectId = activeProject?.id || null
 
-      // Create work order (ChecklistItem) from request
-      // First, find or create a checklist for this branch
+      if (!activeProject) {
+        return NextResponse.json({ error: 'No active project found. Please create an active project first.' }, { status: 400 })
+      }
+
+      targetProjectId = activeProject.id
+
+      // Use the active project's checklist
       checklist = await prisma.checklist.findFirst({
         where: {
           branchId,
-          projectId: targetProjectId,
+          projectId: activeProject.id,
           status: 'IN_PROGRESS'
         }
       })
@@ -163,8 +167,8 @@ export async function PATCH(
         checklist = await prisma.checklist.create({
           data: {
             branchId,
-            projectId: targetProjectId,
-            title: 'Service Requests',
+            projectId: activeProject.id,
+            title: `${activeProject.id.slice(0, 8)} - Work Orders`,
             description: 'Work orders from client requests',
             status: 'IN_PROGRESS',
             createdById: session.user.id,
