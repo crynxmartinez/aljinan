@@ -120,15 +120,22 @@ export async function PATCH(
     }
     // ACTION: Client starts work immediately (without quotation)
     else if (action === 'start_immediately') {
+      console.log('🚀 START IMMEDIATELY - Action triggered', { requestId, branchId, quotedDate })
+
       if (session.user.role !== 'CLIENT') {
+        console.error('❌ START IMMEDIATELY - Not a client', { role: session.user.role })
         return NextResponse.json({ error: 'Only clients can start work immediately' }, { status: 403 })
       }
       if (currentRequest.status !== 'REQUESTED') {
+        console.error('❌ START IMMEDIATELY - Wrong status', { status: currentRequest.status })
         return NextResponse.json({ error: 'Can only start immediately from requested status' }, { status: 400 })
       }
       if (!quotedDate) {
+        console.error('❌ START IMMEDIATELY - No date provided')
         return NextResponse.json({ error: 'Scheduled date is required' }, { status: 400 })
       }
+
+      console.log('✅ START IMMEDIATELY - Validation passed, creating work order...')
 
       updateData.status = 'SCHEDULED'
       updateData.quotedDate = new Date(quotedDate) // Store scheduled date
@@ -146,6 +153,13 @@ export async function PATCH(
         }
       })
 
+      console.log('📋 START IMMEDIATELY - Checklist lookup', {
+        found: !!checklist,
+        checklistId: checklist?.id,
+        branchId,
+        projectId: currentRequest.projectId
+      })
+
       if (!checklist) {
         checklist = await prisma.checklist.create({
           data: {
@@ -157,6 +171,7 @@ export async function PATCH(
             createdById: session.user.id,
           }
         })
+        console.log('✅ START IMMEDIATELY - New checklist created', { checklistId: checklist.id })
       }
 
       // Get contractor for WO number generation

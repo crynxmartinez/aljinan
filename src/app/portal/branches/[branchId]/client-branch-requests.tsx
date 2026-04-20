@@ -163,7 +163,7 @@ function getBaseWorkOrderName(title: string): string {
 // Group work orders by their base name
 function groupWorkOrders(workOrders: WorkOrder[]): Map<string, WorkOrder[]> {
   const groups = new Map<string, WorkOrder[]>()
-  
+
   for (const wo of workOrders) {
     const baseName = getBaseWorkOrderName(wo.title)
     if (!groups.has(baseName)) {
@@ -171,7 +171,7 @@ function groupWorkOrders(workOrders: WorkOrder[]): Map<string, WorkOrder[]> {
     }
     groups.get(baseName)!.push(wo)
   }
-  
+
   return groups
 }
 
@@ -179,7 +179,7 @@ function groupWorkOrders(workOrders: WorkOrder[]): Map<string, WorkOrder[]> {
 function WorkOrdersGroupedView({ workOrders }: { workOrders: WorkOrder[] }) {
   const [expandedGroups, setExpandedGroups] = useState<Set<string>>(new Set())
   const groups = groupWorkOrders(workOrders)
-  
+
   const toggleGroup = (groupName: string) => {
     setExpandedGroups(prev => {
       const next = new Set(prev)
@@ -191,7 +191,7 @@ function WorkOrdersGroupedView({ workOrders }: { workOrders: WorkOrder[] }) {
       return next
     })
   }
-  
+
   return (
     <div className="divide-y">
       {Array.from(groups.entries()).map(([groupName, items]) => {
@@ -199,7 +199,7 @@ function WorkOrdersGroupedView({ workOrders }: { workOrders: WorkOrder[] }) {
         const groupTotal = items.reduce((sum, wo) => sum + (wo.price || 0), 0)
         const hasPendingPrice = items.some(wo => wo.price === null)
         const isSingleItem = items.length === 1
-        
+
         return (
           <div key={groupName} className="bg-white">
             {/* Group Header */}
@@ -239,7 +239,7 @@ function WorkOrdersGroupedView({ workOrders }: { workOrders: WorkOrder[] }) {
                 )}
               </div>
             </button>
-            
+
             {/* Single Item Details (inline) */}
             {isSingleItem && (
               <div className="px-4 pb-4 pt-0">
@@ -256,7 +256,7 @@ function WorkOrdersGroupedView({ workOrders }: { workOrders: WorkOrder[] }) {
                 </div>
               </div>
             )}
-            
+
             {/* Expanded Items */}
             {!isSingleItem && isExpanded && (
               <div className="bg-muted/30 border-t">
@@ -327,7 +327,7 @@ export function ClientBranchRequests({ branchId, projectId, onDataChange, userId
     preferredDate: '',
     preferredTimeSlot: '',
   })
-  
+
   // Equipment state for sticker inspections
   const [equipment, setEquipment] = useState<{
     equipmentNumber: string
@@ -351,7 +351,7 @@ export function ClientBranchRequests({ branchId, projectId, onDataChange, userId
   const [uploading, setUploading] = useState(false)
   const [selectedRequest, setSelectedRequest] = useState<Request | null>(null)
   const [selectedProject, setSelectedProject] = useState<Project | null>(null)
-  
+
   // Quote response state
   const [quoteResponseDialogOpen, setQuoteResponseDialogOpen] = useState(false)
   const [quoteResponseRequest, setQuoteResponseRequest] = useState<Request | null>(null)
@@ -362,7 +362,7 @@ export function ClientBranchRequests({ branchId, projectId, onDataChange, userId
   const [clientSignature, setClientSignature] = useState<string | null>(null)
   const [cancelDialogOpen, setCancelDialogOpen] = useState(false)
   const [cancelling, setCancelling] = useState(false)
-  
+
   // Start Immediately state
   const [startImmediatelyDialogOpen, setStartImmediatelyDialogOpen] = useState(false)
   const [startImmediatelyRequest, setStartImmediatelyRequest] = useState<Request | null>(null)
@@ -535,9 +535,9 @@ export function ClientBranchRequests({ branchId, projectId, onDataChange, userId
       const response = await fetch(`/api/branches/${branchId}/requests/${quoteResponseRequest.id}`, {
         method: 'PATCH',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ 
+        body: JSON.stringify({
           action: 'accept',
-          clientSignature: clientSignature 
+          clientSignature: clientSignature
         }),
       })
 
@@ -569,7 +569,7 @@ export function ClientBranchRequests({ branchId, projectId, onDataChange, userId
       const response = await fetch(`/api/branches/${branchId}/requests/${quoteResponseRequest.id}`, {
         method: 'PATCH',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ 
+        body: JSON.stringify({
           action: 'reject',
           rejectionReason: rejectionReason || 'No reason provided'
         }),
@@ -606,7 +606,13 @@ export function ClientBranchRequests({ branchId, projectId, onDataChange, userId
       setError('Please select a scheduled date')
       return
     }
-    
+
+    console.log('🚀 CLIENT - Start Immediately clicked', {
+      requestId: startImmediatelyRequest.id,
+      branchId,
+      scheduledDate: startImmediatelyDate
+    })
+
     setStartingImmediately(true)
     setError('')
 
@@ -614,16 +620,30 @@ export function ClientBranchRequests({ branchId, projectId, onDataChange, userId
       const response = await fetch(`/api/branches/${branchId}/requests/${startImmediatelyRequest.id}`, {
         method: 'PATCH',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ 
+        body: JSON.stringify({
           action: 'start_immediately',
           quotedDate: startImmediatelyDate
         }),
       })
 
+      console.log('📡 CLIENT - API Response', {
+        ok: response.ok,
+        status: response.status,
+        statusText: response.statusText
+      })
+
       if (!response.ok) {
         const data = await response.json()
+        console.error('❌ CLIENT - API Error', data)
         throw new Error(data.error || 'Failed to start work order')
       }
+
+      const result = await response.json()
+      console.log('✅ CLIENT - Work order created', {
+        workOrderCreated: result.workOrderCreated,
+        workOrderId: result.workOrderId,
+        requestStatus: result.status
+      })
 
       setStartImmediatelyDialogOpen(false)
       setStartImmediatelyRequest(null)
@@ -631,9 +651,10 @@ export function ClientBranchRequests({ branchId, projectId, onDataChange, userId
       fetchRequests()
       onDataChange?.()
       router.refresh()
-      
+
       toast.success('Work order created successfully! Check the Checklist tab.')
     } catch (err) {
+      console.error('❌ CLIENT - Error in handleStartImmediately', err)
       setError(err instanceof Error ? err.message : 'An error occurred')
       toast.error(err instanceof Error ? err.message : 'Failed to create work order')
     } finally {
@@ -806,7 +827,7 @@ export function ClientBranchRequests({ branchId, projectId, onDataChange, userId
                   key={request.id}
                   className={`p-4 border rounded-lg transition-colors ${request.status === 'QUOTED' ? 'border-purple-300 bg-purple-50/50' : 'hover:bg-muted/50'}`}
                 >
-                  <div 
+                  <div
                     className="space-y-2 cursor-pointer"
                     onClick={() => {
                       const project = getProjectForRequest(request)
@@ -850,7 +871,7 @@ export function ClientBranchRequests({ branchId, projectId, onDataChange, userId
                       )}
                     </p>
                   </div>
-                  
+
                   {/* Show quote info and action buttons for QUOTED requests */}
                   {request.status === 'QUOTED' && request.quotedPrice && (
                     <div className="mt-3 pt-3 border-t border-purple-200">
@@ -869,8 +890,8 @@ export function ClientBranchRequests({ branchId, projectId, onDataChange, userId
                             </div>
                           )}
                         </div>
-                        <Button 
-                          size="sm" 
+                        <Button
+                          size="sm"
                           onClick={(e) => { e.stopPropagation(); openQuoteResponseDialog(request); }}
                           className="bg-purple-600 hover:bg-purple-700"
                         >
@@ -1045,8 +1066,8 @@ export function ClientBranchRequests({ branchId, projectId, onDataChange, userId
                           <Label className="text-xs">Type *</Label>
                           <Select
                             value={newEquipment.equipmentType}
-                            onValueChange={(value) => setNewEquipment({ 
-                              ...newEquipment, 
+                            onValueChange={(value) => setNewEquipment({
+                              ...newEquipment,
                               equipmentType: value,
                               customEquipmentType: value !== 'OTHER' ? '' : newEquipment.customEquipmentType
                             })}
@@ -1146,7 +1167,7 @@ export function ClientBranchRequests({ branchId, projectId, onDataChange, userId
                               setError('Equipment number is required')
                               return
                             }
-                            
+
                             if (newEquipment.equipmentType === 'OTHER' && !newEquipment.customEquipmentType.trim()) {
                               setError('Please specify the equipment type')
                               return
@@ -1314,7 +1335,7 @@ export function ClientBranchRequests({ branchId, projectId, onDataChange, userId
                   <Badge variant="outline" className="text-green-600">Certificate Required</Badge>
                 )}
               </div>
-              
+
               {/* Description */}
               {selectedRequest.description && (
                 <div className="p-4 bg-muted/50 rounded-lg">
@@ -1349,9 +1370,9 @@ export function ClientBranchRequests({ branchId, projectId, onDataChange, userId
                   <p className="text-sm font-medium text-muted-foreground mb-2">Attached Photos</p>
                   <div className="grid grid-cols-3 gap-2">
                     {selectedRequest.photos.map((photo, idx) => photo?.url ? (
-                      <img 
-                        key={idx} 
-                        src={photo.url} 
+                      <img
+                        key={idx}
+                        src={photo.url}
                         alt={`Request photo ${idx + 1}`}
                         className="w-full h-24 object-cover rounded-lg cursor-pointer hover:opacity-80"
                         onClick={() => window.open(photo.url, '_blank')}
@@ -1424,7 +1445,7 @@ export function ClientBranchRequests({ branchId, projectId, onDataChange, userId
                     </div>
                   )}
                   <div className="flex gap-2">
-                    <Button 
+                    <Button
                       size="sm"
                       onClick={() => {
                         openQuoteResponseDialog(selectedRequest)
@@ -1435,7 +1456,7 @@ export function ClientBranchRequests({ branchId, projectId, onDataChange, userId
                       <ThumbsUp className="mr-2 h-4 w-4" />
                       Accept Quote
                     </Button>
-                    <Button 
+                    <Button
                       size="sm"
                       variant="outline"
                       onClick={() => {
@@ -1464,7 +1485,7 @@ export function ClientBranchRequests({ branchId, projectId, onDataChange, userId
                     <p className="text-sm text-blue-700 mb-3">
                       Skip the quotation process and start work immediately. The contractor will add pricing later.
                     </p>
-                    <Button 
+                    <Button
                       size="sm"
                       onClick={() => {
                         openStartImmediatelyDialog(selectedRequest)
@@ -1502,17 +1523,17 @@ export function ClientBranchRequests({ branchId, projectId, onDataChange, userId
 
               {/* Comments Section */}
               <div className="pt-4 border-t">
-                <RequestComments 
-                  branchId={branchId} 
-                  requestId={selectedRequest.id} 
-                  currentUserId={userId || ''} 
+                <RequestComments
+                  branchId={branchId}
+                  requestId={selectedRequest.id}
+                  currentUserId={userId || ''}
                 />
               </div>
             </div>
           )}
           <DialogFooter className="flex gap-2">
             {selectedRequest?.status === 'REQUESTED' && selectedRequest?.createdByRole === 'CLIENT' && (
-              <Button 
+              <Button
                 variant="destructive"
                 size="sm"
                 onClick={() => setCancelDialogOpen(true)}
@@ -1588,7 +1609,7 @@ export function ClientBranchRequests({ branchId, projectId, onDataChange, userId
               Project proposal from your contractor - Review the work orders and pricing below
             </DialogDescription>
           </DialogHeader>
-          
+
           {error && (
             <div className="bg-destructive/10 text-destructive p-3 rounded-lg text-sm">
               {error}
@@ -1599,123 +1620,124 @@ export function ClientBranchRequests({ branchId, projectId, onDataChange, userId
             // Calculate total from work orders directly
             const calculatedTotal = selectedProject.workOrders?.reduce((sum, wo) => sum + (wo.price || 0), 0) || 0
             return (
-            <div className="space-y-6">
-              {/* Project Info */}
-              <div className="grid grid-cols-2 md:grid-cols-4 gap-4 p-4 bg-muted/30 rounded-lg">
-                <div>
-                  <p className="text-xs text-muted-foreground">Status</p>
-                  <Badge className={selectedProject.status === 'PENDING' ? 'bg-amber-100 text-amber-700' : 'bg-green-100 text-green-700'}>
-                    {selectedProject.status === 'PENDING' ? 'Pending Review' : selectedProject.status}
-                  </Badge>
-                </div>
-                {selectedProject.startDate && (
+              <div className="space-y-6">
+                {/* Project Info */}
+                <div className="grid grid-cols-2 md:grid-cols-4 gap-4 p-4 bg-muted/30 rounded-lg">
                   <div>
-                    <p className="text-xs text-muted-foreground">Start Date</p>
-                    <p className="font-medium text-sm">{new Date(selectedProject.startDate).toLocaleDateString()}</p>
+                    <p className="text-xs text-muted-foreground">Status</p>
+                    <Badge className={selectedProject.status === 'PENDING' ? 'bg-amber-100 text-amber-700' : 'bg-green-100 text-green-700'}>
+                      {selectedProject.status === 'PENDING' ? 'Pending Review' : selectedProject.status}
+                    </Badge>
                   </div>
-                )}
-                {selectedProject.endDate && (
+                  {selectedProject.startDate && (
+                    <div>
+                      <p className="text-xs text-muted-foreground">Start Date</p>
+                      <p className="font-medium text-sm">{new Date(selectedProject.startDate).toLocaleDateString()}</p>
+                    </div>
+                  )}
+                  {selectedProject.endDate && (
+                    <div>
+                      <p className="text-xs text-muted-foreground">End Date</p>
+                      <p className="font-medium text-sm">{new Date(selectedProject.endDate).toLocaleDateString()}</p>
+                    </div>
+                  )}
                   <div>
-                    <p className="text-xs text-muted-foreground">End Date</p>
-                    <p className="font-medium text-sm">{new Date(selectedProject.endDate).toLocaleDateString()}</p>
+                    <p className="text-xs text-muted-foreground">Total Value</p>
+                    <p className="font-bold text-lg text-primary">
+                      SAR {calculatedTotal.toLocaleString('en-US', { minimumFractionDigits: 2 })}
+                    </p>
                   </div>
-                )}
-                <div>
-                  <p className="text-xs text-muted-foreground">Total Value</p>
-                  <p className="font-bold text-lg text-primary">
-                    SAR {calculatedTotal.toLocaleString('en-US', { minimumFractionDigits: 2 })}
-                  </p>
                 </div>
-              </div>
 
-              {/* Work Orders - Grouped Collapsible View */}
-              <div>
-                <div className="flex items-center justify-between mb-3">
-                  <h3 className="font-semibold">Work Orders</h3>
-                  {selectedProject.status === 'PENDING' && (
-                    <Button variant="outline" size="sm" onClick={() => setAddWorkOrderOpen(true)}>
-                      <Plus className="h-4 w-4 mr-1" />
-                      Request Additional Work
-                    </Button>
+                {/* Work Orders - Grouped Collapsible View */}
+                <div>
+                  <div className="flex items-center justify-between mb-3">
+                    <h3 className="font-semibold">Work Orders</h3>
+                    {selectedProject.status === 'PENDING' && (
+                      <Button variant="outline" size="sm" onClick={() => setAddWorkOrderOpen(true)}>
+                        <Plus className="h-4 w-4 mr-1" />
+                        Request Additional Work
+                      </Button>
+                    )}
+                  </div>
+
+                  {selectedProject.workOrders && selectedProject.workOrders.length > 0 ? (
+                    <div className="border rounded-lg overflow-hidden">
+                      <WorkOrdersGroupedView workOrders={selectedProject.workOrders} />
+
+                      {/* Total Row */}
+                      <div className="flex items-center justify-between p-4 bg-primary/5 border-t">
+                        <span className="font-semibold">Total</span>
+                        <span className="text-xl font-bold">
+                          SAR {calculatedTotal.toLocaleString('en-US', { minimumFractionDigits: 2 })}
+                        </span>
+                      </div>
+                    </div>
+                  ) : (
+                    <div className="text-center py-8 text-muted-foreground border rounded-lg">
+                      No work orders defined yet
+                    </div>
                   )}
                 </div>
-                
-                {selectedProject.workOrders && selectedProject.workOrders.length > 0 ? (
-                  <div className="border rounded-lg overflow-hidden">
-                    <WorkOrdersGroupedView workOrders={selectedProject.workOrders} />
-                    
-                    {/* Total Row */}
-                    <div className="flex items-center justify-between p-4 bg-primary/5 border-t">
-                      <span className="font-semibold">Total</span>
-                      <span className="text-xl font-bold">
-                        SAR {calculatedTotal.toLocaleString('en-US', { minimumFractionDigits: 2 })}
-                      </span>
+
+                {/* Action Buttons for Pending Projects */}
+                {selectedProject.status === 'PENDING' && (() => {
+                  const hasPendingPrices = selectedProject.workOrders?.some(wo => wo.price === null) || false
+                  return (
+                    <div className="space-y-4 pt-4 border-t">
+                      {hasPendingPrices ? (
+                        <div className="p-4 bg-orange-50 border border-orange-200 rounded-lg">
+                          <p className="text-sm text-orange-800">
+                            <strong>Waiting for pricing.</strong> Some work orders are pending price from your contractor.
+                            You cannot accept the project until all work orders have been priced.
+                          </p>
+                        </div>
+                      ) : (
+                        <div className="p-4 bg-amber-50 border border-amber-200 rounded-lg">
+                          <p className="text-sm text-amber-800">
+                            <strong>Ready to proceed?</strong> By accepting this project, a contract will be created and work can begin.
+                            You can also request additional work orders above - your contractor will add pricing for any new items.
+                          </p>
+                        </div>
+                      )}
+
+                      <div className="flex gap-3 justify-end">
+                        <Button variant="outline" onClick={() => { setSelectedProject(null); setSelectedRequest(null); }}>
+                          Review Later
+                        </Button>
+                        <Button
+                          onClick={() => handleApproveProject(selectedProject.id)}
+                          disabled={approving || hasPendingPrices}
+                          className={hasPendingPrices ? "bg-gray-400 cursor-not-allowed" : "bg-green-600 hover:bg-green-700"}
+                        >
+                          {approving ? (
+                            <>
+                              <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                              Approving...
+                            </>
+                          ) : (
+                            <>
+                              <CheckCircle className="mr-2 h-4 w-4" />
+                              Accept Project
+                            </>
+                          )}
+                        </Button>
+                      </div>
                     </div>
-                  </div>
-                ) : (
-                  <div className="text-center py-8 text-muted-foreground border rounded-lg">
-                    No work orders defined yet
+                  )
+                })()}
+
+                {/* Info for Active Projects */}
+                {selectedProject.status === 'ACTIVE' && (
+                  <div className="p-4 bg-green-50 border border-green-200 rounded-lg">
+                    <p className="text-sm text-green-800">
+                      <strong>Project is active.</strong> Work is in progress. Check the Appointments tab for scheduled visits.
+                    </p>
                   </div>
                 )}
               </div>
-
-              {/* Action Buttons for Pending Projects */}
-              {selectedProject.status === 'PENDING' && (() => {
-                const hasPendingPrices = selectedProject.workOrders?.some(wo => wo.price === null) || false
-                return (
-                  <div className="space-y-4 pt-4 border-t">
-                    {hasPendingPrices ? (
-                      <div className="p-4 bg-orange-50 border border-orange-200 rounded-lg">
-                        <p className="text-sm text-orange-800">
-                          <strong>Waiting for pricing.</strong> Some work orders are pending price from your contractor. 
-                          You cannot accept the project until all work orders have been priced.
-                        </p>
-                      </div>
-                    ) : (
-                      <div className="p-4 bg-amber-50 border border-amber-200 rounded-lg">
-                        <p className="text-sm text-amber-800">
-                          <strong>Ready to proceed?</strong> By accepting this project, a contract will be created and work can begin. 
-                          You can also request additional work orders above - your contractor will add pricing for any new items.
-                        </p>
-                      </div>
-                    )}
-                    
-                    <div className="flex gap-3 justify-end">
-                      <Button variant="outline" onClick={() => { setSelectedProject(null); setSelectedRequest(null); }}>
-                        Review Later
-                      </Button>
-                      <Button 
-                        onClick={() => handleApproveProject(selectedProject.id)}
-                        disabled={approving || hasPendingPrices}
-                        className={hasPendingPrices ? "bg-gray-400 cursor-not-allowed" : "bg-green-600 hover:bg-green-700"}
-                      >
-                        {approving ? (
-                          <>
-                            <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                            Approving...
-                          </>
-                        ) : (
-                          <>
-                            <CheckCircle className="mr-2 h-4 w-4" />
-                            Accept Project
-                          </>
-                        )}
-                      </Button>
-                    </div>
-                  </div>
-                )
-              })()}
-
-              {/* Info for Active Projects */}
-              {selectedProject.status === 'ACTIVE' && (
-                <div className="p-4 bg-green-50 border border-green-200 rounded-lg">
-                  <p className="text-sm text-green-800">
-                    <strong>Project is active.</strong> Work is in progress. Check the Appointments tab for scheduled visits.
-                  </p>
-                </div>
-              )}
-            </div>
-          )})()}
+            )
+          })()}
         </DialogContent>
       </Dialog>
 
@@ -1827,8 +1849,8 @@ export function ClientBranchRequests({ branchId, projectId, onDataChange, userId
                 <div className="grid grid-cols-2 gap-4">
                   <div>
                     <p className="text-xs text-purple-600 mb-1">
-                      {quoteResponseRequest.recurringType && quoteResponseRequest.recurringType !== 'ONCE' 
-                        ? 'Price per Occurrence' 
+                      {quoteResponseRequest.recurringType && quoteResponseRequest.recurringType !== 'ONCE'
+                        ? 'Price per Occurrence'
                         : 'Price'}
                     </p>
                     <p className="text-2xl font-bold text-purple-800">
@@ -1837,8 +1859,8 @@ export function ClientBranchRequests({ branchId, projectId, onDataChange, userId
                   </div>
                   <div>
                     <p className="text-xs text-purple-600 mb-1">
-                      {quoteResponseRequest.recurringType && quoteResponseRequest.recurringType !== 'ONCE' 
-                        ? 'First Scheduled Date' 
+                      {quoteResponseRequest.recurringType && quoteResponseRequest.recurringType !== 'ONCE'
+                        ? 'First Scheduled Date'
                         : 'Scheduled Date'}
                     </p>
                     <p className="text-lg font-semibold text-purple-800">
@@ -1922,14 +1944,14 @@ export function ClientBranchRequests({ branchId, projectId, onDataChange, userId
                     rows={3}
                   />
                   <div className="flex gap-2">
-                    <Button 
-                      variant="outline" 
+                    <Button
+                      variant="outline"
                       onClick={() => setShowRejectionForm(false)}
                       className="flex-1"
                     >
                       Back
                     </Button>
-                    <Button 
+                    <Button
                       variant="destructive"
                       onClick={handleRejectQuote}
                       disabled={respondingToQuote}
@@ -1946,19 +1968,19 @@ export function ClientBranchRequests({ branchId, projectId, onDataChange, userId
                   <div className="p-4 bg-blue-50 border border-blue-200 rounded-lg">
                     <p className="text-sm text-blue-800">
                       <strong>Sign to Accept</strong> - By signing below, you agree to the quoted price and schedule.
-                      {quoteResponseRequest.recurringType && quoteResponseRequest.recurringType !== 'ONCE' 
+                      {quoteResponseRequest.recurringType && quoteResponseRequest.recurringType !== 'ONCE'
                         ? ` ${quoteResponseRequest.recurringType === 'MONTHLY' ? '12 monthly' : '4 quarterly'} work orders will be created.`
                         : ''}
                     </p>
                   </div>
-                  
+
                   <div className="space-y-2">
                     <Label className="flex items-center gap-2">
                       <PenTool className="h-4 w-4" />
                       Your Signature
                     </Label>
                     <div className="border rounded-lg p-2 bg-white">
-                      <SignaturePad 
+                      <SignaturePad
                         onSignatureChange={(sig) => setClientSignature(sig)}
                         width={380}
                         height={120}
@@ -1967,7 +1989,7 @@ export function ClientBranchRequests({ branchId, projectId, onDataChange, userId
                   </div>
 
                   <div className="flex gap-3">
-                    <Button 
+                    <Button
                       variant="outline"
                       onClick={() => {
                         setShowSignatureForm(false)
@@ -1977,7 +1999,7 @@ export function ClientBranchRequests({ branchId, projectId, onDataChange, userId
                     >
                       Back
                     </Button>
-                    <Button 
+                    <Button
                       onClick={handleAcceptQuote}
                       disabled={respondingToQuote || !clientSignature}
                       className="flex-1 bg-green-600 hover:bg-green-700"
@@ -1992,8 +2014,8 @@ export function ClientBranchRequests({ branchId, projectId, onDataChange, userId
                 <>
                   <div className="p-4 bg-green-50 border border-green-200 rounded-lg">
                     <p className="text-sm text-green-800">
-                      <strong>What happens next?</strong> If you accept, 
-                      {quoteResponseRequest.recurringType && quoteResponseRequest.recurringType !== 'ONCE' 
+                      <strong>What happens next?</strong> If you accept,
+                      {quoteResponseRequest.recurringType && quoteResponseRequest.recurringType !== 'ONCE'
                         ? ` ${quoteResponseRequest.recurringType === 'MONTHLY' ? '12 monthly' : '4 quarterly'} work orders will be created and scheduled automatically.`
                         : ' a work order will be created and your contractor will schedule the service.'}
                       {' '}If you reject, the contractor will be notified and may provide a revised quote.
@@ -2001,7 +2023,7 @@ export function ClientBranchRequests({ branchId, projectId, onDataChange, userId
                   </div>
 
                   <div className="flex gap-3">
-                    <Button 
+                    <Button
                       variant="outline"
                       onClick={() => setShowRejectionForm(true)}
                       className="flex-1"
@@ -2009,7 +2031,7 @@ export function ClientBranchRequests({ branchId, projectId, onDataChange, userId
                       <ThumbsDown className="mr-2 h-4 w-4" />
                       Reject
                     </Button>
-                    <Button 
+                    <Button
                       onClick={() => setShowSignatureForm(true)}
                       className="flex-1 bg-green-600 hover:bg-green-700"
                     >
@@ -2033,7 +2055,7 @@ export function ClientBranchRequests({ branchId, projectId, onDataChange, userId
               Create a work order without waiting for a quotation. The contractor will add pricing later.
             </DialogDescription>
           </DialogHeader>
-          
+
           {startImmediatelyRequest && (
             <div className="space-y-4 py-4">
               {error && (
@@ -2067,11 +2089,11 @@ export function ClientBranchRequests({ branchId, projectId, onDataChange, userId
                   required
                 />
                 <p className="text-xs text-muted-foreground">
-                  {startImmediatelyRequest.recurringType === 'MONTHLY' 
+                  {startImmediatelyRequest.recurringType === 'MONTHLY'
                     ? 'This will be the start date for the first monthly occurrence'
                     : startImmediatelyRequest.recurringType === 'QUARTERLY'
-                    ? 'This will be the start date for the first quarterly occurrence'
-                    : 'When should the work be scheduled?'}
+                      ? 'This will be the start date for the first quarterly occurrence'
+                      : 'When should the work be scheduled?'}
                 </p>
               </div>
 
@@ -2088,7 +2110,7 @@ export function ClientBranchRequests({ branchId, projectId, onDataChange, userId
               </div>
 
               <div className="flex gap-3">
-                <Button 
+                <Button
                   variant="outline"
                   onClick={() => {
                     setStartImmediatelyDialogOpen(false)
@@ -2100,7 +2122,7 @@ export function ClientBranchRequests({ branchId, projectId, onDataChange, userId
                 >
                   Cancel
                 </Button>
-                <Button 
+                <Button
                   onClick={handleStartImmediately}
                   disabled={startingImmediately || !startImmediatelyDate}
                   className="flex-1 bg-blue-600 hover:bg-blue-700"

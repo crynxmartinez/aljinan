@@ -166,25 +166,25 @@ const ALLOWED_TRANSITIONS: Record<ChecklistItemStage, { contractor: ChecklistIte
 }
 
 function canTransition(from: ChecklistItemStage, to: ChecklistItemStage, isClient: boolean, item?: ChecklistItem): boolean {
-  const allowed = isClient 
-    ? ALLOWED_TRANSITIONS[from].client 
+  const allowed = isClient
+    ? ALLOWED_TRANSITIONS[from].client
     : ALLOWED_TRANSITIONS[from].contractor
-  
+
   // Can't move to FOR_REVIEW if price is null (contractor must add price first)
   if (to === 'FOR_REVIEW' && item && item.price === null) {
     return false
   }
-  
+
   return allowed.includes(to)
 }
 
 // Draggable card component
-function DraggableCard({ 
-  item, 
-  onClick, 
+function DraggableCard({
+  item,
+  onClick,
   disabled,
   assigneeName,
-}: { 
+}: {
   item: ChecklistItem
   onClick: () => void
   disabled: boolean
@@ -244,7 +244,7 @@ function DraggableCard({
           <p className="font-medium text-sm line-clamp-2 mb-2">
             {item.description}
           </p>
-          
+
           {/* Priority badges */}
           {priority === 'overdue' && (
             <Badge variant="destructive" className="text-xs mb-2">
@@ -261,7 +261,7 @@ function DraggableCard({
               Due in {daysOverdue} day{daysOverdue !== 1 ? 's' : ''}
             </Badge>
           )}
-          
+
           <div className="flex items-center justify-between text-xs text-muted-foreground">
             <div className="flex items-center gap-1 flex-wrap">
               {isArchived ? (
@@ -284,14 +284,14 @@ function DraggableCard({
                 </Badge>
               )}
             </div>
-            
+
             {!isArchived && item.scheduledDate && (
               <div className="flex items-center gap-1">
                 <Calendar className="h-3 w-3" />
                 {formatDate(item.scheduledDate)}
               </div>
             )}
-            
+
             {isArchived && item.deletedAt && (
               <div className="flex items-center gap-1 text-gray-500">
                 <Clock className="h-3 w-3" />
@@ -299,19 +299,19 @@ function DraggableCard({
               </div>
             )}
           </div>
-          
+
           {item.price && (
             <div className="mt-2 text-xs font-medium text-green-700">
               {formatCurrency(item.price)}
             </div>
           )}
-          
+
           {item.projectTitle && (
             <div className="mt-2 text-xs text-muted-foreground truncate">
               {item.projectTitle}
             </div>
           )}
-          
+
           {assigneeName && (
             <div className="mt-1 flex items-center gap-1 text-xs text-muted-foreground">
               <User className="h-3 w-3" />
@@ -325,13 +325,13 @@ function DraggableCard({
 }
 
 // Droppable column component
-function DroppableColumn({ 
-  stage, 
+function DroppableColumn({
+  stage,
   count,
-  children, 
+  children,
   isOver,
   onHeaderClick
-}: { 
+}: {
   stage: typeof STAGES[number]
   count: number
   children: React.ReactNode
@@ -353,7 +353,7 @@ function DroppableColumn({
         isOver && 'ring-2 ring-primary ring-offset-2'
       )}
     >
-      <div 
+      <div
         className={cn('p-3 border-b cursor-pointer hover:opacity-80 transition-opacity', stage.bgColor)}
         onClick={onHeaderClick}
       >
@@ -367,7 +367,7 @@ function DroppableColumn({
           </Badge>
         </div>
       </div>
-      
+
       <ScrollArea className="h-[400px] p-2">
         <div className="space-y-2">
           {children}
@@ -401,15 +401,15 @@ function getDatePriority(scheduledDate: string | null, stage: ChecklistItemStage
   if (!scheduledDate || stage === 'FOR_REVIEW' || stage === 'COMPLETED') {
     return 'normal'
   }
-  
+
   const today = new Date()
   today.setHours(0, 0, 0, 0)
-  
+
   const scheduled = new Date(scheduledDate)
   scheduled.setHours(0, 0, 0, 0)
-  
+
   const diffDays = Math.floor((scheduled.getTime() - today.getTime()) / (1000 * 60 * 60 * 24))
-  
+
   if (diffDays < 0) return 'overdue'
   if (diffDays === 0) return 'due-today'
   if (diffDays <= 3) return 'due-soon'
@@ -419,13 +419,13 @@ function getDatePriority(scheduledDate: string | null, stage: ChecklistItemStage
 // Get days overdue (negative means overdue)
 function getDaysOverdue(scheduledDate: string | null): number {
   if (!scheduledDate) return 0
-  
+
   const today = new Date()
   today.setHours(0, 0, 0, 0)
-  
+
   const scheduled = new Date(scheduledDate)
   scheduled.setHours(0, 0, 0, 0)
-  
+
   return Math.floor((scheduled.getTime() - today.getTime()) / (1000 * 60 * 60 * 24))
 }
 
@@ -434,30 +434,30 @@ function sortByPriority(items: ChecklistItem[]): ChecklistItem[] {
   return [...items].sort((a, b) => {
     const priorityA = getDatePriority(a.scheduledDate, a.stage)
     const priorityB = getDatePriority(b.scheduledDate, b.stage)
-    
+
     const priorityOrder: Record<DatePriority, number> = {
       'overdue': 0,
       'due-today': 1,
       'due-soon': 2,
       'normal': 3
     }
-    
+
     // First sort by priority
     if (priorityOrder[priorityA] !== priorityOrder[priorityB]) {
       return priorityOrder[priorityA] - priorityOrder[priorityB]
     }
-    
+
     // Then sort by date (earlier first for overdue, later first for normal)
     if (a.scheduledDate && b.scheduledDate) {
       const dateA = new Date(a.scheduledDate).getTime()
       const dateB = new Date(b.scheduledDate).getTime()
       return dateA - dateB
     }
-    
+
     // Items without dates go last
     if (a.scheduledDate && !b.scheduledDate) return -1
     if (!a.scheduledDate && b.scheduledDate) return 1
-    
+
     return 0
   })
 }
@@ -474,7 +474,7 @@ export function ChecklistKanban({ branchId, projectId, readOnly = false, userRol
   const [activeId, setActiveId] = useState<string | null>(null)
   const [overId, setOverId] = useState<string | null>(null)
   const [printingWorkOrderId, setPrintingWorkOrderId] = useState<string | null>(null)
-  
+
   // Inspection form state
   const [inspectionMode, setInspectionMode] = useState(false)
   const [inspectionData, setInspectionData] = useState({
@@ -512,7 +512,7 @@ export function ChecklistKanban({ branchId, projectId, readOnly = false, userRol
       fetch('/api/team-members')
         .then(r => r.ok ? r.json() : [])
         .then(data => setTeamMembers(data))
-        .catch(() => {})
+        .catch(() => { })
     }
 
     // Auto-refresh every 30 seconds to keep board updated
@@ -525,12 +525,20 @@ export function ChecklistKanban({ branchId, projectId, readOnly = false, userRol
 
   async function fetchItems() {
     try {
-      const url = projectId 
+      const url = projectId
         ? `/api/branches/${branchId}/checklist-items?projectId=${projectId}`
         : `/api/branches/${branchId}/checklist-items`
+      console.log('📋 KANBAN - Fetching items from:', url)
       const response = await fetch(url)
       if (response.ok) {
         const data = await response.json()
+        console.log('📋 KANBAN - Received items:', {
+          total: data.length,
+          scheduled: data.filter((i: ChecklistItem) => i.stage === 'SCHEDULED').length,
+          inProgress: data.filter((i: ChecklistItem) => i.stage === 'IN_PROGRESS').length,
+          forReview: data.filter((i: ChecklistItem) => i.stage === 'FOR_REVIEW').length,
+          completed: data.filter((i: ChecklistItem) => i.stage === 'COMPLETED').length,
+        })
         setItems(data)
       }
     } catch (error) {
@@ -552,7 +560,7 @@ export function ChecklistKanban({ branchId, projectId, readOnly = false, userRol
         }),
       })
       if (response.ok) {
-        setItems(prev => prev.map(item => 
+        setItems(prev => prev.map(item =>
           item.id === workOrderId ? { ...item, assignedTo: userId } : item
         ))
         if (selectedItem?.id === workOrderId) {
@@ -627,7 +635,7 @@ export function ChecklistKanban({ branchId, projectId, readOnly = false, userRol
   const handleSaveInspection = async () => {
     if (!selectedItem) return
     setSavingInspection(true)
-    
+
     try {
       const response = await fetch(`/api/branches/${branchId}/checklist-items`, {
         method: 'PATCH',
@@ -656,7 +664,7 @@ export function ChecklistKanban({ branchId, projectId, readOnly = false, userRol
   const handleTechnicianSign = async () => {
     if (!selectedItem) return
     setUpdating(true)
-    
+
     try {
       const response = await fetch(`/api/branches/${branchId}/checklist-items`, {
         method: 'PATCH',
@@ -687,7 +695,7 @@ export function ChecklistKanban({ branchId, projectId, readOnly = false, userRol
   const handleSupervisorSign = async () => {
     if (!selectedItem) return
     setUpdating(true)
-    
+
     try {
       const response = await fetch(`/api/branches/${branchId}/checklist-items`, {
         method: 'PATCH',
@@ -718,7 +726,7 @@ export function ChecklistKanban({ branchId, projectId, readOnly = false, userRol
   const handleClientSign = async () => {
     if (!selectedItem) return
     setUpdating(true)
-    
+
     try {
       const response = await fetch(`/api/branches/${branchId}/checklist-items`, {
         method: 'PATCH',
@@ -749,7 +757,7 @@ export function ChecklistKanban({ branchId, projectId, readOnly = false, userRol
   const handleStageChange = async (newStage: ChecklistItemStage) => {
     if (!selectedItem) return
     setUpdating(true)
-    
+
     try {
       const response = await fetch(`/api/branches/${branchId}/checklist-items`, {
         method: 'PATCH',
@@ -785,7 +793,7 @@ export function ChecklistKanban({ branchId, projectId, readOnly = false, userRol
       const checklistResponse = await fetch(`/api/branches/${branchId}/checklists/${item.checklistId}`)
       if (!checklistResponse.ok) return
       const checklist = await checklistResponse.json()
-      
+
       // Update the work order stage
       const response = await fetch(`/api/projects/${checklist.projectId}/work-orders/${itemId}`, {
         method: 'PATCH',
@@ -845,7 +853,7 @@ export function ChecklistKanban({ branchId, projectId, readOnly = false, userRol
     }
 
     // Optimistically update UI
-    setItems(prev => prev.map(i => 
+    setItems(prev => prev.map(i =>
       i.id === itemId ? { ...i, stage: targetStage } : i
     ))
 
@@ -931,11 +939,11 @@ export function ChecklistKanban({ branchId, projectId, readOnly = false, userRol
               <div className="flex gap-4 overflow-x-auto pb-4">
                 {STAGES.map((stage) => {
                   const stageItems = getItemsByStage(stage.id)
-                  
+
                   return (
-                    <DroppableColumn 
-                      key={stage.id} 
-                      stage={stage} 
+                    <DroppableColumn
+                      key={stage.id}
+                      stage={stage}
                       count={stageItems.length}
                       isOver={overId === stage.id}
                       onHeaderClick={() => handleColumnHeaderClick(stage)}
@@ -943,11 +951,11 @@ export function ChecklistKanban({ branchId, projectId, readOnly = false, userRol
                       {stageItems.map((item) => {
                         // Determine if this item can be dragged by current user
                         const isClient = userRole === 'CLIENT'
-                        const allowedMoves = isClient 
-                          ? ALLOWED_TRANSITIONS[item.stage].client 
+                        const allowedMoves = isClient
+                          ? ALLOWED_TRANSITIONS[item.stage].client
                           : ALLOWED_TRANSITIONS[item.stage].contractor
                         const canDrag = allowedMoves.length > 0
-                        
+
                         return (
                           <DraggableCard
                             key={item.id}
@@ -958,7 +966,7 @@ export function ChecklistKanban({ branchId, projectId, readOnly = false, userRol
                           />
                         )
                       })}
-                      
+
                       {stageItems.length === 0 && (
                         <div className="text-center py-8 text-muted-foreground text-sm">
                           No items
@@ -996,7 +1004,7 @@ export function ChecklistKanban({ branchId, projectId, readOnly = false, userRol
               {inspectionMode ? 'Fill in the inspection report details' : 'View and manage this work order'}
             </DialogDescription>
           </DialogHeader>
-          
+
           {selectedItem && (
             <div className="space-y-4">
               {/* Basic Info */}
@@ -1082,7 +1090,7 @@ export function ChecklistKanban({ branchId, projectId, readOnly = false, userRol
                         <FileText className="h-4 w-4" />
                         Inspection Report
                       </h4>
-                      
+
                       <div className="grid grid-cols-2 gap-4">
                         <div className="space-y-2">
                           <Label htmlFor="inspectionDate">Inspection Date</Label>
@@ -1182,7 +1190,7 @@ export function ChecklistKanban({ branchId, projectId, readOnly = false, userRol
                                       <p className="text-xs text-muted-foreground mt-1">{eq.location}</p>
                                     )}
                                   </div>
-                                  <Badge 
+                                  <Badge
                                     variant={eq.isInspected ? 'default' : 'secondary'}
                                     className={eq.isInspected ? 'bg-green-600' : ''}
                                   >
@@ -1261,35 +1269,35 @@ export function ChecklistKanban({ branchId, projectId, readOnly = false, userRol
                     <FileText className="h-4 w-4" />
                     Inspection Report
                   </h4>
-                  
+
                   {selectedItem.inspectionDate && (
                     <div>
                       <p className="text-sm text-muted-foreground">Inspection Date</p>
                       <p className="text-sm">{new Date(selectedItem.inspectionDate).toLocaleDateString()}</p>
                     </div>
                   )}
-                  
+
                   {selectedItem.systemsChecked && (
                     <div>
                       <p className="text-sm text-muted-foreground">Systems Checked</p>
                       <p className="text-sm">{selectedItem.systemsChecked}</p>
                     </div>
                   )}
-                  
+
                   {selectedItem.findings && (
                     <div>
                       <p className="text-sm text-muted-foreground">Findings</p>
                       <p className="text-sm whitespace-pre-wrap">{selectedItem.findings}</p>
                     </div>
                   )}
-                  
+
                   {selectedItem.deficiencies && (
                     <div>
                       <p className="text-sm text-muted-foreground">Deficiencies</p>
                       <p className="text-sm whitespace-pre-wrap text-orange-700">{selectedItem.deficiencies}</p>
                     </div>
                   )}
-                  
+
                   {selectedItem.recommendations && (
                     <div>
                       <p className="text-sm text-muted-foreground">Recommendations</p>
