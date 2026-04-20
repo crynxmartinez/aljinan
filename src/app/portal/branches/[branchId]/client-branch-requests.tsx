@@ -1489,7 +1489,6 @@ export function ClientBranchRequests({ branchId, projectId, onDataChange, userId
                       size="sm"
                       onClick={() => {
                         openStartImmediatelyDialog(selectedRequest)
-                        setSelectedRequest(null)
                       }}
                       className="bg-blue-600 hover:bg-blue-700"
                     >
@@ -2047,7 +2046,7 @@ export function ClientBranchRequests({ branchId, projectId, onDataChange, userId
       </Dialog>
 
       {/* Start Immediately Dialog - Skip quotation and create work order */}
-      <Dialog open={startImmediatelyDialogOpen} onOpenChange={(open) => { if (!open) { setStartImmediatelyDialogOpen(false); setStartImmediatelyRequest(null); setStartImmediatelyDate(''); setError(''); } }}>
+      <Dialog open={startImmediatelyDialogOpen} onOpenChange={(open) => { if (!open) { setStartImmediatelyDialogOpen(false); setStartImmediatelyRequest(null); setStartImmediatelyDate(''); setError(''); setSelectedRequest(null); } }}>
         <DialogContent className="sm:max-w-[500px]">
           <DialogHeader>
             <DialogTitle>Start Work Immediately</DialogTitle>
