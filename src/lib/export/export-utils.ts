@@ -5,7 +5,7 @@ export interface ExportableWorkOrder {
   id: string
   description: string
   stage: string
-  workOrderType: string
+  workOrderType: string | null
   scheduledDate: string | null
   price: number | null
   clientName: string
@@ -47,7 +47,8 @@ function formatDate(dateStr: string | null | undefined): string {
   })
 }
 
-function formatStatus(status: string): string {
+function formatStatus(status: string | null | undefined): string {
+  if (!status) return ''
   return status.replace(/_/g, ' ').replace(/\b\w/g, c => c.toUpperCase())
 }
 
