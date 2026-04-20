@@ -368,7 +368,12 @@ export async function PATCH(
     return NextResponse.json({
       ...updatedRequest,
       workOrderCreated,
-      workOrderId
+      workOrderId,
+      debug: {
+        checklistId: action === 'start_immediately' || action === 'accept' ? checklist?.id : null,
+        checklistProjectId: action === 'start_immediately' || action === 'accept' ? checklist?.projectId : null,
+        targetProjectId: action === 'start_immediately' ? targetProjectId : null
+      }
     })
   } catch (error) {
     console.error('Error updating request:', error)

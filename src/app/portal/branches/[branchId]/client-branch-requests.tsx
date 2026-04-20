@@ -634,7 +634,7 @@ export function ClientBranchRequests({ branchId, projectId, onDataChange, userId
       onDataChange?.()
       router.refresh()
 
-      toast.success('Work order created successfully! Check the Checklist tab.')
+      toast.success(`Work order created! Checklist: ${result.debug?.checklistId?.slice(0, 8)}, Project: ${result.debug?.checklistProjectId?.slice(0, 8) || 'NULL'}, Target: ${result.debug?.targetProjectId?.slice(0, 8) || 'NULL'}`)
     } catch (err) {
       setError(err instanceof Error ? err.message : 'An error occurred')
       toast.error(err instanceof Error ? err.message : 'Failed to create work order')
