@@ -603,8 +603,8 @@ export function ClientBranchRequests({ branchId, projectId, onDataChange, userId
 
   // Start work immediately without quotation
   const handleStartImmediately = async () => {
-    if (!startImmediatelyRequest || !startImmediatelyDate) {
-      setError('Please select a scheduled date')
+    if (!startImmediatelyRequest) {
+      setError('No request selected')
       return
     }
 
@@ -612,18 +612,14 @@ export function ClientBranchRequests({ branchId, projectId, onDataChange, userId
     setError('')
 
     try {
-      const response = await fetch(`/api/branches/${branchId}/requests/${startImmediatelyRequest.id}`, {
-        method: 'PATCH',
+      const response = await fetch(`/api/branches/${branchId}/requests/${startImmediatelyRequest.id}/start-now`, {
+        method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          action: 'start_immediately',
-          quotedDate: startImmediatelyDate
-        }),
       })
 
       if (!response.ok) {
         const data = await response.json()
-        throw new Error(data.error || 'Failed to start work order')
+        throw new Error(data.error || data.details || 'Failed to start work order')
       }
 
       const result = await response.json()
@@ -635,7 +631,7 @@ export function ClientBranchRequests({ branchId, projectId, onDataChange, userId
       onDataChange?.()
       router.refresh()
 
-      toast.success(`Work order created! Checklist: ${result.debug?.checklistId?.slice(0, 8)}, Project: ${result.debug?.checklistProjectId?.slice(0, 8) || 'NULL'}, Target: ${result.debug?.targetProjectId?.slice(0, 8) || 'NULL'}`)
+      toast.success(`✅ Work order created in IN PROGRESS! ID: ${result.workOrderId?.slice(0, 8)}`)
     } catch (err) {
       setError(err instanceof Error ? err.message : 'An error occurred')
       toast.error(err instanceof Error ? err.message : 'Failed to create work order')
