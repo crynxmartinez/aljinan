@@ -607,12 +607,6 @@ export function ClientBranchRequests({ branchId, projectId, onDataChange, userId
       return
     }
 
-    console.log('🚀 CLIENT - Start Immediately clicked', {
-      requestId: startImmediatelyRequest.id,
-      branchId,
-      scheduledDate: startImmediatelyDate
-    })
-
     setStartingImmediately(true)
     setError('')
 
@@ -626,24 +620,12 @@ export function ClientBranchRequests({ branchId, projectId, onDataChange, userId
         }),
       })
 
-      console.log('📡 CLIENT - API Response', {
-        ok: response.ok,
-        status: response.status,
-        statusText: response.statusText
-      })
-
       if (!response.ok) {
         const data = await response.json()
-        console.error('❌ CLIENT - API Error', data)
         throw new Error(data.error || 'Failed to start work order')
       }
 
       const result = await response.json()
-      console.log('✅ CLIENT - Work order created', {
-        workOrderCreated: result.workOrderCreated,
-        workOrderId: result.workOrderId,
-        requestStatus: result.status
-      })
 
       setStartImmediatelyDialogOpen(false)
       setStartImmediatelyRequest(null)
@@ -654,7 +636,6 @@ export function ClientBranchRequests({ branchId, projectId, onDataChange, userId
 
       toast.success('Work order created successfully! Check the Checklist tab.')
     } catch (err) {
-      console.error('❌ CLIENT - Error in handleStartImmediately', err)
       setError(err instanceof Error ? err.message : 'An error occurred')
       toast.error(err instanceof Error ? err.message : 'Failed to create work order')
     } finally {

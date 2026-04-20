@@ -528,17 +528,9 @@ export function ChecklistKanban({ branchId, projectId, readOnly = false, userRol
       const url = projectId
         ? `/api/branches/${branchId}/checklist-items?projectId=${projectId}`
         : `/api/branches/${branchId}/checklist-items`
-      console.log('📋 KANBAN - Fetching items from:', url)
       const response = await fetch(url)
       if (response.ok) {
         const data = await response.json()
-        console.log('📋 KANBAN - Received items:', {
-          total: data.length,
-          scheduled: data.filter((i: ChecklistItem) => i.stage === 'SCHEDULED').length,
-          inProgress: data.filter((i: ChecklistItem) => i.stage === 'IN_PROGRESS').length,
-          forReview: data.filter((i: ChecklistItem) => i.stage === 'FOR_REVIEW').length,
-          completed: data.filter((i: ChecklistItem) => i.stage === 'COMPLETED').length,
-        })
         setItems(data)
       }
     } catch (error) {
