@@ -220,7 +220,7 @@ export async function PATCH(
                 ? `${currentRequest.title} (${i + 1}/${occurrenceCount})`
                 : currentRequest.title,
               notes: currentRequest.description,
-              stage: 'SCHEDULED',
+              stage: 'IN_PROGRESS',
               type: 'ADHOC',
               workOrderType: currentRequest.workOrderType,
               recurringType: recurringType,

@@ -597,7 +597,8 @@ export function ClientBranchRequests({ branchId, projectId, onDataChange, userId
   const openStartImmediatelyDialog = (request: Request) => {
     setStartImmediatelyRequest(request)
     setStartImmediatelyDialogOpen(true)
-    setStartImmediatelyDate('')
+    // Auto-set to today's date
+    setStartImmediatelyDate(new Date().toISOString().split('T')[0])
   }
 
   // Start work immediately without quotation
@@ -2032,7 +2033,7 @@ export function ClientBranchRequests({ branchId, projectId, onDataChange, userId
           <DialogHeader>
             <DialogTitle>Start Work Immediately</DialogTitle>
             <DialogDescription>
-              Create a work order without waiting for a quotation. The contractor will add pricing later.
+              This work order will start today and move to IN PROGRESS immediately.
             </DialogDescription>
           </DialogHeader>
 
@@ -2044,38 +2045,32 @@ export function ClientBranchRequests({ branchId, projectId, onDataChange, userId
                 </div>
               )}
 
-              <div className="p-4 bg-amber-50 border border-amber-200 rounded-lg">
-                <p className="text-sm text-amber-800">
+              <div className="p-4 bg-blue-50 border border-blue-200 rounded-lg">
+                <p className="text-sm text-blue-900 font-semibold mb-2">
+                  ⚠️ Warning: This action will:
+                </p>
+                <ul className="text-sm text-blue-800 space-y-1 ml-4 list-disc">
+                  <li>Create a work order starting <strong>today ({new Date().toLocaleDateString()})</strong></li>
+                  <li>Move it to <strong>IN PROGRESS</strong> status immediately</li>
+                  <li>Skip the quotation process (contractor will add pricing later)</li>
+                  {startImmediatelyRequest.recurringType && startImmediatelyRequest.recurringType !== 'ONCE' && (
+                    <li>Create <strong>{startImmediatelyRequest.recurringType === 'MONTHLY' ? '12 monthly' : '4 quarterly'}</strong> work orders</li>
+                  )}
+                </ul>
+              </div>
+
+              <div className="p-4 bg-muted rounded-lg">
+                <p className="text-sm">
                   <strong>Request:</strong> {startImmediatelyRequest.title}
                 </p>
-                {startImmediatelyRequest.recurringType && startImmediatelyRequest.recurringType !== 'ONCE' && (
-                  <p className="text-sm text-amber-800 mt-1">
-                    <strong>Recurring:</strong> {startImmediatelyRequest.recurringType === 'MONTHLY' ? '12 monthly' : '4 quarterly'} work orders will be created
+                {startImmediatelyRequest.description && (
+                  <p className="text-sm text-muted-foreground mt-1">
+                    {startImmediatelyRequest.description}
                   </p>
                 )}
               </div>
 
-              <div className="space-y-2">
-                <Label htmlFor="start-date" className="flex items-center gap-2">
-                  <Calendar className="h-4 w-4" />
-                  Scheduled Date *
-                </Label>
-                <Input
-                  id="start-date"
-                  type="date"
-                  value={startImmediatelyDate}
-                  onChange={(e) => setStartImmediatelyDate(e.target.value)}
-                  min={new Date().toISOString().split('T')[0]}
-                  required
-                />
-                <p className="text-xs text-muted-foreground">
-                  {startImmediatelyRequest.recurringType === 'MONTHLY'
-                    ? 'This will be the start date for the first monthly occurrence'
-                    : startImmediatelyRequest.recurringType === 'QUARTERLY'
-                      ? 'This will be the start date for the first quarterly occurrence'
-                      : 'When should the work be scheduled?'}
-                </p>
-              </div>
+              <input type="hidden" value={startImmediatelyDate} />
 
               <div className="p-4 bg-blue-50 border border-blue-200 rounded-lg">
                 <p className="text-sm text-blue-800">
