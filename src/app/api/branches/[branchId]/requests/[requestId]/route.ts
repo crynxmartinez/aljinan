@@ -136,12 +136,26 @@ export async function PATCH(
       updateData.acceptedAt = new Date()
       updateData.acceptedById = session.user.id
 
+      // Determine projectId for the work order
+      // If request has no projectId (adhoc), link to active project
+      let targetProjectId = currentRequest.projectId
+      if (!targetProjectId) {
+        const activeProject = await prisma.project.findFirst({
+          where: {
+            branchId,
+            status: 'ACTIVE'
+          },
+          select: { id: true }
+        })
+        targetProjectId = activeProject?.id || null
+      }
+
       // Create work order (ChecklistItem) from request
       // First, find or create a checklist for this branch
       let checklist = await prisma.checklist.findFirst({
         where: {
           branchId,
-          projectId: currentRequest.projectId,
+          projectId: targetProjectId,
           status: 'IN_PROGRESS'
         }
       })
@@ -150,7 +164,7 @@ export async function PATCH(
         checklist = await prisma.checklist.create({
           data: {
             branchId,
-            projectId: currentRequest.projectId,
+            projectId: targetProjectId,
             title: 'Service Requests',
             description: 'Work orders from client requests',
             status: 'IN_PROGRESS',

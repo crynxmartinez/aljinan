@@ -148,32 +148,22 @@ export async function GET(
       return NextResponse.json({ error: 'Access denied' }, { status: 403 })
     }
 
-    // Build the where clause
+    // Build the where clause with proper Prisma typing
     // When projectId is provided, show items for that project OR items with no project (standalone requests)
-    const whereClause: Record<string, unknown> = {
-      checklist: {
-        branchId,
-      },
-      deletedAt: null // Exclude archived items
-    }
-
-    if (projectId) {
-      // Include items from the selected project OR standalone items (null projectId)
-      whereClause.checklist = {
-        branchId,
-        OR: [
-          { projectId: projectId },
-          { projectId: null }
-        ]
-      }
-    }
-
-    if (stage) {
-      whereClause.stage = stage
-    }
-
     const items = await prisma.checklistItem.findMany({
-      where: whereClause,
+      where: {
+        checklist: projectId ? {
+          branchId,
+          OR: [
+            { projectId: projectId },
+            { projectId: null }
+          ]
+        } : {
+          branchId
+        },
+        deletedAt: null, // Exclude archived items
+        ...(stage && { stage: stage as any })
+      },
       include: {
         checklist: {
           include: {
