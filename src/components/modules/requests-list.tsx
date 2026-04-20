@@ -72,6 +72,7 @@ import {
 } from '@/lib/export/export-utils'
 import { RequestComments } from './request-comments'
 import { RequestQuotePrint } from '@/components/print/request-quote-print'
+import { toast } from 'sonner'
 
 // Helper function to extract base name from work order title (removes Q1, Q2, Month1, etc.)
 function getBaseWorkOrderName(title: string): string {
@@ -81,7 +82,7 @@ function getBaseWorkOrderName(title: string): string {
 // Group work orders by their base name
 function groupWorkOrders(workOrders: WorkOrder[]): Map<string, WorkOrder[]> {
   const groups = new Map<string, WorkOrder[]>()
-  
+
   for (const wo of workOrders) {
     const baseName = getBaseWorkOrderName(wo.title)
     if (!groups.has(baseName)) {
@@ -89,7 +90,7 @@ function groupWorkOrders(workOrders: WorkOrder[]): Map<string, WorkOrder[]> {
     }
     groups.get(baseName)!.push(wo)
   }
-  
+
   return groups
 }
 
@@ -202,7 +203,7 @@ function WorkOrdersGroupedViewContractor({
   const [groupPrice, setGroupPrice] = useState('')
   const [groupDate, setGroupDate] = useState('')
   const groups = groupWorkOrders(workOrders)
-  
+
   const toggleGroup = (groupName: string) => {
     setExpandedGroups(prev => {
       const next = new Set(prev)
@@ -239,7 +240,7 @@ function WorkOrdersGroupedViewContractor({
     setGroupPrice('')
     setGroupDate('')
   }
-  
+
   return (
     <div className="divide-y border rounded-lg overflow-hidden">
       {Array.from(groups.entries()).map(([groupName, items]) => {
@@ -249,7 +250,7 @@ function WorkOrdersGroupedViewContractor({
         const isSingleItem = items.length === 1
         const isEditingThisGroup = editingGroup === groupName
         const hasAdhoc = items.some(wo => wo.type === 'adhoc' || wo.type === 'ADHOC')
-        
+
         return (
           <div key={groupName} className="bg-white">
             {/* Group Header */}
@@ -292,7 +293,7 @@ function WorkOrdersGroupedViewContractor({
                   )}
                 </div>
               </button>
-              
+
               {/* Price & Edit Section */}
               <div className="flex items-center gap-3">
                 {isEditingThisGroup ? (
@@ -363,7 +364,7 @@ function WorkOrdersGroupedViewContractor({
                 )}
               </div>
             </div>
-            
+
             {/* Single Item Details (inline) */}
             {isSingleItem && (
               <div className="px-4 pb-4 pt-0">
@@ -380,7 +381,7 @@ function WorkOrdersGroupedViewContractor({
                 </div>
               </div>
             )}
-            
+
             {/* Expanded Items */}
             {!isSingleItem && isExpanded && (
               <div className="bg-muted/30 border-t">
@@ -457,7 +458,7 @@ export function RequestsList({ branchId, userRole, projectId, userId }: Requests
   const [saving, setSaving] = useState(false)
   const [error, setError] = useState('')
   const [successMessage, setSuccessMessage] = useState('')
-    
+
   // Work order editing state
   const [editingWorkOrderId, setEditingWorkOrderId] = useState<string | null>(null)
   const [editWorkOrder, setEditWorkOrder] = useState<{
@@ -638,20 +639,20 @@ export function RequestsList({ branchId, userRole, projectId, userId }: Requests
         scheduledDate: editWorkOrder.scheduledDate || null,
       }
       console.log('Saving work order:', workOrderId, payload)
-      
+
       const response = await fetch(`/api/projects/${selectedProject.id}/work-orders/${workOrderId}`, {
         method: 'PATCH',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(payload),
       })
-      
+
       const data = await response.json()
       console.log('Response:', response.status, data)
-      
+
       if (!response.ok) {
         throw new Error(data.error || 'Failed to update work order')
       }
-      
+
       setEditingWorkOrderId(null)
       // Refresh projects and update selected project
       const updatedProjects = await fetch(`/api/branches/${branchId}/projects`).then(r => r.json())
@@ -674,21 +675,21 @@ export function RequestsList({ branchId, userRole, projectId, userId }: Requests
     setError('')
     try {
       const isSingleItem = workOrderIds.length === 1
-      
+
       // Find the work orders to get their recurring type
       const workOrders = selectedProject.workOrders?.filter(wo => workOrderIds.includes(wo.id)) || []
       const recurringType = workOrders[0]?.recurringType || 'ONCE'
-      
+
       // For recurring groups, calculate dates based on start date and interval
       const startDate = scheduledDate ? new Date(scheduledDate) : null
       const interval = recurringType === 'MONTHLY' ? 1 : recurringType === 'QUARTERLY' ? 3 : 0
-      
+
       for (let i = 0; i < workOrderIds.length; i++) {
         const workOrderId = workOrderIds[i]
         const payload: { price?: string; scheduledDate?: string } = {}
-        
+
         if (price) payload.price = price
-        
+
         // Calculate date for this occurrence
         if (startDate && scheduledDate) {
           if (isSingleItem || recurringType === 'ONCE') {
@@ -701,19 +702,19 @@ export function RequestsList({ branchId, userRole, projectId, userId }: Requests
             payload.scheduledDate = occurrenceDate.toISOString().split('T')[0]
           }
         }
-        
+
         const response = await fetch(`/api/projects/${selectedProject.id}/work-orders/${workOrderId}`, {
           method: 'PATCH',
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify(payload),
         })
-        
+
         if (!response.ok) {
           const data = await response.json()
           throw new Error(data.error || 'Failed to update work order')
         }
       }
-      
+
       // Refresh projects and update selected project
       const updatedProjects = await fetch(`/api/branches/${branchId}/projects`).then(r => r.json())
       setProjects(updatedProjects)
@@ -824,6 +825,31 @@ export function RequestsList({ branchId, userRole, projectId, userId }: Requests
       router.refresh()
     } catch (err) {
       console.error('Failed to update request:', err)
+    }
+  }
+
+  const handleStartImmediately = async (requestId: string) => {
+    if (!confirm(`This will create a work order starting today and move it to IN PROGRESS immediately. Continue?`)) {
+      return
+    }
+
+    try {
+      const response = await fetch(`/api/branches/${branchId}/requests/${requestId}/start-now`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+      })
+
+      if (!response.ok) {
+        const data = await response.json()
+        toast.error(data.error || data.details || 'Failed to create work order')
+        return
+      }
+
+      toast.success(`Work order created and moved to IN PROGRESS!`)
+      fetchRequests()
+      router.refresh()
+    } catch (err) {
+      toast.error('Failed to create work order')
     }
   }
 
@@ -982,7 +1008,7 @@ export function RequestsList({ branchId, userRole, projectId, userId }: Requests
           <div>
             <CardTitle>Service Requests</CardTitle>
             <CardDescription>
-              {userRole === 'CONTRACTOR' 
+              {userRole === 'CONTRACTOR'
                 ? 'Manage work orders and service requests for this branch'
                 : 'View and submit service requests for this branch'}
             </CardDescription>
@@ -1099,7 +1125,7 @@ export function RequestsList({ branchId, userRole, projectId, userId }: Requests
                         </DropdownMenuItem>
                       )}
                       {userRole === 'CONTRACTOR' && (
-                        <DropdownMenuItem 
+                        <DropdownMenuItem
                           onClick={() => handleDeleteRequest(request.id)}
                           className="text-destructive"
                         >
@@ -1412,7 +1438,7 @@ export function RequestsList({ branchId, userRole, projectId, userId }: Requests
                   <Badge variant="outline" className="text-green-600">Certificate Required</Badge>
                 )}
               </div>
-              
+
               {/* Description */}
               {selectedRequest.description && (
                 <div className="bg-muted/50 p-3 rounded-lg">
@@ -1451,9 +1477,9 @@ export function RequestsList({ branchId, userRole, projectId, userId }: Requests
                   <p className="text-sm font-medium text-muted-foreground mb-2">Attached Photos</p>
                   <div className="grid grid-cols-3 gap-2">
                     {selectedRequest.photos.map((photo, idx) => photo?.url ? (
-                      <img 
-                        key={idx} 
-                        src={photo.url} 
+                      <img
+                        key={idx}
+                        src={photo.url}
                         alt={`Request photo ${idx + 1}`}
                         className="w-full h-24 object-cover rounded-lg cursor-pointer hover:opacity-80"
                         onClick={() => window.open(photo.url, '_blank')}
@@ -1523,7 +1549,7 @@ export function RequestsList({ branchId, userRole, projectId, userId }: Requests
                 <div className="flex gap-2 pt-4 border-t flex-wrap">
                   {selectedRequest.status === 'REQUESTED' && (
                     <>
-                      <Button 
+                      <Button
                         onClick={() => {
                           setQuoteRequest(selectedRequest)
                           setQuoteDialogOpen(true)
@@ -1534,12 +1560,13 @@ export function RequestsList({ branchId, userRole, projectId, userId }: Requests
                         <DollarSign className="mr-2 h-4 w-4" />
                         Send Quote
                       </Button>
-                      <Button 
+                      <Button
                         variant="outline"
                         onClick={() => {
-                          handleUpdateStatus(selectedRequest.id, 'IN_PROGRESS')
+                          handleStartImmediately(selectedRequest.id)
                           setDetailDialogOpen(false)
                         }}
+                        className="bg-blue-600 hover:bg-blue-700 text-white"
                       >
                         <CheckCircle className="mr-2 h-4 w-4" />
                         Start Immediately
@@ -1547,7 +1574,7 @@ export function RequestsList({ branchId, userRole, projectId, userId }: Requests
                     </>
                   )}
                   {selectedRequest.status === 'SCHEDULED' && (
-                    <Button 
+                    <Button
                       onClick={() => {
                         handleUpdateStatus(selectedRequest.id, 'IN_PROGRESS')
                         setDetailDialogOpen(false)
@@ -1559,7 +1586,7 @@ export function RequestsList({ branchId, userRole, projectId, userId }: Requests
                     </Button>
                   )}
                   {selectedRequest.status === 'IN_PROGRESS' && (
-                    <Button 
+                    <Button
                       onClick={() => {
                         handleUpdateStatus(selectedRequest.id, 'COMPLETED')
                         setDetailDialogOpen(false)
@@ -1571,7 +1598,7 @@ export function RequestsList({ branchId, userRole, projectId, userId }: Requests
                     </Button>
                   )}
                   {!['CANCELLED', 'COMPLETED', 'CLOSED'].includes(selectedRequest.status) && (
-                    <Button 
+                    <Button
                       variant="outline"
                       onClick={() => {
                         handleUpdateStatus(selectedRequest.id, 'CANCELLED')
@@ -1601,10 +1628,10 @@ export function RequestsList({ branchId, userRole, projectId, userId }: Requests
 
               {/* Comments Section */}
               <div className="pt-4 border-t">
-                <RequestComments 
-                  branchId={branchId} 
-                  requestId={selectedRequest.id} 
-                  currentUserId={userId || ''} 
+                <RequestComments
+                  branchId={branchId}
+                  requestId={selectedRequest.id}
+                  currentUserId={userId || ''}
                 />
               </div>
             </div>
@@ -1621,7 +1648,7 @@ export function RequestsList({ branchId, userRole, projectId, userId }: Requests
               Project proposal - Review and manage work orders
             </DialogDescription>
           </DialogHeader>
-          
+
           {error && (
             <div className="bg-destructive/10 text-destructive p-3 rounded-lg text-sm">
               {error}
@@ -1639,102 +1666,103 @@ export function RequestsList({ branchId, userRole, projectId, userId }: Requests
             // Calculate total from work orders directly
             const calculatedTotal = selectedProject.workOrders?.reduce((sum, wo) => sum + (wo.price || 0), 0) || 0
             return (
-            <div className="space-y-6">
-              {/* Project Info */}
-              <div className="grid grid-cols-2 md:grid-cols-4 gap-4 p-4 bg-muted/30 rounded-lg">
-                <div>
-                  <p className="text-xs text-muted-foreground">Status</p>
-                  <Badge className={selectedProject.status === 'PENDING' ? 'bg-amber-100 text-amber-700' : 'bg-green-100 text-green-700'}>
-                    {selectedProject.status === 'PENDING' ? 'Pending Client Approval' : selectedProject.status}
-                  </Badge>
-                </div>
-                {selectedProject.startDate && (
+              <div className="space-y-6">
+                {/* Project Info */}
+                <div className="grid grid-cols-2 md:grid-cols-4 gap-4 p-4 bg-muted/30 rounded-lg">
                   <div>
-                    <p className="text-xs text-muted-foreground">Start Date</p>
-                    <p className="font-medium text-sm">{new Date(selectedProject.startDate).toLocaleDateString()}</p>
-                  </div>
-                )}
-                {selectedProject.endDate && (
-                  <div>
-                    <p className="text-xs text-muted-foreground">End Date</p>
-                    <p className="font-medium text-sm">{new Date(selectedProject.endDate).toLocaleDateString()}</p>
-                  </div>
-                )}
-                <div>
-                  <p className="text-xs text-muted-foreground">Total Value</p>
-                  <p className="font-bold text-lg text-primary">
-                    SAR {calculatedTotal.toLocaleString('en-US', { minimumFractionDigits: 2 })}
-                  </p>
-                </div>
-              </div>
-
-              {/* Work Orders Table */}
-              <div>
-                <div className="flex items-center justify-between mb-3">
-                  <h3 className="font-semibold">Work Orders</h3>
-                  {selectedProject.workOrders?.some(wo => wo.price === null) && (
-                    <Badge variant="outline" className="text-orange-600 border-orange-300">
-                      <AlertCircle className="h-3 w-3 mr-1" />
-                      Some items need pricing
+                    <p className="text-xs text-muted-foreground">Status</p>
+                    <Badge className={selectedProject.status === 'PENDING' ? 'bg-amber-100 text-amber-700' : 'bg-green-100 text-green-700'}>
+                      {selectedProject.status === 'PENDING' ? 'Pending Client Approval' : selectedProject.status}
                     </Badge>
+                  </div>
+                  {selectedProject.startDate && (
+                    <div>
+                      <p className="text-xs text-muted-foreground">Start Date</p>
+                      <p className="font-medium text-sm">{new Date(selectedProject.startDate).toLocaleDateString()}</p>
+                    </div>
+                  )}
+                  {selectedProject.endDate && (
+                    <div>
+                      <p className="text-xs text-muted-foreground">End Date</p>
+                      <p className="font-medium text-sm">{new Date(selectedProject.endDate).toLocaleDateString()}</p>
+                    </div>
+                  )}
+                  <div>
+                    <p className="text-xs text-muted-foreground">Total Value</p>
+                    <p className="font-bold text-lg text-primary">
+                      SAR {calculatedTotal.toLocaleString('en-US', { minimumFractionDigits: 2 })}
+                    </p>
+                  </div>
+                </div>
+
+                {/* Work Orders Table */}
+                <div>
+                  <div className="flex items-center justify-between mb-3">
+                    <h3 className="font-semibold">Work Orders</h3>
+                    {selectedProject.workOrders?.some(wo => wo.price === null) && (
+                      <Badge variant="outline" className="text-orange-600 border-orange-300">
+                        <AlertCircle className="h-3 w-3 mr-1" />
+                        Some items need pricing
+                      </Badge>
+                    )}
+                  </div>
+
+                  {selectedProject.workOrders && selectedProject.workOrders.length > 0 ? (
+                    <>
+                      <WorkOrdersGroupedViewContractor
+                        workOrders={selectedProject.workOrders}
+                        editingWorkOrderId={editingWorkOrderId}
+                        editWorkOrder={editWorkOrder}
+                        saving={saving}
+                        onStartEdit={startEditWorkOrder}
+                        onSave={handleSaveWorkOrder}
+                        onCancel={() => setEditingWorkOrderId(null)}
+                        onEditChange={(field, value) => setEditWorkOrder({ ...editWorkOrder, [field]: value })}
+                        onSaveGroupPrice={handleSaveGroupPrice}
+                      />
+
+                      {/* Total Row */}
+                      <div className="flex items-center justify-between p-4 bg-primary/5 border rounded-lg mt-3">
+                        <span className="font-semibold">Total</span>
+                        <span className="text-xl font-bold">
+                          SAR {calculatedTotal.toLocaleString('en-US', { minimumFractionDigits: 2 })}
+                        </span>
+                      </div>
+                    </>
+                  ) : (
+                    <div className="text-center py-8 text-muted-foreground border rounded-lg">
+                      No work orders defined yet
+                    </div>
                   )}
                 </div>
-                
-                {selectedProject.workOrders && selectedProject.workOrders.length > 0 ? (
-                  <>
-                    <WorkOrdersGroupedViewContractor
-                      workOrders={selectedProject.workOrders}
-                      editingWorkOrderId={editingWorkOrderId}
-                      editWorkOrder={editWorkOrder}
-                      saving={saving}
-                      onStartEdit={startEditWorkOrder}
-                      onSave={handleSaveWorkOrder}
-                      onCancel={() => setEditingWorkOrderId(null)}
-                      onEditChange={(field, value) => setEditWorkOrder({ ...editWorkOrder, [field]: value })}
-                      onSaveGroupPrice={handleSaveGroupPrice}
-                    />
-                    
-                    {/* Total Row */}
-                    <div className="flex items-center justify-between p-4 bg-primary/5 border rounded-lg mt-3">
-                      <span className="font-semibold">Total</span>
-                      <span className="text-xl font-bold">
-                        SAR {calculatedTotal.toLocaleString('en-US', { minimumFractionDigits: 2 })}
-                      </span>
-                    </div>
-                  </>
-                ) : (
-                  <div className="text-center py-8 text-muted-foreground border rounded-lg">
-                    No work orders defined yet
+
+                {/* Status Info */}
+                {selectedProject.status === 'PENDING' && (
+                  <div className="p-4 bg-amber-50 border border-amber-200 rounded-lg">
+                    <p className="text-sm text-amber-800">
+                      <strong>Waiting for client approval.</strong> Make sure all work orders have prices set.
+                      The client cannot accept the project until all items are priced.
+                    </p>
+                  </div>
+                )}
+
+                {selectedProject.status === 'ACTIVE' && (
+                  <div className="p-4 bg-green-50 border border-green-200 rounded-lg">
+                    <p className="text-sm text-green-800">
+                      <strong>Project is active.</strong> Work is in progress. Manage work orders in the Checklist tab.
+                    </p>
                   </div>
                 )}
               </div>
-
-              {/* Status Info */}
-              {selectedProject.status === 'PENDING' && (
-                <div className="p-4 bg-amber-50 border border-amber-200 rounded-lg">
-                  <p className="text-sm text-amber-800">
-                    <strong>Waiting for client approval.</strong> Make sure all work orders have prices set. 
-                    The client cannot accept the project until all items are priced.
-                  </p>
-                </div>
-              )}
-
-              {selectedProject.status === 'ACTIVE' && (
-                <div className="p-4 bg-green-50 border border-green-200 rounded-lg">
-                  <p className="text-sm text-green-800">
-                    <strong>Project is active.</strong> Work is in progress. Manage work orders in the Checklist tab.
-                  </p>
-                </div>
-              )}
-            </div>
-          )})()}
+            )
+          })()}
 
           <DialogFooter className="flex gap-2">
             <Button variant="outline" onClick={() => { setProjectDialogOpen(false); setSelectedProject(null); }}>
               Close
             </Button>
             {selectedProject?.status === 'PENDING' && (
-              <Button 
+              <Button
                 onClick={() => {
                   setSuccessMessage('Proposal updated! Client will see the changes when they view the proposal.')
                   setTimeout(() => {
@@ -1865,8 +1893,8 @@ export function RequestsList({ branchId, userRole, projectId, userId }: Requests
                   <div className="grid grid-cols-2 gap-4">
                     <div className="space-y-2">
                       <Label htmlFor="quotedPrice">
-                        {quoteRequest.recurringType && quoteRequest.recurringType !== 'ONCE' 
-                          ? 'Price per Occurrence (SAR) *' 
+                        {quoteRequest.recurringType && quoteRequest.recurringType !== 'ONCE'
+                          ? 'Price per Occurrence (SAR) *'
                           : 'Price (SAR) *'}
                       </Label>
                       <div className="relative">
@@ -1886,8 +1914,8 @@ export function RequestsList({ branchId, userRole, projectId, userId }: Requests
                     </div>
                     <div className="space-y-2">
                       <Label htmlFor="quotedDate">
-                        {quoteRequest.recurringType && quoteRequest.recurringType !== 'ONCE' 
-                          ? 'First Scheduled Date *' 
+                        {quoteRequest.recurringType && quoteRequest.recurringType !== 'ONCE'
+                          ? 'First Scheduled Date *'
                           : 'Scheduled Date *'}
                       </Label>
                       <Input
@@ -1958,13 +1986,13 @@ export function RequestsList({ branchId, userRole, projectId, userId }: Requests
                     />
                   </div>
 
-                  </div>
+                </div>
               </div>
 
               <div className="p-4 bg-amber-50 border border-amber-200 rounded-lg">
                 <p className="text-sm text-amber-800">
                   <strong>Note:</strong> Once you submit this quote, the client will be notified and can accept or reject it.
-                  {quoteRequest.recurringType && quoteRequest.recurringType !== 'ONCE' 
+                  {quoteRequest.recurringType && quoteRequest.recurringType !== 'ONCE'
                     ? ` If accepted, ${quoteRequest.recurringType === 'MONTHLY' ? '12 monthly' : '4 quarterly'} work orders will be automatically created.`
                     : ' If accepted, a work order will be automatically created.'}
                 </p>
@@ -1976,8 +2004,8 @@ export function RequestsList({ branchId, userRole, projectId, userId }: Requests
             <Button variant="outline" onClick={() => { setQuoteDialogOpen(false); setQuoteRequest(null); setError(''); }}>
               Cancel
             </Button>
-            <Button 
-              onClick={handleSubmitQuote} 
+            <Button
+              onClick={handleSubmitQuote}
               disabled={submittingQuote || !quoteData.quotedPrice || !quoteData.quotedDate}
             >
               {submittingQuote && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
