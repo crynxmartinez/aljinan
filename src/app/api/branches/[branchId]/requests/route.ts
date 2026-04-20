@@ -57,10 +57,10 @@ export async function POST(
 
     const { branchId } = await params
     const body = await request.json()
-    const { 
-      title, 
-      description, 
-      priority, 
+    const {
+      title,
+      description,
+      priority,
       dueDate,
       workOrderType,
       recurringType,
@@ -164,6 +164,20 @@ export async function POST(
         }
       })
     })
+
+    // Create notification for contractor if request was created by client
+    if (session.user.role === 'CLIENT' && branch?.client?.contractorId) {
+      await prisma.notification.create({
+        data: {
+          userId: branch.client.contractorId,
+          type: 'REQUEST_RECEIVED',
+          title: '📋 New Service Request',
+          message: `New request from client: "${title}"${priority === 'URGENT' ? ' (URGENT)' : ''}`,
+          link: `/dashboard/clients/${branch.clientId}/branches/${branchId}`,
+          isRead: false
+        }
+      })
+    }
 
     return NextResponse.json(newRequest, { status: 201 })
   } catch (error) {

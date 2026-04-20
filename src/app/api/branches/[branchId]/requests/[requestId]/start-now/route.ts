@@ -105,6 +105,25 @@ export async function POST(
       }
     })
 
+    // Create notification for contractor
+    const branch = await prisma.branch.findUnique({
+      where: { id: branchId },
+      include: { client: { select: { contractorId: true } } }
+    })
+
+    if (branch?.client?.contractorId) {
+      await prisma.notification.create({
+        data: {
+          userId: branch.client.contractorId,
+          type: 'WORK_ORDER_STARTED',
+          title: '🚨 Work Started Immediately',
+          message: `Client started work immediately: "${currentRequest.title}" - Now in IN PROGRESS`,
+          link: `/dashboard/clients/${branch.clientId}/branches/${branchId}`,
+          isRead: false
+        }
+      })
+    }
+
     return NextResponse.json({
       success: true,
       workOrderId: workOrder.id,
