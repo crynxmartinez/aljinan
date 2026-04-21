@@ -478,6 +478,10 @@ export function RequestsList({ branchId, userRole, projectId, userId }: Requests
     dueDate: '',
   })
 
+  // Start Immediately dialog state
+  const [startImmediatelyDialogOpen, setStartImmediatelyDialogOpen] = useState(false)
+  const [startImmediatelyRequest, setStartImmediatelyRequest] = useState<Request | null>(null)
+
   // Quote dialog state
   const [quoteDialogOpen, setQuoteDialogOpen] = useState(false)
   const [quoteRequest, setQuoteRequest] = useState<Request | null>(null)
@@ -828,13 +832,16 @@ export function RequestsList({ branchId, userRole, projectId, userId }: Requests
     }
   }
 
-  const handleStartImmediately = async (requestId: string) => {
-    if (!confirm(`This will create a work order starting today and move it to IN PROGRESS immediately. Continue?`)) {
-      return
-    }
+  const openStartImmediatelyDialog = (request: Request) => {
+    setStartImmediatelyRequest(request)
+    setStartImmediatelyDialogOpen(true)
+  }
+
+  const handleStartImmediately = async () => {
+    if (!startImmediatelyRequest) return
 
     try {
-      const response = await fetch(`/api/branches/${branchId}/requests/${requestId}/start-now`, {
+      const response = await fetch(`/api/branches/${branchId}/requests/${startImmediatelyRequest.id}/start-now`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
       })
@@ -845,6 +852,8 @@ export function RequestsList({ branchId, userRole, projectId, userId }: Requests
         return
       }
 
+      setStartImmediatelyDialogOpen(false)
+      setStartImmediatelyRequest(null)
       toast.success(`Work order created and moved to IN PROGRESS!`)
       fetchRequests()
       router.refresh()
@@ -1563,7 +1572,7 @@ export function RequestsList({ branchId, userRole, projectId, userId }: Requests
                       <Button
                         variant="outline"
                         onClick={() => {
-                          handleStartImmediately(selectedRequest.id)
+                          openStartImmediatelyDialog(selectedRequest)
                           setDetailDialogOpen(false)
                         }}
                         className="bg-blue-600 hover:bg-blue-700 text-white"
@@ -2011,6 +2020,63 @@ export function RequestsList({ branchId, userRole, projectId, userId }: Requests
               {submittingQuote && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
               <Send className="mr-2 h-4 w-4" />
               Send Quote to Client
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
+
+      {/* Start Immediately Confirmation Dialog */}
+      <Dialog open={startImmediatelyDialogOpen} onOpenChange={setStartImmediatelyDialogOpen}>
+        <DialogContent className="sm:max-w-[500px]">
+          <DialogHeader>
+            <DialogTitle className="flex items-center gap-2">
+              <CheckCircle className="h-5 w-5 text-blue-600" />
+              Start Work Immediately
+            </DialogTitle>
+            <DialogDescription>
+              Confirm that you want to start this work order immediately
+            </DialogDescription>
+          </DialogHeader>
+
+          {startImmediatelyRequest && (
+            <div className="space-y-4">
+              {/* Request Info */}
+              <div className="p-4 bg-muted/50 rounded-lg">
+                <p className="font-medium text-sm mb-1">{startImmediatelyRequest.title}</p>
+                {startImmediatelyRequest.description && (
+                  <p className="text-sm text-muted-foreground">{startImmediatelyRequest.description}</p>
+                )}
+              </div>
+
+              {/* Warning */}
+              <div className="p-4 bg-blue-50 border border-blue-200 rounded-lg">
+                <p className="text-sm text-blue-800 font-medium mb-2">⚡ This will:</p>
+                <ul className="text-sm text-blue-700 space-y-1 ml-4 list-disc">
+                  <li>Create a work order starting <strong>today</strong></li>
+                  <li>Move it immediately to <strong>IN PROGRESS</strong></li>
+                  <li>Skip the quotation process</li>
+                  <li>Appear on your Kanban board right away</li>
+                </ul>
+              </div>
+            </div>
+          )}
+
+          <DialogFooter>
+            <Button
+              variant="outline"
+              onClick={() => {
+                setStartImmediatelyDialogOpen(false)
+                setStartImmediatelyRequest(null)
+              }}
+            >
+              Cancel
+            </Button>
+            <Button
+              onClick={handleStartImmediately}
+              className="bg-blue-600 hover:bg-blue-700"
+            >
+              <CheckCircle className="mr-2 h-4 w-4" />
+              Start Immediately
             </Button>
           </DialogFooter>
         </DialogContent>

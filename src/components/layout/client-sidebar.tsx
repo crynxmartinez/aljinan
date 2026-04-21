@@ -216,48 +216,51 @@ export function ClientSidebar({ client }: ClientSidebarProps) {
           ) : (
             client.branches.map((branch) => (
               <div key={branch.id} className="group relative">
-                <div className="flex items-center gap-1">
-                  <Link
-                    href={`/portal/branches/${branch.id}`}
-                    onClick={(e) => handleNavClick(e, `/portal/branches/${branch.id}`)}
-                    className={cn(
-                      'flex items-center gap-2 rounded-lg px-3 py-2 text-sm transition-colors flex-1',
-                      pathname === `/portal/branches/${branch.id}`
-                        ? 'bg-sidebar-accent text-sidebar-accent-foreground'
-                        : 'text-sidebar-foreground/70 hover:bg-sidebar-accent hover:text-sidebar-accent-foreground'
-                    )}
-                  >
-                    {loadingHref === `/portal/branches/${branch.id}` ? (
-                      <Loader2 className="h-4 w-4 flex-shrink-0 animate-spin" />
-                    ) : (
-                      <MapPin className="h-4 w-4 flex-shrink-0" />
-                    )}
-                    <div className="flex-1 min-w-0">
-                      {branch.clientNickname ? (
-                        <>
-                          <p className="truncate font-medium">{branch.clientNickname}</p>
-                          <p className="text-xs text-sidebar-foreground/50 truncate">
-                            {branch.address}{branch.city ? `, ${branch.city}` : ''}
-                          </p>
-                        </>
-                      ) : (
-                        <>
-                          <p className="truncate">{branch.address}</p>
-                          {branch.city && (
-                            <p className="text-xs text-sidebar-foreground/50 truncate">{branch.city}</p>
-                          )}
-                        </>
-                      )}
-                    </div>
-                  </Link>
+                <Link
+                  href={`/portal/branches/${branch.id}`}
+                  onClick={(e) => handleNavClick(e, `/portal/branches/${branch.id}`)}
+                  className={cn(
+                    'flex items-center gap-2 rounded-lg px-3 py-2 text-sm transition-colors',
+                    pathname === `/portal/branches/${branch.id}`
+                      ? 'bg-sidebar-accent text-sidebar-accent-foreground'
+                      : 'text-sidebar-foreground/70 hover:bg-sidebar-accent hover:text-sidebar-accent-foreground'
+                  )}
+                >
+                  {/* Edit Icon - Left Side */}
                   <button
                     onClick={(e) => handleEditNickname(e, branch)}
-                    className="opacity-0 group-hover:opacity-100 transition-opacity p-1.5 hover:bg-sidebar-accent rounded mr-1"
-                    title="Edit nickname"
+                    className="opacity-0 group-hover:opacity-100 transition-all p-1 hover:bg-primary/20 rounded flex-shrink-0"
+                    title="Edit branch nickname"
                   >
-                    <Pencil className="h-3.5 w-3.5" />
+                    <Pencil className="h-4 w-4 text-primary" />
                   </button>
-                </div>
+
+                  {/* Branch Icon */}
+                  {loadingHref === `/portal/branches/${branch.id}` ? (
+                    <Loader2 className="h-4 w-4 flex-shrink-0 animate-spin" />
+                  ) : (
+                    <MapPin className="h-4 w-4 flex-shrink-0" />
+                  )}
+
+                  {/* Branch Name/Address */}
+                  <div className="flex-1 min-w-0">
+                    {branch.clientNickname ? (
+                      <>
+                        <p className="truncate font-medium">{branch.clientNickname}</p>
+                        <p className="text-xs text-sidebar-foreground/50 truncate">
+                          {branch.address}{branch.city ? `, ${branch.city}` : ''}
+                        </p>
+                      </>
+                    ) : (
+                      <>
+                        <p className="truncate">{branch.address}</p>
+                        {branch.city && (
+                          <p className="text-xs text-sidebar-foreground/50 truncate">{branch.city}</p>
+                        )}
+                      </>
+                    )}
+                  </div>
+                </Link>
               </div>
             ))
           )}
