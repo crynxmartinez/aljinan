@@ -21,6 +21,9 @@ jobs:
     
     - name: Install dependencies
       run: npm install --legacy-peer-deps
+      env:
+        # Dummy DATABASE_URL for postinstall prisma generate
+        DATABASE_URL: postgresql://user:password@localhost:5432/dummy
     
     - name: Generate Prisma Client
       run: npx prisma generate
