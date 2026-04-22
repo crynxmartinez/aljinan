@@ -2,7 +2,7 @@ import { getServerSession } from 'next-auth'
 import { redirect } from 'next/navigation'
 import { authOptions } from '@/lib/auth'
 import { AdminSidebar } from '@/components/layout/admin-sidebar'
-import { DashboardHeader } from '@/components/layout/dashboard-header'
+import { AdminHeader } from '@/components/layout/admin-header'
 
 export default async function AdminLayout({
   children,
@@ -24,7 +24,7 @@ export default async function AdminLayout({
     <div className="flex h-screen overflow-hidden">
       <AdminSidebar adminRole={session.user.adminRole} />
       <div className="flex-1 flex flex-col overflow-hidden">
-        <DashboardHeader userName={session.user.name} />
+        <AdminHeader userName={session.user.name} />
         <main className="flex-1 overflow-auto bg-background">
           {children}
         </main>
