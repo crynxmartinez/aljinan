@@ -186,11 +186,13 @@ function DraggableCard({
   onClick,
   disabled,
   assigneeName,
+  clickable = true,
 }: {
   item: ChecklistItem
   onClick: () => void
   disabled: boolean
   assigneeName?: string | null
+  clickable?: boolean
 }) {
   const { attributes, listeners, setNodeRef, transform, isDragging } = useDraggable({
     id: item.id,
@@ -234,7 +236,8 @@ function DraggableCard({
       ref={setNodeRef}
       style={style}
       className={cn(
-        'rounded-lg p-3 shadow-sm hover:shadow-md transition-shadow cursor-pointer',
+        'rounded-lg p-3 shadow-sm hover:shadow-md transition-shadow',
+        clickable ? 'cursor-pointer' : 'cursor-default',
         cardStyle,
         isDragging && 'opacity-50 shadow-lg'
       )}
@@ -1109,12 +1112,16 @@ export function ChecklistKanban({ branchId, projectId, readOnly = false, userRol
                           : ALLOWED_TRANSITIONS[item.stage].contractor
                         const canDrag = allowedMoves.length > 0
 
+                        // For clients, only allow clicking cards in FOR_REVIEW stage
+                        const canClick = isClient ? item.stage === 'FOR_REVIEW' : true
+
                         return (
                           <DraggableCard
                             key={item.id}
                             item={item}
-                            onClick={() => handleItemClick(item)}
+                            onClick={() => canClick && handleItemClick(item)}
                             disabled={!canDrag}
+                            clickable={canClick}
                             assigneeName={item.assignedTo ? teamMemberMap[item.assignedTo] || null : null}
                           />
                         )
