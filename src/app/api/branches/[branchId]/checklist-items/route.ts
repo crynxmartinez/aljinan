@@ -795,6 +795,34 @@ export async function PATCH(
 
       return NextResponse.json(updatedWorkOrder)
 
+    } else if (action === 'update_price') {
+      // Update work order price
+      const { itemId, price } = body
+
+      if (!itemId || price === undefined || price === null) {
+        return NextResponse.json({ error: 'Item ID and price required' }, { status: 400 })
+      }
+
+      // Verify work order belongs to this branch
+      const workOrder = await prisma.checklistItem.findFirst({
+        where: {
+          id: itemId,
+          checklist: { branchId }
+        }
+      })
+
+      if (!workOrder) {
+        return NextResponse.json({ error: 'Work order not found' }, { status: 404 })
+      }
+
+      // Update the price
+      const updatedWorkOrder = await prisma.checklistItem.update({
+        where: { id: itemId },
+        data: { price }
+      })
+
+      return NextResponse.json(updatedWorkOrder)
+
     } else {
       return NextResponse.json({ error: 'Invalid action' }, { status: 400 })
     }

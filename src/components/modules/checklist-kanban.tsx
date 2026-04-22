@@ -825,6 +825,63 @@ export function ChecklistKanban({ branchId, projectId, readOnly = false, userRol
     }
   }
 
+  // Update work order price
+  const handlePriceUpdate = async (itemId: string, price: number) => {
+    setUpdating(true)
+
+    try {
+      const item = items.find(i => i.id === itemId)
+      if (!item) return
+
+      // Find the project ID from the checklist
+      const checklistResponse = await fetch(`/api/branches/${branchId}/checklists/${item.checklistId}`)
+      if (!checklistResponse.ok) {
+        toast.error('Failed to fetch checklist information')
+        return
+      }
+      const checklist = await checklistResponse.json()
+
+      // Update the work order price - use different API based on whether project exists
+      let response
+      if (checklist.projectId) {
+        // Use project-based API if project exists
+        response = await fetch(`/api/projects/${checklist.projectId}/work-orders/${itemId}`, {
+          method: 'PATCH',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ price })
+        })
+      } else {
+        // Use checklist-items API for work orders without projects
+        response = await fetch(`/api/branches/${branchId}/checklist-items`, {
+          method: 'PATCH',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            action: 'update_price',
+            itemId: itemId,
+            price: price
+          })
+        })
+      }
+
+      if (response.ok) {
+        toast.success('Price updated successfully')
+        fetchItems()
+        const updatedItems = await fetch(`/api/branches/${branchId}/checklist-items`).then(r => r.json())
+        const updated = updatedItems.find((i: ChecklistItem) => i.id === itemId)
+        if (updated) setSelectedItem(updated)
+        router.refresh()
+      } else {
+        const error = await response.json()
+        toast.error(error.error || 'Failed to update price')
+      }
+    } catch (error) {
+      console.error('Failed to update price:', error)
+      toast.error('Failed to update price')
+    } finally {
+      setUpdating(false)
+    }
+  }
+
   // Restore archived work order to a specific stage
   const handleStageChange = async (newStage: ChecklistItemStage) => {
     if (!selectedItem) return
@@ -1211,12 +1268,33 @@ export function ChecklistKanban({ branchId, projectId, readOnly = false, userRol
                     </p>
                   </div>
                 )}
-                {selectedItem.price && (
-                  <div>
-                    <p className="text-muted-foreground">Price</p>
+                <div>
+                  <p className="text-muted-foreground">Price</p>
+                  {selectedItem.price ? (
                     <p className="font-semibold text-green-700">{formatCurrency(selectedItem.price)}</p>
-                  </div>
-                )}
+                  ) : (
+                    <div className="flex items-center gap-2">
+                      <Badge variant="outline" className="text-xs border-orange-300 text-orange-700 bg-orange-50">
+                        No Price Set
+                      </Badge>
+                      {!readOnly && (
+                        <Button
+                          size="sm"
+                          variant="outline"
+                          onClick={() => {
+                            const newPrice = prompt('Enter price (SAR):', '')
+                            if (newPrice && !isNaN(Number(newPrice))) {
+                              handlePriceUpdate(selectedItem.id, Number(newPrice))
+                            }
+                          }}
+                          className="h-7 text-xs"
+                        >
+                          Set Price
+                        </Button>
+                      )}
+                    </div>
+                  )}
+                </div>
                 {selectedItem.projectTitle && (
                   <div>
                     <p className="text-muted-foreground">Project</p>
@@ -1522,6 +1600,10 @@ export function ChecklistKanban({ branchId, projectId, readOnly = false, userRol
                           size="sm"
                           variant="outline"
                           onClick={() => {
+                            if (!selectedItem.price) {
+                              toast.error('Cannot sign without a price. Please set the price first.')
+                              return
+                            }
                             setSignatureType('supervisor')
                             setSignerName(currentUserName || 'Supervisor')
                             setSignatureDialogOpen(true)
@@ -1547,6 +1629,10 @@ export function ChecklistKanban({ branchId, projectId, readOnly = false, userRol
                           size="sm"
                           variant="outline"
                           onClick={() => {
+                            if (!selectedItem.price) {
+                              toast.error('Cannot sign without a price. Please ask contractor to set the price first.')
+                              return
+                            }
                             setSignatureType('client')
                             setSignerName(currentUserName || 'Client')
                             setSignatureDialogOpen(true)
