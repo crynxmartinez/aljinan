@@ -1011,7 +1011,13 @@ export function ChecklistKanban({ branchId, projectId, readOnly = false, userRol
         item.deficiencies ||
         item.recommendations
 
-      if (hasInspectionData && !item.technicianSignature) {
+      const hasTechnician = item.assignedTo
+
+      // Only require technician signature if:
+      // 1. Technician is assigned AND
+      // 2. Has inspection data AND
+      // 3. No signature yet
+      if (hasTechnician && hasInspectionData && !item.technicianSignature) {
         // Show technician signature dialog
         setPendingSignWorkOrderId(itemId)
         setSignatureType('technician')
@@ -1422,14 +1428,20 @@ export function ChecklistKanban({ branchId, projectId, readOnly = false, userRol
                             selectedItem.deficiencies ||
                             selectedItem.recommendations
 
-                          if (hasInspectionData && !selectedItem.technicianSignature) {
+                          const hasTechnician = selectedItem.assignedTo
+
+                          // Only require technician signature if:
+                          // 1. Technician is assigned AND
+                          // 2. Has inspection data AND
+                          // 3. No signature yet
+                          if (hasTechnician && hasInspectionData && !selectedItem.technicianSignature) {
                             // Show technician signature dialog
                             setPendingSignWorkOrderId(selectedItem.id)
                             setSignatureType('technician')
                             setSignerName(currentUserName || 'Technician')
                             setSignatureDialogOpen(true)
                           } else {
-                            // No inspection or already signed, proceed normally
+                            // No technician assigned, no inspection, or already signed - proceed normally
                             handleSendToReview(selectedItem.id)
                           }
                         }}
