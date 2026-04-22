@@ -711,7 +711,7 @@ export function ChecklistKanban({ branchId, projectId, readOnly = false, userRol
       })
 
       if (response.ok) {
-        toast.success('Supervisor signature added')
+        toast.success('Supervisor accepted the work order')
         fetchItems()
         // Refresh selected item
         const updatedItems = await fetch(`/api/branches/${branchId}/checklist-items`).then(r => r.json())
@@ -747,7 +747,7 @@ export function ChecklistKanban({ branchId, projectId, readOnly = false, userRol
       })
 
       if (response.ok) {
-        toast.success('Work order signed successfully')
+        toast.success('Work order accepted successfully')
         fetchItems()
         // Refresh selected item
         const updatedItems = await fetch(`/api/branches/${branchId}/checklist-items`).then(r => r.json())
@@ -1436,37 +1436,21 @@ export function ChecklistKanban({ branchId, projectId, readOnly = false, userRol
                     )}
 
                     {/* Signatures */}
-                    <div className="grid grid-cols-3 gap-4 pt-4 border-t">
-                      <div>
-                        <p className="text-sm text-muted-foreground">Technician</p>
-                        {selectedItem.technicianSignature ? (
-                          <div className="flex items-center gap-2 text-green-700">
-                            <CheckCircle className="h-4 w-4" />
-                            <span className="text-sm">Signed {selectedItem.technicianSignedAt && new Date(selectedItem.technicianSignedAt).toLocaleDateString()}</span>
-                          </div>
-                        ) : !readOnly && selectedItem.stage === 'FOR_REVIEW' ? (
-                          <Button size="sm" variant="outline" onClick={handleTechnicianSign} disabled={updating}>
-                            {updating ? <Loader2 className="mr-2 h-3 w-3 animate-spin" /> : <PenTool className="mr-2 h-3 w-3" />}
-                            Sign
-                          </Button>
-                        ) : (
-                          <span className="text-sm text-muted-foreground">Not signed</span>
-                        )}
-                      </div>
+                    <div className="grid grid-cols-2 gap-4 pt-4 border-t">
                       <div>
                         <p className="text-sm text-muted-foreground">Supervisor</p>
                         {selectedItem.supervisorSignature ? (
                           <div className="flex items-center gap-2 text-green-700">
                             <CheckCircle className="h-4 w-4" />
-                            <span className="text-sm">Signed {selectedItem.supervisorSignedAt && new Date(selectedItem.supervisorSignedAt).toLocaleDateString()}</span>
+                            <span className="text-sm">Accepted {selectedItem.supervisorSignedAt && new Date(selectedItem.supervisorSignedAt).toLocaleDateString()}</span>
                           </div>
                         ) : !readOnly && (selectedItem.stage === 'FOR_REVIEW' || selectedItem.stage === 'COMPLETED') ? (
                           <Button size="sm" variant="outline" onClick={handleSupervisorSign} disabled={updating}>
-                            {updating ? <Loader2 className="mr-2 h-3 w-3 animate-spin" /> : <PenTool className="mr-2 h-3 w-3" />}
-                            Sign
+                            {updating ? <Loader2 className="mr-2 h-3 w-3 animate-spin" /> : <CheckCircle className="mr-2 h-3 w-3" />}
+                            Accept
                           </Button>
                         ) : (
-                          <span className="text-sm text-muted-foreground">Not signed</span>
+                          <span className="text-sm text-muted-foreground">Not accepted</span>
                         )}
                       </div>
                       <div>
@@ -1474,15 +1458,15 @@ export function ChecklistKanban({ branchId, projectId, readOnly = false, userRol
                         {selectedItem.clientSignature ? (
                           <div className="flex items-center gap-2 text-green-700">
                             <CheckCircle className="h-4 w-4" />
-                            <span className="text-sm">Signed {selectedItem.clientSignedAt && new Date(selectedItem.clientSignedAt).toLocaleDateString()}</span>
+                            <span className="text-sm">Accepted {selectedItem.clientSignedAt && new Date(selectedItem.clientSignedAt).toLocaleDateString()}</span>
                           </div>
                         ) : userRole === 'CLIENT' && (selectedItem.stage === 'FOR_REVIEW' || selectedItem.stage === 'COMPLETED') ? (
                           <Button size="sm" variant="outline" onClick={handleClientSign} disabled={updating}>
-                            {updating ? <Loader2 className="mr-2 h-3 w-3 animate-spin" /> : <PenTool className="mr-2 h-3 w-3" />}
-                            Accept & Sign
+                            {updating ? <Loader2 className="mr-2 h-3 w-3 animate-spin" /> : <CheckCircle className="mr-2 h-3 w-3" />}
+                            Accept
                           </Button>
                         ) : (
-                          <span className="text-sm text-muted-foreground">Not signed</span>
+                          <span className="text-sm text-muted-foreground">Not accepted</span>
                         )}
                       </div>
                     </div>
@@ -1670,18 +1654,10 @@ export function ChecklistKanban({ branchId, projectId, readOnly = false, userRol
                 </div>
               )}
 
-              {/* Signatures Status */}
+              {/* Acceptance Status */}
               <div className="border-t pt-4">
-                <h4 className="font-semibold mb-2">Signatures</h4>
+                <h4 className="font-semibold mb-2">Acceptance Status</h4>
                 <div className="grid grid-cols-2 gap-2 text-sm">
-                  <div className="flex items-center gap-2">
-                    {selectedItem.technicianSignature ? (
-                      <CheckCircle className="h-4 w-4 text-green-600" />
-                    ) : (
-                      <XCircle className="h-4 w-4 text-gray-400" />
-                    )}
-                    <span>Technician</span>
-                  </div>
                   <div className="flex items-center gap-2">
                     {selectedItem.supervisorSignature ? (
                       <CheckCircle className="h-4 w-4 text-green-600" />
@@ -1690,14 +1666,22 @@ export function ChecklistKanban({ branchId, projectId, readOnly = false, userRol
                     )}
                     <span>Supervisor</span>
                   </div>
+                  <div className="flex items-center gap-2">
+                    {selectedItem.clientSignature ? (
+                      <CheckCircle className="h-4 w-4 text-green-600" />
+                    ) : (
+                      <XCircle className="h-4 w-4 text-gray-400" />
+                    )}
+                    <span>Client</span>
+                  </div>
                 </div>
               </div>
 
-              {/* Warning if no signatures */}
-              {!selectedItem.technicianSignature && !selectedItem.supervisorSignature && (
+              {/* Warning if no acceptances */}
+              {!selectedItem.supervisorSignature && !selectedItem.clientSignature && (
                 <div className="bg-yellow-50 border border-yellow-200 rounded-lg p-3">
                   <p className="text-sm text-yellow-800">
-                    ⚠️ Neither technician nor supervisor has signed this work order yet.
+                    ⚠️ Neither supervisor nor client has accepted this work order yet.
                   </p>
                 </div>
               )}
