@@ -401,8 +401,23 @@ export async function PATCH(
         return NextResponse.json({ error: 'Work order ID and signature required' }, { status: 400 })
       }
 
-      // Only supervisors or contractors can sign as supervisor
-      if (session.user.role !== 'CONTRACTOR') {
+      // Check if user has permission to sign as supervisor
+      // Allow: CONTRACTOR role, branch owner, or team member with SUPERVISOR role
+      const branch = await prisma.branch.findUnique({
+        where: { id: branchId },
+        include: {
+          client: {
+            include: {
+              contractor: true
+            }
+          }
+        }
+      })
+
+      const isBranchOwner = branch?.client?.contractor?.userId === session.user.id
+      const isContractorRole = session.user.role === 'CONTRACTOR'
+
+      if (!isContractorRole && !isBranchOwner) {
         // Check if team member is a supervisor
         const teamMember = await prisma.teamMember.findUnique({
           where: { userId: session.user.id }
