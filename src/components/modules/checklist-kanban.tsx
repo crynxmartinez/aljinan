@@ -663,21 +663,26 @@ export function ChecklistKanban({ branchId, projectId, readOnly = false, userRol
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
           action: 'technician_sign',
-          itemId: selectedItem.id,
+          workOrderId: selectedItem.id,
           signature: 'signed', // In real app, this would be actual signature data
         }),
       })
 
       if (response.ok) {
+        toast.success('Technician signature added')
         fetchItems()
         // Refresh selected item
         const updatedItems = await fetch(`/api/branches/${branchId}/checklist-items`).then(r => r.json())
         const updated = updatedItems.find((i: ChecklistItem) => i.id === selectedItem.id)
         if (updated) setSelectedItem(updated)
         router.refresh()
+      } else {
+        const error = await response.json()
+        toast.error(error.error || 'Failed to add signature')
       }
     } catch (error) {
       console.error('Failed to sign:', error)
+      toast.error('Failed to add signature')
     } finally {
       setUpdating(false)
     }
@@ -694,21 +699,26 @@ export function ChecklistKanban({ branchId, projectId, readOnly = false, userRol
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
           action: 'supervisor_sign',
-          itemId: selectedItem.id,
+          workOrderId: selectedItem.id,
           signature: 'signed',
         }),
       })
 
       if (response.ok) {
+        toast.success('Supervisor signature added')
         fetchItems()
         // Refresh selected item
         const updatedItems = await fetch(`/api/branches/${branchId}/checklist-items`).then(r => r.json())
         const updated = updatedItems.find((i: ChecklistItem) => i.id === selectedItem.id)
         if (updated) setSelectedItem(updated)
         router.refresh()
+      } else {
+        const error = await response.json()
+        toast.error(error.error || 'Failed to add signature')
       }
     } catch (error) {
       console.error('Failed to sign:', error)
+      toast.error('Failed to add signature')
     } finally {
       setUpdating(false)
     }
@@ -725,21 +735,26 @@ export function ChecklistKanban({ branchId, projectId, readOnly = false, userRol
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
           action: 'client_sign',
-          itemId: selectedItem.id,
+          workOrderId: selectedItem.id,
           signature: 'signed',
         }),
       })
 
       if (response.ok) {
+        toast.success('Work order signed successfully')
         fetchItems()
         // Refresh selected item
         const updatedItems = await fetch(`/api/branches/${branchId}/checklist-items`).then(r => r.json())
         const updated = updatedItems.find((i: ChecklistItem) => i.id === selectedItem.id)
         if (updated) setSelectedItem(updated)
         router.refresh()
+      } else {
+        const error = await response.json()
+        toast.error(error.error || 'Failed to sign work order')
       }
     } catch (error) {
       console.error('Failed to sign:', error)
+      toast.error('Failed to sign work order')
     } finally {
       setUpdating(false)
     }
