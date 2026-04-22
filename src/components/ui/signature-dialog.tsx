@@ -106,8 +106,9 @@ export function SignatureDialog({
 
     setSigning(true)
     try {
-      // Convert canvas to base64 image
-      const signatureData = canvas.toDataURL('image/png')
+      // Convert canvas to base64 image with compression
+      // Use JPEG with quality 0.7 to reduce file size
+      const signatureData = canvas.toDataURL('image/jpeg', 0.7)
       await onSign(signatureData)
       onOpenChange(false)
       clearSignature()

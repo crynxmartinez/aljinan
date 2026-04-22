@@ -331,18 +331,14 @@ export function WorkOrderPrint({ workOrderId, onClose }: WorkOrderPrintProps) {
           <div className="grid grid-cols-2 gap-8">
             <div>
               <p className="text-sm font-semibold mb-4">Supervisor Signature</p>
-              <div className="border-b-2 border-gray-400 h-24 mb-2 flex items-center justify-center bg-gray-50">
-                {data.supervisorSignature ? (
-                  data.supervisorSignature.startsWith('data:image') ? (
-                    <img
-                      src={data.supervisorSignature}
-                      alt="Supervisor signature"
-                      className="max-h-20 max-w-full object-contain"
-                    />
-                  ) : (
-                    <span className="text-lg italic">Signed</span>
-                  )
-                ) : null}
+              <div className="border-b-2 border-gray-400 h-24 mb-2 flex items-center justify-center bg-white">
+                {data.supervisorSignature && data.supervisorSignature.startsWith('data:image') && (
+                  <img
+                    src={data.supervisorSignature}
+                    alt="Supervisor signature"
+                    className="max-h-20 max-w-full object-contain"
+                  />
+                )}
               </div>
               <p className="text-xs text-muted-foreground">
                 Name: {data.supervisorName || '___________________'}
@@ -353,18 +349,14 @@ export function WorkOrderPrint({ workOrderId, onClose }: WorkOrderPrintProps) {
             </div>
             <div>
               <p className="text-sm font-semibold mb-4">Client Signature</p>
-              <div className="border-b-2 border-gray-400 h-24 mb-2 flex items-center justify-center bg-gray-50">
-                {data.clientSignature ? (
-                  data.clientSignature.startsWith('data:image') ? (
-                    <img
-                      src={data.clientSignature}
-                      alt="Client signature"
-                      className="max-h-20 max-w-full object-contain"
-                    />
-                  ) : (
-                    <span className="text-lg italic">Signed</span>
-                  )
-                ) : null}
+              <div className="border-b-2 border-gray-400 h-24 mb-2 flex items-center justify-center bg-white">
+                {data.clientSignature && data.clientSignature.startsWith('data:image') && (
+                  <img
+                    src={data.clientSignature}
+                    alt="Client signature"
+                    className="max-h-20 max-w-full object-contain"
+                  />
+                )}
               </div>
               <p className="text-xs text-muted-foreground">
                 Name: {data.clientSignedByName || '___________________'}
