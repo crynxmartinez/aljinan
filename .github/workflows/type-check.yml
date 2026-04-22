@@ -22,23 +22,32 @@ jobs:
     - name: Install dependencies
       run: npm install --legacy-peer-deps
       env:
-        # Dummy DATABASE_URL for postinstall prisma generate
+        # Dummy environment variables for postinstall and build
         DATABASE_URL: postgresql://user:password@localhost:5432/dummy
+        RESEND_API_KEY: re_dummy_key_for_build
+        AWS_ACCESS_KEY_ID: dummy_access_key_id
+        AWS_SECRET_ACCESS_KEY: dummy_secret_access_key
+        AWS_S3_REGION: ap-southeast-1
+        AWS_S3_BUCKET_NAME: dummy-bucket
     
     - name: Generate Prisma Client
       run: npx prisma generate
       env:
-        # Dummy DATABASE_URL for type-checking (no actual DB connection needed)
         DATABASE_URL: postgresql://user:password@localhost:5432/dummy
     
     - name: Build Next.js (generates .next/types)
       run: npm run build
       env:
-        # Required environment variables for build
+        # All required environment variables for Next.js build
         DATABASE_URL: postgresql://user:password@localhost:5432/dummy
-        NEXTAUTH_SECRET: dummy-secret-for-ci-build
+        NEXTAUTH_SECRET: dummy-secret-for-ci-build-min-32-chars-long
         NEXTAUTH_URL: http://localhost:3000
-        NEXT_PUBLIC_GOOGLE_MAPS_API_KEY: dummy-key
+        NEXT_PUBLIC_GOOGLE_MAPS_API_KEY: dummy-google-maps-api-key
+        RESEND_API_KEY: re_dummy_key_for_build
+        AWS_ACCESS_KEY_ID: dummy_access_key_id
+        AWS_SECRET_ACCESS_KEY: dummy_secret_access_key
+        AWS_S3_REGION: ap-southeast-1
+        AWS_S3_BUCKET_NAME: dummy-bucket
     
     - name: Run TypeScript type check
       run: |
