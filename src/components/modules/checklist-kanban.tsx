@@ -29,6 +29,7 @@ import {
   GripVertical,
   Upload,
   X,
+  XCircle,
   Image as ImageIcon,
   PenTool,
   ClipboardCheck,
@@ -474,6 +475,11 @@ export function ChecklistKanban({ branchId, projectId, readOnly = false, userRol
   const [activeId, setActiveId] = useState<string | null>(null)
   const [overId, setOverId] = useState<string | null>(null)
   const [printingWorkOrderId, setPrintingWorkOrderId] = useState<string | null>(null)
+  const [confirmMoveDialogOpen, setConfirmMoveDialogOpen] = useState(false)
+  const [pendingMove, setPendingMove] = useState<{
+    itemId: string
+    targetStage: ChecklistItemStage
+  } | null>(null)
 
   // Inspection form state
   const [inspectionMode, setInspectionMode] = useState(false)
@@ -788,6 +794,60 @@ export function ChecklistKanban({ branchId, projectId, readOnly = false, userRol
     }
   }
 
+  // Handle confirmation of drag-to-complete
+  const handleConfirmMove = async () => {
+    if (!pendingMove) return
+    setUpdating(true)
+
+    try {
+      const { itemId, targetStage } = pendingMove
+      const item = items.find(i => i.id === itemId)
+      if (!item) return
+
+      const checklistResponse = await fetch(`/api/branches/${branchId}/checklists/${item.checklistId}`)
+      if (!checklistResponse.ok) {
+        toast.error('Failed to fetch checklist information')
+        return
+      }
+      const checklist = await checklistResponse.json()
+
+      let response
+      if (checklist.projectId) {
+        response = await fetch(`/api/projects/${checklist.projectId}/work-orders/${itemId}`, {
+          method: 'PATCH',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ stage: targetStage })
+        })
+      } else {
+        response = await fetch(`/api/branches/${branchId}/checklist-items`, {
+          method: 'PATCH',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            action: 'update_stage',
+            itemId: itemId,
+            stage: targetStage
+          })
+        })
+      }
+
+      if (response.ok) {
+        toast.success('Work order accepted and completed')
+        fetchItems()
+        setConfirmMoveDialogOpen(false)
+        setPendingMove(null)
+        router.refresh()
+      } else {
+        const error = await response.json()
+        toast.error(error.error || 'Failed to complete work order')
+      }
+    } catch (error) {
+      console.error('Failed to complete work order:', error)
+      toast.error('Failed to complete work order')
+    } finally {
+      setUpdating(false)
+    }
+  }
+
   const handleSendToReview = async (itemId: string) => {
     if (readOnly) return
     setUpdating(true)
@@ -887,6 +947,14 @@ export function ChecklistKanban({ branchId, projectId, readOnly = false, userRol
         console.log(`Transition from ${item.stage} to ${targetStage} not allowed for ${isClient ? 'client' : 'contractor'}`)
       }
       return
+    }
+
+    // If client is moving FOR_REVIEW → COMPLETED, show confirmation modal
+    if (isClient && item.stage === 'FOR_REVIEW' && targetStage === 'COMPLETED') {
+      setPendingMove({ itemId, targetStage })
+      setSelectedItem(item)
+      setConfirmMoveDialogOpen(true)
+      return // Don't proceed with move yet
     }
 
     // Optimistically update UI
@@ -1542,6 +1610,125 @@ export function ChecklistKanban({ branchId, projectId, readOnly = false, userRol
           }}
         />
       )}
+
+      {/* Confirmation Dialog for Drag to Complete */}
+      <Dialog open={confirmMoveDialogOpen} onOpenChange={setConfirmMoveDialogOpen}>
+        <DialogContent className="sm:max-w-[700px] max-h-[90vh] overflow-y-auto">
+          <DialogHeader>
+            <DialogTitle className="flex items-center gap-2">
+              <CheckCircle className="h-5 w-5 text-green-600" />
+              Accept Work Order?
+            </DialogTitle>
+            <DialogDescription>
+              Review the work order details and inspection report before accepting.
+            </DialogDescription>
+          </DialogHeader>
+
+          {selectedItem && (
+            <div className="space-y-4">
+              {/* Work Order Summary */}
+              <div className="p-4 bg-muted/50 rounded-lg">
+                <h4 className="font-medium mb-2">{selectedItem.description}</h4>
+                <div className="grid grid-cols-2 gap-2 text-sm">
+                  {selectedItem.scheduledDate && (
+                    <div>
+                      <p className="text-muted-foreground">Scheduled</p>
+                      <p className="font-medium">{new Date(selectedItem.scheduledDate).toLocaleDateString()}</p>
+                    </div>
+                  )}
+                  {selectedItem.price && (
+                    <div>
+                      <p className="text-muted-foreground">Price</p>
+                      <p className="font-semibold text-green-700">{formatCurrency(selectedItem.price)}</p>
+                    </div>
+                  )}
+                </div>
+              </div>
+
+              {/* Inspection Report Summary */}
+              {(selectedItem.inspectionDate || selectedItem.findings || selectedItem.systemsChecked) && (
+                <div className="border-t pt-4">
+                  <h4 className="font-semibold mb-2 flex items-center gap-2">
+                    <FileText className="h-4 w-4" />
+                    Inspection Report
+                  </h4>
+                  {selectedItem.inspectionDate && (
+                    <p className="text-sm mb-1">
+                      <span className="text-muted-foreground">Date:</span> {new Date(selectedItem.inspectionDate).toLocaleDateString()}
+                    </p>
+                  )}
+                  {selectedItem.systemsChecked && (
+                    <p className="text-sm mb-1">
+                      <span className="text-muted-foreground">Systems Checked:</span> {selectedItem.systemsChecked}
+                    </p>
+                  )}
+                  {selectedItem.findings && (
+                    <p className="text-sm">
+                      <span className="text-muted-foreground">Findings:</span> {selectedItem.findings}
+                    </p>
+                  )}
+                </div>
+              )}
+
+              {/* Signatures Status */}
+              <div className="border-t pt-4">
+                <h4 className="font-semibold mb-2">Signatures</h4>
+                <div className="grid grid-cols-2 gap-2 text-sm">
+                  <div className="flex items-center gap-2">
+                    {selectedItem.technicianSignature ? (
+                      <CheckCircle className="h-4 w-4 text-green-600" />
+                    ) : (
+                      <XCircle className="h-4 w-4 text-gray-400" />
+                    )}
+                    <span>Technician</span>
+                  </div>
+                  <div className="flex items-center gap-2">
+                    {selectedItem.supervisorSignature ? (
+                      <CheckCircle className="h-4 w-4 text-green-600" />
+                    ) : (
+                      <XCircle className="h-4 w-4 text-gray-400" />
+                    )}
+                    <span>Supervisor</span>
+                  </div>
+                </div>
+              </div>
+
+              {/* Warning if no signatures */}
+              {!selectedItem.technicianSignature && !selectedItem.supervisorSignature && (
+                <div className="bg-yellow-50 border border-yellow-200 rounded-lg p-3">
+                  <p className="text-sm text-yellow-800">
+                    ⚠️ Neither technician nor supervisor has signed this work order yet.
+                  </p>
+                </div>
+              )}
+            </div>
+          )}
+
+          <DialogFooter className="gap-2">
+            <Button
+              variant="outline"
+              onClick={() => {
+                setConfirmMoveDialogOpen(false)
+                setPendingMove(null)
+              }}
+            >
+              Cancel
+            </Button>
+            <Button
+              onClick={handleConfirmMove}
+              disabled={updating}
+              className="bg-green-600 hover:bg-green-700"
+            >
+              {updating ? (
+                <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+              ) : (
+                <CheckCircle className="mr-2 h-4 w-4" />
+              )}
+              Accept & Complete
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
 
       {/* Print Dialog */}
       {printingWorkOrderId && (
