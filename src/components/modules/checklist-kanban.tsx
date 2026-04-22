@@ -1430,18 +1430,25 @@ export function ChecklistKanban({ branchId, projectId, readOnly = false, userRol
 
                           const hasTechnician = selectedItem.assignedTo
 
+                          console.log('Send to Review clicked:', {
+                            hasTechnician,
+                            hasInspectionData,
+                            technicianSignature: selectedItem.technicianSignature,
+                            shouldShowDialog: hasTechnician && hasInspectionData && !selectedItem.technicianSignature
+                          })
+
                           // Only require technician signature if:
                           // 1. Technician is assigned AND
                           // 2. Has inspection data AND
                           // 3. No signature yet
                           if (hasTechnician && hasInspectionData && !selectedItem.technicianSignature) {
-                            // Show technician signature dialog
+                            console.log('Opening signature dialog')
                             setPendingSignWorkOrderId(selectedItem.id)
                             setSignatureType('technician')
                             setSignerName(currentUserName || 'Technician')
                             setSignatureDialogOpen(true)
                           } else {
-                            // No technician assigned, no inspection, or already signed - proceed normally
+                            console.log('Skipping signature, calling handleSendToReview')
                             handleSendToReview(selectedItem.id)
                           }
                         }}
