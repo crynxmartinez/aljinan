@@ -150,7 +150,7 @@ export default async function DashboardLayout({
           {children}
         </main>
       </div>
-      <NotificationPopup userRole="CONTRACTOR" />
+      {session.user.role === 'CONTRACTOR' && <NotificationPopup userRole="CONTRACTOR" />}
     </div>
   )
 }
