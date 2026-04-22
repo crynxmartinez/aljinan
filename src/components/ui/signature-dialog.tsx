@@ -32,9 +32,12 @@ export function SignatureDialog({
       const canvas = canvasRef.current
       const ctx = canvas.getContext('2d')
       if (ctx) {
-        // Set canvas size
-        canvas.width = canvas.offsetWidth
-        canvas.height = canvas.offsetHeight
+        // Get the actual display size
+        const rect = canvas.getBoundingClientRect()
+
+        // Set canvas internal size to match display size
+        canvas.width = rect.width
+        canvas.height = rect.height
 
         // Set drawing style
         ctx.strokeStyle = '#000000'

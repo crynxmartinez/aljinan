@@ -312,18 +312,31 @@ export function WorkOrderPrint({ workOrderId, onClose }: WorkOrderPrintProps) {
           </div>
         )}
 
+        {/* Technician Name (if assigned) */}
+        {data.technicianName && (
+          <div className="mt-8 pt-4 border-t">
+            <p className="text-sm font-semibold mb-2">Technician Assigned:</p>
+            <p className="text-base">{data.technicianName}</p>
+            {data.technicianSignedAt && (
+              <p className="text-xs text-muted-foreground mt-1">
+                Signed on: {formatDate(data.technicianSignedAt)}
+              </p>
+            )}
+          </div>
+        )}
+
         {/* Signature Section */}
         <div className="mt-12 pt-6 border-t-2">
           <h3 className="text-lg font-bold mb-4">SIGNATURES</h3>
           <div className="grid grid-cols-2 gap-8">
             <div>
-              <p className="text-sm font-semibold mb-4">Technician Signature</p>
+              <p className="text-sm font-semibold mb-4">Supervisor Signature</p>
               <div className="border-b-2 border-gray-400 h-24 mb-2 flex items-center justify-center bg-gray-50">
-                {data.technicianSignature ? (
-                  data.technicianSignature.startsWith('data:image') ? (
+                {data.supervisorSignature ? (
+                  data.supervisorSignature.startsWith('data:image') ? (
                     <img
-                      src={data.technicianSignature}
-                      alt="Technician signature"
+                      src={data.supervisorSignature}
+                      alt="Supervisor signature"
                       className="max-h-20 max-w-full object-contain"
                     />
                   ) : (
@@ -332,10 +345,10 @@ export function WorkOrderPrint({ workOrderId, onClose }: WorkOrderPrintProps) {
                 ) : null}
               </div>
               <p className="text-xs text-muted-foreground">
-                Name: {data.technicianName || '___________________'}
+                Name: {data.supervisorName || '___________________'}
               </p>
               <p className="text-xs text-muted-foreground mt-1">
-                Date: {data.technicianSignedAt ? formatDate(data.technicianSignedAt) : '___________________'}
+                Date: {data.supervisorSignedAt ? formatDate(data.supervisorSignedAt) : '___________________'}
               </p>
             </div>
             <div>
