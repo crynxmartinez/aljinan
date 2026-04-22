@@ -1,6 +1,6 @@
 'use client'
 
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle } from '@/components/ui/dialog'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
@@ -15,17 +15,25 @@ interface PriceDialogProps {
 }
 
 export function PriceDialog({ open, onOpenChange, onConfirm, currentPrice }: PriceDialogProps) {
-  const [price, setPrice] = useState(currentPrice?.toString() || '')
+  const [price, setPrice] = useState('')
   const [error, setError] = useState('')
+
+  // Update price when dialog opens or currentPrice changes
+  useEffect(() => {
+    if (open) {
+      setPrice(currentPrice?.toString() || '')
+      setError('')
+    }
+  }, [open, currentPrice])
 
   const handleConfirm = () => {
     const numPrice = parseFloat(price)
-    
+
     if (!price || price.trim() === '') {
       setError('Please enter a price')
       return
     }
-    
+
     if (isNaN(numPrice) || numPrice <= 0) {
       setError('Please enter a valid price greater than 0')
       return
@@ -55,7 +63,7 @@ export function PriceDialog({ open, onOpenChange, onConfirm, currentPrice }: Pri
             Enter the price for this work order in SAR (Saudi Riyal)
           </DialogDescription>
         </DialogHeader>
-        
+
         <div className="grid gap-4 py-4">
           <div className="grid gap-2">
             <Label htmlFor="price">Price (SAR)</Label>
