@@ -28,6 +28,15 @@ jobs:
         # Dummy DATABASE_URL for type-checking (no actual DB connection needed)
         DATABASE_URL: postgresql://user:password@localhost:5432/dummy
     
+    - name: Build Next.js (generates .next/types)
+      run: npm run build
+      env:
+        # Required environment variables for build
+        DATABASE_URL: postgresql://user:password@localhost:5432/dummy
+        NEXTAUTH_SECRET: dummy-secret-for-ci-build
+        NEXTAUTH_URL: http://localhost:3000
+        NEXT_PUBLIC_GOOGLE_MAPS_API_KEY: dummy-key
+    
     - name: Run TypeScript type check
       run: |
         echo "Running TypeScript type check..."
