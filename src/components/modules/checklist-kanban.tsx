@@ -1277,11 +1277,11 @@ export function ChecklistKanban({ branchId, projectId, readOnly = false, userRol
                   {selectedItem.price ? (
                     <p className="font-semibold text-green-700">{formatCurrency(selectedItem.price)}</p>
                   ) : (
-                    <div className="flex items-center gap-2">
-                      <Badge variant="outline" className="text-xs border-orange-300 text-orange-700 bg-orange-50">
+                    <div className="flex flex-col gap-2">
+                      <Badge variant="outline" className="text-xs border-orange-300 text-orange-700 bg-orange-50 w-fit">
                         No Price Set
                       </Badge>
-                      {!readOnly && (
+                      {!readOnly && userRole !== 'CLIENT' ? (
                         <Button
                           size="sm"
                           variant="outline"
@@ -1289,11 +1289,15 @@ export function ChecklistKanban({ branchId, projectId, readOnly = false, userRol
                             setPendingPriceWorkOrderId(selectedItem.id)
                             setPriceDialogOpen(true)
                           }}
-                          className="h-7 text-xs"
+                          className="h-7 text-xs w-fit"
                         >
                           Set Price
                         </Button>
-                      )}
+                      ) : userRole === 'CLIENT' ? (
+                        <p className="text-xs text-muted-foreground italic">
+                          Waiting for contractor to set price
+                        </p>
+                      ) : null}
                     </div>
                   )}
                 </div>
