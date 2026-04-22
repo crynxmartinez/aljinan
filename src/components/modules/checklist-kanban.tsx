@@ -1255,119 +1255,126 @@ export function ChecklistKanban({ branchId, projectId, readOnly = false, userRol
               )}
 
               {/* Show existing inspection data (for FOR_REVIEW and COMPLETED stages) */}
-              {(selectedItem.stage === 'FOR_REVIEW' || selectedItem.stage === 'COMPLETED') && selectedItem.findings && (
-                <div className="space-y-4 border-t pt-4">
-                  <h4 className="font-semibold flex items-center gap-2">
-                    <FileText className="h-4 w-4" />
-                    Inspection Report
-                  </h4>
+              {(selectedItem.stage === 'FOR_REVIEW' || selectedItem.stage === 'COMPLETED') && (
+                selectedItem.inspectionDate ||
+                selectedItem.systemsChecked ||
+                selectedItem.findings ||
+                selectedItem.deficiencies ||
+                selectedItem.recommendations ||
+                (selectedItem.photos && selectedItem.photos.length > 0)
+              ) && (
+                  <div className="space-y-4 border-t pt-4">
+                    <h4 className="font-semibold flex items-center gap-2">
+                      <FileText className="h-4 w-4" />
+                      Inspection Report
+                    </h4>
 
-                  {selectedItem.inspectionDate && (
-                    <div>
-                      <p className="text-sm text-muted-foreground">Inspection Date</p>
-                      <p className="text-sm">{new Date(selectedItem.inspectionDate).toLocaleDateString()}</p>
-                    </div>
-                  )}
+                    {selectedItem.inspectionDate && (
+                      <div>
+                        <p className="text-sm text-muted-foreground">Inspection Date</p>
+                        <p className="text-sm">{new Date(selectedItem.inspectionDate).toLocaleDateString()}</p>
+                      </div>
+                    )}
 
-                  {selectedItem.systemsChecked && (
-                    <div>
-                      <p className="text-sm text-muted-foreground">Systems Checked</p>
-                      <p className="text-sm">{selectedItem.systemsChecked}</p>
-                    </div>
-                  )}
+                    {selectedItem.systemsChecked && (
+                      <div>
+                        <p className="text-sm text-muted-foreground">Systems Checked</p>
+                        <p className="text-sm">{selectedItem.systemsChecked}</p>
+                      </div>
+                    )}
 
-                  {selectedItem.findings && (
-                    <div>
-                      <p className="text-sm text-muted-foreground">Findings</p>
-                      <p className="text-sm whitespace-pre-wrap">{selectedItem.findings}</p>
-                    </div>
-                  )}
+                    {selectedItem.findings && (
+                      <div>
+                        <p className="text-sm text-muted-foreground">Findings</p>
+                        <p className="text-sm whitespace-pre-wrap">{selectedItem.findings}</p>
+                      </div>
+                    )}
 
-                  {selectedItem.deficiencies && (
-                    <div>
-                      <p className="text-sm text-muted-foreground">Deficiencies</p>
-                      <p className="text-sm whitespace-pre-wrap text-orange-700">{selectedItem.deficiencies}</p>
-                    </div>
-                  )}
+                    {selectedItem.deficiencies && (
+                      <div>
+                        <p className="text-sm text-muted-foreground">Deficiencies</p>
+                        <p className="text-sm whitespace-pre-wrap text-orange-700">{selectedItem.deficiencies}</p>
+                      </div>
+                    )}
 
-                  {selectedItem.recommendations && (
-                    <div>
-                      <p className="text-sm text-muted-foreground">Recommendations</p>
-                      <p className="text-sm whitespace-pre-wrap">{selectedItem.recommendations}</p>
-                    </div>
-                  )}
+                    {selectedItem.recommendations && (
+                      <div>
+                        <p className="text-sm text-muted-foreground">Recommendations</p>
+                        <p className="text-sm whitespace-pre-wrap">{selectedItem.recommendations}</p>
+                      </div>
+                    )}
 
-                  {/* Photos */}
-                  {selectedItem.photos && selectedItem.photos.length > 0 && (
-                    <div>
-                      <p className="text-sm text-muted-foreground mb-2">Photos ({selectedItem.photos.length})</p>
-                      <div className="flex flex-wrap gap-2">
-                        {selectedItem.photos.map((photo) => photo?.url ? (
-                          <a key={photo.id} href={photo.url} target="_blank" rel="noopener noreferrer">
-                            <img
-                              src={photo.url}
-                              alt={photo.caption || 'Inspection photo'}
-                              className="h-20 w-20 object-cover rounded-lg border hover:opacity-80"
-                            />
-                          </a>
-                        ) : null)}
+                    {/* Photos */}
+                    {selectedItem.photos && selectedItem.photos.length > 0 && (
+                      <div>
+                        <p className="text-sm text-muted-foreground mb-2">Photos ({selectedItem.photos.length})</p>
+                        <div className="flex flex-wrap gap-2">
+                          {selectedItem.photos.map((photo) => photo?.url ? (
+                            <a key={photo.id} href={photo.url} target="_blank" rel="noopener noreferrer">
+                              <img
+                                src={photo.url}
+                                alt={photo.caption || 'Inspection photo'}
+                                className="h-20 w-20 object-cover rounded-lg border hover:opacity-80"
+                              />
+                            </a>
+                          ) : null)}
+                        </div>
+                      </div>
+                    )}
+
+                    {/* Signatures */}
+                    <div className="grid grid-cols-3 gap-4 pt-4 border-t">
+                      <div>
+                        <p className="text-sm text-muted-foreground">Technician</p>
+                        {selectedItem.technicianSignature ? (
+                          <div className="flex items-center gap-2 text-green-700">
+                            <CheckCircle className="h-4 w-4" />
+                            <span className="text-sm">Signed {selectedItem.technicianSignedAt && new Date(selectedItem.technicianSignedAt).toLocaleDateString()}</span>
+                          </div>
+                        ) : !readOnly && selectedItem.stage === 'FOR_REVIEW' ? (
+                          <Button size="sm" variant="outline" onClick={handleTechnicianSign} disabled={updating}>
+                            {updating ? <Loader2 className="mr-2 h-3 w-3 animate-spin" /> : <PenTool className="mr-2 h-3 w-3" />}
+                            Sign
+                          </Button>
+                        ) : (
+                          <span className="text-sm text-muted-foreground">Not signed</span>
+                        )}
+                      </div>
+                      <div>
+                        <p className="text-sm text-muted-foreground">Supervisor</p>
+                        {selectedItem.supervisorSignature ? (
+                          <div className="flex items-center gap-2 text-green-700">
+                            <CheckCircle className="h-4 w-4" />
+                            <span className="text-sm">Signed {selectedItem.supervisorSignedAt && new Date(selectedItem.supervisorSignedAt).toLocaleDateString()}</span>
+                          </div>
+                        ) : !readOnly && (selectedItem.stage === 'FOR_REVIEW' || selectedItem.stage === 'COMPLETED') ? (
+                          <Button size="sm" variant="outline" onClick={handleSupervisorSign} disabled={updating}>
+                            {updating ? <Loader2 className="mr-2 h-3 w-3 animate-spin" /> : <PenTool className="mr-2 h-3 w-3" />}
+                            Sign
+                          </Button>
+                        ) : (
+                          <span className="text-sm text-muted-foreground">Not signed</span>
+                        )}
+                      </div>
+                      <div>
+                        <p className="text-sm text-muted-foreground">Client Acceptance</p>
+                        {selectedItem.clientSignature ? (
+                          <div className="flex items-center gap-2 text-green-700">
+                            <CheckCircle className="h-4 w-4" />
+                            <span className="text-sm">Signed {selectedItem.clientSignedAt && new Date(selectedItem.clientSignedAt).toLocaleDateString()}</span>
+                          </div>
+                        ) : userRole === 'CLIENT' && (selectedItem.stage === 'FOR_REVIEW' || selectedItem.stage === 'COMPLETED') ? (
+                          <Button size="sm" variant="outline" onClick={handleClientSign} disabled={updating}>
+                            {updating ? <Loader2 className="mr-2 h-3 w-3 animate-spin" /> : <PenTool className="mr-2 h-3 w-3" />}
+                            Accept & Sign
+                          </Button>
+                        ) : (
+                          <span className="text-sm text-muted-foreground">Not signed</span>
+                        )}
                       </div>
                     </div>
-                  )}
-
-                  {/* Signatures */}
-                  <div className="grid grid-cols-3 gap-4 pt-4 border-t">
-                    <div>
-                      <p className="text-sm text-muted-foreground">Technician</p>
-                      {selectedItem.technicianSignature ? (
-                        <div className="flex items-center gap-2 text-green-700">
-                          <CheckCircle className="h-4 w-4" />
-                          <span className="text-sm">Signed {selectedItem.technicianSignedAt && new Date(selectedItem.technicianSignedAt).toLocaleDateString()}</span>
-                        </div>
-                      ) : !readOnly && selectedItem.stage === 'FOR_REVIEW' ? (
-                        <Button size="sm" variant="outline" onClick={handleTechnicianSign} disabled={updating}>
-                          {updating ? <Loader2 className="mr-2 h-3 w-3 animate-spin" /> : <PenTool className="mr-2 h-3 w-3" />}
-                          Sign
-                        </Button>
-                      ) : (
-                        <span className="text-sm text-muted-foreground">Not signed</span>
-                      )}
-                    </div>
-                    <div>
-                      <p className="text-sm text-muted-foreground">Supervisor</p>
-                      {selectedItem.supervisorSignature ? (
-                        <div className="flex items-center gap-2 text-green-700">
-                          <CheckCircle className="h-4 w-4" />
-                          <span className="text-sm">Signed {selectedItem.supervisorSignedAt && new Date(selectedItem.supervisorSignedAt).toLocaleDateString()}</span>
-                        </div>
-                      ) : !readOnly && (selectedItem.stage === 'FOR_REVIEW' || selectedItem.stage === 'COMPLETED') ? (
-                        <Button size="sm" variant="outline" onClick={handleSupervisorSign} disabled={updating}>
-                          {updating ? <Loader2 className="mr-2 h-3 w-3 animate-spin" /> : <PenTool className="mr-2 h-3 w-3" />}
-                          Sign
-                        </Button>
-                      ) : (
-                        <span className="text-sm text-muted-foreground">Not signed</span>
-                      )}
-                    </div>
-                    <div>
-                      <p className="text-sm text-muted-foreground">Client Acceptance</p>
-                      {selectedItem.clientSignature ? (
-                        <div className="flex items-center gap-2 text-green-700">
-                          <CheckCircle className="h-4 w-4" />
-                          <span className="text-sm">Signed {selectedItem.clientSignedAt && new Date(selectedItem.clientSignedAt).toLocaleDateString()}</span>
-                        </div>
-                      ) : userRole === 'CLIENT' && (selectedItem.stage === 'FOR_REVIEW' || selectedItem.stage === 'COMPLETED') ? (
-                        <Button size="sm" variant="outline" onClick={handleClientSign} disabled={updating}>
-                          {updating ? <Loader2 className="mr-2 h-3 w-3 animate-spin" /> : <PenTool className="mr-2 h-3 w-3" />}
-                          Accept & Sign
-                        </Button>
-                      ) : (
-                        <span className="text-sm text-muted-foreground">Not signed</span>
-                      )}
-                    </div>
                   </div>
-                </div>
-              )}
+                )}
 
               {/* Archived Info - Show deletion details */}
               {selectedItem.stage === 'ARCHIVED' && (
