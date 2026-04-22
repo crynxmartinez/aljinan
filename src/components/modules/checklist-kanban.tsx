@@ -57,6 +57,7 @@ import { cn } from '@/lib/utils'
 import { ColumnDetailModal } from './column-detail-modal'
 import { WorkOrderPrint } from '@/components/print/work-order-print'
 import { SignatureDialog } from '@/components/ui/signature-dialog'
+import { PriceDialog } from '@/components/ui/price-dialog'
 import {
   DndContext,
   DragOverlay,
@@ -531,6 +532,9 @@ export function ChecklistKanban({ branchId, projectId, readOnly = false, userRol
   const [pendingSignWorkOrderId, setPendingSignWorkOrderId] = useState<string | null>(null)
   const [signerName, setSignerName] = useState<string>('')
   const [currentUserName, setCurrentUserName] = useState<string>('')
+
+  const [priceDialogOpen, setPriceDialogOpen] = useState(false)
+  const [pendingPriceWorkOrderId, setPendingPriceWorkOrderId] = useState<string | null>(null)
 
   // Inspection form state
   const [inspectionMode, setInspectionMode] = useState(false)
@@ -1282,10 +1286,8 @@ export function ChecklistKanban({ branchId, projectId, readOnly = false, userRol
                           size="sm"
                           variant="outline"
                           onClick={() => {
-                            const newPrice = prompt('Enter price (SAR):', '')
-                            if (newPrice && !isNaN(Number(newPrice))) {
-                              handlePriceUpdate(selectedItem.id, Number(newPrice))
-                            }
+                            setPendingPriceWorkOrderId(selectedItem.id)
+                            setPriceDialogOpen(true)
                           }}
                           className="h-7 text-xs"
                         >
@@ -1926,6 +1928,19 @@ export function ChecklistKanban({ branchId, projectId, readOnly = false, userRol
           />
         </div>
       )}
+
+      {/* Price Dialog */}
+      <PriceDialog
+        open={priceDialogOpen}
+        onOpenChange={setPriceDialogOpen}
+        onConfirm={(price) => {
+          if (pendingPriceWorkOrderId) {
+            handlePriceUpdate(pendingPriceWorkOrderId, price)
+            setPendingPriceWorkOrderId(null)
+          }
+        }}
+        currentPrice={selectedItem?.price}
+      />
     </>
   )
 }
