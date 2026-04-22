@@ -24,9 +24,17 @@ export async function GET(
             branch: {
               include: {
                 client: {
-                  select: {
-                    companyName: true,
-                    contractorId: true,
+                  include: {
+                    user: {
+                      select: { name: true }
+                    },
+                    contractor: {
+                      include: {
+                        user: {
+                          select: { name: true }
+                        }
+                      }
+                    }
                   }
                 }
               }
@@ -57,6 +65,44 @@ export async function GET(
       orderBy: { equipmentNumber: 'asc' }
     })
 
+    // Fetch assigned technician name
+    let technicianName = null
+    if (workOrder.assignedTo) {
+      const assignedUser = await prisma.user.findUnique({
+        where: { id: workOrder.assignedTo },
+        select: { name: true }
+      })
+      technicianName = assignedUser?.name || null
+    }
+
+    // Fetch who actually signed (if different from assigned)
+    let technicianSignedByName = null
+    if (workOrder.technicianSignedById) {
+      const signedByUser = await prisma.user.findUnique({
+        where: { id: workOrder.technicianSignedById },
+        select: { name: true }
+      })
+      technicianSignedByName = signedByUser?.name || null
+    }
+
+    let supervisorSignedByName = null
+    if (workOrder.supervisorSignedById) {
+      const signedByUser = await prisma.user.findUnique({
+        where: { id: workOrder.supervisorSignedById },
+        select: { name: true }
+      })
+      supervisorSignedByName = signedByUser?.name || null
+    }
+
+    let clientSignedByName = null
+    if (workOrder.clientSignedById) {
+      const signedByUser = await prisma.user.findUnique({
+        where: { id: workOrder.clientSignedById },
+        select: { name: true }
+      })
+      clientSignedByName = signedByUser?.name || null
+    }
+
     // Format response
     const printData = {
       id: workOrder.id,
@@ -78,6 +124,15 @@ export async function GET(
       findings: workOrder.findings,
       deficiencies: workOrder.deficiencies,
       recommendations: workOrder.recommendations,
+      technicianName: technicianSignedByName || technicianName,
+      technicianSignature: workOrder.technicianSignature,
+      technicianSignedAt: workOrder.technicianSignedAt?.toISOString() || null,
+      supervisorName: supervisorSignedByName || workOrder.checklist.branch.client.contractor.user.name,
+      supervisorSignature: workOrder.supervisorSignature,
+      supervisorSignedAt: workOrder.supervisorSignedAt?.toISOString() || null,
+      clientSignedByName: clientSignedByName || workOrder.checklist.branch.client.user.name,
+      clientSignature: workOrder.clientSignature,
+      clientSignedAt: workOrder.clientSignedAt?.toISOString() || null,
       equipment: equipment.map(eq => ({
         id: eq.id,
         equipmentNumber: eq.equipmentNumber,

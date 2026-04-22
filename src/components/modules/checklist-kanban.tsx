@@ -56,6 +56,7 @@ import { Textarea } from '@/components/ui/textarea'
 import { cn } from '@/lib/utils'
 import { ColumnDetailModal } from './column-detail-modal'
 import { WorkOrderPrint } from '@/components/print/work-order-print'
+import { SignatureDialog } from '@/components/ui/signature-dialog'
 import {
   DndContext,
   DragOverlay,
@@ -512,6 +513,11 @@ export function ChecklistKanban({ branchId, projectId, readOnly = false, userRol
     itemId: string
     targetStage: ChecklistItemStage
   } | null>(null)
+  const [signatureDialogOpen, setSignatureDialogOpen] = useState(false)
+  const [signatureType, setSignatureType] = useState<'technician' | 'supervisor' | 'client' | null>(null)
+  const [pendingSignWorkOrderId, setPendingSignWorkOrderId] = useState<string | null>(null)
+  const [signerName, setSignerName] = useState<string>('')
+  const [currentUserName, setCurrentUserName] = useState<string>('')
 
   // Inspection form state
   const [inspectionMode, setInspectionMode] = useState(false)
@@ -552,6 +558,16 @@ export function ChecklistKanban({ branchId, projectId, readOnly = false, userRol
         .then(data => setTeamMembers(data))
         .catch(() => { })
     }
+
+    // Fetch current user name for signature dialog
+    fetch('/api/auth/session')
+      .then(r => r.json())
+      .then(session => {
+        if (session?.user?.name) {
+          setCurrentUserName(session.user.name)
+        }
+      })
+      .catch(() => { })
 
     // Auto-refresh every 30 seconds to keep board updated
     const refreshInterval = setInterval(() => {
@@ -690,9 +706,9 @@ export function ChecklistKanban({ branchId, projectId, readOnly = false, userRol
     }
   }
 
-  // Technician sign
-  const handleTechnicianSign = async () => {
-    if (!selectedItem) return
+  // Technician sign (for inspection)
+  const handleTechnicianSign = async (signature: string) => {
+    if (!pendingSignWorkOrderId) return
     setUpdating(true)
 
     try {
@@ -701,33 +717,64 @@ export function ChecklistKanban({ branchId, projectId, readOnly = false, userRol
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
           action: 'technician_sign',
-          workOrderId: selectedItem.id,
-          signature: 'signed', // In real app, this would be actual signature data
+          workOrderId: pendingSignWorkOrderId,
+          signature
         }),
       })
 
       if (response.ok) {
-        toast.success('Technician signature added')
+        toast.success('Inspection signed successfully')
+
+        // Now move to FOR_REVIEW
+        const item = items.find(i => i.id === pendingSignWorkOrderId)
+        if (item) {
+          const checklistResponse = await fetch(`/api/branches/${branchId}/checklists/${item.checklistId}`)
+          if (checklistResponse.ok) {
+            const checklist = await checklistResponse.json()
+
+            let moveResponse
+            if (checklist.projectId) {
+              moveResponse = await fetch(`/api/projects/${checklist.projectId}/work-orders/${pendingSignWorkOrderId}`, {
+                method: 'PATCH',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ stage: 'FOR_REVIEW' })
+              })
+            } else {
+              moveResponse = await fetch(`/api/branches/${branchId}/checklist-items`, {
+                method: 'PATCH',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({
+                  action: 'update_stage',
+                  itemId: pendingSignWorkOrderId,
+                  stage: 'FOR_REVIEW'
+                })
+              })
+            }
+
+            if (moveResponse.ok) {
+              toast.success('Moved to review')
+            }
+          }
+        }
+
         fetchItems()
-        // Refresh selected item
-        const updatedItems = await fetch(`/api/branches/${branchId}/checklist-items`).then(r => r.json())
-        const updated = updatedItems.find((i: ChecklistItem) => i.id === selectedItem.id)
-        if (updated) setSelectedItem(updated)
         router.refresh()
       } else {
         const error = await response.json()
-        toast.error(error.error || 'Failed to add signature')
+        toast.error(error.error || 'Failed to sign inspection')
+        throw new Error(error.error)
       }
     } catch (error) {
-      console.error('Failed to sign:', error)
-      toast.error('Failed to add signature')
+      toast.error('Failed to sign inspection')
+      throw error
     } finally {
       setUpdating(false)
+      setPendingSignWorkOrderId(null)
     }
   }
 
   // Supervisor sign
-  const handleSupervisorSign = async () => {
+  const handleSupervisorSign = async (signature: string) => {
     if (!selectedItem) return
     setUpdating(true)
 
@@ -738,32 +785,32 @@ export function ChecklistKanban({ branchId, projectId, readOnly = false, userRol
         body: JSON.stringify({
           action: 'supervisor_sign',
           workOrderId: selectedItem.id,
-          signature: 'signed',
+          signature
         }),
       })
 
       if (response.ok) {
-        toast.success('Supervisor accepted the work order')
+        toast.success('Work order signed by supervisor')
         fetchItems()
-        // Refresh selected item
         const updatedItems = await fetch(`/api/branches/${branchId}/checklist-items`).then(r => r.json())
         const updated = updatedItems.find((i: ChecklistItem) => i.id === selectedItem.id)
         if (updated) setSelectedItem(updated)
         router.refresh()
       } else {
         const error = await response.json()
-        toast.error(error.error || 'Failed to add signature')
+        toast.error(error.error || 'Failed to sign')
+        throw new Error(error.error)
       }
     } catch (error) {
-      console.error('Failed to sign:', error)
-      toast.error('Failed to add signature')
+      toast.error('Failed to sign')
+      throw error
     } finally {
       setUpdating(false)
     }
   }
 
   // Client sign (accepting completed work)
-  const handleClientSign = async () => {
+  const handleClientSign = async (signature: string) => {
     if (!selectedItem) return
     setUpdating(true)
 
@@ -774,25 +821,25 @@ export function ChecklistKanban({ branchId, projectId, readOnly = false, userRol
         body: JSON.stringify({
           action: 'client_sign',
           workOrderId: selectedItem.id,
-          signature: 'signed',
+          signature
         }),
       })
 
       if (response.ok) {
-        toast.success('Work order accepted successfully')
+        toast.success('Work order signed by client')
         fetchItems()
-        // Refresh selected item
         const updatedItems = await fetch(`/api/branches/${branchId}/checklist-items`).then(r => r.json())
         const updated = updatedItems.find((i: ChecklistItem) => i.id === selectedItem.id)
         if (updated) setSelectedItem(updated)
         router.refresh()
       } else {
         const error = await response.json()
-        toast.error(error.error || 'Failed to sign work order')
+        toast.error(error.error || 'Failed to sign')
+        throw new Error(error.error)
       }
     } catch (error) {
-      console.error('Failed to sign:', error)
-      toast.error('Failed to sign work order')
+      toast.error('Failed to sign')
+      throw error
     } finally {
       setUpdating(false)
     }
@@ -987,6 +1034,24 @@ export function ChecklistKanban({ branchId, projectId, readOnly = false, userRol
       setSelectedItem(item)
       setConfirmMoveDialogOpen(true)
       return // Don't proceed with move yet
+    }
+
+    // If moving to FOR_REVIEW, check if inspection needs technician signature
+    if (targetStage === 'FOR_REVIEW' && !isClient) {
+      const hasInspectionData = item.inspectionDate ||
+        item.findings ||
+        item.systemsChecked ||
+        item.deficiencies ||
+        item.recommendations
+
+      if (hasInspectionData && !item.technicianSignature) {
+        // Show technician signature dialog
+        setPendingSignWorkOrderId(itemId)
+        setSignatureType('technician')
+        setSignerName(currentUserName || 'Technician')
+        setSignatureDialogOpen(true)
+        return // Don't proceed with move yet
+      }
     }
 
     // Optimistically update UI
@@ -1383,7 +1448,24 @@ export function ChecklistKanban({ branchId, projectId, readOnly = false, userRol
                         Fill Inspection Report
                       </Button>
                       <Button
-                        onClick={() => handleSendToReview(selectedItem.id)}
+                        onClick={() => {
+                          const hasInspectionData = selectedItem.inspectionDate ||
+                            selectedItem.findings ||
+                            selectedItem.systemsChecked ||
+                            selectedItem.deficiencies ||
+                            selectedItem.recommendations
+
+                          if (hasInspectionData && !selectedItem.technicianSignature) {
+                            // Show technician signature dialog
+                            setPendingSignWorkOrderId(selectedItem.id)
+                            setSignatureType('technician')
+                            setSignerName(currentUserName || 'Technician')
+                            setSignatureDialogOpen(true)
+                          } else {
+                            // No inspection or already signed, proceed normally
+                            handleSendToReview(selectedItem.id)
+                          }
+                        }}
                         disabled={updating}
                         className="flex-1 bg-purple-600 hover:bg-purple-700"
                       >
@@ -1470,25 +1552,34 @@ export function ChecklistKanban({ branchId, projectId, readOnly = false, userRol
                   </div>
                 )}
 
-              {/* Acceptance Section - Show for FOR_REVIEW and COMPLETED stages */}
+              {/* Signatures Section - Show for FOR_REVIEW and COMPLETED stages */}
               {(selectedItem.stage === 'FOR_REVIEW' || selectedItem.stage === 'COMPLETED') && (
                 <div className="border-t pt-4">
-                  <h4 className="font-semibold mb-3">Acceptance</h4>
+                  <h4 className="font-semibold mb-3">Signatures</h4>
                   <div className="grid grid-cols-2 gap-4">
                     <div>
                       <p className="text-sm text-muted-foreground mb-2">Supervisor</p>
                       {selectedItem.supervisorSignature ? (
                         <div className="flex items-center gap-2 text-green-700">
                           <CheckCircle className="h-4 w-4" />
-                          <span className="text-sm">Accepted {selectedItem.supervisorSignedAt && new Date(selectedItem.supervisorSignedAt).toLocaleDateString()}</span>
+                          <span className="text-sm">Signed {selectedItem.supervisorSignedAt && new Date(selectedItem.supervisorSignedAt).toLocaleDateString()}</span>
                         </div>
                       ) : !readOnly ? (
-                        <Button size="sm" variant="outline" onClick={handleSupervisorSign} disabled={updating}>
-                          {updating ? <Loader2 className="mr-2 h-3 w-3 animate-spin" /> : <CheckCircle className="mr-2 h-3 w-3" />}
-                          Accept
+                        <Button
+                          size="sm"
+                          variant="outline"
+                          onClick={() => {
+                            setSignatureType('supervisor')
+                            setSignerName(currentUserName || 'Supervisor')
+                            setSignatureDialogOpen(true)
+                          }}
+                          disabled={updating}
+                        >
+                          {updating ? <Loader2 className="mr-2 h-3 w-3 animate-spin" /> : <PenTool className="mr-2 h-3 w-3" />}
+                          Sign
                         </Button>
                       ) : (
-                        <span className="text-sm text-muted-foreground">Not accepted</span>
+                        <span className="text-sm text-muted-foreground">Not signed</span>
                       )}
                     </div>
                     <div>
@@ -1496,15 +1587,24 @@ export function ChecklistKanban({ branchId, projectId, readOnly = false, userRol
                       {selectedItem.clientSignature ? (
                         <div className="flex items-center gap-2 text-green-700">
                           <CheckCircle className="h-4 w-4" />
-                          <span className="text-sm">Accepted {selectedItem.clientSignedAt && new Date(selectedItem.clientSignedAt).toLocaleDateString()}</span>
+                          <span className="text-sm">Signed {selectedItem.clientSignedAt && new Date(selectedItem.clientSignedAt).toLocaleDateString()}</span>
                         </div>
                       ) : userRole === 'CLIENT' ? (
-                        <Button size="sm" variant="outline" onClick={handleClientSign} disabled={updating}>
-                          {updating ? <Loader2 className="mr-2 h-3 w-3 animate-spin" /> : <CheckCircle className="mr-2 h-3 w-3" />}
-                          Accept
+                        <Button
+                          size="sm"
+                          variant="outline"
+                          onClick={() => {
+                            setSignatureType('client')
+                            setSignerName(currentUserName || 'Client')
+                            setSignatureDialogOpen(true)
+                          }}
+                          disabled={updating}
+                        >
+                          {updating ? <Loader2 className="mr-2 h-3 w-3 animate-spin" /> : <PenTool className="mr-2 h-3 w-3" />}
+                          Sign
                         </Button>
                       ) : (
-                        <span className="text-sm text-muted-foreground">Not accepted</span>
+                        <span className="text-sm text-muted-foreground">Not signed</span>
                       )}
                     </div>
                   </div>
@@ -1751,6 +1851,32 @@ export function ChecklistKanban({ branchId, projectId, readOnly = false, userRol
           </DialogFooter>
         </DialogContent>
       </Dialog>
+
+      {/* Signature Dialog */}
+      <SignatureDialog
+        open={signatureDialogOpen}
+        onOpenChange={setSignatureDialogOpen}
+        onSign={async (signature) => {
+          if (signatureType === 'technician') {
+            await handleTechnicianSign(signature)
+          } else if (signatureType === 'supervisor') {
+            await handleSupervisorSign(signature)
+          } else if (signatureType === 'client') {
+            await handleClientSign(signature)
+          }
+        }}
+        title={
+          signatureType === 'technician' ? 'Sign Inspection Report' :
+            signatureType === 'supervisor' ? 'Sign Work Order (Supervisor)' :
+              'Sign Work Order (Client)'
+        }
+        description={
+          signatureType === 'technician' ? 'Sign to confirm inspection completion before sending to review' :
+            signatureType === 'supervisor' ? 'Sign to approve the completed work order' :
+              'Sign to accept the completed work'
+        }
+        signerName={signerName}
+      />
 
       {/* Print Dialog */}
       {printingWorkOrderId && (

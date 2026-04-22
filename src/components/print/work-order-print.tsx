@@ -30,6 +30,15 @@ interface WorkOrderPrintData {
   findings: string | null
   deficiencies: string | null
   recommendations: string | null
+  technicianName: string | null
+  technicianSignature: string | null
+  technicianSignedAt: string | null
+  supervisorName: string | null
+  supervisorSignature: string | null
+  supervisorSignedAt: string | null
+  clientSignedByName: string | null
+  clientSignature: string | null
+  clientSignedAt: string | null
   equipment: Equipment[]
 }
 
@@ -305,18 +314,35 @@ export function WorkOrderPrint({ workOrderId, onClose }: WorkOrderPrintProps) {
 
         {/* Signature Section */}
         <div className="mt-12 pt-6 border-t-2">
+          <h3 className="text-lg font-bold mb-4">SIGNATURES</h3>
           <div className="grid grid-cols-2 gap-8">
             <div>
               <p className="text-sm font-semibold mb-4">Technician Signature</p>
-              <div className="border-b-2 border-gray-400 h-16 mb-2"></div>
-              <p className="text-xs text-muted-foreground">Name: ___________________</p>
-              <p className="text-xs text-muted-foreground mt-1">Date: ___________________</p>
+              <div className="border-b-2 border-gray-400 h-16 mb-2 flex items-end pb-2">
+                {data.technicianSignature && (
+                  <span className="text-lg italic">Signed</span>
+                )}
+              </div>
+              <p className="text-xs text-muted-foreground">
+                Name: {data.technicianName || '___________________'}
+              </p>
+              <p className="text-xs text-muted-foreground mt-1">
+                Date: {data.technicianSignedAt ? formatDate(data.technicianSignedAt) : '___________________'}
+              </p>
             </div>
             <div>
               <p className="text-sm font-semibold mb-4">Client Signature</p>
-              <div className="border-b-2 border-gray-400 h-16 mb-2"></div>
-              <p className="text-xs text-muted-foreground">Name: ___________________</p>
-              <p className="text-xs text-muted-foreground mt-1">Date: ___________________</p>
+              <div className="border-b-2 border-gray-400 h-16 mb-2 flex items-end pb-2">
+                {data.clientSignature && (
+                  <span className="text-lg italic">Signed</span>
+                )}
+              </div>
+              <p className="text-xs text-muted-foreground">
+                Name: {data.clientSignedByName || '___________________'}
+              </p>
+              <p className="text-xs text-muted-foreground mt-1">
+                Date: {data.clientSignedAt ? formatDate(data.clientSignedAt) : '___________________'}
+              </p>
             </div>
           </div>
         </div>

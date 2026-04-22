@@ -383,6 +383,28 @@ export async function PATCH(
         return NextResponse.json({ error: 'Work order ID and signature required' }, { status: 400 })
       }
 
+      // Verify work order exists and has inspection data
+      const workOrder = await prisma.checklistItem.findUnique({
+        where: { id: workOrderId }
+      })
+
+      if (!workOrder) {
+        return NextResponse.json({ error: 'Work order not found' }, { status: 404 })
+      }
+
+      // Check if inspection data exists
+      const hasInspectionData = workOrder.inspectionDate ||
+        workOrder.findings ||
+        workOrder.systemsChecked ||
+        workOrder.deficiencies ||
+        workOrder.recommendations
+
+      if (!hasInspectionData) {
+        return NextResponse.json({
+          error: 'Cannot sign without inspection data'
+        }, { status: 400 })
+      }
+
       const updatedWorkOrder = await prisma.checklistItem.update({
         where: { id: workOrderId },
         data: {
