@@ -1003,29 +1003,7 @@ export function ChecklistKanban({ branchId, projectId, readOnly = false, userRol
       return // Don't proceed with move yet
     }
 
-    // If moving to FOR_REVIEW, check if inspection needs technician signature
-    if (targetStage === 'FOR_REVIEW' && !isClient) {
-      const hasInspectionData = item.inspectionDate ||
-        item.findings ||
-        item.systemsChecked ||
-        item.deficiencies ||
-        item.recommendations
-
-      const hasTechnician = item.assignedTo
-
-      // Only require technician signature if:
-      // 1. Technician is assigned AND
-      // 2. Has inspection data AND
-      // 3. No signature yet
-      if (hasTechnician && hasInspectionData && !item.technicianSignature) {
-        // Show technician signature dialog
-        setPendingSignWorkOrderId(itemId)
-        setSignatureType('technician')
-        setSignerName(currentUserName || 'Technician')
-        setSignatureDialogOpen(true)
-        return // Don't proceed with move yet
-      }
-    }
+    // No validation needed for FOR_REVIEW - client can review and reject if needed
 
     // Optimistically update UI
     setItems(prev => prev.map(i =>
@@ -1421,37 +1399,7 @@ export function ChecklistKanban({ branchId, projectId, readOnly = false, userRol
                         Fill Inspection Report
                       </Button>
                       <Button
-                        onClick={() => {
-                          const hasInspectionData = selectedItem.inspectionDate ||
-                            selectedItem.findings ||
-                            selectedItem.systemsChecked ||
-                            selectedItem.deficiencies ||
-                            selectedItem.recommendations
-
-                          const hasTechnician = selectedItem.assignedTo
-
-                          console.log('Send to Review clicked:', {
-                            hasTechnician,
-                            hasInspectionData,
-                            technicianSignature: selectedItem.technicianSignature,
-                            shouldShowDialog: hasTechnician && hasInspectionData && !selectedItem.technicianSignature
-                          })
-
-                          // Only require technician signature if:
-                          // 1. Technician is assigned AND
-                          // 2. Has inspection data AND
-                          // 3. No signature yet
-                          if (hasTechnician && hasInspectionData && !selectedItem.technicianSignature) {
-                            console.log('Opening signature dialog')
-                            setPendingSignWorkOrderId(selectedItem.id)
-                            setSignatureType('technician')
-                            setSignerName(currentUserName || 'Technician')
-                            setSignatureDialogOpen(true)
-                          } else {
-                            console.log('Skipping signature, calling handleSendToReview')
-                            handleSendToReview(selectedItem.id)
-                          }
-                        }}
+                        onClick={() => handleSendToReview(selectedItem.id)}
                         disabled={updating}
                         className="flex-1 bg-purple-600 hover:bg-purple-700"
                       >
