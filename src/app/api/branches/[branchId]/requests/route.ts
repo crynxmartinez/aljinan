@@ -2,6 +2,7 @@ import { getServerSession } from 'next-auth'
 import { NextResponse } from 'next/server'
 import { authOptions } from '@/lib/auth'
 import { prisma } from '@/lib/prisma'
+import { notifyNewRequest } from '@/lib/notification-service'
 
 // GET - Fetch all requests for a branch
 export async function GET(
@@ -167,16 +168,20 @@ export async function POST(
 
     // Create notification for contractor if request was created by client
     if (session.user.role === 'CLIENT' && branch?.client?.contractorId) {
-      await prisma.notification.create({
-        data: {
-          userId: branch.client.contractorId,
-          type: 'REQUEST_RECEIVED',
-          title: '📋 New Service Request',
-          message: `New request from client: "${title}"${priority === 'URGENT' ? ' (URGENT)' : ''}`,
-          link: `/dashboard/clients/${branch.clientId}/branches/${branchId}`,
-          isRead: false
-        }
+      // Get contractor user ID
+      const contractor = await prisma.contractor.findUnique({
+        where: { id: branch.client.contractorId },
+        select: { userId: true }
       })
+
+      if (contractor) {
+        await notifyNewRequest(
+          contractor.userId,
+          newRequest.id,
+          title,
+          branchId
+        )
+      }
     }
 
     return NextResponse.json(newRequest, { status: 201 })

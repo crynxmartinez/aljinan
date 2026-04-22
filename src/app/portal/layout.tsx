@@ -4,6 +4,7 @@ import { authOptions } from '@/lib/auth'
 import { prisma } from '@/lib/prisma'
 import { ClientSidebar } from '@/components/layout/client-sidebar'
 import { ClientHeader } from '@/components/layout/client-header'
+import { NotificationPopup } from '@/components/notifications/notification-popup'
 
 async function getClientData(userId: string) {
   const client = await prisma.client.findUnique({
@@ -70,6 +71,7 @@ export default async function PortalLayout({
           {children}
         </main>
       </div>
+      <NotificationPopup userRole="CLIENT" />
     </div>
   )
 }

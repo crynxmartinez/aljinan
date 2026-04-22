@@ -984,19 +984,28 @@ model BranchRequest {
 
 // Notification types
 enum NotificationType {
-  WORK_ORDER_REMINDER    // Upcoming work order reminder
+  NEW_REQUEST            // New service request created
+  REQUEST_RECEIVED       // New request from client
+  REQUEST_APPROVED       // Request approved
+  REQUEST_REJECTED       // Request rejected
+  REQUEST_COMMENT        // New comment on a request
+  WORK_ORDER_CREATED     // Work order created
   WORK_ORDER_STARTED     // Work order moved to IN_PROGRESS
   WORK_ORDER_FOR_REVIEW  // Work order sent for review
   WORK_ORDER_COMPLETED   // Work order completed
   WORK_ORDER_APPROVED    // Client approved work order
   WORK_ORDER_REJECTED    // Client rejected work order (needs revision)
+  WORK_ORDER_REMINDER    // Upcoming work order reminder
+  WORK_ORDER_ASSIGNED    // Work order assigned to technician
+  WORK_ORDER_PRICE_SET   // Price set for work order
+  SIGNATURE_REQUIRED     // Signature required
   PAYMENT_SUBMITTED      // Client submitted payment proof
   PAYMENT_VERIFIED       // Contractor verified payment
   CONTRACT_SIGNED        // Client signed contract
   CONTRACT_EXPIRING      // Contract expiring soon
   PROJECT_APPROVED       // Client approved project
-  REQUEST_RECEIVED       // New request from client
-  REQUEST_COMMENT        // New comment on a request
+  CERTIFICATE_GENERATED  // Certificate generated
+  PAYMENT_RECEIVED       // Payment received
   EQUIPMENT_EXPIRING     // Equipment inspection due soon
   EQUIPMENT_EXPIRED      // Equipment inspection overdue
   GENERAL                // General notification
@@ -1013,10 +1022,13 @@ model Notification {
   isRead        Boolean          @default(false)
   relatedId     String?          // Related entity ID (work order, contract, etc.)
   relatedType   String?          // Type of related entity
+  priority      String           @default("medium") // high, medium, low
+  showPopup     Boolean          @default(false) // Show as popup notification
   createdAt     DateTime         @default(now())
   
   @@index([userId, isRead])
   @@index([userId, createdAt])
+  @@index([userId, showPopup, isRead])
 }
 
 // Team Member - contractor's staff (supervisors and technicians)

@@ -4,6 +4,7 @@ import { authOptions } from '@/lib/auth'
 import { prisma } from '@/lib/prisma'
 import { Sidebar } from '@/components/layout/sidebar'
 import { DashboardHeader } from '@/components/layout/dashboard-header'
+import { NotificationPopup } from '@/components/notifications/notification-popup'
 import { getCached, CACHE_TAGS } from '@/lib/cache'
 
 async function getClientsForContractor(userId: string) {
@@ -102,7 +103,7 @@ async function getClientsForTeamMember(assignedBranchIds: string[]) {
   })
 
   // Sort clients by company name
-  return Array.from(clientMap.values()).sort((a, b) => 
+  return Array.from(clientMap.values()).sort((a, b) =>
     a.companyName.localeCompare(b.companyName)
   )
 }
@@ -138,8 +139,8 @@ export default async function DashboardLayout({
 
   return (
     <div className="flex h-screen overflow-hidden">
-      <Sidebar 
-        clients={clients} 
+      <Sidebar
+        clients={clients}
         userRole={session.user.role}
         teamMemberRole={session.user.teamMemberRole}
       />
@@ -149,6 +150,7 @@ export default async function DashboardLayout({
           {children}
         </main>
       </div>
+      <NotificationPopup userRole="CONTRACTOR" />
     </div>
   )
 }

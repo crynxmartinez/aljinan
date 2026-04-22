@@ -2,6 +2,14 @@ import { getServerSession } from 'next-auth'
 import { NextResponse } from 'next/server'
 import { authOptions } from '@/lib/auth'
 import { prisma } from '@/lib/prisma'
+import {
+  notifyWorkOrderForReview,
+  notifyWorkOrderStarted,
+  notifyWorkOrderCompleted,
+  notifyWorkOrderRejected,
+  notifyWorkOrderAssigned,
+  notifyPriceSet
+} from '@/lib/notification-service'
 
 async function generateCertificatesForWorkOrder(
   workOrderId: string,
@@ -463,6 +471,20 @@ export async function PATCH(
           }
         })
 
+        // Notify client of completion
+        const branch = await prisma.branch.findUnique({
+          where: { id: branchId },
+          include: { client: true }
+        })
+        if (branch?.client?.userId) {
+          await notifyWorkOrderCompleted(
+            branch.client.userId,
+            currentWorkOrder.description,
+            workOrderId,
+            branchId
+          )
+        }
+
         await generateCertificatesForWorkOrder(workOrderId, currentWorkOrder, session.user.id, session.user.role)
 
         if (currentWorkOrder.checklist?.projectId) {
@@ -564,10 +586,31 @@ export async function PATCH(
         }
       }
 
+      const workOrder = await prisma.checklistItem.findUnique({
+        where: { id: workOrderId },
+        include: {
+          checklist: {
+            include: {
+              project: true
+            }
+          }
+        }
+      })
+
       await prisma.checklistItem.update({
         where: { id: workOrderId },
         data: { assignedTo: assignedTo || null }
       })
+
+      // Notify technician if assigned
+      if (assignedTo && workOrder) {
+        await notifyWorkOrderAssigned(
+          assignedTo,
+          workOrder.description,
+          workOrderId,
+          branchId
+        )
+      }
 
       return NextResponse.json({ success: true })
     }
@@ -787,11 +830,56 @@ export async function PATCH(
         return NextResponse.json({ error: 'Work order not found' }, { status: 404 })
       }
 
+      const oldStage = workOrder.stage
+
       // Update the stage
       const updatedWorkOrder = await prisma.checklistItem.update({
         where: { id: itemId },
-        data: { stage }
+        data: { stage },
+        include: {
+          checklist: {
+            include: {
+              project: {
+                include: {
+                  branch: {
+                    include: {
+                      client: true
+                    }
+                  }
+                }
+              }
+            }
+          }
+        }
       })
+
+      // Send notifications based on stage changes
+      const clientId = updatedWorkOrder.checklist?.project?.branch?.client?.userId
+
+      if (clientId) {
+        if (stage === 'FOR_REVIEW' && oldStage !== 'FOR_REVIEW') {
+          await notifyWorkOrderForReview(
+            clientId,
+            updatedWorkOrder.description,
+            itemId,
+            branchId
+          )
+        } else if (stage === 'IN_PROGRESS' && oldStage !== 'IN_PROGRESS') {
+          await notifyWorkOrderStarted(
+            clientId,
+            updatedWorkOrder.description,
+            itemId,
+            branchId
+          )
+        } else if (stage === 'COMPLETED' && oldStage !== 'COMPLETED') {
+          await notifyWorkOrderCompleted(
+            clientId,
+            updatedWorkOrder.description,
+            itemId,
+            branchId
+          )
+        }
+      }
 
       return NextResponse.json(updatedWorkOrder)
 
@@ -818,8 +906,35 @@ export async function PATCH(
       // Update the price
       const updatedWorkOrder = await prisma.checklistItem.update({
         where: { id: itemId },
-        data: { price }
+        data: { price },
+        include: {
+          checklist: {
+            include: {
+              project: {
+                include: {
+                  branch: {
+                    include: {
+                      client: true
+                    }
+                  }
+                }
+              }
+            }
+          }
+        }
       })
+
+      // Notify client about price being set
+      const clientId = updatedWorkOrder.checklist?.project?.branch?.client?.userId
+      if (clientId && !workOrder.price) {
+        await notifyPriceSet(
+          clientId,
+          updatedWorkOrder.description,
+          price,
+          itemId,
+          branchId
+        )
+      }
 
       return NextResponse.json(updatedWorkOrder)
 
