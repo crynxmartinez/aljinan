@@ -452,8 +452,8 @@ export async function PATCH(
         }
       })
 
-      // Check if client already signed - auto-complete if both parties signed
-      if (currentWorkOrder.clientSignature) {
+      // Check if client already signed - auto-complete if both parties signed AND price is set
+      if (currentWorkOrder.clientSignature && currentWorkOrder.price !== null) {
         await prisma.checklistItem.update({
           where: { id: workOrderId },
           data: {
@@ -518,10 +518,10 @@ export async function PATCH(
         }
       })
 
-      // Check if both client and supervisor/technician have signed - auto-complete
+      // Check if both client and supervisor/technician have signed - auto-complete if price is set
       const hasTechnicianOrSupervisorSignature = currentWorkOrder.technicianSignature || currentWorkOrder.supervisorSignature
 
-      if (hasTechnicianOrSupervisorSignature) {
+      if (hasTechnicianOrSupervisorSignature && currentWorkOrder.price !== null) {
         await prisma.checklistItem.update({
           where: { id: workOrderId },
           data: {

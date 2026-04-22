@@ -177,6 +177,11 @@ function canTransition(from: ChecklistItemStage, to: ChecklistItemStage, isClien
     return false
   }
 
+  // Can't move to COMPLETED if price is null (must have price before completing)
+  if (to === 'COMPLETED' && item && item.price === null) {
+    return false
+  }
+
   return allowed.includes(to)
 }
 
@@ -222,10 +227,15 @@ function DraggableCard({
   const hasSupervisorAcceptance = item.supervisorSignature
   const isInReview = item.stage === 'FOR_REVIEW'
   const bothAccepted = hasClientAcceptance && hasSupervisorAcceptance
+  const hasNoPrice = item.price === null
 
-  // Determine card styling based on acceptance
+  // Determine card styling based on acceptance and price
   let cardStyle = isArchived ? 'border border-gray-300 bg-gray-100 opacity-75' : priorityStyles[priority]
-  if (isInReview && bothAccepted) {
+
+  // Orange border for FOR_REVIEW cards without price (blocking completion)
+  if (isInReview && hasNoPrice) {
+    cardStyle = 'border-2 border-orange-500 bg-orange-50'
+  } else if (isInReview && bothAccepted) {
     cardStyle = 'border-2 border-green-500 bg-green-50'
   } else if (isInReview && (hasClientAcceptance || hasSupervisorAcceptance)) {
     cardStyle = 'border-2 border-blue-500 bg-blue-50'
@@ -989,9 +999,11 @@ export function ChecklistKanban({ branchId, projectId, readOnly = false, userRol
     // Check if transition is allowed
     const isClient = userRole === 'CLIENT' // Use actual userRole prop
     if (!canTransition(item.stage, targetStage, isClient, item)) {
-      // Show specific message if trying to move to FOR_REVIEW without price
+      // Show specific message if trying to move without price
       if (targetStage === 'FOR_REVIEW' && item.price === null) {
         toast.error('Please add a price before submitting for review')
+      } else if (targetStage === 'COMPLETED' && item.price === null) {
+        toast.error('Cannot complete work order without a price. Please add price first.')
       } else {
         console.log(`Transition from ${item.stage} to ${targetStage} not allowed for ${isClient ? 'client' : 'contractor'}`)
       }
