@@ -214,13 +214,27 @@ function DraggableCard({
   // Special styling for archived items
   const isArchived = item.stage === 'ARCHIVED'
 
+  // Check acceptance status for FOR_REVIEW items
+  const hasClientAcceptance = item.clientSignature
+  const hasSupervisorAcceptance = item.supervisorSignature
+  const isInReview = item.stage === 'FOR_REVIEW'
+  const bothAccepted = hasClientAcceptance && hasSupervisorAcceptance
+
+  // Determine card styling based on acceptance
+  let cardStyle = isArchived ? 'border border-gray-300 bg-gray-100 opacity-75' : priorityStyles[priority]
+  if (isInReview && bothAccepted) {
+    cardStyle = 'border-2 border-green-500 bg-green-50'
+  } else if (isInReview && (hasClientAcceptance || hasSupervisorAcceptance)) {
+    cardStyle = 'border-2 border-blue-500 bg-blue-50'
+  }
+
   return (
     <div
       ref={setNodeRef}
       style={style}
       className={cn(
         'rounded-lg p-3 shadow-sm hover:shadow-md transition-shadow cursor-pointer',
-        isArchived ? 'border border-gray-300 bg-gray-100 opacity-75' : priorityStyles[priority],
+        cardStyle,
         isDragging && 'opacity-50 shadow-lg'
       )}
       onClick={onClick}
@@ -317,6 +331,24 @@ function DraggableCard({
             <div className="mt-1 flex items-center gap-1 text-xs text-muted-foreground">
               <User className="h-3 w-3" />
               <span className="truncate">{assigneeName}</span>
+            </div>
+          )}
+
+          {/* Acceptance Status Badges for FOR_REVIEW */}
+          {isInReview && (hasClientAcceptance || hasSupervisorAcceptance) && (
+            <div className="mt-2 flex items-center gap-1 flex-wrap">
+              {hasSupervisorAcceptance && (
+                <Badge variant="outline" className="text-xs border-green-500 text-green-700 bg-green-100">
+                  <CheckCircle className="h-3 w-3 mr-1" />
+                  Supervisor
+                </Badge>
+              )}
+              {hasClientAcceptance && (
+                <Badge variant="outline" className="text-xs border-green-500 text-green-700 bg-green-100">
+                  <CheckCircle className="h-3 w-3 mr-1" />
+                  Client
+                </Badge>
+              )}
             </div>
           )}
         </div>
