@@ -1435,43 +1435,49 @@ export function ChecklistKanban({ branchId, projectId, readOnly = false, userRol
                       </div>
                     )}
 
-                    {/* Signatures */}
-                    <div className="grid grid-cols-2 gap-4 pt-4 border-t">
-                      <div>
-                        <p className="text-sm text-muted-foreground">Supervisor</p>
-                        {selectedItem.supervisorSignature ? (
-                          <div className="flex items-center gap-2 text-green-700">
-                            <CheckCircle className="h-4 w-4" />
-                            <span className="text-sm">Accepted {selectedItem.supervisorSignedAt && new Date(selectedItem.supervisorSignedAt).toLocaleDateString()}</span>
-                          </div>
-                        ) : !readOnly && (selectedItem.stage === 'FOR_REVIEW' || selectedItem.stage === 'COMPLETED') ? (
-                          <Button size="sm" variant="outline" onClick={handleSupervisorSign} disabled={updating}>
-                            {updating ? <Loader2 className="mr-2 h-3 w-3 animate-spin" /> : <CheckCircle className="mr-2 h-3 w-3" />}
-                            Accept
-                          </Button>
-                        ) : (
-                          <span className="text-sm text-muted-foreground">Not accepted</span>
-                        )}
-                      </div>
-                      <div>
-                        <p className="text-sm text-muted-foreground">Client Acceptance</p>
-                        {selectedItem.clientSignature ? (
-                          <div className="flex items-center gap-2 text-green-700">
-                            <CheckCircle className="h-4 w-4" />
-                            <span className="text-sm">Accepted {selectedItem.clientSignedAt && new Date(selectedItem.clientSignedAt).toLocaleDateString()}</span>
-                          </div>
-                        ) : userRole === 'CLIENT' && (selectedItem.stage === 'FOR_REVIEW' || selectedItem.stage === 'COMPLETED') ? (
-                          <Button size="sm" variant="outline" onClick={handleClientSign} disabled={updating}>
-                            {updating ? <Loader2 className="mr-2 h-3 w-3 animate-spin" /> : <CheckCircle className="mr-2 h-3 w-3" />}
-                            Accept
-                          </Button>
-                        ) : (
-                          <span className="text-sm text-muted-foreground">Not accepted</span>
-                        )}
-                      </div>
-                    </div>
                   </div>
                 )}
+
+              {/* Acceptance Section - Show for FOR_REVIEW and COMPLETED stages */}
+              {(selectedItem.stage === 'FOR_REVIEW' || selectedItem.stage === 'COMPLETED') && (
+                <div className="border-t pt-4">
+                  <h4 className="font-semibold mb-3">Acceptance</h4>
+                  <div className="grid grid-cols-2 gap-4">
+                    <div>
+                      <p className="text-sm text-muted-foreground mb-2">Supervisor</p>
+                      {selectedItem.supervisorSignature ? (
+                        <div className="flex items-center gap-2 text-green-700">
+                          <CheckCircle className="h-4 w-4" />
+                          <span className="text-sm">Accepted {selectedItem.supervisorSignedAt && new Date(selectedItem.supervisorSignedAt).toLocaleDateString()}</span>
+                        </div>
+                      ) : !readOnly ? (
+                        <Button size="sm" variant="outline" onClick={handleSupervisorSign} disabled={updating}>
+                          {updating ? <Loader2 className="mr-2 h-3 w-3 animate-spin" /> : <CheckCircle className="mr-2 h-3 w-3" />}
+                          Accept
+                        </Button>
+                      ) : (
+                        <span className="text-sm text-muted-foreground">Not accepted</span>
+                      )}
+                    </div>
+                    <div>
+                      <p className="text-sm text-muted-foreground mb-2">Client</p>
+                      {selectedItem.clientSignature ? (
+                        <div className="flex items-center gap-2 text-green-700">
+                          <CheckCircle className="h-4 w-4" />
+                          <span className="text-sm">Accepted {selectedItem.clientSignedAt && new Date(selectedItem.clientSignedAt).toLocaleDateString()}</span>
+                        </div>
+                      ) : userRole === 'CLIENT' ? (
+                        <Button size="sm" variant="outline" onClick={handleClientSign} disabled={updating}>
+                          {updating ? <Loader2 className="mr-2 h-3 w-3 animate-spin" /> : <CheckCircle className="mr-2 h-3 w-3" />}
+                          Accept
+                        </Button>
+                      ) : (
+                        <span className="text-sm text-muted-foreground">Not accepted</span>
+                      )}
+                    </div>
+                  </div>
+                </div>
+              )}
 
               {/* Archived Info - Show deletion details */}
               {selectedItem.stage === 'ARCHIVED' && (
