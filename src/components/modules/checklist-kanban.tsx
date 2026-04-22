@@ -723,40 +723,7 @@ export function ChecklistKanban({ branchId, projectId, readOnly = false, userRol
       })
 
       if (response.ok) {
-        toast.success('Inspection signed successfully')
-
-        // Now move to FOR_REVIEW
-        const item = items.find(i => i.id === pendingSignWorkOrderId)
-        if (item) {
-          const checklistResponse = await fetch(`/api/branches/${branchId}/checklists/${item.checklistId}`)
-          if (checklistResponse.ok) {
-            const checklist = await checklistResponse.json()
-
-            let moveResponse
-            if (checklist.projectId) {
-              moveResponse = await fetch(`/api/projects/${checklist.projectId}/work-orders/${pendingSignWorkOrderId}`, {
-                method: 'PATCH',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ stage: 'FOR_REVIEW' })
-              })
-            } else {
-              moveResponse = await fetch(`/api/branches/${branchId}/checklist-items`, {
-                method: 'PATCH',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({
-                  action: 'update_stage',
-                  itemId: pendingSignWorkOrderId,
-                  stage: 'FOR_REVIEW'
-                })
-              })
-            }
-
-            if (moveResponse.ok) {
-              toast.success('Moved to review')
-            }
-          }
-        }
-
+        toast.success('Inspection signed successfully. You can now send to review.')
         fetchItems()
         router.refresh()
       } else {
