@@ -781,6 +781,7 @@ export function ChecklistKanban({ branchId, projectId, readOnly = false, userRol
       const item = items.find(i => i.id === itemId)
       if (!item) {
         toast.error('Work order not found')
+        setDetailsOpen(false)
         return
       }
 
@@ -788,6 +789,7 @@ export function ChecklistKanban({ branchId, projectId, readOnly = false, userRol
       const checklistResponse = await fetch(`/api/branches/${branchId}/checklists/${item.checklistId}`)
       if (!checklistResponse.ok) {
         toast.error('Failed to fetch checklist information')
+        setDetailsOpen(false)
         return
       }
       const checklist = await checklistResponse.json()
@@ -816,16 +818,18 @@ export function ChecklistKanban({ branchId, projectId, readOnly = false, userRol
 
       if (response.ok) {
         toast.success('Work order sent to review')
-        fetchItems()
         setDetailsOpen(false)
+        fetchItems()
         router.refresh()
       } else {
         const error = await response.json()
         toast.error(error.error || 'Failed to send to review')
+        setDetailsOpen(false)
       }
     } catch (error) {
       console.error('Failed to send to review:', error)
       toast.error('Failed to send to review')
+      setDetailsOpen(false)
     } finally {
       setUpdating(false)
     }
