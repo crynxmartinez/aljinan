@@ -752,6 +752,34 @@ export async function PATCH(
 
       return NextResponse.json({ success: true, message: 'Payment verified' })
 
+    } else if (action === 'update_stage') {
+      // Update work order stage (for work orders without projects)
+      const { itemId, stage } = body
+
+      if (!itemId || !stage) {
+        return NextResponse.json({ error: 'Item ID and stage required' }, { status: 400 })
+      }
+
+      // Verify work order belongs to this branch
+      const workOrder = await prisma.checklistItem.findFirst({
+        where: {
+          id: itemId,
+          checklist: { branchId }
+        }
+      })
+
+      if (!workOrder) {
+        return NextResponse.json({ error: 'Work order not found' }, { status: 404 })
+      }
+
+      // Update the stage
+      const updatedWorkOrder = await prisma.checklistItem.update({
+        where: { id: itemId },
+        data: { stage }
+      })
+
+      return NextResponse.json(updatedWorkOrder)
+
     } else {
       return NextResponse.json({ error: 'Invalid action' }, { status: 400 })
     }

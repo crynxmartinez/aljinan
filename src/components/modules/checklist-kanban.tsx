@@ -779,27 +779,53 @@ export function ChecklistKanban({ branchId, projectId, readOnly = false, userRol
     try {
       // Get the checklist to find the project
       const item = items.find(i => i.id === itemId)
-      if (!item) return
+      if (!item) {
+        toast.error('Work order not found')
+        return
+      }
 
       // Find the project ID from the checklist
       const checklistResponse = await fetch(`/api/branches/${branchId}/checklists/${item.checklistId}`)
-      if (!checklistResponse.ok) return
+      if (!checklistResponse.ok) {
+        toast.error('Failed to fetch checklist information')
+        return
+      }
       const checklist = await checklistResponse.json()
 
-      // Update the work order stage
-      const response = await fetch(`/api/projects/${checklist.projectId}/work-orders/${itemId}`, {
-        method: 'PATCH',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ stage: 'FOR_REVIEW' })
-      })
+      // Update the work order stage - use different API based on whether project exists
+      let response
+      if (checklist.projectId) {
+        // Use project-based API if project exists
+        response = await fetch(`/api/projects/${checklist.projectId}/work-orders/${itemId}`, {
+          method: 'PATCH',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ stage: 'FOR_REVIEW' })
+        })
+      } else {
+        // Use checklist-items API for work orders without projects
+        response = await fetch(`/api/branches/${branchId}/checklist-items`, {
+          method: 'PATCH',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            action: 'update_stage',
+            itemId: itemId,
+            stage: 'FOR_REVIEW'
+          })
+        })
+      }
 
       if (response.ok) {
+        toast.success('Work order sent to review')
         fetchItems()
         setDetailsOpen(false)
         router.refresh()
+      } else {
+        const error = await response.json()
+        toast.error(error.error || 'Failed to send to review')
       }
     } catch (error) {
       console.error('Failed to send to review:', error)
+      toast.error('Failed to send to review')
     } finally {
       setUpdating(false)
     }
