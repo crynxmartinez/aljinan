@@ -318,10 +318,18 @@ export function WorkOrderPrint({ workOrderId, onClose }: WorkOrderPrintProps) {
           <div className="grid grid-cols-2 gap-8">
             <div>
               <p className="text-sm font-semibold mb-4">Technician Signature</p>
-              <div className="border-b-2 border-gray-400 h-16 mb-2 flex items-end pb-2">
-                {data.technicianSignature && (
-                  <span className="text-lg italic">Signed</span>
-                )}
+              <div className="border-b-2 border-gray-400 h-24 mb-2 flex items-center justify-center bg-gray-50">
+                {data.technicianSignature ? (
+                  data.technicianSignature.startsWith('data:image') ? (
+                    <img
+                      src={data.technicianSignature}
+                      alt="Technician signature"
+                      className="max-h-20 max-w-full object-contain"
+                    />
+                  ) : (
+                    <span className="text-lg italic">Signed</span>
+                  )
+                ) : null}
               </div>
               <p className="text-xs text-muted-foreground">
                 Name: {data.technicianName || '___________________'}
@@ -332,10 +340,18 @@ export function WorkOrderPrint({ workOrderId, onClose }: WorkOrderPrintProps) {
             </div>
             <div>
               <p className="text-sm font-semibold mb-4">Client Signature</p>
-              <div className="border-b-2 border-gray-400 h-16 mb-2 flex items-end pb-2">
-                {data.clientSignature && (
-                  <span className="text-lg italic">Signed</span>
-                )}
+              <div className="border-b-2 border-gray-400 h-24 mb-2 flex items-center justify-center bg-gray-50">
+                {data.clientSignature ? (
+                  data.clientSignature.startsWith('data:image') ? (
+                    <img
+                      src={data.clientSignature}
+                      alt="Client signature"
+                      className="max-h-20 max-w-full object-contain"
+                    />
+                  ) : (
+                    <span className="text-lg italic">Signed</span>
+                  )
+                ) : null}
               </div>
               <p className="text-xs text-muted-foreground">
                 Name: {data.clientSignedByName || '___________________'}

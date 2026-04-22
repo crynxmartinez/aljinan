@@ -1,9 +1,9 @@
 'use client'
 
-import { useState } from 'react'
+import { useState, useRef, useEffect } from 'react'
 import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle } from '@/components/ui/dialog'
 import { Button } from '@/components/ui/button'
-import { Loader2, PenTool } from 'lucide-react'
+import { Loader2, PenTool, Eraser } from 'lucide-react'
 
 interface SignatureDialogProps {
   open: boolean
@@ -23,12 +23,91 @@ export function SignatureDialog({
   signerName
 }: SignatureDialogProps) {
   const [signing, setSigning] = useState(false)
+  const [isEmpty, setIsEmpty] = useState(true)
+  const canvasRef = useRef<HTMLCanvasElement>(null)
+  const [isDrawing, setIsDrawing] = useState(false)
+
+  useEffect(() => {
+    if (open && canvasRef.current) {
+      const canvas = canvasRef.current
+      const ctx = canvas.getContext('2d')
+      if (ctx) {
+        // Set canvas size
+        canvas.width = canvas.offsetWidth
+        canvas.height = canvas.offsetHeight
+
+        // Set drawing style
+        ctx.strokeStyle = '#000000'
+        ctx.lineWidth = 2
+        ctx.lineCap = 'round'
+        ctx.lineJoin = 'round'
+      }
+    }
+  }, [open])
+
+  const startDrawing = (e: React.MouseEvent<HTMLCanvasElement> | React.TouchEvent<HTMLCanvasElement>) => {
+    const canvas = canvasRef.current
+    if (!canvas) return
+
+    const ctx = canvas.getContext('2d')
+    if (!ctx) return
+
+    setIsDrawing(true)
+    setIsEmpty(false)
+
+    const rect = canvas.getBoundingClientRect()
+    const x = 'touches' in e ? e.touches[0].clientX - rect.left : e.clientX - rect.left
+    const y = 'touches' in e ? e.touches[0].clientY - rect.top : e.clientY - rect.top
+
+    ctx.beginPath()
+    ctx.moveTo(x, y)
+  }
+
+  const draw = (e: React.MouseEvent<HTMLCanvasElement> | React.TouchEvent<HTMLCanvasElement>) => {
+    if (!isDrawing) return
+
+    const canvas = canvasRef.current
+    if (!canvas) return
+
+    const ctx = canvas.getContext('2d')
+    if (!ctx) return
+
+    const rect = canvas.getBoundingClientRect()
+    const x = 'touches' in e ? e.touches[0].clientX - rect.left : e.clientX - rect.left
+    const y = 'touches' in e ? e.touches[0].clientY - rect.top : e.clientY - rect.top
+
+    ctx.lineTo(x, y)
+    ctx.stroke()
+  }
+
+  const stopDrawing = () => {
+    setIsDrawing(false)
+  }
+
+  const clearSignature = () => {
+    const canvas = canvasRef.current
+    if (!canvas) return
+
+    const ctx = canvas.getContext('2d')
+    if (!ctx) return
+
+    ctx.clearRect(0, 0, canvas.width, canvas.height)
+    setIsEmpty(true)
+  }
 
   const handleSign = async () => {
+    if (isEmpty) return
+
+    const canvas = canvasRef.current
+    if (!canvas) return
+
     setSigning(true)
     try {
-      await onSign('signed')
+      // Convert canvas to base64 image
+      const signatureData = canvas.toDataURL('image/png')
+      await onSign(signatureData)
       onOpenChange(false)
+      clearSignature()
     } catch (error) {
       // Error handled by parent
     } finally {
@@ -36,9 +115,14 @@ export function SignatureDialog({
     }
   }
 
+  const handleClose = () => {
+    clearSignature()
+    onOpenChange(false)
+  }
+
   return (
-    <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="sm:max-w-[500px]">
+    <Dialog open={open} onOpenChange={handleClose}>
+      <DialogContent className="sm:max-w-[600px]">
         <DialogHeader>
           <DialogTitle className="flex items-center gap-2">
             <PenTool className="h-5 w-5" />
@@ -47,32 +131,56 @@ export function SignatureDialog({
           <DialogDescription>{description}</DialogDescription>
         </DialogHeader>
 
-        <div className="space-y-4 py-6">
-          <div className="border-2 border-dashed border-gray-300 rounded-lg p-8 text-center bg-gray-50">
-            <PenTool className="h-12 w-12 mx-auto mb-4 text-gray-400" />
-            <p className="text-sm font-medium mb-2">Signing as:</p>
-            <p className="text-lg font-semibold text-primary">{signerName}</p>
-            <p className="text-xs text-muted-foreground mt-4">
-              Date: {new Date().toLocaleDateString()}
-            </p>
+        <div className="space-y-4 py-4">
+          <div className="space-y-2">
+            <div className="flex items-center justify-between">
+              <div>
+                <p className="text-sm font-medium">Signing as: <span className="text-primary">{signerName}</span></p>
+                <p className="text-xs text-muted-foreground">Date: {new Date().toLocaleDateString()}</p>
+              </div>
+              <Button
+                type="button"
+                variant="outline"
+                size="sm"
+                onClick={clearSignature}
+                disabled={isEmpty || signing}
+              >
+                <Eraser className="mr-2 h-3 w-3" />
+                Clear
+              </Button>
+            </div>
           </div>
-          
-          <p className="text-sm text-muted-foreground text-center">
-            Click "Sign Document" to confirm your signature
+
+          <div className="border-2 border-gray-300 rounded-lg bg-white">
+            <canvas
+              ref={canvasRef}
+              className="w-full h-48 cursor-crosshair touch-none"
+              onMouseDown={startDrawing}
+              onMouseMove={draw}
+              onMouseUp={stopDrawing}
+              onMouseLeave={stopDrawing}
+              onTouchStart={startDrawing}
+              onTouchMove={draw}
+              onTouchEnd={stopDrawing}
+            />
+          </div>
+
+          <p className="text-xs text-muted-foreground text-center">
+            Draw your signature above using mouse or touch
           </p>
         </div>
 
         <DialogFooter>
           <Button
             variant="outline"
-            onClick={() => onOpenChange(false)}
+            onClick={handleClose}
             disabled={signing}
           >
             Cancel
           </Button>
           <Button
             onClick={handleSign}
-            disabled={signing}
+            disabled={isEmpty || signing}
           >
             {signing ? (
               <>
