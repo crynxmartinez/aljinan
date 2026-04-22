@@ -170,9 +170,8 @@ export default function MessagesPage() {
             filteredInquiries.map((inquiry) => (
               <Card
                 key={inquiry.id}
-                className={`cursor-pointer transition-colors hover:bg-muted/50 ${
-                  selectedId === inquiry.id ? 'ring-2 ring-primary' : ''
-                } ${inquiry.status === 'NEW' ? 'border-l-4 border-l-blue-500' : ''}`}
+                className={`cursor-pointer transition-colors hover:bg-muted/50 ${selectedId === inquiry.id ? 'ring-2 ring-primary' : ''
+                  } ${inquiry.status === 'NEW' ? 'border-l-4 border-l-blue-500' : ''}`}
                 onClick={() => {
                   setSelectedId(inquiry.id)
                   setEditingNotes(inquiry.adminNotes || '')
@@ -294,12 +293,14 @@ export default function MessagesPage() {
                         onClick={() => {
                           // Navigate to contractors page with pre-filled data
                           const params = new URLSearchParams({
+                            create: 'true',
                             name: selectedInquiry.name,
                             email: selectedInquiry.email,
                             phone: selectedInquiry.phone || '',
                             company: selectedInquiry.companyName || '',
+                            inquiryId: selectedInquiry.id,
                           })
-                          window.location.href = `/admin/contractors?create=true&${params.toString()}`
+                          window.location.href = `/admin/contractors?${params.toString()}`
                         }}
                       >
                         <UserPlus className="h-3.5 w-3.5 mr-1" />

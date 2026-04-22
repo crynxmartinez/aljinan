@@ -12,7 +12,7 @@ export async function POST(request: Request) {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
     }
 
-    const { name, email, phone, companyName } = await request.json()
+    const { name, email, phone, companyName, inquiryId } = await request.json()
 
     if (!name || !email) {
       return NextResponse.json(
@@ -64,6 +64,20 @@ export async function POST(request: Request) {
 
     // Send verification email
     await sendVerificationEmail(user.email, user.name || 'there', verificationToken)
+
+    // If this was created from a contact inquiry, mark it as converted
+    if (inquiryId) {
+      await prisma.contactInquiry.update({
+        where: { id: inquiryId },
+        data: {
+          status: 'CONVERTED',
+          convertedToId: user.id,
+        },
+      }).catch((err) => {
+        console.error('Failed to update inquiry status:', err)
+        // Don't fail the whole request if inquiry update fails
+      })
+    }
 
     return NextResponse.json({
       success: true,

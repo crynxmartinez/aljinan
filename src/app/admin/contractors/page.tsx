@@ -1,7 +1,7 @@
 'use client'
 
 import { useState, useEffect } from 'react'
-import { useRouter } from 'next/navigation'
+import { useRouter, useSearchParams } from 'next/navigation'
 import { toast } from 'sonner'
 import {
   ChevronDown,
@@ -90,6 +90,7 @@ interface ContractorData {
 
 export default function ContractorsPage() {
   const router = useRouter()
+  const searchParams = useSearchParams()
   const [contractors, setContractors] = useState<ContractorData[]>([])
   const [loading, setLoading] = useState(true)
   const [search, setSearch] = useState('')
@@ -105,10 +106,33 @@ export default function ContractorsPage() {
   const [createDialogOpen, setCreateDialogOpen] = useState(false)
   const [creating, setCreating] = useState(false)
   const [newContractor, setNewContractor] = useState({ name: '', email: '', phone: '', companyName: '' })
+  const [inquiryId, setInquiryId] = useState<string | null>(null)
 
   useEffect(() => {
     fetchContractors()
   }, [])
+
+  // Handle URL parameters from messages page
+  useEffect(() => {
+    const shouldCreate = searchParams.get('create')
+    if (shouldCreate === 'true') {
+      const name = searchParams.get('name') || ''
+      const email = searchParams.get('email') || ''
+      const phone = searchParams.get('phone') || ''
+      const company = searchParams.get('company') || ''
+      const fromInquiryId = searchParams.get('inquiryId') || null
+
+      // Pre-fill form with data from message
+      setNewContractor({ name, email, phone, companyName: company })
+      setInquiryId(fromInquiryId)
+
+      // Open dialog
+      setCreateDialogOpen(true)
+
+      // Clean URL (remove params)
+      router.replace('/admin/contractors')
+    }
+  }, [searchParams, router])
 
   const fetchContractors = async () => {
     try {
@@ -167,15 +191,17 @@ export default function ContractorsPage() {
       const response = await fetch('/api/admin/contractors/create', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(newContractor),
+        body: JSON.stringify({ ...newContractor, inquiryId }),
       })
       const data = await response.json()
       if (!response.ok) throw new Error(data.error)
-      
+
       toast.success('Contractor account created!', {
-        description: `Verification email sent to ${data.user.email}`,
+        description: inquiryId
+          ? 'Contact inquiry marked as converted'
+          : `Verification email sent to ${data.user.email}`,
       })
-      
+
       resetCreateDialog()
       fetchContractors()
     } catch (err) {
@@ -193,7 +219,7 @@ export default function ContractorsPage() {
       })
       const data = await response.json()
       if (!response.ok) throw new Error(data.error)
-      
+
       toast.success('Verification email resent!', {
         description: `Sent to ${email}`,
       })
@@ -206,6 +232,7 @@ export default function ContractorsPage() {
   const resetCreateDialog = () => {
     setCreateDialogOpen(false)
     setNewContractor({ name: '', email: '', phone: '', companyName: '' })
+    setInquiryId(null)
   }
 
   const filteredContractors = contractors.filter((c) => {
@@ -553,64 +580,64 @@ export default function ContractorsPage() {
           </DialogHeader>
 
           <form onSubmit={handleCreateContractor} className="space-y-4 py-2">
-              <div className="space-y-2">
-                <Label htmlFor="create-name">Contact Name *</Label>
-                <Input
-                  id="create-name"
-                  value={newContractor.name}
-                  onChange={(e) => setNewContractor({ ...newContractor, name: e.target.value })}
-                  placeholder="John Smith"
-                  required
-                />
-              </div>
-              <div className="space-y-2">
-                <Label htmlFor="create-email">Email *</Label>
-                <Input
-                  id="create-email"
-                  type="email"
-                  value={newContractor.email}
-                  onChange={(e) => setNewContractor({ ...newContractor, email: e.target.value })}
-                  placeholder="contractor@company.com"
-                  required
-                />
-              </div>
-              <div className="space-y-2">
-                <Label htmlFor="create-phone">Phone</Label>
-                <Input
-                  id="create-phone"
-                  value={newContractor.phone}
-                  onChange={(e) => setNewContractor({ ...newContractor, phone: e.target.value })}
-                  placeholder="+966 5XX XXX XXXX"
-                />
-              </div>
-              <div className="space-y-2">
-                <Label htmlFor="create-company">Company Name</Label>
-                <Input
-                  id="create-company"
-                  value={newContractor.companyName}
-                  onChange={(e) => setNewContractor({ ...newContractor, companyName: e.target.value })}
-                  placeholder="Safety Solutions LLC"
-                />
-              </div>
-              <DialogFooter>
-                <Button type="button" variant="outline" onClick={resetCreateDialog}>
-                  Cancel
-                </Button>
-                <Button type="submit" disabled={creating}>
-                  {creating ? (
-                    <>
-                      <Loader2 className="h-4 w-4 mr-2 animate-spin" />
-                      Creating...
-                    </>
-                  ) : (
-                    <>
-                      <Plus className="h-4 w-4 mr-2" />
-                      Create Account
-                    </>
-                  )}
-                </Button>
-              </DialogFooter>
-            </form>
+            <div className="space-y-2">
+              <Label htmlFor="create-name">Contact Name *</Label>
+              <Input
+                id="create-name"
+                value={newContractor.name}
+                onChange={(e) => setNewContractor({ ...newContractor, name: e.target.value })}
+                placeholder="John Smith"
+                required
+              />
+            </div>
+            <div className="space-y-2">
+              <Label htmlFor="create-email">Email *</Label>
+              <Input
+                id="create-email"
+                type="email"
+                value={newContractor.email}
+                onChange={(e) => setNewContractor({ ...newContractor, email: e.target.value })}
+                placeholder="contractor@company.com"
+                required
+              />
+            </div>
+            <div className="space-y-2">
+              <Label htmlFor="create-phone">Phone</Label>
+              <Input
+                id="create-phone"
+                value={newContractor.phone}
+                onChange={(e) => setNewContractor({ ...newContractor, phone: e.target.value })}
+                placeholder="+966 5XX XXX XXXX"
+              />
+            </div>
+            <div className="space-y-2">
+              <Label htmlFor="create-company">Company Name</Label>
+              <Input
+                id="create-company"
+                value={newContractor.companyName}
+                onChange={(e) => setNewContractor({ ...newContractor, companyName: e.target.value })}
+                placeholder="Safety Solutions LLC"
+              />
+            </div>
+            <DialogFooter>
+              <Button type="button" variant="outline" onClick={resetCreateDialog}>
+                Cancel
+              </Button>
+              <Button type="submit" disabled={creating}>
+                {creating ? (
+                  <>
+                    <Loader2 className="h-4 w-4 mr-2 animate-spin" />
+                    Creating...
+                  </>
+                ) : (
+                  <>
+                    <Plus className="h-4 w-4 mr-2" />
+                    Create Account
+                  </>
+                )}
+              </Button>
+            </DialogFooter>
+          </form>
         </DialogContent>
       </Dialog>
     </div>
