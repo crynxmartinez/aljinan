@@ -32,18 +32,19 @@ export function SignatureDialog({
       const canvas = canvasRef.current
       const ctx = canvas.getContext('2d')
       if (ctx) {
-        // Get the actual display size
-        const rect = canvas.getBoundingClientRect()
-
-        // Set canvas internal size to match display size
-        canvas.width = rect.width
-        canvas.height = rect.height
+        // Set canvas internal size to match fixed dimensions
+        canvas.width = 800
+        canvas.height = 200
 
         // Set drawing style
         ctx.strokeStyle = '#000000'
         ctx.lineWidth = 2
         ctx.lineCap = 'round'
         ctx.lineJoin = 'round'
+
+        // Fill with white background
+        ctx.fillStyle = '#ffffff'
+        ctx.fillRect(0, 0, canvas.width, canvas.height)
       }
     }
   }, [open])
@@ -59,8 +60,14 @@ export function SignatureDialog({
     setIsEmpty(false)
 
     const rect = canvas.getBoundingClientRect()
-    const x = 'touches' in e ? e.touches[0].clientX - rect.left : e.clientX - rect.left
-    const y = 'touches' in e ? e.touches[0].clientY - rect.top : e.clientY - rect.top
+    const scaleX = canvas.width / rect.width
+    const scaleY = canvas.height / rect.height
+
+    const clientX = 'touches' in e ? e.touches[0].clientX : e.clientX
+    const clientY = 'touches' in e ? e.touches[0].clientY : e.clientY
+
+    const x = (clientX - rect.left) * scaleX
+    const y = (clientY - rect.top) * scaleY
 
     ctx.beginPath()
     ctx.moveTo(x, y)
@@ -76,8 +83,14 @@ export function SignatureDialog({
     if (!ctx) return
 
     const rect = canvas.getBoundingClientRect()
-    const x = 'touches' in e ? e.touches[0].clientX - rect.left : e.clientX - rect.left
-    const y = 'touches' in e ? e.touches[0].clientY - rect.top : e.clientY - rect.top
+    const scaleX = canvas.width / rect.width
+    const scaleY = canvas.height / rect.height
+
+    const clientX = 'touches' in e ? e.touches[0].clientX : e.clientX
+    const clientY = 'touches' in e ? e.touches[0].clientY : e.clientY
+
+    const x = (clientX - rect.left) * scaleX
+    const y = (clientY - rect.top) * scaleY
 
     ctx.lineTo(x, y)
     ctx.stroke()
@@ -107,8 +120,8 @@ export function SignatureDialog({
     setSigning(true)
     try {
       // Convert canvas to base64 image with compression
-      // Use JPEG with quality 0.7 to reduce file size
-      const signatureData = canvas.toDataURL('image/jpeg', 0.7)
+      // Use WebP with quality 0.8 for best compression and quality
+      const signatureData = canvas.toDataURL('image/webp', 0.8)
       await onSign(signatureData)
       onOpenChange(false)
       clearSignature()
@@ -158,6 +171,8 @@ export function SignatureDialog({
           <div className="border-2 border-gray-300 rounded-lg bg-white">
             <canvas
               ref={canvasRef}
+              width={800}
+              height={200}
               className="w-full h-48 cursor-crosshair touch-none"
               onMouseDown={startDrawing}
               onMouseMove={draw}
