@@ -11,6 +11,9 @@ declare module 'next-auth' {
       contractorId?: string
       adminRole?: string
       mustChangePassword?: boolean
+      isImpersonating?: boolean
+      realAdminId?: string
+      realAdminEmail?: string
     } & DefaultSession['user']
   }
 
@@ -21,6 +24,9 @@ declare module 'next-auth' {
     contractorId?: string
     adminRole?: string
     mustChangePassword?: boolean
+    isImpersonating?: boolean
+    realAdminId?: string
+    realAdminEmail?: string
   }
 }
 
@@ -33,5 +39,8 @@ declare module 'next-auth/jwt' {
     contractorId?: string
     adminRole?: string
     mustChangePassword?: boolean
+    isImpersonating?: boolean
+    realAdminId?: string
+    realAdminEmail?: string
   }
 }

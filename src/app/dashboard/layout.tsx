@@ -5,6 +5,7 @@ import { prisma } from '@/lib/prisma'
 import { Sidebar } from '@/components/layout/sidebar'
 import { DashboardHeader } from '@/components/layout/dashboard-header'
 import { NotificationPopup } from '@/components/notifications/notification-popup'
+import { ImpersonationBanner } from '@/components/admin/impersonation-banner'
 import { getCached, CACHE_TAGS } from '@/lib/cache'
 
 async function getClientsForContractor(userId: string) {
@@ -138,19 +139,28 @@ export default async function DashboardLayout({
   }
 
   return (
-    <div className="flex h-screen overflow-hidden">
-      <Sidebar
-        clients={clients}
-        userRole={session.user.role}
-        teamMemberRole={session.user.teamMemberRole}
-      />
-      <div className="flex-1 flex flex-col overflow-hidden">
-        <DashboardHeader userName={session.user.name} />
-        <main className="flex-1 overflow-auto bg-background">
-          {children}
-        </main>
+    <div className="flex h-screen overflow-hidden flex-col">
+      {session.user.isImpersonating && (
+        <ImpersonationBanner
+          targetUserName={session.user.name}
+          targetUserEmail={session.user.email}
+          realAdminEmail={session.user.realAdminEmail || ''}
+        />
+      )}
+      <div className="flex flex-1 overflow-hidden">
+        <Sidebar
+          clients={clients}
+          userRole={session.user.role}
+          teamMemberRole={session.user.teamMemberRole}
+        />
+        <div className="flex-1 flex flex-col overflow-hidden">
+          <DashboardHeader userName={session.user.name} />
+          <main className="flex-1 overflow-auto bg-background">
+            {children}
+          </main>
+        </div>
+        {session.user.role === 'CONTRACTOR' && <NotificationPopup userRole="CONTRACTOR" />}
       </div>
-      {session.user.role === 'CONTRACTOR' && <NotificationPopup userRole="CONTRACTOR" />}
     </div>
   )
 }

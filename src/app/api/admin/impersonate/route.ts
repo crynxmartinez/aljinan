@@ -3,8 +3,9 @@ import { getServerSession } from 'next-auth'
 import { authOptions } from '@/lib/auth'
 import { prisma } from '@/lib/prisma'
 import { cookies } from 'next/headers'
+import { signIn } from 'next-auth/react'
 
-// POST: Start impersonation - store admin's real session info in a cookie
+// POST: Start impersonation - sign in as target user with impersonation flag
 export async function POST(request: Request) {
   try {
     const session = await getServerSession(authOptions)
@@ -17,10 +18,22 @@ export async function POST(request: Request) {
       return NextResponse.json({ error: 'Target user ID required' }, { status: 400 })
     }
 
-    // Verify target user exists
+    // Verify target user exists and get full data
     const targetUser = await prisma.user.findUnique({
       where: { id: targetUserId },
-      select: { id: true, role: true, email: true, name: true },
+      include: {
+        contractor: true,
+        client: true,
+        teamMember: {
+          include: {
+            branchAccess: {
+              select: {
+                branchId: true
+              }
+            }
+          }
+        },
+      },
     })
 
     if (!targetUser) {
@@ -32,13 +45,15 @@ export async function POST(request: Request) {
       return NextResponse.json({ error: 'Cannot impersonate admin users' }, { status: 403 })
     }
 
-    // Store admin session info in an httpOnly cookie for later restoration
+    // Store admin info in cookie for restoration
     const cookieStore = await cookies()
     cookieStore.set('admin_impersonating', JSON.stringify({
       adminUserId: session.user.id,
       adminEmail: session.user.email,
+      adminName: session.user.name,
       targetUserId: targetUser.id,
       targetEmail: targetUser.email,
+      targetName: targetUser.name,
       targetRole: targetUser.role,
       startedAt: new Date().toISOString(),
     }), {
@@ -55,14 +70,25 @@ export async function POST(request: Request) {
       redirectUrl = '/portal'
     }
 
+    // Return target user data with impersonation flag
+    // The client will handle signing in with this data
     return NextResponse.json({
       success: true,
       redirectUrl,
-      targetUser: {
+      impersonationData: {
         id: targetUser.id,
         email: targetUser.email,
         name: targetUser.name,
         role: targetUser.role,
+        isImpersonating: true,
+        realAdminId: session.user.id,
+        realAdminEmail: session.user.email,
+        // Add role-specific data
+        ...(targetUser.role === 'TEAM_MEMBER' && targetUser.teamMember ? {
+          teamMemberRole: targetUser.teamMember.teamRole,
+          assignedBranchIds: targetUser.teamMember.branchAccess.map(ba => ba.branchId),
+          contractorId: targetUser.teamMember.contractorId,
+        } : {}),
       },
     })
   } catch (error) {

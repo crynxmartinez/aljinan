@@ -13,14 +13,24 @@ export const authOptions: NextAuthOptions = {
         password: { label: 'Password', type: 'password' },
       },
       async authorize(credentials) {
-        if (!credentials?.email || !credentials?.password) {
+        if (!credentials?.email) {
           throw new Error('Invalid credentials')
         }
 
-        // Rate limiting: Check login attempts
-        const rateLimitResult = await checkLoginRateLimit(credentials.email)
-        if (!rateLimitResult.success) {
-          throw new Error('Too many login attempts. Please try again in 15 minutes.')
+        // Check if this is an impersonation login (special flag)
+        const isImpersonation = (credentials as any).impersonation === 'true'
+
+        if (!isImpersonation) {
+          // Normal login - require password
+          if (!credentials.password) {
+            throw new Error('Invalid credentials')
+          }
+
+          // Rate limiting: Check login attempts
+          const rateLimitResult = await checkLoginRateLimit(credentials.email)
+          if (!rateLimitResult.success) {
+            throw new Error('Too many login attempts. Please try again in 15 minutes.')
+          }
         }
 
         const user = await prisma.user.findUnique({
@@ -49,13 +59,16 @@ export const authOptions: NextAuthOptions = {
           throw new Error('Account has been archived')
         }
 
-        const isPasswordValid = await bcrypt.compare(
-          credentials.password,
-          user.password
-        )
+        // For impersonation, skip password check
+        if (!isImpersonation) {
+          const isPasswordValid = await bcrypt.compare(
+            credentials.password!,
+            user.password
+          )
 
-        if (!isPasswordValid) {
-          throw new Error('Invalid password')
+          if (!isPasswordValid) {
+            throw new Error('Invalid password')
+          }
         }
 
         // Activate user on first login if PENDING
@@ -77,6 +90,9 @@ export const authOptions: NextAuthOptions = {
           contractorId?: string
           adminRole?: string
           mustChangePassword?: boolean
+          isImpersonating?: boolean
+          realAdminId?: string
+          realAdminEmail?: string
         } = {
           id: user.id,
           email: user.email,
@@ -95,6 +111,13 @@ export const authOptions: NextAuthOptions = {
         // Add admin specific data
         if (user.role === 'ADMIN' && user.admin) {
           userResponse.adminRole = user.admin.adminRole
+        }
+
+        // Add impersonation data if this is an impersonation login
+        if (isImpersonation && (credentials as any).realAdminId) {
+          userResponse.isImpersonating = true
+          userResponse.realAdminId = (credentials as any).realAdminId
+          userResponse.realAdminEmail = (credentials as any).realAdminEmail
         }
 
         return userResponse
@@ -129,6 +152,16 @@ export const authOptions: NextAuthOptions = {
         if ('mustChangePassword' in user) {
           token.mustChangePassword = user.mustChangePassword
         }
+        // Store impersonation data if present
+        if ('isImpersonating' in user) {
+          token.isImpersonating = user.isImpersonating
+        }
+        if ('realAdminId' in user) {
+          token.realAdminId = user.realAdminId
+        }
+        if ('realAdminEmail' in user) {
+          token.realAdminEmail = user.realAdminEmail
+        }
       }
       return token
     },
@@ -151,6 +184,12 @@ export const authOptions: NextAuthOptions = {
         }
         if (token.mustChangePassword !== undefined) {
           session.user.mustChangePassword = token.mustChangePassword as boolean
+        }
+        // Add impersonation data to session
+        if (token.isImpersonating) {
+          session.user.isImpersonating = token.isImpersonating as boolean
+          session.user.realAdminId = token.realAdminId as string
+          session.user.realAdminEmail = token.realAdminEmail as string
         }
       }
       return session

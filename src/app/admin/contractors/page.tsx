@@ -2,6 +2,7 @@
 
 import { useState, useEffect } from 'react'
 import { useRouter, useSearchParams } from 'next/navigation'
+import { signIn } from 'next-auth/react'
 import { toast } from 'sonner'
 import {
   ChevronDown,
@@ -172,12 +173,27 @@ export default function ContractorsPage() {
 
       if (response.ok) {
         const data = await response.json()
-        // Sign in as the target user using their credentials
-        // For impersonation, we'll redirect with the impersonation cookie set
-        window.location.href = data.redirectUrl
+
+        // Sign in as the impersonated user using NextAuth
+        const result = await signIn('credentials', {
+          email: data.impersonationData.email,
+          password: '', // No password needed for impersonation
+          impersonation: 'true',
+          realAdminId: data.impersonationData.realAdminId,
+          realAdminEmail: data.impersonationData.realAdminEmail,
+          redirect: false,
+        })
+
+        if (result?.ok) {
+          // Redirect to appropriate dashboard
+          window.location.href = data.redirectUrl
+        } else {
+          toast.error('Failed to start impersonation')
+        }
       }
     } catch (err) {
       console.error('Failed to impersonate:', err)
+      toast.error('Failed to start impersonation')
     } finally {
       setImpersonating(false)
       setImpersonateTarget(null)
