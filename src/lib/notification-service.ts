@@ -98,7 +98,7 @@ export async function notifyWorkOrderForReview(clientId: string, workOrderDescri
     type: 'WORK_ORDER_FOR_REVIEW',
     title: 'Work Order Ready for Review',
     message: `Work order "${workOrderDescription}" is ready for your review`,
-    link: `/portal/branches/${branchId}/work-orders`,
+    link: `/portal/branches/${branchId}?tab=checklist`,
     relatedId: workOrderId,
     relatedType: 'WORK_ORDER',
     priority: 'high',
@@ -115,7 +115,7 @@ export async function notifyWorkOrderStarted(clientId: string, workOrderDescript
     type: 'WORK_ORDER_STARTED',
     title: 'Work Order Started',
     message: `Work on "${workOrderDescription}" has started`,
-    link: `/portal/branches/${branchId}/work-orders`,
+    link: `/portal/branches/${branchId}?tab=checklist`,
     relatedId: workOrderId,
     relatedType: 'WORK_ORDER',
     priority: 'medium',
@@ -132,7 +132,7 @@ export async function notifyWorkOrderCompleted(clientId: string, workOrderDescri
     type: 'WORK_ORDER_COMPLETED',
     title: 'Work Order Completed',
     message: `Work order "${workOrderDescription}" has been completed`,
-    link: `/portal/branches/${branchId}/work-orders`,
+    link: `/portal/branches/${branchId}?tab=checklist`,
     relatedId: workOrderId,
     relatedType: 'WORK_ORDER',
     priority: 'high',
@@ -183,7 +183,7 @@ export async function notifyPriceSet(clientId: string, workOrderDescription: str
     type: 'WORK_ORDER_PRICE_SET',
     title: 'Price Set for Work Order',
     message: `Price of SAR ${price.toFixed(2)} set for "${workOrderDescription}"`,
-    link: `/portal/branches/${branchId}/work-orders`,
+    link: `/portal/branches/${branchId}?tab=checklist`,
     relatedId: workOrderId,
     relatedType: 'WORK_ORDER',
     priority: 'medium',
@@ -196,8 +196,8 @@ export async function notifyPriceSet(clientId: string, workOrderDescription: str
  */
 export async function notifySignatureRequired(userId: string, workOrderDescription: string, workOrderId: string, branchId: string, role: 'CLIENT' | 'CONTRACTOR') {
   const link = role === 'CLIENT' 
-    ? `/portal/branches/${branchId}/work-orders`
-    : `/dashboard/branches/${branchId}/work-orders`
+    ? `/portal/branches/${branchId}?tab=checklist`
+    : `/dashboard/branches/${branchId}?tab=checklist`
 
   return createNotification({
     userId,
