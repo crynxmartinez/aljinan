@@ -76,7 +76,12 @@ export async function GET() {
         }
       })
 
-      return NextResponse.json(client?.contractor?.teamMembers || [])
+      // Return empty array if client not found or has no contractor
+      if (!client || !client.contractor) {
+        return NextResponse.json([])
+      }
+
+      return NextResponse.json(client.contractor.teamMembers || [])
     }
 
     return NextResponse.json({ error: 'Forbidden' }, { status: 403 })
