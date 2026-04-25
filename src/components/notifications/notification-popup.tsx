@@ -1,7 +1,6 @@
 'use client'
 
 import { useEffect, useState } from 'react'
-import { useRouter } from 'next/navigation'
 import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle } from '@/components/ui/dialog'
 import { Button } from '@/components/ui/button'
 import { Badge } from '@/components/ui/badge'
@@ -23,7 +22,6 @@ interface PopupNotification {
 }
 
 export function NotificationPopup({ userRole }: NotificationPopupProps) {
-  const router = useRouter()
   const [notification, setNotification] = useState<PopupNotification | null>(null)
   const [open, setOpen] = useState(false)
   const [shownNotifications, setShownNotifications] = useState<Set<string>>(new Set())
@@ -66,13 +64,6 @@ export function NotificationPopup({ userRole }: NotificationPopupProps) {
       }
     }
     setOpen(false)
-  }
-
-  const handleViewDetails = () => {
-    if (notification?.link) {
-      router.push(notification.link)
-    }
-    handleClose()
   }
 
   const getIcon = (type: string) => {
@@ -145,15 +136,10 @@ export function NotificationPopup({ userRole }: NotificationPopupProps) {
           {getPriorityBadge(notification.priority)}
         </div>
 
-        <DialogFooter className="flex-col sm:flex-row gap-2">
-          <Button variant="outline" onClick={handleClose} className="w-full sm:w-auto">
-            Dismiss
+        <DialogFooter>
+          <Button onClick={handleClose} className="w-full">
+            OK
           </Button>
-          {notification.link && (
-            <Button onClick={handleViewDetails} className="w-full sm:w-auto">
-              View Details
-            </Button>
-          )}
         </DialogFooter>
       </DialogContent>
     </Dialog>
