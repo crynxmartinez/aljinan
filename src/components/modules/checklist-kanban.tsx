@@ -1602,7 +1602,7 @@ export function ChecklistKanban({ branchId, projectId, readOnly = false, userRol
                           <CheckCircle className="h-4 w-4" />
                           <span className="text-sm">Signed {selectedItem.supervisorSignedAt && new Date(selectedItem.supervisorSignedAt).toLocaleDateString()}</span>
                         </div>
-                      ) : !readOnly ? (
+                      ) : userRole === 'CONTRACTOR' ? (
                         <Button
                           size="sm"
                           variant="outline"
