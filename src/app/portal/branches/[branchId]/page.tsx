@@ -6,12 +6,17 @@ import Link from 'next/link'
 import { ArrowLeft, MapPin } from 'lucide-react'
 import { ClientBranchWorkspace } from './client-branch-workspace'
 
-async function getBranch(branchId: string, userId: string) {
+async function getBranch(branchIdOrSlug: string, userId: string) {
   const client = await prisma.client.findUnique({
     where: { userId },
     include: {
       branches: {
-        where: { id: branchId }
+        where: {
+          OR: [
+            { id: branchIdOrSlug },
+            { slug: branchIdOrSlug }
+          ]
+        }
       }
     }
   })
@@ -22,6 +27,7 @@ async function getBranch(branchId: string, userId: string) {
     client: {
       id: client.id,
       companyName: client.companyName,
+      slug: client.slug,
     },
     branch: client.branches[0],
   }
@@ -73,12 +79,12 @@ export default async function ClientBranchPage({
         </div>
       </div>
 
-      <ClientBranchWorkspace 
-        branchId={branchId} 
+      <ClientBranchWorkspace
+        branchId={branchId}
         branch={{
           ...branch,
           cdCertificateExpiry: branch.cdCertificateExpiry?.toISOString() || null,
-        }} 
+        }}
       />
     </div>
   )

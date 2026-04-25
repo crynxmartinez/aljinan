@@ -5,8 +5,8 @@ import { prisma } from '@/lib/prisma'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
 import { Badge } from '@/components/ui/badge'
-import { 
-  MapPin, Calendar, DollarSign, Receipt, Building2, Phone, Mail, 
+import {
+  MapPin, Calendar, DollarSign, Receipt, Building2, Phone, Mail,
   ChevronRight, Edit, Wrench, Eye, CheckCircle, AlertTriangle
 } from 'lucide-react'
 import Link from 'next/link'
@@ -339,7 +339,7 @@ export default async function PortalDashboardPage() {
                   {client.branches.map((branch) => (
                     <Link
                       key={branch.id}
-                      href={`/portal/branches/${branch.id}`}
+                      href={`/portal/branches/${branch.slug || branch.id}`}
                       className="flex items-center justify-between p-4 rounded-lg border hover:bg-muted/50 transition-colors group"
                     >
                       <div className="flex items-center gap-3">

@@ -141,11 +141,11 @@ export function ActionCenterTable({ userRole }: ActionCenterTableProps) {
   }
 
   // Build link based on user role
-  const getBranchLink = (clientId: string, branchId: string, tab?: string) => {
+  const getBranchLink = (clientId: string, branchIdOrSlug: string, tab?: string) => {
     if (userRole === 'CONTRACTOR') {
-      return `/dashboard/clients/${clientId}/branches/${branchId}${tab ? `?tab=${tab}` : ''}`
+      return `/dashboard/clients/${clientId}/branches/${branchIdOrSlug}${tab ? `?tab=${tab}` : ''}`
     }
-    return `/portal/branches/${branchId}${tab ? `?tab=${tab}` : ''}`
+    return `/portal/branches/${branchIdOrSlug}${tab ? `?tab=${tab}` : ''}`
   }
 
   return (
