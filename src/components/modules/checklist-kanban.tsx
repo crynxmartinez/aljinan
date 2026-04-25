@@ -569,7 +569,8 @@ export function ChecklistKanban({ branchId, projectId, readOnly = false, userRol
 
   useEffect(() => {
     fetchItems()
-    if (userRole === 'CONTRACTOR') {
+    // Fetch team members for both contractors and clients (clients need to see assignee names)
+    if (userRole === 'CONTRACTOR' || userRole === 'CLIENT') {
       fetch('/api/team-members')
         .then(r => r.ok ? r.json() : [])
         .then(data => setTeamMembers(data))
@@ -1185,8 +1186,8 @@ export function ChecklistKanban({ branchId, projectId, readOnly = false, userRol
                           : ALLOWED_TRANSITIONS[item.stage].contractor
                         const canDrag = allowedMoves.length > 0
 
-                        // For clients, only allow clicking cards in FOR_REVIEW stage
-                        const canClick = isClient ? item.stage === 'FOR_REVIEW' : true
+                        // For clients, allow clicking cards in FOR_REVIEW, COMPLETED, and ARCHIVED stages
+                        const canClick = isClient ? (item.stage === 'FOR_REVIEW' || item.stage === 'COMPLETED' || item.stage === 'ARCHIVED') : true
 
                         return (
                           <DraggableCard
@@ -1332,7 +1333,7 @@ export function ChecklistKanban({ branchId, projectId, readOnly = false, userRol
                 ) : (
                   <p className="font-medium flex items-center gap-1">
                     <User className="h-4 w-4" />
-                    {selectedItem.assignedTo ? (teamMemberMap[selectedItem.assignedTo] || 'Assigned') : 'Unassigned'}
+                    {selectedItem.assignedTo ? (teamMemberMap[selectedItem.assignedTo] || 'Unknown') : 'Unassigned'}
                   </p>
                 )}
               </div>
