@@ -5,7 +5,7 @@ import { prisma } from '@/lib/prisma'
 import bcrypt from 'bcryptjs'
 import { generateStrongPassword } from '@/lib/password-validation'
 
-// GET - List all team members for the contractor
+// GET - List all team members for the contractor (or client read-only)
 export async function GET() {
   try {
     const session = await getServerSession(authOptions)
@@ -14,45 +14,72 @@ export async function GET() {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
     }
 
-    if (session.user.role !== 'CONTRACTOR') {
-      return NextResponse.json({ error: 'Only contractors can view team members' }, { status: 403 })
-    }
-
-    const contractor = await prisma.contractor.findUnique({
-      where: { userId: session.user.id },
-      include: {
-        teamMembers: {
-          include: {
-            user: {
-              select: {
-                email: true,
-                name: true,
-                status: true,
-              }
-            },
-            branchAccess: {
-              include: {
-                branch: {
-                  select: {
-                    id: true,
-                    name: true,
-                    client: {
-                      select: {
-                        id: true,
-                        companyName: true,
+    // Contractors can view and manage team members
+    if (session.user.role === 'CONTRACTOR') {
+      const contractor = await prisma.contractor.findUnique({
+        where: { userId: session.user.id },
+        include: {
+          teamMembers: {
+            include: {
+              user: {
+                select: {
+                  email: true,
+                  name: true,
+                  status: true,
+                }
+              },
+              branchAccess: {
+                include: {
+                  branch: {
+                    select: {
+                      id: true,
+                      name: true,
+                      client: {
+                        select: {
+                          id: true,
+                          companyName: true,
+                        }
                       }
                     }
                   }
                 }
               }
-            }
-          },
-          orderBy: { createdAt: 'desc' }
+            },
+            orderBy: { createdAt: 'desc' }
+          }
         }
-      }
-    })
+      })
 
-    return NextResponse.json(contractor?.teamMembers || [])
+      return NextResponse.json(contractor?.teamMembers || [])
+    }
+
+    // Clients can view team member names (read-only) to see who is assigned to their work orders
+    if (session.user.role === 'CLIENT') {
+      const client = await prisma.client.findUnique({
+        where: { userId: session.user.id },
+        include: {
+          contractor: {
+            include: {
+              teamMembers: {
+                include: {
+                  user: {
+                    select: {
+                      email: true,
+                      name: true,
+                      status: true,
+                    }
+                  }
+                }
+              }
+            }
+          }
+        }
+      })
+
+      return NextResponse.json(client?.contractor?.teamMembers || [])
+    }
+
+    return NextResponse.json({ error: 'Forbidden' }, { status: 403 })
   } catch (error) {
     console.error('Error fetching team members:', error)
     return NextResponse.json(
@@ -131,10 +158,10 @@ export async function POST(request: Request) {
     }
 
     // Verify all branch IDs belong to this contractor's clients
-    const validBranchIds = contractor.clients.flatMap(client => 
+    const validBranchIds = contractor.clients.flatMap(client =>
       client.branches.map(branch => branch.id)
     )
-    
+
     const invalidBranches = branchIds.filter((id: string) => !validBranchIds.includes(id))
     if (invalidBranches.length > 0) {
       return NextResponse.json(
@@ -198,8 +225,8 @@ export async function POST(request: Request) {
       }
     })
 
-    return NextResponse.json({ 
-      ...teamMember, 
+    return NextResponse.json({
+      ...teamMember,
       tempPassword // Include temp password in response for display
     }, { status: 201 })
   } catch (error) {
