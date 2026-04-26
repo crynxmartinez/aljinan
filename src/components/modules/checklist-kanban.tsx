@@ -933,7 +933,11 @@ export function ChecklistKanban({ branchId, projectId, readOnly = false, userRol
       const checklist = await checklistResponse.json()
 
       let response
-      if (checklist.projectId && checklist.projectId.trim() !== '') {
+      const hasValidProject = checklist.projectId &&
+        typeof checklist.projectId === 'string' &&
+        checklist.projectId.trim() !== ''
+
+      if (hasValidProject) {
         response = await fetch(`/api/projects/${checklist.projectId}/work-orders/${itemId}`, {
           method: 'PATCH',
           headers: { 'Content-Type': 'application/json' },
@@ -992,7 +996,11 @@ export function ChecklistKanban({ branchId, projectId, readOnly = false, userRol
 
       // Update the work order stage - use different API based on whether project exists
       let response
-      if (checklist.projectId && checklist.projectId.trim() !== '') {
+      const hasValidProject = checklist.projectId &&
+        typeof checklist.projectId === 'string' &&
+        checklist.projectId.trim() !== ''
+
+      if (hasValidProject) {
         // Use project-based API if project exists
         response = await fetch(`/api/projects/${checklist.projectId}/work-orders/${itemId}`, {
           method: 'PATCH',
