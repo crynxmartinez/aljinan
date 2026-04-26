@@ -33,11 +33,15 @@ export function NotificationPopup({ userRole }: NotificationPopupProps) {
         const response = await fetch('/api/notifications/popup')
         if (response.ok) {
           const data = await response.json()
-          if (data.notification && !shownNotifications.has(data.notification.id)) {
-            setNotification(data.notification)
-            setOpen(true)
-            setShownNotifications(prev => new Set(prev).add(data.notification.id))
-          }
+          // Use functional update to avoid dependency on shownNotifications
+          setShownNotifications(prev => {
+            if (data.notification && !prev.has(data.notification.id)) {
+              setNotification(data.notification)
+              setOpen(true)
+              return new Set(prev).add(data.notification.id)
+            }
+            return prev
+          })
         }
       } catch (error) {
         console.error('Failed to check popup notifications:', error)
@@ -48,7 +52,7 @@ export function NotificationPopup({ userRole }: NotificationPopupProps) {
     const interval = setInterval(checkNotifications, 10000) // Check every 10 seconds
 
     return () => clearInterval(interval)
-  }, [shownNotifications])
+  }, [])  // Empty dependency array - only run once on mount
 
   const handleClose = async () => {
     if (notification) {
