@@ -215,58 +215,55 @@ export function ClientSidebar({ client }: ClientSidebarProps) {
               </p>
             </div>
           ) : (
-            client.branches.map((branch) => {
-              const branchHref = `/portal/branches/${branch.slug || branch.id}`
-              return (
-                <div key={branch.id} className="group relative">
-                  <Link
-                    href={branchHref}
-                    onClick={(e) => handleNavClick(e, branchHref)}
-                    className={cn(
-                      'flex items-center gap-2 rounded-lg px-3 py-2 text-sm transition-colors',
-                      pathname === branchHref
-                        ? 'bg-sidebar-accent text-sidebar-accent-foreground'
-                        : 'text-sidebar-foreground/70 hover:bg-sidebar-accent hover:text-sidebar-accent-foreground'
-                    )}
+            client.branches.map((branch) => (
+              <div key={branch.id} className="group relative">
+                <Link
+                  href={`/portal/branches/${branch.slug || branch.id}`}
+                  onClick={(e) => handleNavClick(e, `/portal/branches/${branch.slug || branch.id}`)}
+                  className={cn(
+                    'flex items-center gap-2 rounded-lg px-3 py-2 text-sm transition-colors',
+                    pathname === `/portal/branches/${branch.slug || branch.id}`
+                      ? 'bg-sidebar-accent text-sidebar-accent-foreground'
+                      : 'text-sidebar-foreground/70 hover:bg-sidebar-accent hover:text-sidebar-accent-foreground'
+                  )}
+                >
+                  {/* Edit Icon - Left Side */}
+                  <button
+                    onClick={(e) => handleEditNickname(e, branch)}
+                    className="opacity-0 group-hover:opacity-100 transition-all p-1 hover:bg-primary/20 rounded flex-shrink-0"
+                    title="Edit branch nickname"
                   >
-                    {/* Edit Icon - Left Side */}
-                    <button
-                      onClick={(e) => handleEditNickname(e, branch)}
-                      className="opacity-0 group-hover:opacity-100 transition-all p-1 hover:bg-primary/20 rounded flex-shrink-0"
-                      title="Edit branch nickname"
-                    >
-                      <Pencil className="h-4 w-4 text-primary" />
-                    </button>
+                    <Pencil className="h-4 w-4 text-primary" />
+                  </button>
 
-                    {/* Branch Icon */}
-                    {loadingHref === branchHref ? (
-                      <Loader2 className="h-4 w-4 flex-shrink-0 animate-spin" />
+                  {/* Branch Icon */}
+                  {loadingHref === `/portal/branches/${branch.slug || branch.id}` ? (
+                    <Loader2 className="h-4 w-4 flex-shrink-0 animate-spin" />
+                  ) : (
+                    <MapPin className="h-4 w-4 flex-shrink-0" />
+                  )}
+
+                  {/* Branch Name/Address */}
+                  <div className="flex-1 min-w-0">
+                    {branch.clientNickname ? (
+                      <>
+                        <p className="truncate font-medium">{branch.clientNickname}</p>
+                        <p className="text-xs text-sidebar-foreground/50 truncate">
+                          {branch.address}{branch.city ? `, ${branch.city}` : ''}
+                        </p>
+                      </>
                     ) : (
-                      <MapPin className="h-4 w-4 flex-shrink-0" />
+                      <>
+                        <p className="truncate">{branch.address}</p>
+                        {branch.city && (
+                          <p className="text-xs text-sidebar-foreground/50 truncate">{branch.city}</p>
+                        )}
+                      </>
                     )}
-
-                    {/* Branch Name/Address */}
-                    <div className="flex-1 min-w-0">
-                      {branch.clientNickname ? (
-                        <>
-                          <p className="truncate font-medium">{branch.clientNickname}</p>
-                          <p className="text-xs text-sidebar-foreground/50 truncate">
-                            {branch.address}{branch.city ? `, ${branch.city}` : ''}
-                          </p>
-                        </>
-                      ) : (
-                        <>
-                          <p className="truncate">{branch.address}</p>
-                          {branch.city && (
-                            <p className="text-xs text-sidebar-foreground/50 truncate">{branch.city}</p>
-                          )}
-                        </>
-                      )}
-                    </div>
-                  </Link>
-                </div>
-              )
-            })
+                  </div>
+                </Link>
+              </div>
+            ))
           )}
         </div>
 
