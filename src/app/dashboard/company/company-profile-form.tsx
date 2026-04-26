@@ -15,6 +15,9 @@ interface ContractorProfile {
   companyPhone: string | null
   companyEmail: string | null
   companyAddress: string | null
+  contactPersonName: string | null
+  contactPersonPhone: string | null
+  contactPersonEmail: string | null
   isVerified: boolean
   user: {
     email: string
@@ -37,6 +40,9 @@ export function CompanyProfileForm({ contractor }: CompanyProfileFormProps) {
     companyPhone: contractor.companyPhone || '',
     companyEmail: contractor.companyEmail || '',
     companyAddress: contractor.companyAddress || '',
+    contactPersonName: contractor.contactPersonName || '',
+    contactPersonPhone: contractor.contactPersonPhone || '',
+    contactPersonEmail: contractor.contactPersonEmail || '',
   })
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -155,7 +161,47 @@ export function CompanyProfileForm({ contractor }: CompanyProfileFormProps) {
                 />
               </div>
 
-              <Button type="submit" disabled={loading}>
+              <div className="border-t pt-4 mt-6">
+                <h3 className="text-sm font-semibold mb-4">Contact Person</h3>
+
+                <div className="space-y-4">
+                  <div className="space-y-2">
+                    <Label htmlFor="contactPersonName">Contact Person Name</Label>
+                    <Input
+                      id="contactPersonName"
+                      name="contactPersonName"
+                      value={formData.contactPersonName}
+                      onChange={handleChange}
+                      placeholder="Enter contact person name"
+                    />
+                  </div>
+
+                  <div className="space-y-2">
+                    <Label htmlFor="contactPersonPhone">Contact Person Phone</Label>
+                    <Input
+                      id="contactPersonPhone"
+                      name="contactPersonPhone"
+                      value={formData.contactPersonPhone}
+                      onChange={handleChange}
+                      placeholder="Enter contact person phone"
+                    />
+                  </div>
+
+                  <div className="space-y-2">
+                    <Label htmlFor="contactPersonEmail">Contact Person Email</Label>
+                    <Input
+                      id="contactPersonEmail"
+                      name="contactPersonEmail"
+                      type="email"
+                      value={formData.contactPersonEmail}
+                      onChange={handleChange}
+                      placeholder="Enter contact person email"
+                    />
+                  </div>
+                </div>
+              </div>
+
+              <Button type="submit" disabled={loading} className="mt-6">
                 {loading && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
                 Save Changes
               </Button>
@@ -190,9 +236,8 @@ export function CompanyProfileForm({ contractor }: CompanyProfileFormProps) {
                 {completionItems.map((item) => (
                   <li key={item.label} className="flex items-center gap-2 text-sm">
                     <CheckCircle
-                      className={`h-4 w-4 ${
-                        item.completed ? 'text-green-600' : 'text-muted-foreground/30'
-                      }`}
+                      className={`h-4 w-4 ${item.completed ? 'text-green-600' : 'text-muted-foreground/30'
+                        }`}
                     />
                     <span className={item.completed ? '' : 'text-muted-foreground'}>
                       {item.label}

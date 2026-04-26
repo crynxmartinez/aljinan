@@ -214,6 +214,11 @@ model Contractor {
   // Service Areas
   serviceAreas      Json?         // Array of cities/regions served
 
+  // Contact Person
+  contactPersonName   String?       // Primary contact person name
+  contactPersonPhone  String?       // Primary contact person phone
+  contactPersonEmail  String?       // Primary contact person email
+
   // Auto-increment counters for human-readable reference numbers
   nextRequestNumber   Int       @default(1)  // Counter for REQ-0001, REQ-0002...
   nextWorkOrderNumber Int       @default(1)  // Counter for WO-0001, WO-0002...
@@ -240,6 +245,11 @@ model Client {
   vatNumber           String?    // VAT registration number
   billingAddress      String?    // Billing/invoice address
   contacts            Json?      // Array of contact persons: [{name, phone, email, whatsapp}]
+  
+  // Contact Person
+  contactPersonName   String?    // Primary contact person name
+  contactPersonPhone  String?    // Primary contact person phone
+  contactPersonEmail  String?    // Primary contact person email
   
   createdAt     DateTime   @default(now())
   updatedAt     DateTime   @updatedAt

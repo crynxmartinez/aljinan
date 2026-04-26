@@ -4,7 +4,7 @@ import { useState } from 'react'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
 import { Badge } from '@/components/ui/badge'
-import { 
+import {
   Building2, Phone, Mail, MapPin, Globe, FileText, Calendar, Edit,
   AlertTriangle, Shield, Briefcase
 } from 'lucide-react'
@@ -28,6 +28,9 @@ interface ContractorProfileCardProps {
     companyPhone: string | null
     companyEmail: string | null
     companyAddress: string | null
+    contactPersonName: string | null
+    contactPersonPhone: string | null
+    contactPersonEmail: string | null
     logoUrl: string | null
     website: string | null
     businessType: string | null
@@ -141,7 +144,7 @@ export function ContractorProfileCard({ contractor }: ContractorProfileCardProps
               <div>
                 <p className="text-xs text-muted-foreground">Website</p>
                 {contractor.website ? (
-                  <a 
+                  <a
                     href={contractor.website.startsWith('http') ? contractor.website : `https://${contractor.website}`}
                     target="_blank"
                     rel="noopener noreferrer"
@@ -247,7 +250,7 @@ export function ContractorProfileCard({ contractor }: ContractorProfileCardProps
                 <div>
                   <p className="text-xs text-muted-foreground">Insurance Certificate</p>
                   {contractor.insuranceCertUrl ? (
-                    <a 
+                    <a
                       href={contractor.insuranceCertUrl}
                       target="_blank"
                       rel="noopener noreferrer"
@@ -315,9 +318,9 @@ export function ContractorProfileCard({ contractor }: ContractorProfileCardProps
                   <p className="text-xs text-amber-600 mt-1">
                     Complete your company profile for compliance and credibility.
                   </p>
-                  <Button 
-                    variant="outline" 
-                    size="sm" 
+                  <Button
+                    variant="outline"
+                    size="sm"
                     className="mt-3 bg-white"
                     onClick={() => setEditOpen(true)}
                   >

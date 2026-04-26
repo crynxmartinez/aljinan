@@ -42,6 +42,9 @@ interface ContractorProfileFormProps {
     companyPhone: string | null
     companyEmail: string | null
     companyAddress: string | null
+    contactPersonName: string | null
+    contactPersonPhone: string | null
+    contactPersonEmail: string | null
     logoUrl: string | null
     website: string | null
     businessType: string | null
@@ -66,6 +69,9 @@ export function ContractorProfileForm({ contractor, open, onOpenChange }: Contra
     companyPhone: contractor.companyPhone || '',
     companyEmail: contractor.companyEmail || '',
     companyAddress: contractor.companyAddress || '',
+    contactPersonName: contractor.contactPersonName || '',
+    contactPersonPhone: contractor.contactPersonPhone || '',
+    contactPersonEmail: contractor.contactPersonEmail || '',
     logoUrl: contractor.logoUrl || '',
     website: contractor.website || '',
     businessType: contractor.businessType || '',
@@ -198,7 +204,54 @@ export function ContractorProfileForm({ contractor, open, onOpenChange }: Contra
                   rows={2}
                 />
               </div>
+            </div>
+          </div>
 
+          {/* Contact Person */}
+          <div className="space-y-4">
+            <h4 className="text-sm font-semibold text-muted-foreground uppercase tracking-wide">
+              Contact Person
+            </h4>
+            <div className="grid gap-4 sm:grid-cols-2">
+              <div className="space-y-2">
+                <Label htmlFor="contactPersonName">Contact Person Name</Label>
+                <Input
+                  id="contactPersonName"
+                  value={formData.contactPersonName}
+                  onChange={(e) => setFormData({ ...formData, contactPersonName: e.target.value })}
+                  placeholder="John Doe"
+                />
+              </div>
+
+              <div className="space-y-2">
+                <Label htmlFor="contactPersonPhone">Contact Person Phone</Label>
+                <Input
+                  id="contactPersonPhone"
+                  value={formData.contactPersonPhone}
+                  onChange={(e) => setFormData({ ...formData, contactPersonPhone: e.target.value })}
+                  placeholder="+966 xxx xxx xxxx"
+                />
+              </div>
+
+              <div className="space-y-2 sm:col-span-2">
+                <Label htmlFor="contactPersonEmail">Contact Person Email</Label>
+                <Input
+                  id="contactPersonEmail"
+                  type="email"
+                  value={formData.contactPersonEmail}
+                  onChange={(e) => setFormData({ ...formData, contactPersonEmail: e.target.value })}
+                  placeholder="john.doe@company.com"
+                />
+              </div>
+            </div>
+          </div>
+
+          {/* Additional Info */}
+          <div className="space-y-4">
+            <h4 className="text-sm font-semibold text-muted-foreground uppercase tracking-wide">
+              Additional Information
+            </h4>
+            <div className="grid gap-4 sm:grid-cols-2">
               <div className="space-y-2">
                 <Label htmlFor="website">Website</Label>
                 <Input

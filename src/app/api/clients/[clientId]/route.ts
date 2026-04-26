@@ -86,6 +86,9 @@ export async function PATCH(
       companyName,
       companyPhone,
       companyEmail,
+      contactPersonName,
+      contactPersonPhone,
+      contactPersonEmail,
       crNumber,
       vatNumber,
       billingAddress,
@@ -119,6 +122,9 @@ export async function PATCH(
       updateData.companyEmail = sanitizeEmail(companyEmail)
     }
 
+    if (contactPersonName !== undefined) updateData.contactPersonName = contactPersonName ? sanitizePlainText(contactPersonName) : null
+    if (contactPersonPhone !== undefined) updateData.contactPersonPhone = contactPersonPhone ? sanitizePhone(contactPersonPhone) : null
+    if (contactPersonEmail !== undefined) updateData.contactPersonEmail = contactPersonEmail ? sanitizeEmail(contactPersonEmail) : null
     if (crNumber !== undefined) updateData.crNumber = crNumber ? sanitizePlainText(crNumber) : null
     if (vatNumber !== undefined) updateData.vatNumber = vatNumber ? sanitizePlainText(vatNumber) : null
     if (billingAddress !== undefined) updateData.billingAddress = billingAddress ? sanitizePlainText(billingAddress) : null

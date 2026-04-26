@@ -12,10 +12,10 @@ export async function PUT(request: Request) {
     }
 
     const body = await request.json()
-    const { 
-      companyName, 
-      companyPhone, 
-      companyEmail, 
+    const {
+      companyName,
+      companyPhone,
+      companyEmail,
       companyAddress,
       logoUrl,
       website,
@@ -27,7 +27,10 @@ export async function PUT(request: Request) {
       licenseExpiry,
       insuranceCertUrl,
       insuranceExpiry,
-      serviceAreas
+      serviceAreas,
+      contactPersonName,
+      contactPersonPhone,
+      contactPersonEmail
     } = body
 
     // Build update data object
@@ -47,6 +50,9 @@ export async function PUT(request: Request) {
     if (insuranceCertUrl !== undefined) updateData.insuranceCertUrl = insuranceCertUrl
     if (insuranceExpiry !== undefined) updateData.insuranceExpiry = insuranceExpiry ? new Date(insuranceExpiry) : null
     if (serviceAreas !== undefined) updateData.serviceAreas = serviceAreas
+    if (contactPersonName !== undefined) updateData.contactPersonName = contactPersonName
+    if (contactPersonPhone !== undefined) updateData.contactPersonPhone = contactPersonPhone
+    if (contactPersonEmail !== undefined) updateData.contactPersonEmail = contactPersonEmail
 
     const contractor = await prisma.contractor.update({
       where: { userId: session.user.id },

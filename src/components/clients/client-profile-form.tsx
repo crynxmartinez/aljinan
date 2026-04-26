@@ -29,6 +29,9 @@ interface ClientProfileFormProps {
     companyName: string
     companyPhone: string | null
     companyEmail: string | null
+    contactPersonName: string | null
+    contactPersonPhone: string | null
+    contactPersonEmail: string | null
     crNumber: string | null
     vatNumber: string | null
     billingAddress: string | null
@@ -45,6 +48,9 @@ export function ClientProfileForm({ client, open, onOpenChange }: ClientProfileF
     companyName: client.companyName || '',
     companyPhone: client.companyPhone || '',
     companyEmail: client.companyEmail || '',
+    contactPersonName: client.contactPersonName || '',
+    contactPersonPhone: client.contactPersonPhone || '',
+    contactPersonEmail: client.contactPersonEmail || '',
     crNumber: client.crNumber || '',
     vatNumber: client.vatNumber || '',
     billingAddress: client.billingAddress || '',
@@ -110,7 +116,7 @@ export function ClientProfileForm({ client, open, onOpenChange }: ClientProfileF
             <h3 className="font-semibold text-sm text-muted-foreground uppercase tracking-wide">
               Company Information
             </h3>
-            
+
             <div className="grid grid-cols-2 gap-4">
               <div className="space-y-2">
                 <Label htmlFor="companyName">Company Name *</Label>
@@ -165,10 +171,49 @@ export function ClientProfileForm({ client, open, onOpenChange }: ClientProfileF
 
           </div>
 
+          {/* Contact Person */}
+          <div className="space-y-4">
+            <h3 className="font-semibold text-sm text-muted-foreground uppercase tracking-wide">
+              Primary Contact Person
+            </h3>
+
+            <div className="grid grid-cols-2 gap-4">
+              <div className="space-y-2">
+                <Label htmlFor="contactPersonName">Contact Person Name</Label>
+                <Input
+                  id="contactPersonName"
+                  value={formData.contactPersonName}
+                  onChange={(e) => setFormData({ ...formData, contactPersonName: e.target.value })}
+                  placeholder="John Doe"
+                />
+              </div>
+              <div className="space-y-2">
+                <Label htmlFor="contactPersonPhone">Contact Person Phone</Label>
+                <Input
+                  id="contactPersonPhone"
+                  value={formData.contactPersonPhone}
+                  onChange={(e) => setFormData({ ...formData, contactPersonPhone: e.target.value })}
+                  placeholder="+966 xxx xxx xxxx"
+                />
+              </div>
+            </div>
+
+            <div className="space-y-2">
+              <Label htmlFor="contactPersonEmail">Contact Person Email</Label>
+              <Input
+                id="contactPersonEmail"
+                type="email"
+                value={formData.contactPersonEmail}
+                onChange={(e) => setFormData({ ...formData, contactPersonEmail: e.target.value })}
+                placeholder="john.doe@company.com"
+              />
+            </div>
+          </div>
+
           <div className="space-y-4">
             <div className="flex items-center justify-between">
               <h3 className="font-semibold text-sm text-muted-foreground uppercase tracking-wide">
-                Contact Persons
+                Additional Contact Persons
               </h3>
               <Button type="button" variant="outline" size="sm" onClick={addContact}>
                 <Plus className="h-4 w-4 mr-1" />
