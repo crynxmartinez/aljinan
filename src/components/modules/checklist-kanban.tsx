@@ -975,48 +975,61 @@ export function ChecklistKanban({ branchId, projectId, readOnly = false, userRol
 
   const handleSendToReview = async (itemId: string) => {
     if (readOnly) return
-    setUpdating(true)
-    try {
-      // Get the checklist to find the project
-      const item = items.find(i => i.id === itemId)
-      if (!item) {
-        toast.error('Work order not found')
-        setDetailsOpen(false)
-        return
-      }
 
-      // Find the project ID from the checklist
+    // Find the item
+    const item = items.find(i => i.id === itemId)
+    if (!item) return
+
+    const targetStage = 'FOR_REVIEW'
+
+    // Check if already in target stage
+    if (item.stage === targetStage) return
+
+    // Check if transition is allowed
+    const isClient = userRole === 'CLIENT'
+    if (!canTransition(item.stage, targetStage, isClient, item)) {
+      if (targetStage === 'FOR_REVIEW' && item.price === null) {
+        toast.error('Please add a price before submitting for review')
+      }
+      return
+    }
+
+    // Optimistically update UI
+    setItems(prev => prev.map(i =>
+      i.id === itemId ? { ...i, stage: targetStage } : i
+    ))
+
+    // Close the details modal
+    setDetailsOpen(false)
+
+    // Update on server (exact same as drag-and-drop)
+    try {
       const checklistResponse = await fetch(`/api/branches/${branchId}/checklists/${item.checklistId}`)
       if (!checklistResponse.ok) {
-        toast.error('Failed to fetch checklist information')
-        setDetailsOpen(false)
+        // Revert on error
+        fetchItems()
         return
       }
       const checklist = await checklistResponse.json()
 
-      // Use same API as drag-and-drop (project API)
       const response = await fetch(`/api/projects/${checklist.projectId}/work-orders/${itemId}`, {
         method: 'PATCH',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ stage: 'FOR_REVIEW' })
+        body: JSON.stringify({ stage: targetStage })
       })
 
-      if (response.ok) {
-        toast.success('Work order sent to review')
-        setDetailsOpen(false)
+      if (!response.ok) {
+        // Revert on error
         fetchItems()
-        router.refresh()
+        toast.error('Failed to send to review')
       } else {
-        const error = await response.json()
-        toast.error(error.error || 'Failed to send to review')
-        setDetailsOpen(false)
+        toast.success('Work order sent to review')
+        router.refresh()
       }
     } catch (error) {
-      console.error('Failed to send to review:', error)
+      console.error('Failed to update stage:', error)
+      fetchItems()
       toast.error('Failed to send to review')
-      setDetailsOpen(false)
-    } finally {
-      setUpdating(false)
     }
   }
 
