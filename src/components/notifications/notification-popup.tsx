@@ -27,32 +27,26 @@ export function NotificationPopup({ userRole }: NotificationPopupProps) {
   const [shownNotifications, setShownNotifications] = useState<Set<string>>(new Set())
 
   useEffect(() => {
-    // Check for new notifications every 10 seconds
+    // Check for popup notification once on mount (after login)
     const checkNotifications = async () => {
       try {
         const response = await fetch('/api/notifications/popup')
         if (response.ok) {
           const data = await response.json()
-          // Use functional update to avoid dependency on shownNotifications
-          setShownNotifications(prev => {
-            if (data.notification && !prev.has(data.notification.id)) {
-              setNotification(data.notification)
-              setOpen(true)
-              return new Set(prev).add(data.notification.id)
-            }
-            return prev
-          })
+          if (data.notification && !shownNotifications.has(data.notification.id)) {
+            setNotification(data.notification)
+            setOpen(true)
+            setShownNotifications(prev => new Set(prev).add(data.notification.id))
+          }
         }
       } catch (error) {
         console.error('Failed to check popup notifications:', error)
       }
     }
 
+    // Only check once on mount
     checkNotifications()
-    const interval = setInterval(checkNotifications, 10000) // Check every 10 seconds
-
-    return () => clearInterval(interval)
-  }, [])  // Empty dependency array - only run once on mount
+  }, [])  // Only run once when component mounts
 
   const handleClose = async () => {
     if (notification) {
