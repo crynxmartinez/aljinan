@@ -22,13 +22,13 @@ export function validatePrice(price: number): { valid: boolean; error?: string }
   if (price < 0) {
     return { valid: false, error: 'Price cannot be negative' }
   }
-  
+
   // Check for max 2 decimal places
   const decimalPlaces = (price.toString().split('.')[1] || '').length
   if (decimalPlaces > 2) {
     return { valid: false, error: 'Price must have maximum 2 decimal places' }
   }
-  
+
   return { valid: true }
 }
 
@@ -44,26 +44,26 @@ export function validateEmail(email: string): { valid: boolean; error?: string }
 }
 
 /**
- * Validate phone number (Saudi Arabia format)
- * Accepts: +966XXXXXXXXX, 05XXXXXXXX, 5XXXXXXXX
+ * Validate phone number (International format)
+ * Accepts: +XXX..., 0X..., or any number with 9-15 digits
  */
 export function validatePhone(phone: string): { valid: boolean; error?: string } {
-  // Remove spaces and dashes
-  const cleaned = phone.replace(/[\s-]/g, '')
-  
-  // Saudi phone patterns
-  const patterns = [
-    /^\+9665\d{8}$/,  // +966 5XX XXX XXX
-    /^05\d{8}$/,       // 05X XXX XXXX
-    /^5\d{8}$/,        // 5X XXX XXXX
-  ]
-  
-  const isValid = patterns.some(pattern => pattern.test(cleaned))
-  
-  if (!isValid) {
-    return { valid: false, error: 'Invalid phone number format. Use Saudi format: +966XXXXXXXXX or 05XXXXXXXX' }
+  // Remove spaces, dashes, and parentheses
+  const cleaned = phone.replace(/[\s\-()]/g, '')
+
+  // Must contain only digits, plus sign, or start with +
+  if (!/^[\d+]+$/.test(cleaned)) {
+    return { valid: false, error: 'Phone number can only contain digits, spaces, dashes, and + symbol' }
   }
-  
+
+  // Extract just the digits
+  const digitsOnly = cleaned.replace(/\+/g, '')
+
+  // Must have between 9 and 15 digits (international standard)
+  if (digitsOnly.length < 9 || digitsOnly.length > 15) {
+    return { valid: false, error: 'Phone number must be between 9 and 15 digits' }
+  }
+
   return { valid: true }
 }
 
@@ -112,14 +112,14 @@ export function validatePositiveNumber(value: number, fieldName: string): { vali
 export function validateFutureDate(date: Date, fieldName: string): { valid: boolean; error?: string } {
   const now = new Date()
   now.setHours(0, 0, 0, 0)
-  
+
   const checkDate = new Date(date)
   checkDate.setHours(0, 0, 0, 0)
-  
+
   if (checkDate < now) {
     return { valid: false, error: `${fieldName} must be a future date` }
   }
-  
+
   return { valid: true }
 }
 
@@ -137,11 +137,11 @@ export function sanitizeString(value: string): string {
 export function validateAndSanitizeEmail(email: string): { valid: boolean; email?: string; error?: string } {
   const sanitized = email.trim().toLowerCase()
   const validation = validateEmail(sanitized)
-  
+
   if (!validation.valid) {
     return { valid: false, error: validation.error }
   }
-  
+
   return { valid: true, email: sanitized }
 }
 
@@ -155,7 +155,7 @@ export function validateAll(
   const errors = validations
     .filter(v => !v.valid)
     .map(v => v.error!)
-  
+
   return {
     valid: errors.length === 0,
     errors
