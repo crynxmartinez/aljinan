@@ -336,10 +336,8 @@ export async function PATCH(
             price: currentRequest.quotedPrice,
             linkedRequestId: requestId,
             assignedTo: currentRequest.assignedTo || null,
-            // Save client signature from quote acceptance
-            clientSignature: clientSignature || null,
-            clientSignedAt: clientSignature ? new Date() : null,
-            clientSignedById: clientSignature ? session.user.id : null,
+            // Note: clientSignature should only be added when client accepts COMPLETED work,
+            // not when accepting the quote. Quote acceptance signature is stored in Request model.
           }
         })
         createdWorkOrders.push(workOrder.id)
