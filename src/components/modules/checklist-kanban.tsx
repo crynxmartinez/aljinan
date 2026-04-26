@@ -812,6 +812,26 @@ export function ChecklistKanban({ branchId, projectId, readOnly = false, userRol
 
       if (response.ok) {
         toast.success('Work order signed by client')
+
+        // If there's a pending move (from drag-and-drop), complete it now
+        if (pendingMove && pendingMove.targetStage === 'COMPLETED') {
+          const checklistResponse = await fetch(`/api/branches/${branchId}/checklists/${selectedItem.checklistId}`)
+          if (checklistResponse.ok) {
+            const checklist = await checklistResponse.json()
+
+            const completeResponse = await fetch(`/api/projects/${checklist.projectId}/work-orders/${selectedItem.id}`, {
+              method: 'PATCH',
+              headers: { 'Content-Type': 'application/json' },
+              body: JSON.stringify({ stage: 'COMPLETED' })
+            })
+
+            if (completeResponse.ok) {
+              toast.success('Work order completed')
+              setPendingMove(null)
+            }
+          }
+        }
+
         fetchItems()
         const updatedItems = await fetch(`/api/branches/${branchId}/checklist-items`).then(r => r.json())
         const updated = updatedItems.find((i: ChecklistItem) => i.id === selectedItem.id)
@@ -915,62 +935,15 @@ export function ChecklistKanban({ branchId, projectId, readOnly = false, userRol
     }
   }
 
-  // Handle confirmation of drag-to-complete
-  const handleConfirmMove = async () => {
-    if (!pendingMove) return
-    setUpdating(true)
+  // Handle confirmation of drag-to-complete - open signature dialog instead of auto-completing
+  const handleConfirmMove = () => {
+    if (!pendingMove || !selectedItem) return
 
-    try {
-      const { itemId, targetStage } = pendingMove
-      const item = items.find(i => i.id === itemId)
-      if (!item) return
-
-      const checklistResponse = await fetch(`/api/branches/${branchId}/checklists/${item.checklistId}`)
-      if (!checklistResponse.ok) {
-        toast.error('Failed to fetch checklist information')
-        return
-      }
-      const checklist = await checklistResponse.json()
-
-      let response
-      const hasValidProject = checklist.projectId &&
-        typeof checklist.projectId === 'string' &&
-        checklist.projectId.trim() !== ''
-
-      if (hasValidProject) {
-        response = await fetch(`/api/projects/${checklist.projectId}/work-orders/${itemId}`, {
-          method: 'PATCH',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ stage: targetStage })
-        })
-      } else {
-        response = await fetch(`/api/branches/${branchId}/checklist-items`, {
-          method: 'PATCH',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({
-            action: 'update_stage',
-            itemId: itemId,
-            stage: targetStage
-          })
-        })
-      }
-
-      if (response.ok) {
-        toast.success('Work order accepted and completed')
-        fetchItems()
-        setConfirmMoveDialogOpen(false)
-        setPendingMove(null)
-        router.refresh()
-      } else {
-        const error = await response.json()
-        toast.error(error.error || 'Failed to complete work order')
-      }
-    } catch (error) {
-      console.error('Failed to complete work order:', error)
-      toast.error('Failed to complete work order')
-    } finally {
-      setUpdating(false)
-    }
+    // Close confirmation dialog and open signature dialog
+    setConfirmMoveDialogOpen(false)
+    setSignatureDialogOpen(true)
+    setSignatureType('client')
+    // pendingMove and selectedItem are already set, signature dialog will handle the completion
   }
 
   const handleSendToReview = async (itemId: string) => {
@@ -1889,12 +1862,8 @@ export function ChecklistKanban({ branchId, projectId, readOnly = false, userRol
               disabled={updating}
               className="bg-green-600 hover:bg-green-700"
             >
-              {updating ? (
-                <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-              ) : (
-                <CheckCircle className="mr-2 h-4 w-4" />
-              )}
-              Accept & Complete
+              <CheckCircle className="mr-2 h-4 w-4" />
+              Sign & Complete
             </Button>
           </DialogFooter>
         </DialogContent>
