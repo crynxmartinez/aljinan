@@ -108,11 +108,51 @@ export function ClientProfileCard({ client, canEdit }: ClientProfileCardProps) {
             </div>
           </div>
 
-          {/* Contact Persons */}
+          {/* Primary Contact Person */}
+          {(client.contactPersonName || client.contactPersonPhone || client.contactPersonEmail) && (
+            <div className="pt-4 border-t space-y-4">
+              <h4 className="text-sm font-semibold text-muted-foreground uppercase tracking-wide">
+                Primary Contact Person
+              </h4>
+              <div className="grid gap-4 sm:grid-cols-2">
+                {client.contactPersonName && (
+                  <div className="flex items-start gap-3">
+                    <Users className="h-4 w-4 text-muted-foreground mt-0.5" />
+                    <div>
+                      <p className="text-xs text-muted-foreground">Name</p>
+                      <p className="text-sm font-medium">{client.contactPersonName}</p>
+                    </div>
+                  </div>
+                )}
+
+                {client.contactPersonPhone && (
+                  <div className="flex items-start gap-3">
+                    <Phone className="h-4 w-4 text-muted-foreground mt-0.5" />
+                    <div>
+                      <p className="text-xs text-muted-foreground">Phone</p>
+                      <p className="text-sm font-medium">{client.contactPersonPhone}</p>
+                    </div>
+                  </div>
+                )}
+
+                {client.contactPersonEmail && (
+                  <div className="flex items-start gap-3">
+                    <Mail className="h-4 w-4 text-muted-foreground mt-0.5" />
+                    <div>
+                      <p className="text-xs text-muted-foreground">Email</p>
+                      <p className="text-sm font-medium">{client.contactPersonEmail}</p>
+                    </div>
+                  </div>
+                )}
+              </div>
+            </div>
+          )}
+
+          {/* Additional Contact Persons */}
           <div className="pt-4 border-t space-y-3">
             <h4 className="text-sm font-semibold text-muted-foreground uppercase tracking-wide flex items-center gap-2">
               <Users className="h-4 w-4" />
-              Contact Persons
+              Additional Contact Persons
             </h4>
             {contacts && contacts.length > 0 ? (
               <div className="space-y-3">
