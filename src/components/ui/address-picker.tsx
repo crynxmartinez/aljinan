@@ -74,12 +74,12 @@ export function AddressPicker({ value, onChange, showManualFields = true }: Addr
       // Use Google Places Autocomplete for search-as-you-type
       if (typeof google !== 'undefined' && google.maps && google.maps.places) {
         const autocompleteService = new google.maps.places.AutocompleteService()
-        
+
         const request = {
           input: query,
           componentRestrictions: { country: 'sa' },
         }
-        
+
         autocompleteService.getPlacePredictions(request, (predictions, status) => {
           if (status === google.maps.places.PlacesServiceStatus.OK && predictions) {
             const converted: NominatimResult[] = predictions.map((prediction) => ({
@@ -197,7 +197,7 @@ export function AddressPicker({ value, onChange, showManualFields = true }: Addr
 
             const streetNumber = getComponent('street_number')
             const route = getComponent('route')
-            const street = [streetNumber, route].filter(Boolean).join(' ') || 
+            const street = [streetNumber, route].filter(Boolean).join(' ') ||
               place.formatted_address?.split(',')[0] || result.display_name.split(',')[0]
 
             onChange({
@@ -227,9 +227,9 @@ export function AddressPicker({ value, onChange, showManualFields = true }: Addr
         if (response.results && response.results[0]) {
           const result = response.results[0]
           const addressComponents = result.address_components
-          const getComponent = (type: string) => 
+          const getComponent = (type: string) =>
             addressComponents.find((c: any) => c.types.includes(type))?.long_name || ''
-          
+
           const streetNumber = getComponent('street_number')
           const route = getComponent('route')
           const street = [streetNumber, route].filter(Boolean).join(' ') || result.formatted_address.split(',')[0]
@@ -286,165 +286,181 @@ export function AddressPicker({ value, onChange, showManualFields = true }: Addr
 
   const apiKey = process.env.NEXT_PUBLIC_GOOGLE_MAPS_API_KEY || ''
 
+  // Debug: Check if API key is loaded
+  if (!apiKey) {
+    return (
+      <div className="space-y-4">
+        <div className="p-4 bg-destructive/10 border border-destructive rounded-lg">
+          <p className="text-sm text-destructive font-medium">
+            Google Maps API key is not configured.
+          </p>
+          <p className="text-xs text-muted-foreground mt-1">
+            Please add NEXT_PUBLIC_GOOGLE_MAPS_API_KEY to your environment variables.
+          </p>
+        </div>
+      </div>
+    )
+  }
+
   return (
     <APIProvider apiKey={apiKey} libraries={['places']}>
-    <div className="space-y-4">
-      {/* Search Box */}
-      <div ref={containerRef} className="relative">
-        <Label>Search Address</Label>
-        <div className="relative mt-1.5">
-          <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
-          <Input
-            value={searchQuery}
-            onChange={(e) => setSearchQuery(e.target.value)}
-            placeholder="Type to search for an address..."
-            className="pl-9 pr-16"
+      <div className="space-y-4">
+        {/* Search Box */}
+        <div ref={containerRef} className="relative">
+          <Label>Search Address</Label>
+          <div className="relative mt-1.5">
+            <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+            <Input
+              value={searchQuery}
+              onChange={(e) => setSearchQuery(e.target.value)}
+              placeholder="Type to search for an address..."
+              className="pl-9 pr-16"
+            />
+            <div className="absolute right-2 top-1/2 -translate-y-1/2 flex items-center gap-1">
+              {isSearching && <Loader2 className="h-4 w-4 animate-spin text-muted-foreground" />}
+              {searchQuery && (
+                <Button
+                  type="button"
+                  variant="ghost"
+                  size="icon"
+                  className="h-6 w-6"
+                  onClick={clearSearch}
+                >
+                  <X className="h-4 w-4" />
+                </Button>
+              )}
+            </div>
+          </div>
+
+          {/* Suggestions Dropdown */}
+          {showSuggestions && suggestions.length > 0 && (
+            <Card className="absolute z-50 w-full mt-1 max-h-60 overflow-auto">
+              {suggestions.map((result) => (
+                <button
+                  key={result.place_id}
+                  type="button"
+                  className="w-full px-3 py-2 text-left text-sm hover:bg-muted flex items-start gap-2 border-b last:border-0"
+                  onClick={() => selectAddress(result)}
+                >
+                  <MapPin className="h-4 w-4 mt-0.5 flex-shrink-0 text-muted-foreground" />
+                  <span className="line-clamp-2">{result.display_name}</span>
+                </button>
+              ))}
+            </Card>
+          )}
+
+          {showSuggestions && searchQuery.length >= 3 && suggestions.length === 0 && !isSearching && (
+            <Card className="absolute z-50 w-full mt-1 p-3">
+              <p className="text-sm text-muted-foreground text-center">
+                No results found. Try a different search or enter manually.
+              </p>
+            </Card>
+          )}
+        </div>
+
+        {/* Map */}
+        <div className="rounded-lg overflow-hidden border">
+          <MapComponent
+            latitude={value.latitude}
+            longitude={value.longitude}
+            onMapClick={handleMapClick}
           />
-          <div className="absolute right-2 top-1/2 -translate-y-1/2 flex items-center gap-1">
-            {isSearching && <Loader2 className="h-4 w-4 animate-spin text-muted-foreground" />}
-            {searchQuery && (
-              <Button
-                type="button"
-                variant="ghost"
-                size="icon"
-                className="h-6 w-6"
-                onClick={clearSearch}
-              >
-                <X className="h-4 w-4" />
-              </Button>
+        </div>
+
+        <p className="text-xs text-muted-foreground">
+          Click on the map to select a location, or search for an address above.
+        </p>
+
+        {/* Manual Entry Toggle */}
+        {showManualFields && (
+          <div className="space-y-4">
+            <Button
+              type="button"
+              variant="outline"
+              size="sm"
+              onClick={() => setManualMode(!manualMode)}
+            >
+              {manualMode ? 'Hide' : 'Show'} Manual Entry
+            </Button>
+
+            {manualMode && (
+              <div className="space-y-4 p-4 border rounded-lg bg-muted/30">
+                <div className="space-y-2">
+                  <Label htmlFor="manual-address">Street Address</Label>
+                  <Input
+                    id="manual-address"
+                    value={value.address}
+                    onChange={(e) => handleManualChange('address', e.target.value)}
+                    placeholder="123 Main Street"
+                  />
+                </div>
+
+                <div className="grid grid-cols-2 gap-4">
+                  <div className="space-y-2">
+                    <Label htmlFor="manual-city">City</Label>
+                    <Input
+                      id="manual-city"
+                      value={value.city}
+                      onChange={(e) => handleManualChange('city', e.target.value)}
+                      placeholder="City"
+                    />
+                  </div>
+                  <div className="space-y-2">
+                    <Label htmlFor="manual-state">State/Province</Label>
+                    <Input
+                      id="manual-state"
+                      value={value.state}
+                      onChange={(e) => handleManualChange('state', e.target.value)}
+                      placeholder="State"
+                    />
+                  </div>
+                </div>
+
+                <div className="grid grid-cols-2 gap-4">
+                  <div className="space-y-2">
+                    <Label htmlFor="manual-zip">ZIP/Postal Code</Label>
+                    <Input
+                      id="manual-zip"
+                      value={value.zipCode}
+                      onChange={(e) => handleManualChange('zipCode', e.target.value)}
+                      placeholder="12345"
+                    />
+                  </div>
+                  <div className="space-y-2">
+                    <Label htmlFor="manual-country">Country</Label>
+                    <Input
+                      id="manual-country"
+                      value={value.country}
+                      onChange={(e) => handleManualChange('country', e.target.value)}
+                      placeholder="Country"
+                    />
+                  </div>
+                </div>
+              </div>
             )}
           </div>
-        </div>
-
-        {/* Suggestions Dropdown */}
-        {showSuggestions && suggestions.length > 0 && (
-          <Card className="absolute z-50 w-full mt-1 max-h-60 overflow-auto">
-            {suggestions.map((result) => (
-              <button
-                key={result.place_id}
-                type="button"
-                className="w-full px-3 py-2 text-left text-sm hover:bg-muted flex items-start gap-2 border-b last:border-0"
-                onClick={() => selectAddress(result)}
-              >
-                <MapPin className="h-4 w-4 mt-0.5 flex-shrink-0 text-muted-foreground" />
-                <span className="line-clamp-2">{result.display_name}</span>
-              </button>
-            ))}
-          </Card>
         )}
 
-        {showSuggestions && searchQuery.length >= 3 && suggestions.length === 0 && !isSearching && (
-          <Card className="absolute z-50 w-full mt-1 p-3">
-            <p className="text-sm text-muted-foreground text-center">
-              No results found. Try a different search or enter manually.
+        {/* Selected Address Display */}
+        {value.address && (
+          <div className="p-3 bg-primary/5 border border-primary/20 rounded-lg">
+            <p className="text-sm font-medium flex items-center gap-2">
+              <MapPin className="h-4 w-4 text-primary" />
+              Selected Address
             </p>
-          </Card>
+            <p className="text-sm text-muted-foreground mt-1">
+              {[value.address, value.city, value.state, value.zipCode, value.country]
+                .filter(Boolean)
+                .join(', ')}
+            </p>
+            {value.latitude && value.longitude && (
+              <p className="text-xs text-muted-foreground mt-1">
+                Coordinates: {value.latitude.toFixed(6)}, {value.longitude.toFixed(6)}
+              </p>
+            )}
+          </div>
         )}
       </div>
-
-      {/* Map */}
-      <div className="rounded-lg overflow-hidden border">
-        <MapComponent
-          latitude={value.latitude}
-          longitude={value.longitude}
-          onMapClick={handleMapClick}
-        />
-      </div>
-
-      <p className="text-xs text-muted-foreground">
-        Click on the map to select a location, or search for an address above.
-      </p>
-
-      {/* Manual Entry Toggle */}
-      {showManualFields && (
-        <div className="space-y-4">
-          <Button
-            type="button"
-            variant="outline"
-            size="sm"
-            onClick={() => setManualMode(!manualMode)}
-          >
-            {manualMode ? 'Hide' : 'Show'} Manual Entry
-          </Button>
-
-          {manualMode && (
-            <div className="space-y-4 p-4 border rounded-lg bg-muted/30">
-              <div className="space-y-2">
-                <Label htmlFor="manual-address">Street Address</Label>
-                <Input
-                  id="manual-address"
-                  value={value.address}
-                  onChange={(e) => handleManualChange('address', e.target.value)}
-                  placeholder="123 Main Street"
-                />
-              </div>
-
-              <div className="grid grid-cols-2 gap-4">
-                <div className="space-y-2">
-                  <Label htmlFor="manual-city">City</Label>
-                  <Input
-                    id="manual-city"
-                    value={value.city}
-                    onChange={(e) => handleManualChange('city', e.target.value)}
-                    placeholder="City"
-                  />
-                </div>
-                <div className="space-y-2">
-                  <Label htmlFor="manual-state">State/Province</Label>
-                  <Input
-                    id="manual-state"
-                    value={value.state}
-                    onChange={(e) => handleManualChange('state', e.target.value)}
-                    placeholder="State"
-                  />
-                </div>
-              </div>
-
-              <div className="grid grid-cols-2 gap-4">
-                <div className="space-y-2">
-                  <Label htmlFor="manual-zip">ZIP/Postal Code</Label>
-                  <Input
-                    id="manual-zip"
-                    value={value.zipCode}
-                    onChange={(e) => handleManualChange('zipCode', e.target.value)}
-                    placeholder="12345"
-                  />
-                </div>
-                <div className="space-y-2">
-                  <Label htmlFor="manual-country">Country</Label>
-                  <Input
-                    id="manual-country"
-                    value={value.country}
-                    onChange={(e) => handleManualChange('country', e.target.value)}
-                    placeholder="Country"
-                  />
-                </div>
-              </div>
-            </div>
-          )}
-        </div>
-      )}
-
-      {/* Selected Address Display */}
-      {value.address && (
-        <div className="p-3 bg-primary/5 border border-primary/20 rounded-lg">
-          <p className="text-sm font-medium flex items-center gap-2">
-            <MapPin className="h-4 w-4 text-primary" />
-            Selected Address
-          </p>
-          <p className="text-sm text-muted-foreground mt-1">
-            {[value.address, value.city, value.state, value.zipCode, value.country]
-              .filter(Boolean)
-              .join(', ')}
-          </p>
-          {value.latitude && value.longitude && (
-            <p className="text-xs text-muted-foreground mt-1">
-              Coordinates: {value.latitude.toFixed(6)}, {value.longitude.toFixed(6)}
-            </p>
-          )}
-        </div>
-      )}
-    </div>
     </APIProvider>
   )
 }
