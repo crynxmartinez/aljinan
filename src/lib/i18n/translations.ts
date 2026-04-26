@@ -23,6 +23,7 @@ export const translations = {
       contact: "Contact",
       login: "Login",
       signUp: "Sign Up",
+      getStarted: "Get Started",
       home: "Home",
     },
     hero: {
@@ -667,6 +668,7 @@ export const translations = {
       contact: "اتصل بنا",
       login: "تسجيل الدخول",
       signUp: "إنشاء حساب",
+      getStarted: "ابدأ الآن",
       home: "الرئيسية",
     },
     hero: {

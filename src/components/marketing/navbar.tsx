@@ -81,7 +81,7 @@ export function Navbar({ variant = 'marketing', showHomeButton = false }: Navbar
               <Link href="/login">{t.navbar.login}</Link>
             </Button>
             <Button asChild>
-              <Link href="/register">{t.navbar.signUp}</Link>
+              <Link href="/contact">{t.navbar.getStarted}</Link>
             </Button>
           </div>
 
@@ -126,7 +126,7 @@ export function Navbar({ variant = 'marketing', showHomeButton = false }: Navbar
                   <Link href="/login">{t.navbar.login}</Link>
                 </Button>
                 <Button asChild className="w-full">
-                  <Link href="/register">{t.navbar.signUp}</Link>
+                  <Link href="/contact">{t.navbar.getStarted}</Link>
                 </Button>
               </div>
             </div>
