@@ -55,7 +55,6 @@ import { FileUploadDropzone } from '@/components/ui/file-upload-dropzone'
 import { Textarea } from '@/components/ui/textarea'
 import { cn } from '@/lib/utils'
 import { ColumnDetailModal } from './column-detail-modal'
-import { WorkOrderPrint } from '@/components/print/work-order-print'
 import { SignatureDialog } from '@/components/ui/signature-dialog'
 import { PriceDialog } from '@/components/ui/price-dialog'
 import {
@@ -521,7 +520,6 @@ export function ChecklistKanban({ branchId, projectId, readOnly = false, userRol
   const [updating, setUpdating] = useState(false)
   const [activeId, setActiveId] = useState<string | null>(null)
   const [overId, setOverId] = useState<string | null>(null)
-  const [printingWorkOrderId, setPrintingWorkOrderId] = useState<string | null>(null)
   const [confirmMoveDialogOpen, setConfirmMoveDialogOpen] = useState(false)
   const [pendingMove, setPendingMove] = useState<{
     itemId: string
@@ -1712,7 +1710,7 @@ export function ChecklistKanban({ branchId, projectId, readOnly = false, userRol
                 <Button
                   variant="outline"
                   className="w-full"
-                  onClick={() => setPrintingWorkOrderId(selectedItem.id)}
+                  onClick={() => window.open(`/print/work-orders/${selectedItem.id}`, '_blank', 'noopener,noreferrer')}
                 >
                   <Printer className="mr-2 h-4 w-4" />
                   Print Work Order
@@ -1894,16 +1892,6 @@ export function ChecklistKanban({ branchId, projectId, readOnly = false, userRol
         }
         signerName={signerName}
       />
-
-      {/* Print Dialog */}
-      {printingWorkOrderId && (
-        <div className="fixed inset-0 z-50">
-          <WorkOrderPrint
-            workOrderId={printingWorkOrderId}
-            onClose={() => setPrintingWorkOrderId(null)}
-          />
-        </div>
-      )}
 
       {/* Price Dialog */}
       <PriceDialog

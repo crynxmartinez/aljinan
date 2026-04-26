@@ -36,10 +36,9 @@ interface RequestPrintData {
 interface RequestQuotePrintProps {
   requestId: string
   branchId: string
-  onClose: () => void
 }
 
-export function RequestQuotePrint({ requestId, branchId, onClose }: RequestQuotePrintProps) {
+export function RequestQuotePrint({ requestId, branchId }: RequestQuotePrintProps) {
   const [data, setData] = useState<RequestPrintData | null>(null)
   const [loading, setLoading] = useState(true)
 
@@ -64,7 +63,6 @@ export function RequestQuotePrint({ requestId, branchId, onClose }: RequestQuote
     if (data && !loading) {
       setTimeout(() => {
         window.print()
-        onClose()
       }, 500)
     }
   }, [data, loading])

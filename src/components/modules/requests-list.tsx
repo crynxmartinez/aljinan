@@ -71,7 +71,6 @@ import {
   type ExportableRequest,
 } from '@/lib/export/export-utils'
 import { RequestComments } from './request-comments'
-import { RequestQuotePrint } from '@/components/print/request-quote-print'
 import { toast } from 'sonner'
 
 // Helper function to extract base name from work order title (removes Q1, Q2, Month1, etc.)
@@ -453,7 +452,6 @@ export function RequestsList({ branchId, userRole, projectId, userId }: Requests
   const [projectDialogOpen, setProjectDialogOpen] = useState(false)
   const [selectedRequest, setSelectedRequest] = useState<Request | null>(null)
   const [selectedProject, setSelectedProject] = useState<Project | null>(null)
-  const [printingRequestId, setPrintingRequestId] = useState<string | null>(null)
   const [creating, setCreating] = useState(false)
   const [saving, setSaving] = useState(false)
   const [error, setError] = useState('')
@@ -1626,7 +1624,7 @@ export function RequestsList({ branchId, userRole, projectId, userId }: Requests
                 <div className="pt-4 border-t">
                   <Button
                     variant="outline"
-                    onClick={() => setPrintingRequestId(selectedRequest.id)}
+                    onClick={() => window.open(`/print/branches/${branchId}/requests/${selectedRequest.id}`, '_blank', 'noopener,noreferrer')}
                     className="w-full"
                   >
                     <Printer className="mr-2 h-4 w-4" />
@@ -2082,16 +2080,6 @@ export function RequestsList({ branchId, userRole, projectId, userId }: Requests
         </DialogContent>
       </Dialog>
 
-      {/* Print Dialog */}
-      {printingRequestId && (
-        <div className="fixed inset-0 z-50">
-          <RequestQuotePrint
-            requestId={printingRequestId}
-            branchId={branchId}
-            onClose={() => setPrintingRequestId(null)}
-          />
-        </div>
-      )}
     </>
   )
 }

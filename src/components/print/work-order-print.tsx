@@ -44,10 +44,9 @@ interface WorkOrderPrintData {
 
 interface WorkOrderPrintProps {
   workOrderId: string
-  onClose: () => void
 }
 
-export function WorkOrderPrint({ workOrderId, onClose }: WorkOrderPrintProps) {
+export function WorkOrderPrint({ workOrderId }: WorkOrderPrintProps) {
   const [data, setData] = useState<WorkOrderPrintData | null>(null)
   const [loading, setLoading] = useState(true)
 
@@ -72,7 +71,6 @@ export function WorkOrderPrint({ workOrderId, onClose }: WorkOrderPrintProps) {
     if (data && !loading) {
       setTimeout(() => {
         window.print()
-        onClose()
       }, 500)
     }
   }, [data, loading])
