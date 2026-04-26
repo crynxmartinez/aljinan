@@ -160,6 +160,30 @@ export function RequestQuotePrint({ requestId, branchId, onClose }: RequestQuote
             size: A4;
             margin: 20mm;
           }
+          /* Prevent page breaks inside important elements */
+          .print-section {
+            page-break-inside: avoid;
+            break-inside: avoid;
+          }
+          /* Allow page breaks before sections if needed */
+          .print-section {
+            page-break-before: auto;
+            break-before: auto;
+          }
+          /* Prevent orphaned table rows */
+          table {
+            page-break-inside: auto;
+          }
+          tr {
+            page-break-inside: avoid;
+            page-break-after: auto;
+          }
+          thead {
+            display: table-header-group;
+          }
+          tfoot {
+            display: table-footer-group;
+          }
         }
       `}</style>
 

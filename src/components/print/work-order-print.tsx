@@ -155,6 +155,30 @@ export function WorkOrderPrint({ workOrderId, onClose }: WorkOrderPrintProps) {
             size: A4;
             margin: 20mm;
           }
+          /* Prevent page breaks inside important elements */
+          .print-section {
+            page-break-inside: avoid;
+            break-inside: avoid;
+          }
+          /* Allow page breaks before sections if needed */
+          .print-section {
+            page-break-before: auto;
+            break-before: auto;
+          }
+          /* Prevent orphaned table rows */
+          table {
+            page-break-inside: auto;
+          }
+          tr {
+            page-break-inside: avoid;
+            page-break-after: auto;
+          }
+          thead {
+            display: table-header-group;
+          }
+          tfoot {
+            display: table-footer-group;
+          }
         }
       `}</style>
 
@@ -177,7 +201,7 @@ export function WorkOrderPrint({ workOrderId, onClose }: WorkOrderPrintProps) {
         </div>
 
         {/* Client Information */}
-        <div className="mb-6">
+        <div className="mb-6 print-section">
           <h3 className="text-lg font-bold mb-3 text-primary border-b pb-2">CLIENT INFORMATION</h3>
           <div className="grid grid-cols-2 gap-4">
             <div>
@@ -202,7 +226,7 @@ export function WorkOrderPrint({ workOrderId, onClose }: WorkOrderPrintProps) {
         </div>
 
         {/* Work Order Details */}
-        <div className="mb-6">
+        <div className="mb-6 print-section">
           <h3 className="text-lg font-bold mb-3 text-primary border-b pb-2">WORK ORDER DETAILS</h3>
           <div className="grid grid-cols-2 gap-4">
             <div>
@@ -233,7 +257,7 @@ export function WorkOrderPrint({ workOrderId, onClose }: WorkOrderPrintProps) {
         </div>
 
         {/* Description */}
-        <div className="mb-6">
+        <div className="mb-6 print-section">
           <h3 className="text-lg font-bold mb-3 text-primary border-b pb-2">DESCRIPTION</h3>
           <p className="whitespace-pre-wrap">{data.description}</p>
           {data.notes && (
@@ -277,7 +301,7 @@ export function WorkOrderPrint({ workOrderId, onClose }: WorkOrderPrintProps) {
 
         {/* Inspection Results (if completed) */}
         {data.inspectionDate && (
-          <div className="mb-6">
+          <div className="mb-6 print-section">
             <h3 className="text-lg font-bold mb-3 text-primary border-b pb-2">INSPECTION RESULTS</h3>
             <div className="space-y-3">
               <div>
