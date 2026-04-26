@@ -129,6 +129,19 @@ export function ClientProfileForm({ client, open, onOpenChange }: ClientProfileF
                 />
               </div>
               <div className="space-y-2">
+                <Label htmlFor="companyEmail">Company Email</Label>
+                <Input
+                  id="companyEmail"
+                  type="email"
+                  value={formData.companyEmail}
+                  onChange={(e) => setFormData({ ...formData, companyEmail: e.target.value })}
+                  placeholder="company@example.com"
+                />
+              </div>
+            </div>
+
+            <div className="grid grid-cols-2 gap-4">
+              <div className="space-y-2">
                 <Label htmlFor="companyPhone">Phone</Label>
                 <Input
                   id="companyPhone"
