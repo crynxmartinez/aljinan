@@ -994,31 +994,12 @@ export function ChecklistKanban({ branchId, projectId, readOnly = false, userRol
       }
       const checklist = await checklistResponse.json()
 
-      // Update the work order stage - use different API based on whether project exists
-      let response
-      const hasValidProject = checklist.projectId &&
-        typeof checklist.projectId === 'string' &&
-        checklist.projectId.trim() !== ''
-
-      if (hasValidProject) {
-        // Use project-based API if project exists
-        response = await fetch(`/api/projects/${checklist.projectId}/work-orders/${itemId}`, {
-          method: 'PATCH',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ stage: 'FOR_REVIEW' })
-        })
-      } else {
-        // Use checklist-items API for work orders without projects
-        response = await fetch(`/api/branches/${branchId}/checklist-items`, {
-          method: 'PATCH',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({
-            action: 'update_stage',
-            itemId: itemId,
-            stage: 'FOR_REVIEW'
-          })
-        })
-      }
+      // Use same API as drag-and-drop (project API)
+      const response = await fetch(`/api/projects/${checklist.projectId}/work-orders/${itemId}`, {
+        method: 'PATCH',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ stage: 'FOR_REVIEW' })
+      })
 
       if (response.ok) {
         toast.success('Work order sent to review')
