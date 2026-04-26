@@ -4,7 +4,7 @@ import { useState } from 'react'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
 import { Badge } from '@/components/ui/badge'
-import { 
+import {
   Mail, Phone, Building2, FileText, Users, Edit,
   AlertTriangle
 } from 'lucide-react'
@@ -23,6 +23,9 @@ interface ClientProfileCardProps {
     companyName: string
     companyPhone: string | null
     companyEmail: string | null
+    contactPersonName: string | null
+    contactPersonPhone: string | null
+    contactPersonEmail: string | null
     crNumber: string | null
     vatNumber: string | null
     billingAddress: string | null
@@ -139,9 +142,9 @@ export function ClientProfileCard({ client, canEdit }: ClientProfileCardProps) {
                   <p className="text-xs text-amber-600 mt-1">
                     Complete your company profile to ensure smooth operations and compliance.
                   </p>
-                  <Button 
-                    variant="outline" 
-                    size="sm" 
+                  <Button
+                    variant="outline"
+                    size="sm"
                     className="mt-3 bg-white"
                     onClick={() => setEditOpen(true)}
                   >
