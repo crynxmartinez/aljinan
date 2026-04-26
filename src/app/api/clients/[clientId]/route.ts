@@ -122,9 +122,29 @@ export async function PATCH(
       updateData.companyEmail = sanitizeEmail(companyEmail)
     }
 
-    if (contactPersonName !== undefined) updateData.contactPersonName = contactPersonName ? sanitizePlainText(contactPersonName) : null
-    if (contactPersonPhone !== undefined) updateData.contactPersonPhone = contactPersonPhone ? sanitizePhone(contactPersonPhone) : null
-    if (contactPersonEmail !== undefined) updateData.contactPersonEmail = contactPersonEmail ? sanitizeEmail(contactPersonEmail) : null
+    if (contactPersonName !== undefined) {
+      updateData.contactPersonName = contactPersonName ? sanitizePlainText(contactPersonName) : null
+    }
+
+    if (contactPersonPhone !== undefined && contactPersonPhone) {
+      const phoneValidation = validatePhone(contactPersonPhone)
+      if (!phoneValidation.valid) {
+        return NextResponse.json({ error: `Contact person phone: ${phoneValidation.error}` }, { status: 400 })
+      }
+      updateData.contactPersonPhone = sanitizePhone(contactPersonPhone)
+    } else if (contactPersonPhone !== undefined) {
+      updateData.contactPersonPhone = null
+    }
+
+    if (contactPersonEmail !== undefined && contactPersonEmail) {
+      const emailValidation = validateEmail(contactPersonEmail)
+      if (!emailValidation.valid) {
+        return NextResponse.json({ error: `Contact person email: ${emailValidation.error}` }, { status: 400 })
+      }
+      updateData.contactPersonEmail = sanitizeEmail(contactPersonEmail)
+    } else if (contactPersonEmail !== undefined) {
+      updateData.contactPersonEmail = null
+    }
     if (crNumber !== undefined) updateData.crNumber = crNumber ? sanitizePlainText(crNumber) : null
     if (vatNumber !== undefined) updateData.vatNumber = vatNumber ? sanitizePlainText(vatNumber) : null
     if (billingAddress !== undefined) updateData.billingAddress = billingAddress ? sanitizePlainText(billingAddress) : null

@@ -74,14 +74,15 @@ export function ClientProfileForm({ client, open, onOpenChange }: ClientProfileF
       })
 
       if (!response.ok) {
-        throw new Error('Failed to update client')
+        const data = await response.json()
+        throw new Error(data.error || 'Failed to update client')
       }
 
       router.refresh()
       onOpenChange(false)
     } catch (error) {
       console.error('Error updating client:', error)
-      alert('Failed to update client profile')
+      alert(error instanceof Error ? error.message : 'Failed to update client profile')
     } finally {
       setLoading(false)
     }
