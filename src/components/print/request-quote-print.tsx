@@ -144,43 +144,64 @@ export function RequestQuotePrint({ requestId, branchId, onClose }: RequestQuote
     <>
       <style jsx global>{`
         @media print {
+          /* Ensure proper height calculation for pagination */
+          html, body {
+            height: auto !important;
+            overflow: visible !important;
+          }
+          
+          /* Hide non-print elements */
           body * {
             visibility: hidden;
           }
+          
+          /* Show only print container */
           .print-container, .print-container * {
             visibility: visible;
           }
+          
+          /* Fix positioning to allow multi-page flow */
           .print-container {
-            position: absolute;
+            position: static !important;
             left: 0;
             top: 0;
             width: 100%;
+            max-width: 210mm;
+            margin: 0 auto;
           }
+          
+          /* A4 page setup */
           @page {
             size: A4;
             margin: 20mm;
           }
+          
           /* Prevent page breaks inside important elements */
           .print-section {
             page-break-inside: avoid;
             break-inside: avoid;
           }
+          
           /* Allow page breaks before sections if needed */
           .print-section {
             page-break-before: auto;
             break-before: auto;
           }
+          
           /* Prevent orphaned table rows */
           table {
             page-break-inside: auto;
           }
+          
           tr {
             page-break-inside: avoid;
             page-break-after: auto;
           }
+          
           thead {
             display: table-header-group;
           }
+          
           tfoot {
             display: table-footer-group;
           }
