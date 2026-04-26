@@ -6,7 +6,7 @@ import { Button } from '@/components/ui/button'
 import { Badge } from '@/components/ui/badge'
 import {
   Building2, Phone, Mail, MapPin, Globe, FileText, Calendar, Edit,
-  AlertTriangle, Shield, Briefcase
+  AlertTriangle, Shield, Briefcase, Users
 } from 'lucide-react'
 import { ContractorProfileForm } from './contractor-profile-form'
 
@@ -168,6 +168,46 @@ export function ContractorProfileCard({ contractor }: ContractorProfileCardProps
               </div>
             </div>
           </div>
+
+          {/* Contact Person */}
+          {(contractor.contactPersonName || contractor.contactPersonPhone || contractor.contactPersonEmail) && (
+            <div className="pt-4 border-t space-y-4">
+              <h4 className="text-sm font-semibold text-muted-foreground uppercase tracking-wide">
+                Contact Person
+              </h4>
+              <div className="grid gap-4 sm:grid-cols-2">
+                {contractor.contactPersonName && (
+                  <div className="flex items-start gap-3">
+                    <Users className="h-4 w-4 text-muted-foreground mt-0.5" />
+                    <div>
+                      <p className="text-xs text-muted-foreground">Name</p>
+                      <p className="text-sm font-medium">{contractor.contactPersonName}</p>
+                    </div>
+                  </div>
+                )}
+
+                {contractor.contactPersonPhone && (
+                  <div className="flex items-start gap-3">
+                    <Phone className="h-4 w-4 text-muted-foreground mt-0.5" />
+                    <div>
+                      <p className="text-xs text-muted-foreground">Phone</p>
+                      <p className="text-sm font-medium">{contractor.contactPersonPhone}</p>
+                    </div>
+                  </div>
+                )}
+
+                {contractor.contactPersonEmail && (
+                  <div className="flex items-start gap-3">
+                    <Mail className="h-4 w-4 text-muted-foreground mt-0.5" />
+                    <div>
+                      <p className="text-xs text-muted-foreground">Email</p>
+                      <p className="text-sm font-medium">{contractor.contactPersonEmail}</p>
+                    </div>
+                  </div>
+                )}
+              </div>
+            </div>
+          )}
 
           {/* Registration & Tax */}
           <div className="pt-4 border-t space-y-4">
