@@ -80,7 +80,7 @@ export default async function ClientBranchPage({
       </div>
 
       <ClientBranchWorkspace
-        branchId={branchId}
+        branchId={branch.id}
         branch={{
           ...branch,
           cdCertificateExpiry: branch.cdCertificateExpiry?.toISOString() || null,
