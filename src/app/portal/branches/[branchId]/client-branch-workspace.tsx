@@ -14,6 +14,7 @@ import { CalendarView } from '@/components/modules/calendar-view'
 import { ChecklistKanban } from '@/components/modules/checklist-kanban'
 import { CertificatesList } from '@/components/modules/certificates-list'
 import { EquipmentList } from '@/components/modules/equipment-list'
+import { ProjectsTable } from '@/components/modules/projects-table'
 import {
   LayoutDashboard,
   FileText,
@@ -78,7 +79,6 @@ export function ClientBranchWorkspace({ branchId, branch }: ClientBranchWorkspac
   const [activityPanelOpen, setActivityPanelOpen] = useState(false)
   const [openRequestsCount, setOpenRequestsCount] = useState(0)
   const [projects, setProjects] = useState<Project[]>([])
-  const [standaloneWorkOrders, setStandaloneWorkOrders] = useState<{ id: string; workOrderNumber?: number | null; description: string; scheduledDate: string | null; stage: string; price: number | null }[]>([])
   const [activeTab, setActiveTab] = useState('dashboard')
   const [refreshTrigger, setRefreshTrigger] = useState(0)
   const [isLoading, setIsLoading] = useState(true)
@@ -141,25 +141,10 @@ export function ClientBranchWorkspace({ branchId, branch }: ClientBranchWorkspac
     }
   }
 
-  const fetchStandaloneWorkOrders = async () => {
-    try {
-      const response = await fetch(`/api/branches/${branchId}/checklist-items`)
-      if (response.ok) {
-        const data = await response.json()
-        // Filter for standalone work orders (projectTitle is null)
-        const standalone = data.filter((wo: { projectTitle: string | null }) => wo.projectTitle === null)
-        setStandaloneWorkOrders(standalone)
-      }
-    } catch (err) {
-      console.error('Failed to fetch standalone work orders:', err)
-    }
-  }
-
   // Initial data fetch
   useEffect(() => {
     fetchProjects(true) // Pass true for initial load to auto-select active project
     fetchRequestsCount()
-    fetchStandaloneWorkOrders()
   }, [branchId])
 
   // Refetch projects when refreshTrigger changes
@@ -314,239 +299,17 @@ export function ClientBranchWorkspace({ branchId, branch }: ClientBranchWorkspac
         <div className="mt-6">
           {/* Dashboard Tab */}
           <TabsContent value="dashboard" className="mt-0">
-            <div className="space-y-6">
-              {/* Pending Proposals Alert */}
-              {pendingProjects.length > 0 && (
-                <Card className="border-amber-200 bg-amber-50">
-                  <CardHeader className="pb-3">
-                    <div className="flex items-center gap-2">
-                      <AlertCircle className="h-5 w-5 text-amber-600" />
-                      <CardTitle className="text-amber-800">
-                        {pendingProjects.length === 1 ? 'Project Proposal Awaiting Review' : `${pendingProjects.length} Project Proposals Awaiting Review`}
-                      </CardTitle>
-                    </div>
-                    <CardDescription className="text-amber-700">
-                      Your contractor has submitted project proposals for your review.
-                    </CardDescription>
-                  </CardHeader>
-                  <CardContent className="space-y-3">
-                    {pendingProjects.map((project) => (
-                      <div
-                        key={project.id}
-                        className="flex items-center justify-between p-4 bg-white rounded-lg border border-amber-200 hover:border-amber-400 transition-colors cursor-pointer"
-                        onClick={() => viewProjectProposal(project.id)}
-                      >
-                        <div className="space-y-1">
-                          <div className="flex items-center gap-2">
-                            <Clock className="h-4 w-4 text-amber-600" />
-                            <span className="font-medium">{project.title}</span>
-                            <Badge className="bg-amber-100 text-amber-700">Pending Review</Badge>
-                          </div>
-                          <div className="text-sm text-muted-foreground">
-                            Total: SAR {(project.totalValue || 0).toLocaleString('en-US', { minimumFractionDigits: 2 })}
-                          </div>
-                        </div>
-                        <Button variant="outline" size="sm" className="gap-2">
-                          Review Proposal
-                          <ArrowRight className="h-4 w-4" />
-                        </Button>
-                      </div>
-                    ))}
-                  </CardContent>
-                </Card>
-              )}
-
-              {/* Active Projects */}
-              {activeProjects.length > 0 && (
-                <Card>
-                  <CardHeader>
-                    <div className="flex items-center gap-2">
-                      <CheckCircle className="h-5 w-5 text-green-600" />
-                      <CardTitle>Active Projects</CardTitle>
-                    </div>
-                    <CardDescription>Projects currently in progress</CardDescription>
-                  </CardHeader>
-                  <CardContent className="space-y-3">
-                    {activeProjects.map((project) => (
-                      <div
-                        key={project.id}
-                        className="flex items-center justify-between p-4 border rounded-lg hover:bg-muted/50 transition-colors cursor-pointer"
-                        onClick={() => {
-                          setSelectedProjectId(project.id)
-                          setActiveTab('calendar')
-                        }}
-                      >
-                        <div className="space-y-1">
-                          <div className="flex items-center gap-2">
-                            <span className="font-medium">{project.title}</span>
-                            <Badge className="bg-green-100 text-green-700">Active</Badge>
-                          </div>
-                          <div className="text-sm text-muted-foreground">
-                            {project.startDate && `Started: ${new Date(project.startDate).toLocaleDateString()}`}
-                            {project.endDate && ` · Ends: ${new Date(project.endDate).toLocaleDateString()}`}
-                          </div>
-                        </div>
-                        <Button variant="ghost" size="sm" className="gap-2">
-                          View Details
-                          <ArrowRight className="h-4 w-4" />
-                        </Button>
-                      </div>
-                    ))}
-                  </CardContent>
-                </Card>
-              )}
-
-              {/* Standalone Work Orders from Service Requests */}
-              {standaloneWorkOrders.length > 0 && (
-                <Card className="border-blue-200 bg-blue-50/30">
-                  <CardHeader>
-                    <div className="flex items-center gap-2">
-                      <ClipboardList className="h-5 w-5 text-blue-600" />
-                      <CardTitle className="text-blue-700">Service Requests</CardTitle>
-                      <Badge className="bg-blue-100 text-blue-700">Ad-hoc</Badge>
-                    </div>
-                    <CardDescription className="text-blue-600">
-                      Work orders from your service requests
-                    </CardDescription>
-                  </CardHeader>
-                  <CardContent className="space-y-2">
-                    {standaloneWorkOrders.map((wo) => (
-                      <div
-                        key={wo.id}
-                        className="flex items-center justify-between p-3 bg-white rounded-lg border border-blue-200"
-                      >
-                        <div className="space-y-1">
-                          <div className="flex items-center gap-2">
-                            {wo.workOrderNumber && (
-                              <span className="text-xs font-mono text-muted-foreground">WO-{String(wo.workOrderNumber).padStart(4, '0')}</span>
-                            )}
-                            <span className="font-medium">{wo.description}</span>
-                          </div>
-                          <div className="flex items-center gap-3 text-sm text-muted-foreground">
-                            {wo.scheduledDate && (
-                              <span className="flex items-center gap-1">
-                                <Calendar className="h-3 w-3" />
-                                {new Date(wo.scheduledDate).toLocaleDateString()}
-                              </span>
-                            )}
-                            <Badge variant="outline" className="text-xs">
-                              {wo.stage}
-                            </Badge>
-                          </div>
-                        </div>
-                        {wo.price && (
-                          <span className="font-semibold text-blue-700">
-                            SAR {wo.price.toLocaleString('en-US', { minimumFractionDigits: 2 })}
-                          </span>
-                        )}
-                      </div>
-                    ))}
-                    <div className="flex justify-between items-center pt-2 border-t border-blue-200 mt-2">
-                      <span className="text-sm text-muted-foreground">Total Value</span>
-                      <span className="font-bold text-blue-700">
-                        SAR {standaloneWorkOrders.reduce((sum, wo) => sum + (wo.price || 0), 0).toLocaleString('en-US', { minimumFractionDigits: 2 })}
-                      </span>
-                    </div>
-                  </CardContent>
-                </Card>
-              )}
-
-              {/* Branch Details and Activity */}
-              <div className="grid gap-6 lg:grid-cols-2">
-                <Card>
-                  <CardHeader>
-                    <CardTitle>Branch Details</CardTitle>
-                  </CardHeader>
-                  <CardContent className="space-y-4">
-                    <div>
-                      <p className="text-sm text-muted-foreground">Name</p>
-                      <p className="font-medium">{branch.name}</p>
-                    </div>
-                    <div>
-                      <p className="text-sm text-muted-foreground">Address</p>
-                      <p className="font-medium">{branch.address}</p>
-                    </div>
-                    {branch.city && (
-                      <div>
-                        <p className="text-sm text-muted-foreground">City</p>
-                        <p className="font-medium">
-                          {branch.city}{branch.state ? `, ${branch.state}` : ''}
-                          {branch.zipCode ? ` ${branch.zipCode}` : ''}
-                        </p>
-                      </div>
-                    )}
-                    {branch.phone && (
-                      <div>
-                        <p className="text-sm text-muted-foreground">Phone</p>
-                        <p className="font-medium">{branch.phone}</p>
-                      </div>
-                    )}
-                  </CardContent>
-                </Card>
-
-                <Card>
-                  <CardHeader>
-                    <CardTitle>Quick Actions</CardTitle>
-                    <CardDescription>Common tasks for this branch</CardDescription>
-                  </CardHeader>
-                  <CardContent className="space-y-2">
-                    <Button
-                      variant="outline"
-                      className="w-full justify-start gap-2"
-                      onClick={() => setActiveTab('requests')}
-                    >
-                      <FileText className="h-4 w-4" />
-                      View Requests & Proposals
-                      {openRequestsCount > 0 && (
-                        <Badge variant="destructive" className="ml-auto">{openRequestsCount}</Badge>
-                      )}
-                    </Button>
-                    {hasActiveProject && (
-                      <>
-                        <Button
-                          variant="outline"
-                          className="w-full justify-start gap-2"
-                          onClick={() => setActiveTab('calendar')}
-                        >
-                          <Calendar className="h-4 w-4" />
-                          View Calendar
-                        </Button>
-                        <Button
-                          variant="outline"
-                          className="w-full justify-start gap-2"
-                          onClick={() => setActiveTab('invoices')}
-                        >
-                          <DollarSign className="h-4 w-4" />
-                          View Invoices
-                        </Button>
-                      </>
-                    )}
-                  </CardContent>
-                </Card>
-              </div>
-
-              {/* No Projects State */}
-              {projects.length === 0 && (
-                <Card>
-                  <CardContent className="flex flex-col items-center justify-center py-12 text-center">
-                    <ClipboardList className="h-12 w-12 text-muted-foreground/30 mb-4" />
-                    <h3 className="text-lg font-semibold mb-2">No Projects Yet</h3>
-                    <p className="text-muted-foreground max-w-md">
-                      Your contractor will create a project proposal for this branch.
-                      You&apos;ll be able to review and approve it here.
-                    </p>
-                  </CardContent>
-                </Card>
-              )}
-            </div>
+            <ProjectsTable branchId={branchId} />
           </TabsContent>
 
           {/* Kanban Board Tab - Read-only Kanban view for client */}
-          {hasActiveProject && (
-            <TabsContent value="checklist" className="mt-0">
-              <ChecklistKanban branchId={branchId} projectId={selectedProjectId} userRole="CLIENT" />
-            </TabsContent>
-          )}
+          {
+            hasActiveProject && (
+              <TabsContent value="checklist" className="mt-0">
+                <ChecklistKanban branchId={branchId} projectId={selectedProjectId} userRole="CLIENT" />
+              </TabsContent>
+            )
+          }
 
           {/* Proposals/Requests Tab */}
           <TabsContent value="requests" className="mt-0">
@@ -554,25 +317,31 @@ export function ClientBranchWorkspace({ branchId, branch }: ClientBranchWorkspac
           </TabsContent>
 
           {/* Calendar Tab - Only when active project */}
-          {hasActiveProject && (
-            <TabsContent value="calendar" className="mt-0">
-              <CalendarView branchId={branchId} projectId={selectedProjectId} />
-            </TabsContent>
-          )}
+          {
+            hasActiveProject && (
+              <TabsContent value="calendar" className="mt-0">
+                <CalendarView branchId={branchId} projectId={selectedProjectId} />
+              </TabsContent>
+            )
+          }
 
           {/* Billing Tab - Using unified BillingView */}
-          {hasActiveProject && (
-            <TabsContent value="billing" className="mt-0">
-              <BillingView branchId={branchId} projectId={selectedProjectId} userRole="CLIENT" />
-            </TabsContent>
-          )}
+          {
+            hasActiveProject && (
+              <TabsContent value="billing" className="mt-0">
+                <BillingView branchId={branchId} projectId={selectedProjectId} userRole="CLIENT" />
+              </TabsContent>
+            )
+          }
 
           {/* Contracts Tab - Only when active project */}
-          {hasActiveProject && (
-            <TabsContent value="contracts" className="mt-0">
-              <ClientBranchContracts branchId={branchId} projectId={selectedProjectId} />
-            </TabsContent>
-          )}
+          {
+            hasActiveProject && (
+              <TabsContent value="contracts" className="mt-0">
+                <ClientBranchContracts branchId={branchId} projectId={selectedProjectId} />
+              </TabsContent>
+            )
+          }
 
           {/* Equipment Tab */}
           <TabsContent value="equipment" className="mt-0">
@@ -600,15 +369,16 @@ export function ClientBranchWorkspace({ branchId, branch }: ClientBranchWorkspac
               </div>
             </div>
           </TabsContent>
-        </div>
-      </Tabs>
+        </div >
+      </Tabs >
 
       {/* Activity Panel */}
-      <ActivityPanel
+      < ActivityPanel
         branchId={branchId}
         projectId={selectedProjectId}
         isOpen={activityPanelOpen}
-        onClose={() => setActivityPanelOpen(false)}
+        onClose={() => setActivityPanelOpen(false)
+        }
       />
     </>
   )
