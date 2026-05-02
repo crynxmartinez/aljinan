@@ -111,9 +111,10 @@ export async function GET() {
     const transformedDelayedWorkOrders = delayedWorkOrders.map(wo => {
       const branchInfo = branchMap.get(wo.checklist.branchId)
       const daysOverdue = Math.floor((now.getTime() - new Date(wo.scheduledDate!).getTime()) / (1000 * 60 * 60 * 24))
-      
+
       return {
         id: wo.id,
+        workOrderNumber: wo.workOrderNumber,
         description: wo.description,
         scheduledDate: wo.scheduledDate?.toISOString() || '',
         daysOverdue,
@@ -137,7 +138,7 @@ export async function GET() {
     const transformedExpiringEquipment = expiringEquipment.map(eq => {
       const branchInfo = branchMap.get(eq.branchId)
       const isExpired = eq.expectedExpiry ? eq.expectedExpiry < now : false
-      const daysLeft = eq.expectedExpiry 
+      const daysLeft = eq.expectedExpiry
         ? Math.ceil((eq.expectedExpiry.getTime() - now.getTime()) / (1000 * 60 * 60 * 24))
         : 0
 
@@ -190,7 +191,7 @@ export async function GET() {
       transformedExpiringContracts = expiringContracts.map(contract => {
         const branchInfo = branchMap.get(contract.branchId)
         const isExpired = contract.endDate ? contract.endDate < now : false
-        const daysLeft = contract.endDate 
+        const daysLeft = contract.endDate
           ? Math.ceil((contract.endDate.getTime() - now.getTime()) / (1000 * 60 * 60 * 24))
           : 0
 

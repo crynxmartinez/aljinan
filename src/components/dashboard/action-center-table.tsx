@@ -29,6 +29,7 @@ import Link from 'next/link'
 // Types for each alert category
 interface DelayedWorkOrder {
   id: string
+  workOrderNumber?: number | null
   description: string
   scheduledDate: string
   daysOverdue: number
@@ -212,6 +213,7 @@ export function ActionCenterTable({ userRole }: ActionCenterTableProps) {
                 <Table>
                   <TableHeader>
                     <TableRow>
+                      <TableHead>WO #</TableHead>
                       {userRole === 'CONTRACTOR' && <TableHead>Client</TableHead>}
                       <TableHead>Branch</TableHead>
                       <TableHead>Work Order</TableHead>
@@ -224,6 +226,9 @@ export function ActionCenterTable({ userRole }: ActionCenterTableProps) {
                   <TableBody>
                     {data.delayedWorkOrders.map((wo) => (
                       <TableRow key={wo.id}>
+                        <TableCell className="font-medium">
+                          {wo.workOrderNumber ? `WO-${String(wo.workOrderNumber).padStart(4, '0')}` : '-'}
+                        </TableCell>
                         {userRole === 'CONTRACTOR' && (
                           <TableCell>
                             <div className="flex items-center gap-2">
