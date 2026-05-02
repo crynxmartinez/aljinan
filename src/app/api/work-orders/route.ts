@@ -140,6 +140,7 @@ export async function GET() {
       description: wo.description,
       stage: wo.stage,
       workOrderType: wo.workOrderType,
+      workOrderNumber: wo.workOrderNumber,
       scheduledDate: wo.scheduledDate?.toISOString() || null,
       price: wo.price,
       clientName: wo.checklist.branch.client?.companyName || '',

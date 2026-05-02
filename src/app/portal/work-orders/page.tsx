@@ -20,6 +20,7 @@ interface WorkOrder {
   description: string
   stage: string
   workOrderType: string
+  workOrderNumber?: number | null
   scheduledDate: string | null
   price: number | null
   clientName: string
