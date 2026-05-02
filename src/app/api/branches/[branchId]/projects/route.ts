@@ -56,6 +56,7 @@ export async function GET(
                 select: {
                   id: true,
                   description: true,
+                  workOrderNumber: true,
                   notes: true,
                   scheduledDate: true,
                   stage: true,
@@ -78,10 +79,11 @@ export async function GET(
     // Transform projects to include work orders from checklists
     const transformedProjects = projects.map(project => {
       // Get work orders from checklist items
-      const workOrders = project.checklists.flatMap(checklist => 
+      const workOrders = project.checklists.flatMap(checklist =>
         checklist.items.map(item => ({
           id: item.id,
           title: item.description,
+          workOrderNumber: item.workOrderNumber,
           description: item.notes,
           scheduledDate: item.scheduledDate,
           status: item.stage,
@@ -197,7 +199,7 @@ export async function POST(
           for (let i = 0; i < occurrences; i++) {
             const occurrenceDate = new Date(baseDate)
             occurrenceDate.setMonth(occurrenceDate.getMonth() + (i * interval))
-            
+
             // Don't create if past end date
             if (occurrenceDate > projectEndDate) break
 

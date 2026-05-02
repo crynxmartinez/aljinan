@@ -25,6 +25,7 @@ import { cn } from '@/lib/utils'
 interface WorkOrder {
   id: string
   title: string
+  workOrderNumber?: number | null
   description: string | null
   scheduledDate: string | null
   status: string
@@ -38,14 +39,14 @@ function getUrgency(scheduledDate: string | null, status: string): 'overdue' | '
   if (!scheduledDate) return null
   // Don't show urgency for completed or for_review items
   if (status === 'COMPLETED' || status === 'FOR_REVIEW') return null
-  
+
   const today = new Date()
   today.setHours(0, 0, 0, 0)
   const scheduled = new Date(scheduledDate)
   scheduled.setHours(0, 0, 0, 0)
-  
+
   const diffDays = Math.floor((scheduled.getTime() - today.getTime()) / (1000 * 60 * 60 * 24))
-  
+
   if (diffDays < 0) return 'overdue'
   if (diffDays === 0) return 'due-today'
   return 'upcoming'
@@ -77,7 +78,7 @@ function getBaseWorkOrderName(title: string): string {
 // Group work orders by their base name
 function groupWorkOrders(workOrders: WorkOrder[]): Map<string, WorkOrder[]> {
   const groups = new Map<string, WorkOrder[]>()
-  
+
   for (const wo of workOrders) {
     const baseName = getBaseWorkOrderName(wo.title)
     if (!groups.has(baseName)) {
@@ -85,7 +86,7 @@ function groupWorkOrders(workOrders: WorkOrder[]): Map<string, WorkOrder[]> {
     }
     groups.get(baseName)!.push(wo)
   }
-  
+
   return groups
 }
 
@@ -93,7 +94,7 @@ function groupWorkOrders(workOrders: WorkOrder[]): Map<string, WorkOrder[]> {
 function WorkOrdersGroupedView({ workOrders }: { workOrders: WorkOrder[] }) {
   const [expandedGroups, setExpandedGroups] = useState<Set<string>>(new Set())
   const groups = groupWorkOrders(workOrders)
-  
+
   const toggleGroup = (groupName: string) => {
     setExpandedGroups(prev => {
       const next = new Set(prev)
@@ -115,7 +116,7 @@ function WorkOrdersGroupedView({ workOrders }: { workOrders: WorkOrder[] }) {
     }
     return null
   }
-  
+
   return (
     <div className="space-y-1">
       {Array.from(groups.entries()).map(([groupName, items]) => {
@@ -125,10 +126,10 @@ function WorkOrdersGroupedView({ workOrders }: { workOrders: WorkOrder[] }) {
         const hasAdhoc = items.some(wo => wo.type === 'adhoc')
         const singleItemUrgency = isSingleItem ? getUrgency(items[0].scheduledDate, items[0].status) : null
         const groupUrgency = !isSingleItem ? getGroupUrgency(items) : null
-        
+
         return (
-          <div 
-            key={groupName} 
+          <div
+            key={groupName}
             className={cn(
               "rounded-lg bg-background border",
               isSingleItem && getUrgencyBorderClass(singleItemUrgency),
@@ -157,6 +158,9 @@ function WorkOrdersGroupedView({ workOrders }: { workOrders: WorkOrder[] }) {
                 )}
                 <div className="flex-1">
                   <div className="flex items-center gap-2 flex-wrap">
+                    {items[0].workOrderNumber && (
+                      <span className="text-xs font-mono text-muted-foreground">WO-{String(items[0].workOrderNumber).padStart(4, '0')}</span>
+                    )}
                     <span className="font-medium text-sm">{groupName}</span>
                     {!isSingleItem && (
                       <Badge variant="secondary" className="text-xs">
@@ -182,7 +186,7 @@ function WorkOrdersGroupedView({ workOrders }: { workOrders: WorkOrder[] }) {
                 {groupTotal > 0 ? formatCurrency(groupTotal) : '-'}
               </div>
             </button>
-            
+
             {/* Single Item Details */}
             {isSingleItem && (
               <div className="px-3 pb-3 pt-0">
@@ -197,15 +201,15 @@ function WorkOrdersGroupedView({ workOrders }: { workOrders: WorkOrder[] }) {
                 </div>
               </div>
             )}
-            
+
             {/* Expanded Items */}
             {!isSingleItem && isExpanded && (
               <div className="border-t bg-muted/30">
                 {items.map((wo, idx) => {
                   const itemUrgency = getUrgency(wo.scheduledDate, wo.status)
                   return (
-                    <div 
-                      key={wo.id} 
+                    <div
+                      key={wo.id}
                       className={cn(
                         "flex items-center justify-between px-3 py-2 border-b last:border-b-0",
                         getUrgencyBorderClass(itemUrgency)
@@ -334,9 +338,10 @@ export function ProjectsTable({ branchId, onCreateProject }: ProjectsTableProps)
         // Filter for standalone work orders (projectTitle is null)
         const standalone = woData
           .filter((wo: { projectTitle: string | null }) => wo.projectTitle === null)
-          .map((wo: { id: string; description: string; notes: string | null; scheduledDate: string | null; stage: string; type: string; price: number | null; recurringType?: string }) => ({
+          .map((wo: { id: string; description: string; workOrderNumber?: number | null; notes: string | null; scheduledDate: string | null; stage: string; type: string; price: number | null; recurringType?: string }) => ({
             id: wo.id,
             title: wo.description,
+            workOrderNumber: wo.workOrderNumber,
             description: wo.notes,
             scheduledDate: wo.scheduledDate,
             status: wo.stage,
@@ -439,7 +444,7 @@ export function ProjectsTable({ branchId, onCreateProject }: ProjectsTableProps)
                       {project.description && (
                         <p className="text-sm text-muted-foreground mb-4">{project.description}</p>
                       )}
-                      
+
                       {project.workOrders.length === 0 ? (
                         <p className="text-sm text-muted-foreground text-center py-4">
                           No work orders in this project
