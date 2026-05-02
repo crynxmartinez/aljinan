@@ -78,7 +78,7 @@ export function ClientBranchWorkspace({ branchId, branch }: ClientBranchWorkspac
   const [activityPanelOpen, setActivityPanelOpen] = useState(false)
   const [openRequestsCount, setOpenRequestsCount] = useState(0)
   const [projects, setProjects] = useState<Project[]>([])
-  const [standaloneWorkOrders, setStandaloneWorkOrders] = useState<{ id: string; description: string; scheduledDate: string | null; stage: string; price: number | null }[]>([])
+  const [standaloneWorkOrders, setStandaloneWorkOrders] = useState<{ id: string; workOrderNumber?: number | null; description: string; scheduledDate: string | null; stage: string; price: number | null }[]>([])
   const [activeTab, setActiveTab] = useState('dashboard')
   const [refreshTrigger, setRefreshTrigger] = useState(0)
   const [isLoading, setIsLoading] = useState(true)
@@ -102,7 +102,7 @@ export function ClientBranchWorkspace({ branchId, branch }: ClientBranchWorkspac
       if (response.ok) {
         const data = await response.json()
         setProjects(data)
-        
+
         // Auto-select active project on initial load
         if (isInitialLoad && data.length > 0) {
           const activeProject = data.find((p: Project) => p.status === 'ACTIVE')
@@ -131,7 +131,7 @@ export function ClientBranchWorkspace({ branchId, branch }: ClientBranchWorkspac
         const data = await response.json()
         // Count only REQUESTED and QUOTED requests (pending action)
         const activeRequestStatuses = ['REQUESTED', 'QUOTED']
-        const openCount = data.filter((r: { status: string }) => 
+        const openCount = data.filter((r: { status: string }) =>
           activeRequestStatuses.includes(r.status)
         ).length
         setOpenRequestsCount(openCount)
@@ -416,7 +416,12 @@ export function ClientBranchWorkspace({ branchId, branch }: ClientBranchWorkspac
                         className="flex items-center justify-between p-3 bg-white rounded-lg border border-blue-200"
                       >
                         <div className="space-y-1">
-                          <span className="font-medium">{wo.description}</span>
+                          <div className="flex items-center gap-2">
+                            {wo.workOrderNumber && (
+                              <span className="text-xs font-mono text-muted-foreground">WO-{String(wo.workOrderNumber).padStart(4, '0')}</span>
+                            )}
+                            <span className="font-medium">{wo.description}</span>
+                          </div>
                           <div className="flex items-center gap-3 text-sm text-muted-foreground">
                             {wo.scheduledDate && (
                               <span className="flex items-center gap-1">
@@ -485,8 +490,8 @@ export function ClientBranchWorkspace({ branchId, branch }: ClientBranchWorkspac
                     <CardDescription>Common tasks for this branch</CardDescription>
                   </CardHeader>
                   <CardContent className="space-y-2">
-                    <Button 
-                      variant="outline" 
+                    <Button
+                      variant="outline"
                       className="w-full justify-start gap-2"
                       onClick={() => setActiveTab('requests')}
                     >
@@ -498,16 +503,16 @@ export function ClientBranchWorkspace({ branchId, branch }: ClientBranchWorkspac
                     </Button>
                     {hasActiveProject && (
                       <>
-                        <Button 
-                          variant="outline" 
+                        <Button
+                          variant="outline"
                           className="w-full justify-start gap-2"
                           onClick={() => setActiveTab('calendar')}
                         >
                           <Calendar className="h-4 w-4" />
                           View Calendar
                         </Button>
-                        <Button 
-                          variant="outline" 
+                        <Button
+                          variant="outline"
                           className="w-full justify-start gap-2"
                           onClick={() => setActiveTab('invoices')}
                         >
@@ -527,7 +532,7 @@ export function ClientBranchWorkspace({ branchId, branch }: ClientBranchWorkspac
                     <ClipboardList className="h-12 w-12 text-muted-foreground/30 mb-4" />
                     <h3 className="text-lg font-semibold mb-2">No Projects Yet</h3>
                     <p className="text-muted-foreground max-w-md">
-                      Your contractor will create a project proposal for this branch. 
+                      Your contractor will create a project proposal for this branch.
                       You&apos;ll be able to review and approve it here.
                     </p>
                   </CardContent>
@@ -583,14 +588,14 @@ export function ClientBranchWorkspace({ branchId, branch }: ClientBranchWorkspac
           <TabsContent value="settings" className="mt-0">
             <div className="flex justify-center">
               <div className="w-full max-w-2xl">
-                <BranchProfileCard 
+                <BranchProfileCard
                   branch={branch}
                   activeProject={activeProjects.length > 0 ? {
                     title: activeProjects[0].title,
                     startDate: activeProjects[0].startDate || null,
                     endDate: activeProjects[0].endDate || null,
                   } : null}
-                  canEdit={true} 
+                  canEdit={true}
                 />
               </div>
             </div>
