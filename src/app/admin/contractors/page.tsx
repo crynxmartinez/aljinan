@@ -18,6 +18,7 @@ import {
   AlertCircle,
   Mail,
   RefreshCw,
+  Key,
 } from 'lucide-react'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Badge } from '@/components/ui/badge'
@@ -245,6 +246,43 @@ export default function ContractorsPage() {
     }
   }
 
+  const handleResendVerificationAdmin = async (userId: string, email: string) => {
+    try {
+      const response = await fetch(`/api/admin/users/${userId}/resend-verification`, {
+        method: 'POST',
+      })
+      const data = await response.json()
+      if (!response.ok) throw new Error(data.error)
+
+      toast.success('Verification email resent!', {
+        description: `Sent to ${email}`
+      })
+    } catch (err) {
+      toast.error('Failed to resend email', {
+        description: err instanceof Error ? err.message : 'Unknown error'
+      })
+    }
+  }
+
+  const handleManualActivate = async (userId: string, email: string) => {
+    try {
+      const response = await fetch(`/api/admin/users/${userId}/activate`, {
+        method: 'POST',
+      })
+      const data = await response.json()
+      if (!response.ok) throw new Error(data.error)
+
+      toast.success('Account activated!', {
+        description: `Password: ${data.tempPassword} (sent to ${email})`
+      })
+      fetchContractors()
+    } catch (err) {
+      toast.error('Failed to activate account', {
+        description: err instanceof Error ? err.message : 'Unknown error'
+      })
+    }
+  }
+
   const resetCreateDialog = () => {
     setCreateDialogOpen(false)
     setNewContractor({ name: '', email: '', phone: '', companyName: '' })
@@ -457,22 +495,45 @@ export default function ContractorsPage() {
                           {contractor.stats.totalWorkOrders}
                         </TableCell>
                         <TableCell className="text-right">
-                          <Button
-                            variant="ghost"
-                            size="sm"
-                            onClick={(e) => {
-                              e.stopPropagation()
-                              setImpersonateTarget({
-                                userId: contractor.userId,
-                                name: contractor.companyName || contractor.name || contractor.email,
-                                role: 'CONTRACTOR',
-                              })
-                            }}
-                            title="Login as this contractor"
-                          >
-                            <LogIn className="h-4 w-4 mr-1" />
-                            Login As
-                          </Button>
+                          <div className="flex items-center justify-end gap-2">
+                            {contractor.status === 'PENDING' ? (
+                              <>
+                                <Button
+                                  variant="ghost"
+                                  size="sm"
+                                  onClick={() => handleResendVerificationAdmin(contractor.userId, contractor.email)}
+                                >
+                                  <Mail className="h-4 w-4 mr-1" />
+                                  Resend Email
+                                </Button>
+                                <Button
+                                  variant="outline"
+                                  size="sm"
+                                  onClick={() => handleManualActivate(contractor.userId, contractor.email)}
+                                >
+                                  <Key className="h-4 w-4 mr-1" />
+                                  Activate
+                                </Button>
+                              </>
+                            ) : (
+                              <Button
+                                variant="ghost"
+                                size="sm"
+                                onClick={(e) => {
+                                  e.stopPropagation()
+                                  setImpersonateTarget({
+                                    userId: contractor.userId,
+                                    name: contractor.companyName || contractor.name || contractor.email,
+                                    role: 'CONTRACTOR',
+                                  })
+                                }}
+                                title="Login as this contractor"
+                              >
+                                <LogIn className="h-4 w-4 mr-1" />
+                                Login As
+                              </Button>
+                            )}
+                          </div>
                         </TableCell>
                       </TableRow>
 
@@ -519,22 +580,47 @@ export default function ContractorsPage() {
                                 </TableCell>
                                 <TableCell colSpan={4}></TableCell>
                                 <TableCell className="text-right">
-                                  <Button
-                                    variant="ghost"
-                                    size="sm"
-                                    className="text-xs"
-                                    onClick={() =>
-                                      setImpersonateTarget({
-                                        userId: client.userId,
-                                        name: client.companyName || client.name || client.email,
-                                        role: 'CLIENT',
-                                      })
-                                    }
-                                    title="Login as this client"
-                                  >
-                                    <LogIn className="h-3.5 w-3.5 mr-1" />
-                                    Login As
-                                  </Button>
+                                  <div className="flex items-center justify-end gap-2">
+                                    {client.status === 'PENDING' ? (
+                                      <>
+                                        <Button
+                                          variant="ghost"
+                                          size="sm"
+                                          className="text-xs"
+                                          onClick={() => handleResendVerificationAdmin(client.userId, client.email)}
+                                        >
+                                          <Mail className="h-3.5 w-3.5 mr-1" />
+                                          Resend Email
+                                        </Button>
+                                        <Button
+                                          variant="outline"
+                                          size="sm"
+                                          className="text-xs"
+                                          onClick={() => handleManualActivate(client.userId, client.email)}
+                                        >
+                                          <Key className="h-3.5 w-3.5 mr-1" />
+                                          Activate
+                                        </Button>
+                                      </>
+                                    ) : (
+                                      <Button
+                                        variant="ghost"
+                                        size="sm"
+                                        className="text-xs"
+                                        onClick={() =>
+                                          setImpersonateTarget({
+                                            userId: client.userId,
+                                            name: client.companyName || client.name || client.email,
+                                            role: 'CLIENT',
+                                          })
+                                        }
+                                        title="Login as this client"
+                                      >
+                                        <LogIn className="h-3.5 w-3.5 mr-1" />
+                                        Login As
+                                      </Button>
+                                    )}
+                                  </div>
                                 </TableCell>
                               </TableRow>
                             ))

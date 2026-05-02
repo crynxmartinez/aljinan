@@ -2,9 +2,9 @@ import { getServerSession } from 'next-auth'
 import { NextResponse } from 'next/server'
 import { authOptions } from '@/lib/auth'
 import { prisma } from '@/lib/prisma'
-import bcrypt from 'bcryptjs'
-import { generateStrongPassword } from '@/lib/password-validation'
+import { sendVerificationEmail } from '@/lib/email'
 import { generateSlug, generateUniqueSlug } from '@/lib/utils/slugify'
+import crypto from 'crypto'
 
 export async function GET() {
   try {
@@ -84,8 +84,9 @@ export async function POST(request: Request) {
       )
     }
 
-    const tempPassword = generateStrongPassword(12)
-    const hashedPassword = await bcrypt.hash(tempPassword, 10)
+    // Generate email verification token (24-hour expiry)
+    const verificationToken = crypto.randomBytes(32).toString('hex')
+    const verificationExpiry = new Date(Date.now() + 86400000) // 24 hours
 
     // Generate unique slug for client
     const baseSlug = generateSlug(companyName)
@@ -108,10 +109,12 @@ export async function POST(request: Request) {
         user: {
           create: {
             email: companyEmail,
-            password: hashedPassword,
+            password: '', // Will be set after email verification
             name: companyName,
             role: 'CLIENT',
             status: 'PENDING',
+            emailVerificationToken: verificationToken,
+            emailVerificationExpiry: verificationExpiry,
           }
         },
       },
@@ -126,11 +129,12 @@ export async function POST(request: Request) {
       }
     })
 
-    // TODO: Send invitation email using Resend
-    // For now, return the temp password so it can be shown in UI (remove in production)
-    return NextResponse.json({ 
-      ...client, 
-      tempPassword // Include temp password in response for display
+    // Send verification email
+    await sendVerificationEmail(companyEmail, companyName, verificationToken, 'CLIENT')
+
+    return NextResponse.json({
+      ...client,
+      message: `Verification email sent to ${companyEmail}`
     }, { status: 201 })
   } catch (error) {
     console.error('Error creating client:', error)

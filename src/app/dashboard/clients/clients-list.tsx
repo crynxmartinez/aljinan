@@ -82,9 +82,6 @@ export function ClientsList({ clients }: ClientsListProps) {
   const [expandedClients, setExpandedClients] = useState<string[]>([])
   const [showArchived, setShowArchived] = useState(false)
   const [createDialogOpen, setCreateDialogOpen] = useState(false)
-  const [credentialsDialogOpen, setCredentialsDialogOpen] = useState(false)
-  const [createdCredentials, setCreatedCredentials] = useState<{ email: string; password: string } | null>(null)
-  const [copiedField, setCopiedField] = useState<'email' | 'password' | null>(null)
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState('')
 
@@ -128,13 +125,10 @@ export function ClientsList({ clients }: ClientsListProps) {
         throw new Error(data.error || 'Failed to create client')
       }
 
-      // Show credentials popup
-      setCreatedCredentials({
-        email: data.user.email,
-        password: data.tempPassword,
+      toast.success('Client account created!', {
+        description: `Verification email sent to ${data.user.email}`
       })
       setCreateDialogOpen(false)
-      setCredentialsDialogOpen(true)
       setNewClient({
         companyName: '',
         companyEmail: '',
@@ -170,14 +164,21 @@ export function ClientsList({ clients }: ClientsListProps) {
     }
   }
 
-  const handleResendInvite = async (clientId: string) => {
+  const handleResendInvite = async (clientId: string, email: string) => {
     try {
-      await fetch(`/api/clients/${clientId}/resend-invite`, {
+      const response = await fetch(`/api/clients/${clientId}/resend-verification`, {
         method: 'POST',
       })
-      router.refresh()
+      const data = await response.json()
+      if (!response.ok) throw new Error(data.error)
+
+      toast.success('Verification email resent!', {
+        description: `Sent to ${email}`
+      })
     } catch (err) {
-      console.error('Failed to resend invite:', err)
+      toast.error('Failed to resend email', {
+        description: err instanceof Error ? err.message : 'Unknown error'
+      })
     }
   }
 
@@ -389,9 +390,9 @@ export function ClientsList({ clients }: ClientsListProps) {
                             </Link>
                           </DropdownMenuItem>
                           {client.user.status === 'PENDING' && (
-                            <DropdownMenuItem onClick={() => handleResendInvite(client.id)}>
+                            <DropdownMenuItem onClick={() => handleResendInvite(client.id, client.user.email)}>
                               <Mail className="mr-2 h-4 w-4" />
-                              Resend Invite
+                              Resend Verification
                             </DropdownMenuItem>
                           )}
                           <DropdownMenuSeparator />
@@ -553,7 +554,7 @@ export function ClientsList({ clients }: ClientsListProps) {
           <DialogHeader>
             <DialogTitle>Add New Client</DialogTitle>
             <DialogDescription>
-              Create a new client account. After creating, you can add branches with the map.
+              Create a new client account. They will receive a verification email to activate their account.
             </DialogDescription>
           </DialogHeader>
           <form onSubmit={handleCreateClient}>
@@ -584,7 +585,7 @@ export function ClientsList({ clients }: ClientsListProps) {
                   required
                 />
                 <p className="text-xs text-muted-foreground">
-                  An invitation will be sent to this email
+                  A verification email will be sent to this address
                 </p>
               </div>
               <div className="space-y-2">
@@ -609,102 +610,6 @@ export function ClientsList({ clients }: ClientsListProps) {
         </DialogContent>
       </Dialog>
 
-      {/* Credentials Dialog - shown after client creation */}
-      <Dialog open={credentialsDialogOpen} onOpenChange={setCredentialsDialogOpen}>
-        <DialogContent>
-          <DialogHeader>
-            <DialogTitle className="flex items-center gap-2">
-              <CheckCircle className="h-5 w-5 text-green-600" />
-              Client Created Successfully
-            </DialogTitle>
-            <DialogDescription>
-              Save these login credentials. They will only be shown once.
-            </DialogDescription>
-          </DialogHeader>
-          
-          {createdCredentials && (
-            <div className="space-y-4 py-4">
-              <div className="p-4 bg-amber-50 border border-amber-200 rounded-lg">
-                <p className="text-sm text-amber-800 font-medium flex items-center gap-2">
-                  <Key className="h-4 w-4" />
-                  Temporary Login Credentials
-                </p>
-                <p className="text-xs text-amber-700 mt-1">
-                  Share these with your client so they can log in and set their own password.
-                </p>
-              </div>
-
-              <div className="space-y-3">
-                <div className="space-y-1.5">
-                  <Label className="text-muted-foreground">Email</Label>
-                  <div className="flex gap-2">
-                    <Input 
-                      value={createdCredentials.email} 
-                      readOnly 
-                      className="font-mono bg-muted"
-                    />
-                    <Button
-                      type="button"
-                      variant="outline"
-                      size="icon"
-                      onClick={() => {
-                        navigator.clipboard.writeText(createdCredentials.email)
-                        setCopiedField('email')
-                        setTimeout(() => setCopiedField(null), 2000)
-                      }}
-                    >
-                      {copiedField === 'email' ? (
-                        <CheckCircle className="h-4 w-4 text-green-600" />
-                      ) : (
-                        <Copy className="h-4 w-4" />
-                      )}
-                    </Button>
-                  </div>
-                </div>
-
-                <div className="space-y-1.5">
-                  <Label className="text-muted-foreground">Temporary Password</Label>
-                  <div className="flex gap-2">
-                    <Input 
-                      value={createdCredentials.password} 
-                      readOnly 
-                      className="font-mono bg-muted"
-                    />
-                    <Button
-                      type="button"
-                      variant="outline"
-                      size="icon"
-                      onClick={() => {
-                        navigator.clipboard.writeText(createdCredentials.password)
-                        setCopiedField('password')
-                        setTimeout(() => setCopiedField(null), 2000)
-                      }}
-                    >
-                      {copiedField === 'password' ? (
-                        <CheckCircle className="h-4 w-4 text-green-600" />
-                      ) : (
-                        <Copy className="h-4 w-4" />
-                      )}
-                    </Button>
-                  </div>
-                </div>
-              </div>
-            </div>
-          )}
-
-          <DialogFooter>
-            <Button 
-              onClick={() => {
-                setCredentialsDialogOpen(false)
-                setCreatedCredentials(null)
-                setCopiedField(null)
-              }}
-            >
-              Done
-            </Button>
-          </DialogFooter>
-        </DialogContent>
-      </Dialog>
     </>
   )
 }

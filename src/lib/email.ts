@@ -2,8 +2,14 @@ import { Resend } from 'resend'
 
 const resend = new Resend(process.env.RESEND_API_KEY || '')
 
-export async function sendVerificationEmail(email: string, name: string, verificationToken: string) {
+export async function sendVerificationEmail(
+  email: string,
+  name: string,
+  verificationToken: string,
+  userType: 'CONTRACTOR' | 'CLIENT' = 'CONTRACTOR'
+) {
   const verificationUrl = `${process.env.NEXT_PUBLIC_APP_URL || 'https://www.tasheel.live'}/verify-email?token=${verificationToken}`
+  const accountType = userType === 'CONTRACTOR' ? 'contractor' : 'client'
 
   try {
     await resend.emails.send({
@@ -26,7 +32,7 @@ export async function sendVerificationEmail(email: string, name: string, verific
               <h2 style="color: #1f2937; margin-top: 0;">Welcome to Tasheel, ${name}!</h2>
               
               <p style="color: #4b5563; font-size: 16px;">
-                Your contractor account has been created. Please verify your email address to complete your registration and receive your login credentials.
+                Your ${accountType} account has been created. Please verify your email address to complete your registration and receive your login credentials.
               </p>
               
               <div style="text-align: center; margin: 35px 0;">

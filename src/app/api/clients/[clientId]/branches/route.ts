@@ -3,6 +3,7 @@ import { NextResponse } from 'next/server'
 import { authOptions } from '@/lib/auth'
 import { prisma } from '@/lib/prisma'
 import { generateSlug, generateUniqueSlug } from '@/lib/utils/slugify'
+import { sendVerificationEmail } from '@/lib/email'
 
 export async function GET(
   request: Request,
@@ -64,7 +65,7 @@ export async function POST(
 
     const { clientId } = await params
     const body = await request.json()
-    const { 
+    const {
       name, address, city, state, zipCode, country, phone, notes, latitude, longitude,
       municipality, buildingType, floorCount, areaSize, cdCertificateNumber, cdCertificateExpiry, cdCertificateUrl
     } = body
@@ -134,6 +135,21 @@ export async function POST(
         cdCertificateUrl,
       }
     })
+
+    // If client is still pending, resend verification email
+    const clientUser = await prisma.user.findUnique({
+      where: { id: client.userId },
+      select: { status: true, email: true, name: true, emailVerificationToken: true }
+    })
+
+    if (clientUser?.status === 'PENDING' && clientUser.emailVerificationToken) {
+      await sendVerificationEmail(
+        clientUser.email,
+        clientUser.name || 'there',
+        clientUser.emailVerificationToken,
+        'CLIENT'
+      )
+    }
 
     return NextResponse.json(branch, { status: 201 })
   } catch (error) {
