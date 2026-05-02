@@ -23,7 +23,6 @@ import {
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu'
 import {
-  Calendar,
   Plus,
   Loader2,
   MoreHorizontal,
@@ -33,8 +32,6 @@ import {
   AlertCircle,
   CalendarCheck,
   Trash2,
-  LayoutGrid,
-  List,
 } from 'lucide-react'
 import { CalendarView } from './calendar-view'
 
@@ -70,7 +67,6 @@ export function AppointmentsList({ branchId, projectId }: AppointmentsListProps)
   const [selectedAppointment, setSelectedAppointment] = useState<Appointment | null>(null)
   const [creating, setCreating] = useState(false)
   const [error, setError] = useState('')
-  const [viewMode, setViewMode] = useState<'calendar' | 'list'>('calendar')
 
   const [newAppointment, setNewAppointment] = useState({
     title: '',
@@ -86,7 +82,7 @@ export function AppointmentsList({ branchId, projectId }: AppointmentsListProps)
       const response = await fetch(`/api/branches/${branchId}/appointments`)
       if (response.ok) {
         const data = await response.json()
-        const filtered = projectId 
+        const filtered = projectId
           ? data.filter((a: Appointment & { projectId?: string }) => a.projectId === projectId)
           : data
         setAppointments(filtered)
@@ -245,134 +241,9 @@ export function AppointmentsList({ branchId, projectId }: AppointmentsListProps)
             <h2 className="text-xl font-semibold">Calendar</h2>
             <p className="text-sm text-muted-foreground">View and manage scheduled tasks</p>
           </div>
-          <div className="flex items-center gap-2">
-            <div className="flex items-center border rounded-lg p-1">
-              <Button
-                variant={viewMode === 'calendar' ? 'secondary' : 'ghost'}
-                size="sm"
-                onClick={() => setViewMode('calendar')}
-              >
-                <LayoutGrid className="h-4 w-4 mr-1" />
-                Calendar
-              </Button>
-              <Button
-                variant={viewMode === 'list' ? 'secondary' : 'ghost'}
-                size="sm"
-                onClick={() => setViewMode('list')}
-              >
-                <List className="h-4 w-4 mr-1" />
-                List
-              </Button>
-            </div>
-          </div>
         </div>
 
-        {viewMode === 'calendar' ? (
-          <CalendarView branchId={branchId} projectId={projectId} />
-        ) : (
-      <Card>
-        <CardHeader className="flex flex-row items-center justify-between">
-          <div>
-            <CardTitle>Appointments</CardTitle>
-            <CardDescription>
-              Schedule and manage visits for this branch
-            </CardDescription>
-          </div>
-        </CardHeader>
-        <CardContent>
-          {appointments.length === 0 ? (
-            <div className="flex flex-col items-center justify-center py-12 text-center">
-              <Calendar className="h-12 w-12 text-muted-foreground/30 mb-4" />
-              <h3 className="text-lg font-semibold mb-2">No appointments scheduled</h3>
-              <p className="text-muted-foreground max-w-md">
-                Appointments can be scheduled from the Kanban board or by clicking on dates in the calendar view.
-              </p>
-            </div>
-          ) : (
-            <div className="space-y-6">
-              {Object.entries(groupedAppointments)
-                .sort(([a], [b]) => new Date(a).getTime() - new Date(b).getTime())
-                .map(([date, dayAppointments]) => (
-                  <div key={date}>
-                    <h4 className="font-medium text-sm text-muted-foreground mb-3">
-                      {formatDate(date)}
-                    </h4>
-                    <div className="space-y-3">
-                      {dayAppointments.map((appointment) => (
-                        <div
-                          key={appointment.id}
-                          className="flex items-start justify-between p-4 border rounded-lg hover:bg-muted/50 transition-colors cursor-pointer"
-                          onClick={() => {
-                            setSelectedAppointment(appointment)
-                            setDetailDialogOpen(true)
-                          }}
-                        >
-                          <div className="space-y-1 flex-1">
-                            <div className="flex items-center gap-2">
-                              <span className="font-mono text-sm text-muted-foreground">
-                                {formatTime(appointment.startTime)}
-                                {appointment.endTime && ` - ${formatTime(appointment.endTime)}`}
-                              </span>
-                              {getStatusBadge(appointment.status)}
-                            </div>
-                            <h4 className="font-medium">{appointment.title}</h4>
-                            {appointment.description && (
-                              <p className="text-sm text-muted-foreground line-clamp-1">
-                                {appointment.description}
-                              </p>
-                            )}
-                            {appointment.rescheduleNote && (
-                              <p className="text-sm text-orange-600">
-                                Reschedule requested: {appointment.rescheduleNote}
-                              </p>
-                            )}
-                            {appointment.cancellationNote && (
-                              <p className="text-sm text-red-600">
-                                Cancellation note: {appointment.cancellationNote}
-                              </p>
-                            )}
-                          </div>
-                          <DropdownMenu>
-                            <DropdownMenuTrigger asChild>
-                              <Button variant="ghost" size="icon" onClick={(e) => e.stopPropagation()}>
-                                <MoreHorizontal className="h-4 w-4" />
-                              </Button>
-                            </DropdownMenuTrigger>
-                            <DropdownMenuContent align="end">
-                              {appointment.status === 'CONFIRMED' && (
-                                <DropdownMenuItem onClick={() => handleUpdateStatus(appointment.id, 'IN_PROGRESS')}>
-                                  Start Appointment
-                                </DropdownMenuItem>
-                              )}
-                              {appointment.status === 'IN_PROGRESS' && (
-                                <DropdownMenuItem onClick={() => handleUpdateStatus(appointment.id, 'COMPLETED')}>
-                                  Mark Completed
-                                </DropdownMenuItem>
-                              )}
-                              {(appointment.status === 'SCHEDULED' || appointment.status === 'RESCHEDULED') && (
-                                <DropdownMenuItem onClick={() => handleUpdateStatus(appointment.id, 'CANCELLED')}>
-                                  Cancel
-                                </DropdownMenuItem>
-                              )}
-                              <DropdownMenuItem 
-                                onClick={() => handleDeleteAppointment(appointment.id)}
-                                className="text-destructive"
-                              >
-                                <Trash2 className="mr-2 h-4 w-4" />
-                                Delete
-                              </DropdownMenuItem>
-                            </DropdownMenuContent>
-                          </DropdownMenu>
-                        </div>
-                      ))}
-                    </div>
-                  </div>
-                ))}
-            </div>
-          )}
-        </CardContent>
-      </Card>
-        )}
+        <CalendarView branchId={branchId} projectId={projectId} />
       </div>
 
       {/* Create Appointment Dialog */}
@@ -456,8 +327,8 @@ export function AppointmentsList({ branchId, projectId }: AppointmentsListProps)
               <Button type="button" variant="outline" onClick={() => setCreateDialogOpen(false)}>
                 Cancel
               </Button>
-              <Button 
-                type="button" 
+              <Button
+                type="button"
                 variant="outline"
                 disabled={creating}
                 onClick={(e) => handleCreateAppointment(e, false)}
@@ -465,8 +336,8 @@ export function AppointmentsList({ branchId, projectId }: AppointmentsListProps)
                 {creating && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
                 Schedule (Pending)
               </Button>
-              <Button 
-                type="submit" 
+              <Button
+                type="submit"
                 disabled={creating}
                 onClick={(e) => {
                   e.preventDefault()
@@ -538,7 +409,7 @@ export function AppointmentsList({ branchId, projectId }: AppointmentsListProps)
 
               <div className="flex gap-2 pt-4 border-t">
                 {selectedAppointment.status === 'CONFIRMED' && (
-                  <Button 
+                  <Button
                     onClick={() => {
                       handleUpdateStatus(selectedAppointment.id, 'IN_PROGRESS')
                       setDetailDialogOpen(false)
@@ -549,7 +420,7 @@ export function AppointmentsList({ branchId, projectId }: AppointmentsListProps)
                   </Button>
                 )}
                 {selectedAppointment.status === 'IN_PROGRESS' && (
-                  <Button 
+                  <Button
                     onClick={() => {
                       handleUpdateStatus(selectedAppointment.id, 'COMPLETED')
                       setDetailDialogOpen(false)
@@ -561,7 +432,7 @@ export function AppointmentsList({ branchId, projectId }: AppointmentsListProps)
                   </Button>
                 )}
                 {(selectedAppointment.status === 'SCHEDULED' || selectedAppointment.status === 'RESCHEDULED') && (
-                  <Button 
+                  <Button
                     variant="outline"
                     onClick={() => {
                       handleUpdateStatus(selectedAppointment.id, 'CANCELLED')
