@@ -67,6 +67,7 @@ export async function GET(
       quotedPrice: serviceRequest.quotedPrice,
       quotedDate: serviceRequest.quotedDate?.toISOString() || null,
       quotedAt: serviceRequest.quotedAt?.toISOString() || null,
+      quotedNotes: serviceRequest.quotedNotes,
       clientName: serviceRequest.branch.client.companyName,
       branchName: serviceRequest.branch.name,
       branchAddress: serviceRequest.branch.address,
@@ -127,14 +128,14 @@ async function verifyBranchAccess(
   if (userRole === 'TEAM_MEMBER') {
     const teamMember = await prisma.teamMember.findUnique({
       where: { userId },
-      select: { 
+      select: {
         id: true,
         contractorId: true
       }
     })
-    
+
     if (!teamMember) return false
-    
+
     // Check if contractor owns this client
     return teamMember.contractorId === branch.client.contractorId
   }

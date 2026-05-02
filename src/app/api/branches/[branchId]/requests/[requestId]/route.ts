@@ -68,6 +68,7 @@ export async function PATCH(
       // New quote fields (contractor sets these)
       quotedPrice,
       quotedDate,
+      quotedNotes,
       quotationUrl,
       quotationFileName,
       // Action fields
@@ -119,6 +120,7 @@ export async function PATCH(
       updateData.quotedAt = new Date()
       if (quotationUrl !== undefined) updateData.quotationUrl = quotationUrl || null
       if (quotationFileName !== undefined) updateData.quotationFileName = quotationFileName || null
+      if (quotedNotes !== undefined) updateData.quotedNotes = quotedNotes || null
     }
     // ACTION: Client starts work immediately (without quotation)
     else if (action === 'start_immediately') {

@@ -155,6 +155,7 @@ interface Request {
   preferredTimeSlot?: string | null
   quotedPrice?: number | null
   quotedDate?: string | null
+  quotedNotes?: string | null
   quotedBy?: string | null
   clientAccepted?: boolean | null
   clientAcceptedAt?: string | null
@@ -486,6 +487,7 @@ export function RequestsList({ branchId, userRole, projectId, userId }: Requests
   const [quoteData, setQuoteData] = useState({
     quotedPrice: '',
     quotedDate: '',
+    quotedNotes: '',
   })
   const [submittingQuote, setSubmittingQuote] = useState(false)
   const [quoteQuotationFile, setQuoteQuotationFile] = useState<{ url: string; name: string } | null>(null)
@@ -880,6 +882,7 @@ export function RequestsList({ branchId, userRole, projectId, userId }: Requests
     setQuoteData({
       quotedPrice: request.quotedPrice?.toString() || '',
       quotedDate: request.quotedDate ? new Date(request.quotedDate).toISOString().split('T')[0] : '',
+      quotedNotes: request.quotedNotes || '',
     })
     setQuoteDialogOpen(true)
   }
@@ -903,6 +906,7 @@ export function RequestsList({ branchId, userRole, projectId, userId }: Requests
           action: 'quote',
           quotedPrice: parseFloat(quoteData.quotedPrice),
           quotedDate: quoteData.quotedDate,
+          quotedNotes: quoteData.quotedNotes || null,
           quotationUrl: quoteQuotationFile?.url || null,
           quotationFileName: quoteQuotationFile?.name || null,
         }),
@@ -915,7 +919,7 @@ export function RequestsList({ branchId, userRole, projectId, userId }: Requests
 
       setQuoteDialogOpen(false)
       setQuoteRequest(null)
-      setQuoteData({ quotedPrice: '', quotedDate: '' })
+      setQuoteData({ quotedPrice: '', quotedDate: '', quotedNotes: '' })
       setQuoteQuotationFile(null)
       setSuccessMessage('Quote sent to client for approval')
       setTimeout(() => setSuccessMessage(''), 3000)
@@ -1545,6 +1549,12 @@ export function RequestsList({ branchId, userRole, projectId, userId }: Requests
                       </div>
                     )}
                   </div>
+                  {selectedRequest.quotedNotes && (
+                    <div className="mt-3 pt-3 border-t border-purple-200">
+                      <p className="text-purple-600 text-sm mb-1">Notes from Contractor</p>
+                      <p className="text-sm text-purple-900 whitespace-pre-wrap">{selectedRequest.quotedNotes}</p>
+                    </div>
+                  )}
                   {selectedRequest.status === 'QUOTED' && (
                     <p className="text-xs text-purple-600 mt-2">Waiting for client approval...</p>
                   )}
@@ -1934,6 +1944,21 @@ export function RequestsList({ branchId, userRole, projectId, userId }: Requests
                         required
                       />
                     </div>
+                  </div>
+
+                  {/* Notes for Client */}
+                  <div className="space-y-2">
+                    <Label htmlFor="quotedNotes">
+                      Notes for Client <span className="text-xs text-muted-foreground">(optional)</span>
+                    </Label>
+                    <textarea
+                      id="quotedNotes"
+                      value={quoteData.quotedNotes}
+                      onChange={(e) => setQuoteData({ ...quoteData, quotedNotes: e.target.value })}
+                      placeholder="Add any special instructions, terms, or details for the client..."
+                      className="w-full min-h-[100px] px-3 py-2 text-sm border rounded-md bg-background resize-y focus:outline-none focus:ring-2 focus:ring-ring"
+                      rows={4}
+                    />
                   </div>
 
                   {/* Recurring Work Orders Preview */}

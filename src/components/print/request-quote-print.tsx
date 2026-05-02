@@ -25,6 +25,7 @@ interface RequestPrintData {
   quotedPrice: number | null
   quotedDate: string | null
   quotedAt: string | null
+  quotedNotes: string | null
   clientName: string
   branchName: string
   branchAddress: string
@@ -354,6 +355,12 @@ export function RequestQuotePrint({ requestId, branchId }: RequestQuotePrintProp
                 </div>
               )}
             </div>
+            {data.quotedNotes && (
+              <div className="mt-4 pt-4 border-t border-blue-200">
+                <p className="text-sm text-blue-700 mb-1">Notes from Contractor</p>
+                <p className="text-sm text-blue-900 whitespace-pre-wrap">{data.quotedNotes}</p>
+              </div>
+            )}
           </div>
         )}
 

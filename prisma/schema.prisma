@@ -410,6 +410,7 @@ model Request {
   quotedDate          DateTime?       // Date set by contractor
   quotedById          String?         // Contractor who quoted
   quotedAt            DateTime?       // When quote was sent
+  quotedNotes         String?         // Notes/message for client from contractor
   
   // Client response
   acceptedAt          DateTime?       // When client accepted
