@@ -62,22 +62,16 @@ export function ExportDialog({
 
   const formatOptions = [
     {
-      value: 'pdf',
-      label: 'PDF Report',
-      description: 'Professional formatted report',
-      icon: FileText,
-    },
-    {
       value: 'excel',
       label: 'Excel Spreadsheet',
       description: 'Editable .xlsx file',
       icon: FileSpreadsheet,
     },
     {
-      value: 'csv',
-      label: 'CSV File',
-      description: 'Comma-separated values',
-      icon: File,
+      value: 'pdf',
+      label: 'PDF Report',
+      description: 'Professional formatted report',
+      icon: FileText,
     },
   ]
 

@@ -12,7 +12,7 @@ import { ClipboardList, Loader2, ChevronLeft, ChevronRight } from 'lucide-react'
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select'
 import {
   exportWorkOrdersToExcel,
-  exportWorkOrdersToCsv,
+  exportWorkOrdersToPdf,
   type ExportOptions,
 } from '@/lib/export/export-utils'
 
@@ -239,10 +239,8 @@ export default function WorkOrdersPage() {
 
     if (format === 'excel') {
       exportWorkOrdersToExcel(dataToExport, exportOpts)
-    } else if (format === 'csv') {
-      exportWorkOrdersToCsv(dataToExport, exportOpts)
     } else if (format === 'pdf') {
-      exportWorkOrdersToExcel(dataToExport, exportOpts)
+      exportWorkOrdersToPdf(dataToExport, exportOpts)
     }
   }
 
