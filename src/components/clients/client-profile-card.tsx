@@ -109,44 +109,42 @@ export function ClientProfileCard({ client, canEdit }: ClientProfileCardProps) {
           </div>
 
           {/* Primary Contact Person */}
-          {(client.contactPersonName || client.contactPersonPhone || client.contactPersonEmail) && (
-            <div className="pt-4 border-t space-y-4">
-              <h4 className="text-sm font-semibold text-muted-foreground uppercase tracking-wide">
-                Primary Contact Person
-              </h4>
-              <div className="grid gap-4 sm:grid-cols-2">
-                {client.contactPersonName && (
-                  <div className="flex items-start gap-3">
-                    <Users className="h-4 w-4 text-muted-foreground mt-0.5" />
-                    <div>
-                      <p className="text-xs text-muted-foreground">Name</p>
-                      <p className="text-sm font-medium">{client.contactPersonName}</p>
-                    </div>
-                  </div>
-                )}
+          <div className="pt-4 border-t space-y-4">
+            <h4 className="text-sm font-semibold text-muted-foreground uppercase tracking-wide">
+              Primary Contact Person
+            </h4>
+            <div className="grid gap-4 sm:grid-cols-2">
+              <div className="flex items-start gap-3">
+                <Users className="h-4 w-4 text-muted-foreground mt-0.5" />
+                <div>
+                  <p className="text-xs text-muted-foreground">Name</p>
+                  <p className={`text-sm ${client.contactPersonName ? 'font-medium' : 'text-muted-foreground italic'}`}>
+                    {client.contactPersonName || 'Not set'}
+                  </p>
+                </div>
+              </div>
 
-                {client.contactPersonPhone && (
-                  <div className="flex items-start gap-3">
-                    <Phone className="h-4 w-4 text-muted-foreground mt-0.5" />
-                    <div>
-                      <p className="text-xs text-muted-foreground">Phone</p>
-                      <p className="text-sm font-medium">{client.contactPersonPhone}</p>
-                    </div>
-                  </div>
-                )}
+              <div className="flex items-start gap-3">
+                <Phone className="h-4 w-4 text-muted-foreground mt-0.5" />
+                <div>
+                  <p className="text-xs text-muted-foreground">Phone</p>
+                  <p className={`text-sm ${client.contactPersonPhone ? 'font-medium' : 'text-muted-foreground italic'}`}>
+                    {client.contactPersonPhone || 'Not set'}
+                  </p>
+                </div>
+              </div>
 
-                {client.contactPersonEmail && (
-                  <div className="flex items-start gap-3">
-                    <Mail className="h-4 w-4 text-muted-foreground mt-0.5" />
-                    <div>
-                      <p className="text-xs text-muted-foreground">Email</p>
-                      <p className="text-sm font-medium">{client.contactPersonEmail}</p>
-                    </div>
-                  </div>
-                )}
+              <div className="flex items-start gap-3 sm:col-span-2">
+                <Mail className="h-4 w-4 text-muted-foreground mt-0.5" />
+                <div>
+                  <p className="text-xs text-muted-foreground">Email</p>
+                  <p className={`text-sm ${client.contactPersonEmail ? 'font-medium' : 'text-muted-foreground italic'}`}>
+                    {client.contactPersonEmail || 'Not set'}
+                  </p>
+                </div>
               </div>
             </div>
-          )}
+          </div>
 
           {/* Additional Contact Persons */}
           <div className="pt-4 border-t space-y-3">
@@ -173,7 +171,7 @@ export function ClientProfileCard({ client, canEdit }: ClientProfileCardProps) {
           </div>
 
           {/* Edit prompt if profile is incomplete */}
-          {canEdit && (!client.crNumber || !client.vatNumber || !client.billingAddress) && (
+          {canEdit && (!client.crNumber || !client.vatNumber || !client.billingAddress || !client.contactPersonName || !client.contactPersonPhone || !client.contactPersonEmail) && (
             <div className="pt-4 border-t">
               <div className="bg-amber-50 border border-amber-200 rounded-lg p-4 flex items-start gap-3">
                 <AlertTriangle className="h-5 w-5 text-amber-600 flex-shrink-0 mt-0.5" />
