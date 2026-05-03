@@ -38,7 +38,8 @@ export async function GET(
     }
 
     // Get the team member with branch access
-    const teamMember = await prisma.teamMember.findUnique({
+    // Try to find by teamMemberId first, then by userId (for backward compatibility)
+    let teamMember = await prisma.teamMember.findUnique({
       where: { id: teamMemberId },
       select: {
         id: true,
@@ -59,6 +60,31 @@ export async function GET(
         }
       }
     })
+
+    // If not found by teamMemberId, try to find by userId
+    if (!teamMember) {
+      teamMember = await prisma.teamMember.findUnique({
+        where: { userId: teamMemberId },
+        select: {
+          id: true,
+          teamRole: true,
+          jobTitle: true,
+          phone: true,
+          address: true,
+          user: {
+            select: {
+              name: true,
+              email: true,
+            }
+          },
+          branchAccess: {
+            select: {
+              branchId: true
+            }
+          }
+        }
+      })
+    }
 
     if (!teamMember) {
       return NextResponse.json({ error: 'Technician not found' }, { status: 404 })
