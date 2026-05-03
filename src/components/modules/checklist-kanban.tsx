@@ -57,6 +57,7 @@ import { cn } from '@/lib/utils'
 import { ColumnDetailModal } from './column-detail-modal'
 import { SignatureDialog } from '@/components/ui/signature-dialog'
 import { PriceDialog } from '@/components/ui/price-dialog'
+import { TechnicianDetailsModal } from '@/components/ui/technician-details-modal'
 import {
   DndContext,
   DragOverlay,
@@ -533,6 +534,10 @@ export function ChecklistKanban({ branchId, projectId, readOnly = false, userRol
 
   const [priceDialogOpen, setPriceDialogOpen] = useState(false)
   const [pendingPriceWorkOrderId, setPendingPriceWorkOrderId] = useState<string | null>(null)
+
+  // Technician details modal state
+  const [technicianModalOpen, setTechnicianModalOpen] = useState(false)
+  const [selectedTechnicianId, setSelectedTechnicianId] = useState<string | null>(null)
 
   // Inspection form state
   const [inspectionMode, setInspectionMode] = useState(false)
@@ -1304,10 +1309,23 @@ export function ChecklistKanban({ branchId, projectId, readOnly = false, userRol
                     </SelectContent>
                   </Select>
                 ) : (
-                  <p className="font-medium flex items-center gap-1">
-                    <User className="h-4 w-4" />
-                    {selectedItem.assignedTo ? (teamMemberMap[selectedItem.assignedTo] || 'Unknown') : 'Unassigned'}
-                  </p>
+                  selectedItem.assignedTo ? (
+                    <button
+                      onClick={() => {
+                        setSelectedTechnicianId(selectedItem.assignedTo!)
+                        setTechnicianModalOpen(true)
+                      }}
+                      className="font-medium flex items-center gap-1 text-primary hover:underline cursor-pointer"
+                    >
+                      <User className="h-4 w-4" />
+                      {teamMemberMap[selectedItem.assignedTo] || 'Unknown'}
+                    </button>
+                  ) : (
+                    <p className="font-medium flex items-center gap-1 text-muted-foreground">
+                      <User className="h-4 w-4" />
+                      Unassigned
+                    </p>
+                  )
                 )}
               </div>
 
@@ -1904,6 +1922,13 @@ export function ChecklistKanban({ branchId, projectId, readOnly = false, userRol
           }
         }}
         currentPrice={selectedItem?.price}
+      />
+
+      {/* Technician Details Modal */}
+      <TechnicianDetailsModal
+        technicianId={selectedTechnicianId}
+        open={technicianModalOpen}
+        onOpenChange={setTechnicianModalOpen}
       />
     </>
   )
