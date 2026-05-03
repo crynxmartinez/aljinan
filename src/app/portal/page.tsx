@@ -309,12 +309,7 @@ export default async function PortalDashboardPage() {
         </Card>
       </div>
 
-      {/* Action Center - Delayed Work Orders, Expiring Equipment */}
-      <div className="mb-6">
-        <ActionCenterTable userRole="CLIENT" />
-      </div>
-
-      <div className="grid gap-6 lg:grid-cols-3">
+      <div className="grid gap-6 lg:grid-cols-3 mb-6">
         {/* Branches - Takes 2 columns */}
         <div className="lg:col-span-2 space-y-6">
           <Card>
@@ -422,6 +417,11 @@ export default async function PortalDashboardPage() {
             </CardContent>
           </Card>
         </div>
+      </div>
+
+      {/* Action Center - Delayed Work Orders, Expiring Equipment */}
+      <div>
+        <ActionCenterTable userRole="CLIENT" />
       </div>
     </div>
   )
