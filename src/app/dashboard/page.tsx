@@ -177,6 +177,143 @@ async function getDashboardStats(userId: string) {
   }
 }
 
+async function getDashboardStatsForTeamMember(assignedBranchIds: string[]) {
+  if (assignedBranchIds.length === 0) {
+    return {
+      totalClients: 0,
+      totalBranches: 0,
+      pendingRequests: 0,
+      pendingQuotes: 0,
+      upcomingAppointments: 0,
+      overdueInvoices: 0,
+      workOrdersInProgress: 0,
+      workOrdersForReview: 0,
+      workOrdersCompletedThisMonth: 0,
+      overdueWorkOrders: 0,
+    }
+  }
+
+  // Get unique clients from assigned branches
+  const branches = await prisma.branch.findMany({
+    where: {
+      id: { in: assignedBranchIds },
+      isActive: true
+    },
+    select: {
+      clientId: true
+    }
+  })
+
+  const uniqueClientIds = [...new Set(branches.map(b => b.clientId))]
+  const totalClients = uniqueClientIds.length
+  const totalBranches = assignedBranchIds.length
+
+  const today = new Date()
+  const firstDayOfMonth = new Date(today.getFullYear(), today.getMonth(), 1)
+
+  const [
+    pendingRequests,
+    pendingQuotes,
+    upcomingAppointments,
+    overdueInvoices,
+    workOrdersInProgress,
+    workOrdersForReview,
+    workOrdersCompletedThisMonth,
+    overdueWorkOrders
+  ] = await Promise.all([
+    prisma.request.count({
+      where: {
+        branchId: { in: assignedBranchIds },
+        status: 'REQUESTED'
+      }
+    }),
+    prisma.quotation.count({
+      where: {
+        branchId: { in: assignedBranchIds },
+        status: 'SENT'
+      }
+    }),
+    prisma.checklistItem.count({
+      where: {
+        checklist: {
+          branchId: { in: assignedBranchIds }
+        },
+        scheduledDate: {
+          gte: firstDayOfMonth,
+          lte: new Date(today.getFullYear(), today.getMonth() + 1, 0)
+        },
+        deletedAt: null
+      }
+    }),
+    prisma.invoice.count({
+      where: {
+        branchId: { in: assignedBranchIds },
+        status: { in: ['SENT', 'OVERDUE'] },
+        dueDate: { lt: today }
+      }
+    }),
+    prisma.checklistItem.count({
+      where: {
+        checklist: {
+          project: {
+            branchId: { in: assignedBranchIds }
+          }
+        },
+        stage: 'IN_PROGRESS',
+        deletedAt: null
+      }
+    }),
+    prisma.checklistItem.count({
+      where: {
+        checklist: {
+          project: {
+            branchId: { in: assignedBranchIds }
+          }
+        },
+        stage: 'FOR_REVIEW',
+        deletedAt: null
+      }
+    }),
+    prisma.checklistItem.count({
+      where: {
+        checklist: {
+          project: {
+            branchId: { in: assignedBranchIds }
+          }
+        },
+        stage: 'COMPLETED',
+        updatedAt: { gte: firstDayOfMonth },
+        deletedAt: null
+      }
+    }),
+    prisma.checklistItem.count({
+      where: {
+        checklist: {
+          project: {
+            branchId: { in: assignedBranchIds }
+          }
+        },
+        scheduledDate: { lt: today },
+        stage: { notIn: ['COMPLETED', 'ARCHIVED'] },
+        deletedAt: null
+      }
+    })
+  ])
+
+  return {
+    totalClients,
+    totalBranches,
+    pendingRequests,
+    pendingQuotes,
+    upcomingAppointments,
+    overdueInvoices,
+    workOrdersInProgress,
+    workOrdersForReview,
+    workOrdersCompletedThisMonth,
+    overdueWorkOrders,
+  }
+}
+
 export default async function DashboardPage() {
   const session = await getServerSession(authOptions)
 
@@ -184,24 +321,35 @@ export default async function DashboardPage() {
     redirect('/login')
   }
 
-  const stats = await getDashboardStats(session.user.id)
+  // Get stats based on user role
+  let stats
+  if (session.user.role === 'TEAM_MEMBER' && session.user.assignedBranchIds) {
+    stats = await getDashboardStatsForTeamMember(session.user.assignedBranchIds)
+  } else {
+    stats = await getDashboardStats(session.user.id)
+  }
 
-  const statCards = [
+  const isTeamMember = session.user.role === 'TEAM_MEMBER'
+  const isTechnician = session.user.teamMemberRole === 'TECHNICIAN'
+
+  const allStatCards = [
     {
-      title: 'Total Clients',
+      title: isTeamMember ? 'Assigned Clients' : 'Total Clients',
       value: stats.totalClients,
-      description: 'Active clients',
+      description: isTeamMember ? 'Clients you work with' : 'Active clients',
       icon: Users,
       color: 'text-blue-600',
       bgColor: 'bg-blue-100',
+      showForTechnician: true,
     },
     {
-      title: 'Total Branches',
+      title: isTeamMember ? 'Assigned Branches' : 'Total Branches',
       value: stats.totalBranches,
-      description: 'Across all clients',
+      description: isTeamMember ? 'Your locations' : 'Across all clients',
       icon: MapPin,
       color: 'text-green-600',
       bgColor: 'bg-green-100',
+      showForTechnician: true,
     },
     {
       title: 'Pending Requests',
@@ -210,6 +358,7 @@ export default async function DashboardPage() {
       icon: FileText,
       color: 'text-orange-600',
       bgColor: 'bg-orange-100',
+      showForTechnician: false,
     },
     {
       title: 'Pending Quotes',
@@ -218,6 +367,7 @@ export default async function DashboardPage() {
       icon: AlertCircle,
       color: 'text-purple-600',
       bgColor: 'bg-purple-100',
+      showForTechnician: false,
     },
     {
       title: 'Appointments This Month',
@@ -226,6 +376,7 @@ export default async function DashboardPage() {
       icon: Calendar,
       color: 'text-cyan-600',
       bgColor: 'bg-cyan-100',
+      showForTechnician: true,
     },
     {
       title: 'Overdue Invoices',
@@ -234,6 +385,7 @@ export default async function DashboardPage() {
       icon: DollarSign,
       color: 'text-red-600',
       bgColor: 'bg-red-100',
+      showForTechnician: false,
     },
     {
       title: 'Active Work Orders',
@@ -242,6 +394,7 @@ export default async function DashboardPage() {
       icon: Wrench,
       color: 'text-orange-600',
       bgColor: 'bg-orange-100',
+      showForTechnician: true,
     },
     {
       title: 'Awaiting Review',
@@ -250,6 +403,7 @@ export default async function DashboardPage() {
       icon: Eye,
       color: 'text-purple-600',
       bgColor: 'bg-purple-100',
+      showForTechnician: true,
     },
     {
       title: 'Completed This Month',
@@ -258,6 +412,7 @@ export default async function DashboardPage() {
       icon: CheckCircle,
       color: 'text-green-600',
       bgColor: 'bg-green-100',
+      showForTechnician: true,
     },
     {
       title: 'Overdue Work',
@@ -266,8 +421,14 @@ export default async function DashboardPage() {
       icon: AlertTriangle,
       color: 'text-red-600',
       bgColor: 'bg-red-100',
+      showForTechnician: true,
     },
   ]
+
+  // Filter stat cards based on role
+  const statCards = isTechnician
+    ? allStatCards.filter(card => card.showForTechnician)
+    : allStatCards
 
   return (
     <div className="p-8">
@@ -297,14 +458,16 @@ export default async function DashboardPage() {
         ))}
       </div>
 
-      {/* Pending Branch Requests */}
-      <div className="mt-8">
-        <PendingBranchRequests />
-      </div>
+      {/* Pending Branch Requests - Only for contractors */}
+      {!isTeamMember && (
+        <div className="mt-8">
+          <PendingBranchRequests />
+        </div>
+      )}
 
       {/* Action Center - Delayed Work Orders, Expiring Equipment, Expiring Contracts */}
       <div className="mt-8">
-        <ActionCenterTable userRole="CONTRACTOR" />
+        <ActionCenterTable userRole={session.user.role as 'CONTRACTOR' | 'CLIENT' | 'TEAM_MEMBER'} />
       </div>
 
       {stats.totalClients === 0 && (

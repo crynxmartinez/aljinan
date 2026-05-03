@@ -74,10 +74,11 @@ interface ActionCenterData {
 }
 
 interface ActionCenterTableProps {
-  userRole: 'CONTRACTOR' | 'CLIENT'
+  userRole: 'CONTRACTOR' | 'CLIENT' | 'TEAM_MEMBER'
 }
 
 export function ActionCenterTable({ userRole }: ActionCenterTableProps) {
+  const showClientColumn = userRole === 'CONTRACTOR' || userRole === 'TEAM_MEMBER'
   const [data, setData] = useState<ActionCenterData>({
     delayedWorkOrders: [],
     expiringEquipment: [],
@@ -214,12 +215,12 @@ export function ActionCenterTable({ userRole }: ActionCenterTableProps) {
                   <TableHeader>
                     <TableRow>
                       <TableHead>WO #</TableHead>
-                      {userRole === 'CONTRACTOR' && <TableHead>Client</TableHead>}
+                      {showClientColumn && <TableHead>Client</TableHead>}
                       <TableHead>Branch</TableHead>
                       <TableHead>Work Order</TableHead>
                       <TableHead>Scheduled Date</TableHead>
                       <TableHead>Days Overdue</TableHead>
-                      {userRole === 'CONTRACTOR' && <TableHead>Assigned To</TableHead>}
+                      {showClientColumn && <TableHead>Assigned To</TableHead>}
                       <TableHead className="w-[50px]"></TableHead>
                     </TableRow>
                   </TableHeader>
@@ -229,11 +230,11 @@ export function ActionCenterTable({ userRole }: ActionCenterTableProps) {
                         <TableCell className="font-medium">
                           {wo.workOrderNumber ? `WO-${String(wo.workOrderNumber).padStart(4, '0')}` : '-'}
                         </TableCell>
-                        {userRole === 'CONTRACTOR' && (
+                        {showClientColumn && (
                           <TableCell>
                             <div className="flex items-center gap-2">
                               <Building2 className="h-4 w-4 text-muted-foreground" />
-                              <span className="font-medium">{wo.clientName}</span>
+                              <span className="truncate">{wo.clientName}</span>
                             </div>
                           </TableCell>
                         )}
@@ -254,7 +255,7 @@ export function ActionCenterTable({ userRole }: ActionCenterTableProps) {
                             {wo.daysOverdue} {wo.daysOverdue === 1 ? 'day' : 'days'}
                           </Badge>
                         </TableCell>
-                        {userRole === 'CONTRACTOR' && (
+                        {showClientColumn && (
                           <TableCell className="text-muted-foreground">
                             {wo.assignedTo || 'Unassigned'}
                           </TableCell>
@@ -286,7 +287,7 @@ export function ActionCenterTable({ userRole }: ActionCenterTableProps) {
                 <Table>
                   <TableHeader>
                     <TableRow>
-                      {userRole === 'CONTRACTOR' && <TableHead>Client</TableHead>}
+                      {showClientColumn && <TableHead>Client</TableHead>}
                       <TableHead>Branch</TableHead>
                       <TableHead>Equipment #</TableHead>
                       <TableHead>Type</TableHead>
@@ -299,11 +300,11 @@ export function ActionCenterTable({ userRole }: ActionCenterTableProps) {
                   <TableBody>
                     {data.expiringEquipment.map((eq) => (
                       <TableRow key={eq.id}>
-                        {userRole === 'CONTRACTOR' && (
+                        {showClientColumn && (
                           <TableCell>
                             <div className="flex items-center gap-2">
                               <Building2 className="h-4 w-4 text-muted-foreground" />
-                              <span className="font-medium">{eq.clientName}</span>
+                              <span className="truncate">{eq.clientName}</span>
                             </div>
                           </TableCell>
                         )}

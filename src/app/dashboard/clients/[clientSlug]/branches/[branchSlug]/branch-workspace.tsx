@@ -97,12 +97,12 @@ export function BranchWorkspace({ clientId, branchId, branch, userRole, teamMemb
           const requestsData = await requestsResponse.json()
           // Count only REQUESTED and QUOTED requests (pending action)
           const activeRequestStatuses = ['REQUESTED', 'QUOTED']
-          const openRequests = requestsData.filter((r: { status: string }) => 
+          const openRequests = requestsData.filter((r: { status: string }) =>
             activeRequestStatuses.includes(r.status)
           )
           setPendingRequestsCount(openRequests.length)
         }
-        
+
         // Fetch checklist items for payment count
         const checklistResponse = await fetch(`/api/branches/${branchId}/checklist-items`)
         if (checklistResponse.ok) {
@@ -146,10 +146,10 @@ export function BranchWorkspace({ clientId, branchId, branch, userRole, teamMemb
     fetchActiveProject()
   }, [branchId, selectedProjectId])
 
-  // Filter modules based on role - technicians can't see billing/contracts/settings
+  // Filter modules based on role - technicians can only see dashboard, kanban, calendar, equipment
   const allModules = [
     { id: 'dashboard', label: 'Dashboard', icon: LayoutDashboard },
-    { id: 'requests', label: 'Requests', icon: FileText },
+    { id: 'requests', label: 'Requests', icon: FileText, restrictedForTechnician: true },
     { id: 'checklists', label: 'Kanban Board', icon: ClipboardList },
     { id: 'calendar', label: 'Calendar', icon: Calendar },
     { id: 'billing', label: 'Billing', icon: DollarSign, restrictedForTechnician: true },
@@ -158,8 +158,8 @@ export function BranchWorkspace({ clientId, branchId, branch, userRole, teamMemb
     { id: 'settings', label: 'Settings', icon: Settings, restrictedForTechnician: true },
     { id: 'equipment', label: 'Equipment', icon: Tag },
   ]
-  
-  const modules = isTechnician 
+
+  const modules = isTechnician
     ? allModules.filter(m => !m.restrictedForTechnician)
     : allModules
 
@@ -207,62 +207,62 @@ export function BranchWorkspace({ clientId, branchId, branch, userRole, teamMemb
         </TabsList>
 
         <div className="mt-6">
-        <TabsContent value="dashboard" className="mt-0">
-          <BranchDashboard branch={branch} branchId={branchId} />
-        </TabsContent>
+          <TabsContent value="dashboard" className="mt-0">
+            <BranchDashboard branch={branch} branchId={branchId} />
+          </TabsContent>
 
-        <TabsContent value="checklists" className="mt-0">
-          <ChecklistsList branchId={branchId} projectId={selectedProjectId} userRole="CONTRACTOR" />
-        </TabsContent>
+          <TabsContent value="checklists" className="mt-0">
+            <ChecklistsList branchId={branchId} projectId={selectedProjectId} userRole="CONTRACTOR" />
+          </TabsContent>
 
-        <TabsContent value="requests" className="mt-0">
-          <RequestsList branchId={branchId} userRole="CONTRACTOR" projectId={selectedProjectId} />
-        </TabsContent>
+          <TabsContent value="requests" className="mt-0">
+            <RequestsList branchId={branchId} userRole="CONTRACTOR" projectId={selectedProjectId} />
+          </TabsContent>
 
-        <TabsContent value="calendar" className="mt-0">
-          <AppointmentsList branchId={branchId} projectId={selectedProjectId} />
-        </TabsContent>
+          <TabsContent value="calendar" className="mt-0">
+            <AppointmentsList branchId={branchId} projectId={selectedProjectId} />
+          </TabsContent>
 
-        <TabsContent value="equipment" className="mt-0">
-          <EquipmentList branchId={branchId} userRole="CONTRACTOR" />
-        </TabsContent>
+          <TabsContent value="equipment" className="mt-0">
+            <EquipmentList branchId={branchId} userRole="CONTRACTOR" />
+          </TabsContent>
 
-        <TabsContent value="billing" className="mt-0">
-          <BillingTab branchId={branchId} projectId={selectedProjectId} />
-        </TabsContent>
+          <TabsContent value="billing" className="mt-0">
+            <BillingTab branchId={branchId} projectId={selectedProjectId} />
+          </TabsContent>
 
-        <TabsContent value="contracts" className="mt-0">
-          <ContractsList branchId={branchId} projectId={selectedProjectId} />
-        </TabsContent>
+          <TabsContent value="contracts" className="mt-0">
+            <ContractsList branchId={branchId} projectId={selectedProjectId} />
+          </TabsContent>
 
-        <TabsContent value="certificates" className="mt-0">
-          <CertificatesList branchId={branchId} userRole="CONTRACTOR" />
-        </TabsContent>
+          <TabsContent value="certificates" className="mt-0">
+            <CertificatesList branchId={branchId} userRole="CONTRACTOR" />
+          </TabsContent>
 
-        <TabsContent value="settings" className="mt-0">
-          <div className="flex justify-center">
-            <div className="w-full max-w-2xl">
-              <BranchProfileCard 
-                branch={{
-                  ...branch,
-                  cdCertificateExpiry: branch.cdCertificateExpiry ? new Date(branch.cdCertificateExpiry).toISOString() : null,
-                }}
-                activeProject={activeProject}
-                canEdit={true} 
-              />
+          <TabsContent value="settings" className="mt-0">
+            <div className="flex justify-center">
+              <div className="w-full max-w-2xl">
+                <BranchProfileCard
+                  branch={{
+                    ...branch,
+                    cdCertificateExpiry: branch.cdCertificateExpiry ? new Date(branch.cdCertificateExpiry).toISOString() : null,
+                  }}
+                  activeProject={activeProject}
+                  canEdit={true}
+                />
+              </div>
             </div>
-          </div>
-        </TabsContent>
-      </div>
-    </Tabs>
+          </TabsContent>
+        </div>
+      </Tabs>
 
-    {/* Activity Panel */}
-    <ActivityPanel
-      branchId={branchId}
-      projectId={selectedProjectId}
-      isOpen={activityPanelOpen}
-      onClose={() => setActivityPanelOpen(false)}
-    />
+      {/* Activity Panel */}
+      <ActivityPanel
+        branchId={branchId}
+        projectId={selectedProjectId}
+        isOpen={activityPanelOpen}
+        onClose={() => setActivityPanelOpen(false)}
+      />
     </>
   )
 }
@@ -317,7 +317,7 @@ function BranchDashboard({ branch, branchId }: { branch: Branch; branchId: strin
   }
 
   const updateWorkOrder = (id: string, field: keyof WorkOrder, value: string) => {
-    setWorkOrders(workOrders.map(wo => 
+    setWorkOrders(workOrders.map(wo =>
       wo.id === id ? { ...wo, [field]: value } : wo
     ))
   }
