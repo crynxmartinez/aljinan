@@ -41,6 +41,40 @@ async function getClient(clientSlugOrId: string, userId: string) {
   return client
 }
 
+async function getClientForTeamMember(clientSlugOrId: string, userId: string, assignedBranchIds: string[]) {
+  // Try to find by slug first, then by ID (for backwards compatibility)
+  const client = await prisma.client.findFirst({
+    where: {
+      OR: [
+        { slug: clientSlugOrId },
+        { id: clientSlugOrId }
+      ],
+      branches: {
+        some: {
+          id: { in: assignedBranchIds }
+        }
+      }
+    },
+    include: {
+      user: {
+        select: {
+          email: true,
+          status: true,
+        }
+      },
+      branches: {
+        where: {
+          id: { in: assignedBranchIds },
+          isActive: true
+        },
+        orderBy: { createdAt: 'asc' }
+      }
+    }
+  })
+
+  return client
+}
+
 export default async function ClientDetailPage({
   params,
 }: {
@@ -53,11 +87,20 @@ export default async function ClientDetailPage({
   }
 
   const { clientSlug } = await params
-  const client = await getClient(clientSlug, session.user.id)
+
+  // Get client based on user role
+  let client
+  if (session.user.role === 'TEAM_MEMBER' && session.user.assignedBranchIds) {
+    client = await getClientForTeamMember(clientSlug, session.user.id, session.user.assignedBranchIds)
+  } else {
+    client = await getClient(clientSlug, session.user.id)
+  }
 
   if (!client) {
     notFound()
   }
+
+  const isTeamMember = session.user.role === 'TEAM_MEMBER'
 
   const getStatusBadge = (status: string) => {
     switch (status) {
@@ -95,16 +138,18 @@ export default async function ClientDetailPage({
               {getStatusBadge(client.user.status)}
             </div>
             <p className="text-muted-foreground mt-1">
-              {client.branches.length} branch{client.branches.length !== 1 ? 'es' : ''}
+              {isTeamMember ? 'Assigned branches: ' : ''}{client.branches.length} branch{client.branches.length !== 1 ? 'es' : ''}
             </p>
           </div>
         </div>
-        <Link href={`/dashboard/clients/${client.slug || client.id}/branches/new`}>
-          <Button>
-            <Plus className="mr-2 h-4 w-4" />
-            Add Branch
-          </Button>
-        </Link>
+        {!isTeamMember && (
+          <Link href={`/dashboard/clients/${client.slug || client.id}/branches/new`}>
+            <Button>
+              <Plus className="mr-2 h-4 w-4" />
+              Add Branch
+            </Button>
+          </Link>
+        )}
       </div>
 
       <div className="grid gap-6 lg:grid-cols-3">
@@ -113,20 +158,24 @@ export default async function ClientDetailPage({
             <CardHeader>
               <CardTitle>Branches</CardTitle>
               <CardDescription>
-                All locations for this client
+                {isTeamMember ? 'Your assigned locations' : 'All locations for this client'}
               </CardDescription>
             </CardHeader>
             <CardContent>
               {client.branches.length === 0 ? (
                 <div className="text-center py-8 bg-muted/50 rounded-lg">
                   <MapPin className="h-10 w-10 text-muted-foreground/50 mx-auto mb-3" />
-                  <p className="text-muted-foreground mb-3">No branches yet</p>
-                  <Link href={`/dashboard/clients/${client.slug || client.id}/branches/new`}>
-                    <Button>
-                      <Plus className="mr-2 h-4 w-4" />
-                      Add First Branch
-                    </Button>
-                  </Link>
+                  <p className="text-muted-foreground mb-3">
+                    {isTeamMember ? 'No branches assigned' : 'No branches yet'}
+                  </p>
+                  {!isTeamMember && (
+                    <Link href={`/dashboard/clients/${client.slug || client.id}/branches/new`}>
+                      <Button>
+                        <Plus className="mr-2 h-4 w-4" />
+                        Add First Branch
+                      </Button>
+                    </Link>
+                  )}
                 </div>
               ) : (
                 <div className="space-y-3">
@@ -159,12 +208,12 @@ export default async function ClientDetailPage({
         </div>
 
         <div className="space-y-6">
-          <ClientProfileCard 
+          <ClientProfileCard
             client={{
               ...client,
               contacts: client.contacts as { name: string; phone: string; email: string; whatsapp: string }[] | null,
-            }} 
-            canEdit={true} 
+            }}
+            canEdit={!isTeamMember}
           />
         </div>
       </div>
