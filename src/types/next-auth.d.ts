@@ -6,6 +6,7 @@ declare module 'next-auth' {
     user: {
       id: string
       role: string
+      status?: string
       teamMemberRole?: string
       assignedBranchIds?: string[]
       contractorId?: string
@@ -19,6 +20,7 @@ declare module 'next-auth' {
 
   interface User extends DefaultUser {
     role: string
+    status?: string
     teamMemberRole?: string
     assignedBranchIds?: string[]
     contractorId?: string
@@ -34,6 +36,7 @@ declare module 'next-auth/jwt' {
   interface JWT extends DefaultJWT {
     id: string
     role: string
+    status?: string
     teamMemberRole?: string
     assignedBranchIds?: string[]
     contractorId?: string

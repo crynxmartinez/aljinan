@@ -251,6 +251,9 @@ model Client {
   contactPersonPhone  String?    // Primary contact person phone
   contactPersonEmail  String?    // Primary contact person email
   
+  // Archive tracking
+  archivedAt    DateTime?  // When the client was archived (for auto-delete after 90 days)
+  
   createdAt     DateTime   @default(now())
   updatedAt     DateTime   @updatedAt
 

@@ -42,6 +42,11 @@ export default async function PortalLayout({
     redirect('/dashboard')
   }
 
+  // Redirect archived clients to notice page
+  if (session.user.status === 'ARCHIVED') {
+    redirect('/portal/archived')
+  }
+
   const client = await getClientData(session.user.id)
 
   if (!client) {

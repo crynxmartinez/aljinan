@@ -85,6 +85,7 @@ export const authOptions: NextAuthOptions = {
           email: string
           name: string | null
           role: string
+          status?: string
           teamMemberRole?: string
           assignedBranchIds?: string[]
           contractorId?: string
@@ -98,6 +99,7 @@ export const authOptions: NextAuthOptions = {
           email: user.email,
           name: user.name,
           role: user.role,
+          status: user.status,
           mustChangePassword: user.mustChangePassword,
         }
 
@@ -136,6 +138,9 @@ export const authOptions: NextAuthOptions = {
       if (user) {
         token.id = user.id
         token.role = user.role
+        if ('status' in user) {
+          token.status = user.status
+        }
         // Store team member specific data in token
         if ('teamMemberRole' in user) {
           token.teamMemberRole = user.teamMemberRole
@@ -169,6 +174,9 @@ export const authOptions: NextAuthOptions = {
       if (session.user) {
         session.user.id = token.id as string
         session.user.role = token.role as string
+        if (token.status) {
+          session.user.status = token.status as string
+        }
         // Add team member specific data to session
         if (token.teamMemberRole) {
           session.user.teamMemberRole = token.teamMemberRole as string

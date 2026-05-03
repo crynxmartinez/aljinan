@@ -35,10 +35,24 @@ export async function POST(
       return NextResponse.json({ error: 'Client not found' }, { status: 404 })
     }
 
-    await prisma.user.update({
-      where: { id: client.userId },
-      data: { status: 'ARCHIVED' }
-    })
+    // Archive client and deactivate all branches
+    await prisma.$transaction([
+      // Set user status to ARCHIVED
+      prisma.user.update({
+        where: { id: client.userId },
+        data: { status: 'ARCHIVED' }
+      }),
+      // Set archivedAt timestamp
+      prisma.client.update({
+        where: { id: clientId },
+        data: { archivedAt: new Date() }
+      }),
+      // Deactivate all branches
+      prisma.branch.updateMany({
+        where: { clientId },
+        data: { isActive: false }
+      })
+    ])
 
     return NextResponse.json({ success: true })
   } catch (error) {

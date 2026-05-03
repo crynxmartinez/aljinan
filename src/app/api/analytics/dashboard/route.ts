@@ -23,15 +23,22 @@ export async function GET() {
     const lastDayLastMonth = new Date(now.getFullYear(), now.getMonth(), 0)
     const sixMonthsAgo = new Date(now.getFullYear(), now.getMonth() - 6, 1)
 
-    // Get work orders based on role
+    // Get work orders based on role (exclude archived clients)
     let allWorkOrders
     if (session.user.role === 'TEAM_MEMBER' && session.user.assignedBranchIds) {
-      // Team members: only get work orders from assigned branches
+      // Team members: only get work orders from assigned branches (exclude archived)
       allWorkOrders = await prisma.checklistItem.findMany({
         where: {
           checklist: {
             project: {
-              branchId: { in: session.user.assignedBranchIds }
+              branchId: { in: session.user.assignedBranchIds },
+              branch: {
+                client: {
+                  user: {
+                    status: { not: 'ARCHIVED' }
+                  }
+                }
+              }
             }
           },
           deletedAt: null
@@ -43,7 +50,13 @@ export async function GET() {
                 include: {
                   branch: {
                     include: {
-                      client: true
+                      client: {
+                        include: {
+                          user: {
+                            select: { status: true }
+                          }
+                        }
+                      }
                     }
                   }
                 }
@@ -53,9 +66,20 @@ export async function GET() {
         }
       })
     } else {
-      // Contractors: get all work orders
+      // Contractors: get all work orders (exclude archived clients)
       allWorkOrders = await prisma.checklistItem.findMany({
         where: {
+          checklist: {
+            project: {
+              branch: {
+                client: {
+                  user: {
+                    status: { not: 'ARCHIVED' }
+                  }
+                }
+              }
+            }
+          },
           deletedAt: null
         },
         include: {
@@ -65,7 +89,13 @@ export async function GET() {
                 include: {
                   branch: {
                     include: {
-                      client: true
+                      client: {
+                        include: {
+                          user: {
+                            select: { status: true }
+                          }
+                        }
+                      }
                     }
                   }
                 }
