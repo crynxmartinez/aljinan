@@ -18,6 +18,7 @@ import {
   Loader2,
   BarChart3,
   ClipboardList,
+  UserCircle,
 } from 'lucide-react'
 import { cn } from '@/lib/utils'
 import { Button } from '@/components/ui/button'
@@ -85,10 +86,21 @@ const bottomNavItems = [
     href: '/dashboard/templates',
     icon: FileText,
   },
+]
+
+const contractorBottomNavItems = [
   {
     title: 'Settings',
     href: '/dashboard/settings',
     icon: Settings,
+  },
+]
+
+const teamMemberBottomNavItems = [
+  {
+    title: 'Profile',
+    href: '/dashboard/profile',
+    icon: UserCircle,
   },
 ]
 
@@ -175,30 +187,30 @@ export function Sidebar({ clients = [], userRole, teamMemberRole }: SidebarProps
               return true
             })
             .map((item) => (
-            <Link
-              key={item.href}
-              href={item.href}
-              onClick={(e) => handleNavClick(e, item.href)}
-              className={cn(
-                'flex items-center gap-3 rounded-lg px-3 py-2 text-sm transition-colors relative',
-                pathname === item.href
-                  ? 'bg-sidebar-accent text-sidebar-accent-foreground'
-                  : 'text-sidebar-foreground/70 hover:bg-sidebar-accent hover:text-sidebar-accent-foreground'
-              )}
-            >
-              {loadingHref === item.href ? (
-                <Loader2 className="h-4 w-4 animate-spin" />
-              ) : (
-                <item.icon className="h-4 w-4" />
-              )}
-              {item.title}
-              {item.href === '/dashboard/notifications' && unreadNotifications > 0 && (
-                <span className="ml-auto flex h-5 w-5 items-center justify-center rounded-full bg-red-600 text-xs font-medium text-white">
-                  {unreadNotifications > 9 ? '9+' : unreadNotifications}
-                </span>
-              )}
-            </Link>
-          ))}
+              <Link
+                key={item.href}
+                href={item.href}
+                onClick={(e) => handleNavClick(e, item.href)}
+                className={cn(
+                  'flex items-center gap-3 rounded-lg px-3 py-2 text-sm transition-colors relative',
+                  pathname === item.href
+                    ? 'bg-sidebar-accent text-sidebar-accent-foreground'
+                    : 'text-sidebar-foreground/70 hover:bg-sidebar-accent hover:text-sidebar-accent-foreground'
+                )}
+              >
+                {loadingHref === item.href ? (
+                  <Loader2 className="h-4 w-4 animate-spin" />
+                ) : (
+                  <item.icon className="h-4 w-4" />
+                )}
+                {item.title}
+                {item.href === '/dashboard/notifications' && unreadNotifications > 0 && (
+                  <span className="ml-auto flex h-5 w-5 items-center justify-center rounded-full bg-red-600 text-xs font-medium text-white">
+                    {unreadNotifications > 9 ? '9+' : unreadNotifications}
+                  </span>
+                )}
+              </Link>
+            ))}
         </div>
 
         <Separator className="my-4" />
@@ -311,6 +323,26 @@ export function Sidebar({ clients = [], userRole, teamMemberRole }: SidebarProps
         {/* Bottom Navigation */}
         <div className="space-y-1">
           {bottomNavItems.map((item) => (
+            <Link
+              key={item.href}
+              href={item.href}
+              onClick={(e) => handleNavClick(e, item.href)}
+              className={cn(
+                'flex items-center gap-3 rounded-lg px-3 py-2 text-sm transition-colors',
+                pathname === item.href
+                  ? 'bg-sidebar-accent text-sidebar-accent-foreground'
+                  : 'text-sidebar-foreground/70 hover:bg-sidebar-accent hover:text-sidebar-accent-foreground'
+              )}
+            >
+              {loadingHref === item.href ? (
+                <Loader2 className="h-4 w-4 animate-spin" />
+              ) : (
+                <item.icon className="h-4 w-4" />
+              )}
+              {item.title}
+            </Link>
+          ))}
+          {(isTeamMember ? teamMemberBottomNavItems : contractorBottomNavItems).map((item) => (
             <Link
               key={item.href}
               href={item.href}

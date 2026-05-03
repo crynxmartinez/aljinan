@@ -18,6 +18,7 @@ import {
   Shield,
   Wrench,
   AlertCircle,
+  MapPin,
 } from 'lucide-react'
 
 interface TechnicianDetails {
@@ -25,6 +26,7 @@ interface TechnicianDetails {
   name: string
   email: string
   phone: string | null
+  address: string | null
   jobTitle: string | null
   teamRole: 'SUPERVISOR' | 'TECHNICIAN'
 }
@@ -155,6 +157,19 @@ export function TechnicianDetailsModal({
                     >
                       {technician.phone}
                     </a>
+                  ) : (
+                    <p className="text-sm text-muted-foreground italic">Not provided</p>
+                  )}
+                </div>
+              </div>
+
+              {/* Address */}
+              <div className="flex items-start gap-3 p-3 border rounded-lg">
+                <MapPin className="h-4 w-4 text-muted-foreground mt-0.5" />
+                <div className="flex-1">
+                  <p className="text-xs text-muted-foreground">Address</p>
+                  {technician.address ? (
+                    <p className="text-sm font-medium whitespace-pre-line">{technician.address}</p>
                   ) : (
                     <p className="text-sm text-muted-foreground italic">Not provided</p>
                   )}

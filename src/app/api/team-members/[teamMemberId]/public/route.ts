@@ -40,7 +40,12 @@ export async function GET(
     // Get the team member with branch access
     const teamMember = await prisma.teamMember.findUnique({
       where: { id: teamMemberId },
-      include: {
+      select: {
+        id: true,
+        teamRole: true,
+        jobTitle: true,
+        phone: true,
+        address: true,
         user: {
           select: {
             name: true,
@@ -74,6 +79,7 @@ export async function GET(
       name: teamMember.user.name,
       email: teamMember.user.email,
       phone: teamMember.phone,
+      address: teamMember.address,
       jobTitle: teamMember.jobTitle,
       teamRole: teamMember.teamRole,
     })

@@ -1052,6 +1052,7 @@ model TeamMember {
   teamRole      TeamMemberRole
   jobTitle      String?
   phone         String?
+  address       String?
   createdAt     DateTime        @default(now())
   updatedAt     DateTime        @updatedAt
 
