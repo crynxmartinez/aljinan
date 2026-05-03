@@ -11,8 +11,8 @@ export async function GET() {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
     }
 
-    // Only contractors can access analytics
-    if (session.user.role !== 'CONTRACTOR') {
+    // Only contractors and team members can access analytics
+    if (session.user.role !== 'CONTRACTOR' && session.user.role !== 'TEAM_MEMBER') {
       return NextResponse.json({ error: 'Access denied' }, { status: 403 })
     }
 
@@ -23,24 +23,58 @@ export async function GET() {
     const lastDayLastMonth = new Date(now.getFullYear(), now.getMonth(), 0)
     const sixMonthsAgo = new Date(now.getFullYear(), now.getMonth() - 6, 1)
 
-    // Get all work orders
-    const allWorkOrders = await prisma.checklistItem.findMany({
-      include: {
-        checklist: {
-          include: {
+    // Get work orders based on role
+    let allWorkOrders
+    if (session.user.role === 'TEAM_MEMBER' && session.user.assignedBranchIds) {
+      // Team members: only get work orders from assigned branches
+      allWorkOrders = await prisma.checklistItem.findMany({
+        where: {
+          checklist: {
             project: {
-              include: {
-                branch: {
-                  include: {
-                    client: true
+              branchId: { in: session.user.assignedBranchIds }
+            }
+          },
+          deletedAt: null
+        },
+        include: {
+          checklist: {
+            include: {
+              project: {
+                include: {
+                  branch: {
+                    include: {
+                      client: true
+                    }
                   }
                 }
               }
             }
           }
         }
-      }
-    })
+      })
+    } else {
+      // Contractors: get all work orders
+      allWorkOrders = await prisma.checklistItem.findMany({
+        where: {
+          deletedAt: null
+        },
+        include: {
+          checklist: {
+            include: {
+              project: {
+                include: {
+                  branch: {
+                    include: {
+                      client: true
+                    }
+                  }
+                }
+              }
+            }
+          }
+        }
+      })
+    }
 
     // Calculate total revenue this month (completed work orders)
     const thisMonthRevenue = allWorkOrders
@@ -98,7 +132,7 @@ export async function GET() {
     for (let i = 5; i >= 0; i--) {
       const monthStart = new Date(now.getFullYear(), now.getMonth() - i, 1)
       const monthEnd = new Date(now.getFullYear(), now.getMonth() - i + 1, 0)
-      
+
       const monthRevenue = allWorkOrders
         .filter(wo => {
           return wo.updatedAt >= monthStart && wo.updatedAt <= monthEnd && wo.stage === 'COMPLETED' && wo.price
@@ -113,7 +147,7 @@ export async function GET() {
 
     // Get top clients by revenue
     const clientRevenue = new Map<string, { name: string; revenue: number }>()
-    
+
     allWorkOrders.forEach(wo => {
       if (wo.price && wo.checklist?.project?.branch?.client) {
         const client = wo.checklist.project.branch.client

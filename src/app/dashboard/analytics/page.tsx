@@ -1,6 +1,7 @@
 'use client'
 
 import { useEffect, useState } from 'react'
+import { useSession } from 'next-auth/react'
 import { DollarSign, ClipboardList, AlertCircle, TrendingUp } from 'lucide-react'
 import { StatsCard } from '@/components/analytics/stats-card'
 import { RevenueChart } from '@/components/analytics/revenue-chart'
@@ -25,9 +26,12 @@ interface AnalyticsData {
 }
 
 export default function AnalyticsPage() {
+  const { data: session } = useSession()
   const [data, setData] = useState<AnalyticsData | null>(null)
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState<string | null>(null)
+
+  const isTechnician = session?.user?.role === 'TEAM_MEMBER' && session?.user?.teamMemberRole === 'TECHNICIAN'
 
   useEffect(() => {
     fetchAnalytics()
@@ -93,19 +97,21 @@ export default function AnalyticsPage() {
       </div>
 
       {/* Stats Cards */}
-      <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
-        <StatsCard
-          title="Total Revenue"
-          value={`SAR ${data.stats.revenue.current.toLocaleString()}`}
-          change={{
-            value: data.stats.revenue.change,
-            label: data.stats.revenue.label,
-            isPositive: data.stats.revenue.change >= 0,
-          }}
-          icon={DollarSign}
-          iconColor="text-green-600"
-          iconBgColor="bg-green-100"
-        />
+      <div className={`grid gap-4 md:grid-cols-2 ${isTechnician ? 'lg:grid-cols-3' : 'lg:grid-cols-4'}`}>
+        {!isTechnician && (
+          <StatsCard
+            title="Total Revenue"
+            value={`SAR ${data.stats.revenue.current.toLocaleString()}`}
+            change={{
+              value: data.stats.revenue.change,
+              label: data.stats.revenue.label,
+              isPositive: data.stats.revenue.change >= 0,
+            }}
+            icon={DollarSign}
+            iconColor="text-green-600"
+            iconBgColor="bg-green-100"
+          />
+        )}
         <StatsCard
           title="Active Work Orders"
           value={data.stats.activeWorkOrders.count}
@@ -131,11 +137,13 @@ export default function AnalyticsPage() {
 
       {/* Charts Row 1 */}
       <div className="grid gap-4 md:grid-cols-2">
-        <RevenueChart
-          data={data.charts.revenueByMonth}
-          title="Revenue Trend"
-          description="Monthly revenue over the last 6 months"
-        />
+        {!isTechnician && (
+          <RevenueChart
+            data={data.charts.revenueByMonth}
+            title="Revenue Trend"
+            description="Monthly revenue over the last 6 months"
+          />
+        )}
         <StatusBarChart
           data={data.charts.workOrdersByStatus}
           title="Work Orders by Status"
@@ -151,38 +159,40 @@ export default function AnalyticsPage() {
           description="Breakdown by service type"
         />
 
-        {/* Top Clients */}
-        <Card>
-          <CardHeader>
-            <CardTitle>Top Clients</CardTitle>
-            <CardDescription>Highest revenue contributors</CardDescription>
-          </CardHeader>
-          <CardContent>
-            {data.topClients.length === 0 ? (
-              <p className="text-sm text-muted-foreground text-center py-8">
-                No client data available
-              </p>
-            ) : (
-              <div className="space-y-4">
-                {data.topClients.map((client, index) => (
-                  <div key={index} className="flex items-center justify-between">
-                    <div className="flex items-center gap-3">
-                      <div className="flex h-8 w-8 items-center justify-center rounded-full bg-primary/10 text-sm font-medium">
-                        {index + 1}
+        {/* Top Clients - Hide for technicians */}
+        {!isTechnician && (
+          <Card>
+            <CardHeader>
+              <CardTitle>Top Clients</CardTitle>
+              <CardDescription>Highest revenue contributors</CardDescription>
+            </CardHeader>
+            <CardContent>
+              {data.topClients.length === 0 ? (
+                <p className="text-sm text-muted-foreground text-center py-8">
+                  No client data available
+                </p>
+              ) : (
+                <div className="space-y-4">
+                  {data.topClients.map((client, index) => (
+                    <div key={index} className="flex items-center justify-between">
+                      <div className="flex items-center gap-3">
+                        <div className="flex h-8 w-8 items-center justify-center rounded-full bg-primary/10 text-sm font-medium">
+                          {index + 1}
+                        </div>
+                        <div>
+                          <p className="text-sm font-medium">{client.name}</p>
+                        </div>
                       </div>
-                      <div>
-                        <p className="text-sm font-medium">{client.name}</p>
-                      </div>
+                      <p className="text-sm font-semibold">
+                        SAR {client.revenue.toLocaleString()}
+                      </p>
                     </div>
-                    <p className="text-sm font-semibold">
-                      SAR {client.revenue.toLocaleString()}
-                    </p>
-                  </div>
-                ))}
-              </div>
-            )}
-          </CardContent>
-        </Card>
+                  ))}
+                </div>
+              )}
+            </CardContent>
+          </Card>
+        )}
       </div>
     </div>
   )
