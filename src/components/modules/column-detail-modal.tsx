@@ -80,7 +80,7 @@ interface ChecklistItem {
   deletedAt: string | null
   deletedBy: string | null
   deletedReason: string | null
-  workOrderType?: 'SERVICE' | 'INSPECTION' | 'MAINTENANCE' | 'INSTALLATION' | 'STICKER_INSPECTION' | null
+  workOrderType?: 'SERVICE' | 'INSPECTION' | 'MAINTENANCE' | 'INSTALLATION' | 'STICKER_INSPECTION' | 'OTHER' | null
   linkedRequestId?: string | null
   inspectionDate?: string | null
   systemsChecked?: string | null
@@ -134,7 +134,7 @@ export function ColumnDetailModal({
 
   const getDatePriority = (scheduledDate: string | null, itemStage: ChecklistItemStage) => {
     if (!scheduledDate || itemStage === 'COMPLETED' || itemStage === 'ARCHIVED') return 'normal'
-    
+
     const today = new Date()
     today.setHours(0, 0, 0, 0)
     const scheduled = new Date(scheduledDate)
@@ -163,7 +163,7 @@ export function ColumnDetailModal({
       const matchesSearch = item.description.toLowerCase().includes(searchQuery.toLowerCase()) ||
         item.projectTitle?.toLowerCase().includes(searchQuery.toLowerCase()) ||
         item.checklistTitle.toLowerCase().includes(searchQuery.toLowerCase())
-      
+
       const matchesType = filterType === 'all' || item.type === filterType
       const matchesWorkOrderType = filterWorkOrderType === 'all' || item.workOrderType === filterWorkOrderType
 
@@ -360,7 +360,7 @@ export function ColumnDetailModal({
                 className="pl-9"
               />
             </div>
-            
+
             <Select value={filterType} onValueChange={(value) => setFilterType(value as any)}>
               <SelectTrigger className="w-[140px]">
                 <SelectValue placeholder="Type" />

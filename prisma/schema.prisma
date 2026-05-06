@@ -840,12 +840,19 @@ model ChecklistItem {
   // Assignment
   assignedTo      String?            // User ID of assigned team member
   
-  // Inspection Report Fields
-  inspectionDate        DateTime?     // When inspection was performed
+  // Report Fields (shared across all service types)
+  inspectionDate        DateTime?     // When work was performed
   systemsChecked        Json?         // Array of systems inspected ["Fire Alarm", "Sprinklers", ...]
   findings              String?       // What was observed
   deficiencies          String?       // Problems found
   recommendations       String?       // What should be done
+  
+  // Service-type-specific report data (JSON for flexibility)
+  reportData            Json?         // Stores service-type-specific fields:
+                                      // SERVICE: { problemDescription, rootCause, workPerformed, partsReplaced, laborHours, laborCost, warrantyInfo }
+                                      // INSPECTION: { checklistItems, overallStatus, riskLevel, nextInspectionDate }
+                                      // MAINTENANCE: { tasksPerformed, equipmentCondition, measurements, consumablesUsed, nextMaintenanceDate }
+                                      // INSTALLATION: { equipmentInstalled, configurationDetails, commissioningChecklist, testingResults, trainingProvided, warrantyStartDate, warrantyEndDate, handoverSignature }
   
   // Signatures
   technicianSignature   String?       // URL to technician signature image

@@ -71,6 +71,20 @@ import {
   DragOverEvent,
 } from '@dnd-kit/core'
 import { useDraggable, useDroppable } from '@dnd-kit/core'
+import { ServiceReportForm, MaintenanceReportForm, InstallationReportForm } from '@/components/reports'
+import {
+  ServiceReportData,
+  MaintenanceReportData,
+  InstallationReportData,
+  InspectionReportData,
+  getReportTitle,
+  getEmptyReportData,
+  emptyServiceReportData,
+  emptyMaintenanceReportData,
+  emptyInstallationReportData
+} from '@/types/reports'
+
+type AnyReportData = ServiceReportData | MaintenanceReportData | InstallationReportData | InspectionReportData | null
 
 type ChecklistItemStage = 'SCHEDULED' | 'IN_PROGRESS' | 'FOR_REVIEW' | 'COMPLETED' | 'ARCHIVED'
 type ChecklistItemType = 'SCHEDULED' | 'ADHOC'
@@ -119,7 +133,7 @@ interface ChecklistItem {
   deletedBy: string | null
   deletedReason: string | null
   // Inspection fields
-  workOrderType?: 'SERVICE' | 'INSPECTION' | 'MAINTENANCE' | 'INSTALLATION' | 'STICKER_INSPECTION' | null
+  workOrderType?: 'SERVICE' | 'INSPECTION' | 'MAINTENANCE' | 'INSTALLATION' | 'STICKER_INSPECTION' | 'OTHER' | null
   workOrderNumber?: number | null
   linkedRequestId?: string | null
   inspectionDate?: string | null
@@ -135,6 +149,7 @@ interface ChecklistItem {
   clientSignedAt?: string | null
   reportGeneratedAt?: string | null
   reportUrl?: string | null
+  reportData?: Record<string, unknown> | null
   photos?: InspectionPhoto[]
   certificateId?: string | null
   assignedTo?: string | null
@@ -552,6 +567,9 @@ export function ChecklistKanban({ branchId, projectId, readOnly = false, userRol
   const [uploadingPhoto, setUploadingPhoto] = useState(false)
   const [savingInspection, setSavingInspection] = useState(false)
 
+  // Service-type-specific report data
+  const [reportData, setReportData] = useState<AnyReportData>(null)
+
   // Team members for assignment
   const [teamMembers, setTeamMembers] = useState<{ userId: string; user: { name: string | null; email: string }; teamRole: string }[]>([])
 
@@ -660,6 +678,14 @@ export function ChecklistKanban({ branchId, projectId, readOnly = false, userRol
       recommendations: item.recommendations || '',
     })
     setInspectionPhotos(item.photos?.map(p => ({ url: p.url, name: p.caption || 'Photo', type: p.photoType })) || [])
+
+    // Initialize service-type-specific report data
+    if (item.reportData) {
+      setReportData(item.reportData as unknown as AnyReportData)
+    } else {
+      setReportData(getEmptyReportData(item.workOrderType))
+    }
+
     setInspectionMode(false)
     setDetailsOpen(true)
   }
@@ -698,7 +724,7 @@ export function ChecklistKanban({ branchId, projectId, readOnly = false, userRol
     setInspectionPhotos(prev => prev.filter(p => p.url !== url))
   }
 
-  // Save inspection data
+  // Save inspection/report data
   const handleSaveInspection = async () => {
     if (!selectedItem) return
     setSavingInspection(true)
@@ -711,17 +737,20 @@ export function ChecklistKanban({ branchId, projectId, readOnly = false, userRol
           action: 'update_inspection',
           workOrderId: selectedItem.id,
           ...inspectionData,
+          reportData: reportData,
           photoUrls: inspectionPhotos.map(p => ({ url: p.url, type: p.type })),
         }),
       })
 
       if (response.ok) {
+        toast.success(`${getReportTitle(selectedItem.workOrderType)} saved successfully`)
         fetchItems()
         setInspectionMode(false)
         router.refresh()
       }
     } catch (error) {
-      console.error('Failed to save inspection:', error)
+      console.error('Failed to save report:', error)
+      toast.error('Failed to save report')
     } finally {
       setSavingInspection(false)
     }
@@ -1329,71 +1358,103 @@ export function ChecklistKanban({ branchId, projectId, readOnly = false, userRol
                 )}
               </div>
 
-              {/* Inspection Form (for IN_PROGRESS stage, contractor only) */}
+              {/* Report Form (for IN_PROGRESS stage, contractor only) */}
               {!readOnly && selectedItem.stage === 'IN_PROGRESS' && (
                 <>
                   {inspectionMode ? (
                     <div className="space-y-4 border-t pt-4">
-                      <h4 className="font-semibold flex items-center gap-2">
-                        <FileText className="h-4 w-4" />
-                        Inspection Report
-                      </h4>
-
-                      <div className="grid grid-cols-2 gap-4">
-                        <div className="space-y-2">
-                          <Label htmlFor="inspectionDate">Inspection Date</Label>
-                          <Input
-                            id="inspectionDate"
-                            type="date"
-                            value={inspectionData.inspectionDate}
-                            onChange={(e) => setInspectionData({ ...inspectionData, inspectionDate: e.target.value })}
-                          />
-                        </div>
-                        <div className="space-y-2">
-                          <Label htmlFor="systemsChecked">Systems Checked</Label>
-                          <Input
-                            id="systemsChecked"
-                            value={inspectionData.systemsChecked}
-                            onChange={(e) => setInspectionData({ ...inspectionData, systemsChecked: e.target.value })}
-                            placeholder="e.g., Fire alarm, Sprinklers"
-                          />
-                        </div>
-                      </div>
-
-                      <div className="space-y-2">
-                        <Label htmlFor="findings">Findings</Label>
-                        <Textarea
-                          id="findings"
-                          value={inspectionData.findings}
-                          onChange={(e) => setInspectionData({ ...inspectionData, findings: e.target.value })}
-                          placeholder="Describe what was found during inspection..."
-                          rows={3}
+                      {/* Service Report Form */}
+                      {selectedItem.workOrderType === 'SERVICE' && reportData && (
+                        <ServiceReportForm
+                          data={reportData as ServiceReportData}
+                          onChange={(data) => setReportData(data)}
                         />
-                      </div>
+                      )}
 
-                      <div className="space-y-2">
-                        <Label htmlFor="deficiencies">Deficiencies</Label>
-                        <Textarea
-                          id="deficiencies"
-                          value={inspectionData.deficiencies}
-                          onChange={(e) => setInspectionData({ ...inspectionData, deficiencies: e.target.value })}
-                          placeholder="List any deficiencies found..."
-                          rows={2}
+                      {/* Maintenance Report Form */}
+                      {selectedItem.workOrderType === 'MAINTENANCE' && reportData && (
+                        <MaintenanceReportForm
+                          data={reportData as MaintenanceReportData}
+                          onChange={(data) => setReportData(data)}
                         />
-                      </div>
+                      )}
 
-                      <div className="space-y-2">
-                        <Label htmlFor="recommendations">Recommendations</Label>
-                        <Textarea
-                          id="recommendations"
-                          value={inspectionData.recommendations}
-                          onChange={(e) => setInspectionData({ ...inspectionData, recommendations: e.target.value })}
-                          placeholder="Recommendations for the client..."
-                          rows={2}
+                      {/* Installation Report Form */}
+                      {selectedItem.workOrderType === 'INSTALLATION' && reportData && (
+                        <InstallationReportForm
+                          data={reportData as InstallationReportData}
+                          onChange={(data) => setReportData(data)}
                         />
-                      </div>
+                      )}
 
-                      {/* Photo Upload */}
+                      {/* Inspection Report Form (for INSPECTION, STICKER_INSPECTION, and default) */}
+                      {(selectedItem.workOrderType === 'INSPECTION' ||
+                        selectedItem.workOrderType === 'STICKER_INSPECTION' ||
+                        !selectedItem.workOrderType ||
+                        selectedItem.workOrderType === 'OTHER') && (
+                          <>
+                            <h4 className="font-semibold flex items-center gap-2 text-blue-600">
+                              <FileText className="h-4 w-4" />
+                              {getReportTitle(selectedItem.workOrderType)}
+                            </h4>
+
+                            <div className="grid grid-cols-2 gap-4">
+                              <div className="space-y-2">
+                                <Label htmlFor="inspectionDate">Inspection Date</Label>
+                                <Input
+                                  id="inspectionDate"
+                                  type="date"
+                                  value={inspectionData.inspectionDate}
+                                  onChange={(e) => setInspectionData({ ...inspectionData, inspectionDate: e.target.value })}
+                                />
+                              </div>
+                              <div className="space-y-2">
+                                <Label htmlFor="systemsChecked">Systems Checked</Label>
+                                <Input
+                                  id="systemsChecked"
+                                  value={inspectionData.systemsChecked}
+                                  onChange={(e) => setInspectionData({ ...inspectionData, systemsChecked: e.target.value })}
+                                  placeholder="e.g., Fire alarm, Sprinklers"
+                                />
+                              </div>
+                            </div>
+
+                            <div className="space-y-2">
+                              <Label htmlFor="findings">Findings</Label>
+                              <Textarea
+                                id="findings"
+                                value={inspectionData.findings}
+                                onChange={(e) => setInspectionData({ ...inspectionData, findings: e.target.value })}
+                                placeholder="Describe what was found during inspection..."
+                                rows={3}
+                              />
+                            </div>
+
+                            <div className="space-y-2">
+                              <Label htmlFor="deficiencies">Deficiencies</Label>
+                              <Textarea
+                                id="deficiencies"
+                                value={inspectionData.deficiencies}
+                                onChange={(e) => setInspectionData({ ...inspectionData, deficiencies: e.target.value })}
+                                placeholder="List any deficiencies found..."
+                                rows={2}
+                              />
+                            </div>
+
+                            <div className="space-y-2">
+                              <Label htmlFor="recommendations">Recommendations</Label>
+                              <Textarea
+                                id="recommendations"
+                                value={inspectionData.recommendations}
+                                onChange={(e) => setInspectionData({ ...inspectionData, recommendations: e.target.value })}
+                                placeholder="Recommendations for the client..."
+                                rows={2}
+                              />
+                            </div>
+                          </>
+                        )}
+
+                      {/* Photo Upload - Common for all report types */}
                       <div className="space-y-2">
                         <Label>Photos</Label>
                         <FileUploadDropzone
@@ -1483,7 +1544,7 @@ export function ChecklistKanban({ branchId, projectId, readOnly = false, userRol
                         </Button>
                         <Button onClick={handleSaveInspection} disabled={savingInspection} className="flex-1">
                           {savingInspection && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
-                          Save Inspection
+                          Save Report
                         </Button>
                       </div>
                     </div>
@@ -1491,7 +1552,7 @@ export function ChecklistKanban({ branchId, projectId, readOnly = false, userRol
                     <div className="flex gap-2 pt-4 border-t">
                       <Button variant="outline" onClick={() => setInspectionMode(true)} className="flex-1">
                         <FileText className="mr-2 h-4 w-4" />
-                        Fill Inspection Report
+                        Fill {getReportTitle(selectedItem.workOrderType)}
                       </Button>
                       <Button
                         onClick={() => handleSendToReview(selectedItem.id)}

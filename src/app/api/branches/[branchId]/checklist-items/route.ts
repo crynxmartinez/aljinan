@@ -243,6 +243,7 @@ export async function GET(
         clientSignedAt: item.clientSignedAt?.toISOString() || null,
         reportGeneratedAt: item.reportGeneratedAt?.toISOString() || null,
         reportUrl: item.reportUrl,
+        reportData: item.reportData,
         photos: item.photos,
         // Payment fields
         paymentStatus: item.paymentStatus,
@@ -349,6 +350,7 @@ export async function PATCH(
       if (findings !== undefined) updateData.findings = findings
       if (deficiencies !== undefined) updateData.deficiencies = deficiencies
       if (recommendations !== undefined) updateData.recommendations = recommendations
+      if (body.reportData !== undefined) updateData.reportData = body.reportData
 
       // Update work order
       const updatedWorkOrder = await prisma.checklistItem.update({
