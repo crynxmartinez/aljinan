@@ -1069,10 +1069,15 @@ export function RequestsList({ branchId, userRole, projectId, userId }: Requests
             </div>
           ) : (
             <div className="space-y-4">
-              {filteredRequests.map((request) => (
+              {/* Sort requests: QUOTED first, then by date */}
+              {[...filteredRequests].sort((a, b) => {
+                if (a.status === 'QUOTED' && b.status !== 'QUOTED') return -1
+                if (a.status !== 'QUOTED' && b.status === 'QUOTED') return 1
+                return new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime()
+              }).map((request) => (
                 <div
                   key={request.id}
-                  className="flex items-start justify-between p-4 border rounded-lg hover:bg-muted/50 transition-colors cursor-pointer"
+                  className={`flex items-start justify-between p-4 border-2 rounded-lg transition-colors cursor-pointer ${request.status === 'QUOTED' ? 'border-purple-500 bg-purple-50 shadow-md ring-2 ring-purple-200' : 'border-gray-200 hover:bg-muted/50'}`}
                   onClick={() => {
                     const project = getProjectForRequest(request)
                     if (project && request.createdByRole === 'CONTRACTOR') {
