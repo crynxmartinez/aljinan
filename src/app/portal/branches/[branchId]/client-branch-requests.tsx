@@ -801,10 +801,15 @@ export function ClientBranchRequests({ branchId, projectId, onDataChange, userId
             </div>
           ) : (
             <div className="space-y-4">
-              {requests.map((request) => (
+              {/* Sort requests: QUOTED first, then by date */}
+              {[...requests].sort((a, b) => {
+                if (a.status === 'QUOTED' && b.status !== 'QUOTED') return -1
+                if (a.status !== 'QUOTED' && b.status === 'QUOTED') return 1
+                return new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime()
+              }).map((request) => (
                 <div
                   key={request.id}
-                  className={`p-4 border rounded-lg transition-colors ${request.status === 'QUOTED' ? 'border-purple-400 bg-purple-100 shadow-sm' : 'hover:bg-muted/50'}`}
+                  className={`p-4 border-2 rounded-lg transition-colors ${request.status === 'QUOTED' ? 'border-purple-500 bg-purple-50 shadow-md ring-2 ring-purple-200' : 'border-gray-200 hover:bg-muted/50'}`}
                 >
                   <div
                     className="space-y-2 cursor-pointer"
