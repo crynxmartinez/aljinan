@@ -136,6 +136,7 @@ interface Request {
   preferredTimeSlot?: string | null
   quotedPrice?: number | null
   quotedDate?: string | null
+  quotedNotes?: string | null
   quotedBy?: string | null
   clientAccepted?: boolean | null
   clientAcceptedAt?: string | null
@@ -1409,6 +1410,12 @@ export function ClientBranchRequests({ branchId, projectId, onDataChange, userId
                       </div>
                     )}
                   </div>
+                  {selectedRequest.quotedNotes && (
+                    <div className="mt-3 pt-3 border-t border-purple-200">
+                      <p className="text-purple-600 text-sm mb-1">Notes from Contractor</p>
+                      <p className="text-sm text-purple-900 whitespace-pre-wrap">{selectedRequest.quotedNotes}</p>
+                    </div>
+                  )}
                   {selectedRequest.quotationUrl && (
                     <div className="mt-2">
                       <a
@@ -1422,7 +1429,7 @@ export function ClientBranchRequests({ branchId, projectId, onDataChange, userId
                       </a>
                     </div>
                   )}
-                  <div className="flex gap-2">
+                  <div className="flex gap-2 mt-3">
                     <Button
                       size="sm"
                       onClick={() => {
