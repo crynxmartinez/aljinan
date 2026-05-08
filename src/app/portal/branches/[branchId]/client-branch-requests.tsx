@@ -804,7 +804,7 @@ export function ClientBranchRequests({ branchId, projectId, onDataChange, userId
               {requests.map((request) => (
                 <div
                   key={request.id}
-                  className={`p-4 border rounded-lg transition-colors ${request.status === 'QUOTED' ? 'border-purple-300 bg-purple-50/50' : 'hover:bg-muted/50'}`}
+                  className={`p-4 border rounded-lg transition-colors ${request.status === 'QUOTED' ? 'border-purple-400 bg-purple-100 shadow-sm' : 'hover:bg-muted/50'}`}
                 >
                   <div
                     className="space-y-2 cursor-pointer"
@@ -1856,6 +1856,12 @@ export function ClientBranchRequests({ branchId, projectId, onDataChange, userId
                   <div>
                     <p className="text-xs text-purple-600 mb-1">Assigned Technician</p>
                     <p className="text-sm font-medium text-purple-800">{quoteResponseRequest.assignedTo}</p>
+                  </div>
+                )}
+                {quoteResponseRequest.quotedNotes && (
+                  <div className="pt-3 border-t border-purple-200">
+                    <p className="text-xs text-purple-600 mb-1">Notes from Contractor</p>
+                    <p className="text-sm text-purple-900 whitespace-pre-wrap">{quoteResponseRequest.quotedNotes}</p>
                   </div>
                 )}
                 {quoteResponseRequest.quotationUrl && (
