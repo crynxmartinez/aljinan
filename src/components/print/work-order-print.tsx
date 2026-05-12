@@ -210,7 +210,7 @@ export function WorkOrderPrint({ workOrderId }: WorkOrderPrintProps) {
               <p className="text-sm text-muted-foreground">Safety Contractor Management</p>
             </div>
             <div className="text-right">
-              <h2 className="text-2xl font-bold mb-1">WORK ORDER</h2>
+              <h2 className="text-2xl font-bold mb-1">WORK ORDER REPORT</h2>
               <p className="text-lg font-semibold">WO #{data.workOrderNumber}</p>
               <p className="text-sm text-muted-foreground mt-1">
                 Generated: {new Date().toLocaleDateString()} {new Date().toLocaleTimeString()}
