@@ -743,7 +743,7 @@ export function ChecklistKanban({ branchId, projectId, readOnly = false, userRol
       })
 
       if (response.ok) {
-        toast.success(`${getReportTitle(selectedItem.workOrderType)} saved successfully`)
+        toast.success('Report saved successfully')
         fetchItems()
         setInspectionMode(false)
         router.refresh()
@@ -1395,7 +1395,7 @@ export function ChecklistKanban({ branchId, projectId, readOnly = false, userRol
                           <>
                             <h4 className="font-semibold flex items-center gap-2 text-blue-600">
                               <FileText className="h-4 w-4" />
-                              {getReportTitle(selectedItem.workOrderType)}
+                              Report
                             </h4>
 
                             <div className="grid grid-cols-2 gap-4">
@@ -1552,7 +1552,7 @@ export function ChecklistKanban({ branchId, projectId, readOnly = false, userRol
                     <div className="flex gap-2 pt-4 border-t">
                       <Button variant="outline" onClick={() => setInspectionMode(true)} className="flex-1">
                         <FileText className="mr-2 h-4 w-4" />
-                        Fill {getReportTitle(selectedItem.workOrderType)}
+                        Fill Report
                       </Button>
                       <Button
                         onClick={() => handleSendToReview(selectedItem.id)}
