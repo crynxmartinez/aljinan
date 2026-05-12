@@ -205,7 +205,7 @@ export function ServiceReportDocument({ data }: { data: ServiceReportDocumentDat
         <View style={styles.section}>
           <Text style={styles.sectionTitle}>WORK ORDER DETAILS</Text>
           <View style={styles.row}>
-            <Text style={styles.label}>Work Order:</Text>
+            <Text style={styles.label}>Work Order Report:</Text>
             <Text style={styles.value}>{data.workOrder.title}</Text>
           </View>
           <View style={styles.row}>

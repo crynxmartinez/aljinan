@@ -279,7 +279,7 @@ export function InspectionReportDocument({ data }: { data: InspectionReportData 
           <View style={styles.grid}>
             <View style={styles.gridItem}>
               <View style={styles.row}>
-                <Text style={styles.label}>Work Order:</Text>
+                <Text style={styles.label}>Work Order Report:</Text>
                 <Text style={styles.value}>{data.inspection.title}</Text>
               </View>
             </View>
