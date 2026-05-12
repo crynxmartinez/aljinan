@@ -310,34 +310,31 @@ export async function GET(
 // Helper function to verify branch access
 async function verifyBranchAccess(branchId: string, userId: string, userRole: string): Promise<boolean> {
   if (userRole === 'CONTRACTOR') {
-    const branch = await prisma.branch.findFirst({
-      where: {
-        id: branchId,
-        client: { contractorId: userId }
-      }
-    })
-    return !!branch
-  } else if (userRole === 'CLIENT') {
-    const branch = await prisma.branch.findFirst({
-      where: {
-        id: branchId,
-        client: { userId }
-      }
-    })
-    return !!branch
-  } else if (userRole === 'TECHNICIAN') {
-    // Technicians can access branches through their assigned checklists
-    const checklist = await prisma.checklist.findFirst({
-      where: {
-        branchId,
-        items: {
-          some: {
-            assignedTo: userId
+    const contractor = await prisma.contractor.findUnique({
+      where: { userId },
+      include: {
+        clients: {
+          include: {
+            branches: { where: { id: branchId } }
           }
         }
       }
     })
-    return !!checklist
+    return contractor?.clients.some(client => client.branches.length > 0) || false
+  } else if (userRole === 'CLIENT') {
+    const client = await prisma.client.findUnique({
+      where: { userId },
+      include: { branches: { where: { id: branchId } } }
+    })
+    return (client?.branches.length || 0) > 0
+  } else if (userRole === 'TEAM_MEMBER' || userRole === 'TECHNICIAN') {
+    const teamMember = await prisma.teamMember.findUnique({
+      where: { userId },
+      include: {
+        branchAccess: { where: { branchId } }
+      }
+    })
+    return (teamMember?.branchAccess.length || 0) > 0
   }
   return false
 }
