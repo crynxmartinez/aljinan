@@ -97,9 +97,9 @@ export function ClientBranchReports({ branchId, projectId }: ClientBranchReports
     <>
       <Card>
         <CardHeader>
-          <CardTitle>Inspection Reports</CardTitle>
+          <CardTitle>Reports</CardTitle>
           <CardDescription>
-            Completed inspection checklists and reports for this branch
+            Completed work order reports for this branch
           </CardDescription>
         </CardHeader>
         <CardContent>
@@ -108,7 +108,7 @@ export function ClientBranchReports({ branchId, projectId }: ClientBranchReports
               <ClipboardList className="h-12 w-12 text-muted-foreground/30 mb-4" />
               <h3 className="text-lg font-semibold mb-2">No reports yet</h3>
               <p className="text-muted-foreground max-w-md">
-                Completed inspection reports from your contractor will appear here.
+                Completed reports from your contractor will appear here.
               </p>
             </div>
           ) : (
@@ -171,16 +171,15 @@ export function ClientBranchReports({ branchId, projectId }: ClientBranchReports
               {selectedReport.description && (
                 <p className="text-sm text-muted-foreground">{selectedReport.description}</p>
               )}
-              
+
               <div className="space-y-2">
                 <h4 className="font-medium text-sm">Inspection Items</h4>
                 <div className="space-y-2">
                   {selectedReport.items.map((item) => (
                     <div
                       key={item.id}
-                      className={`flex items-start gap-3 p-3 border rounded-lg ${
-                        item.isCompleted ? 'bg-green-50 border-green-200' : 'bg-red-50 border-red-200'
-                      }`}
+                      className={`flex items-start gap-3 p-3 border rounded-lg ${item.isCompleted ? 'bg-green-50 border-green-200' : 'bg-red-50 border-red-200'
+                        }`}
                     >
                       {item.isCompleted ? (
                         <CheckCircle className="h-5 w-5 text-green-600 mt-0.5" />

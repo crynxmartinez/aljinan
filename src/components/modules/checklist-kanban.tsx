@@ -1242,7 +1242,7 @@ export function ChecklistKanban({ branchId, projectId, readOnly = false, userRol
               Work Order Details
             </DialogTitle>
             <DialogDescription>
-              {inspectionMode ? 'Fill in the inspection report details' : 'View and manage this work order'}
+              {inspectionMode ? 'Fill in the report details' : 'View and manage this work order'}
             </DialogDescription>
           </DialogHeader>
 
@@ -1583,7 +1583,7 @@ export function ChecklistKanban({ branchId, projectId, readOnly = false, userRol
                   <div className="space-y-4 border-t pt-4">
                     <h4 className="font-semibold flex items-center gap-2">
                       <FileText className="h-4 w-4" />
-                      Inspection Report
+                      Report
                     </h4>
 
                     {selectedItem.inspectionDate && (
@@ -1840,7 +1840,7 @@ export function ChecklistKanban({ branchId, projectId, readOnly = false, userRol
               Accept Work Order?
             </DialogTitle>
             <DialogDescription>
-              Review the work order details and inspection report before accepting.
+              Review the work order details and report before accepting.
             </DialogDescription>
           </DialogHeader>
 
@@ -1865,12 +1865,12 @@ export function ChecklistKanban({ branchId, projectId, readOnly = false, userRol
                 </div>
               </div>
 
-              {/* Inspection Report Summary */}
+              {/* Report Summary */}
               {(selectedItem.inspectionDate || selectedItem.findings || selectedItem.systemsChecked) && (
                 <div className="border-t pt-4">
                   <h4 className="font-semibold mb-2 flex items-center gap-2">
                     <FileText className="h-4 w-4" />
-                    Inspection Report
+                    Report
                   </h4>
                   {selectedItem.inspectionDate && (
                     <p className="text-sm mb-1">
@@ -1960,7 +1960,7 @@ export function ChecklistKanban({ branchId, projectId, readOnly = false, userRol
           }
         }}
         title={
-          signatureType === 'technician' ? 'Sign Inspection Report' :
+          signatureType === 'technician' ? 'Sign Report' :
             signatureType === 'supervisor' ? 'Sign Work Order (Supervisor)' :
               'Sign Work Order (Client)'
         }
