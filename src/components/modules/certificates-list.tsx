@@ -106,14 +106,14 @@ function getCertificateTypeIcon(type: CertificateType): string {
 
 function getExpiryStatus(expiryDate: string | null): { status: 'valid' | 'expiring' | 'expired' | 'none'; daysLeft: number } {
   if (!expiryDate) return { status: 'none', daysLeft: 0 }
-  
+
   const today = new Date()
   today.setHours(0, 0, 0, 0)
   const expiry = new Date(expiryDate)
   expiry.setHours(0, 0, 0, 0)
-  
+
   const diffDays = Math.floor((expiry.getTime() - today.getTime()) / (1000 * 60 * 60 * 24))
-  
+
   if (diffDays < 0) return { status: 'expired', daysLeft: diffDays }
   if (diffDays <= 30) return { status: 'expiring', daysLeft: diffDays }
   return { status: 'valid', daysLeft: diffDays }
@@ -132,7 +132,7 @@ export function CertificatesList({ branchId, userRole }: CertificatesListProps) 
   const [uploading, setUploading] = useState(false)
   const [previewOpen, setPreviewOpen] = useState(false)
   const [previewFile, setPreviewFile] = useState<{ url: string; name: string; type: 'image' | 'pdf' } | null>(null)
-  
+
   const [newCertificate, setNewCertificate] = useState({
     type: 'PREVENTIVE_MAINTENANCE' as CertificateType,
     title: '',
@@ -281,10 +281,10 @@ export function CertificatesList({ branchId, userRole }: CertificatesListProps) 
           <div>
             <CardTitle className="flex items-center gap-2">
               <Award className="h-5 w-5" />
-              Certificates
+              Documents
             </CardTitle>
             <CardDescription>
-              Manage certificates and compliance documents for this branch
+              Manage documents and compliance records for this branch
             </CardDescription>
           </div>
           <div className="flex items-center gap-2">
@@ -369,7 +369,7 @@ export function CertificatesList({ branchId, userRole }: CertificatesListProps) 
                         {new Date(certificate.issueDate).toLocaleDateString()}
                       </TableCell>
                       <TableCell>
-                        {certificate.expiryDate 
+                        {certificate.expiryDate
                           ? new Date(certificate.expiryDate).toLocaleDateString()
                           : <span className="text-muted-foreground">No expiry</span>
                         }
@@ -416,7 +416,7 @@ export function CertificatesList({ branchId, userRole }: CertificatesListProps) 
                               </DropdownMenuItem>
                             )}
                             {userRole === 'CONTRACTOR' && (
-                              <DropdownMenuItem 
+                              <DropdownMenuItem
                                 onClick={(e) => { e.stopPropagation(); handleDeleteCertificate(certificate.id); }}
                                 className="text-destructive"
                               >
@@ -567,7 +567,7 @@ export function CertificatesList({ branchId, userRole }: CertificatesListProps) 
               Certificate Details
             </DialogTitle>
           </DialogHeader>
-          
+
           {selectedCertificate && (
             <div className="space-y-4">
               <div>
@@ -649,7 +649,7 @@ export function CertificatesList({ branchId, userRole }: CertificatesListProps) 
 
               {selectedCertificate.fileUrl && (
                 <div className="pt-4 border-t space-y-2">
-                  <Button 
+                  <Button
                     onClick={() => {
                       const isImage = selectedCertificate.fileUrl!.match(/\.(jpg|jpeg|png|gif|webp)$/i)
                       setPreviewFile({
@@ -665,7 +665,7 @@ export function CertificatesList({ branchId, userRole }: CertificatesListProps) 
                     <Eye className="mr-2 h-4 w-4" />
                     View Certificate
                   </Button>
-                  <Button 
+                  <Button
                     onClick={() => window.open(selectedCertificate.fileUrl!, '_blank')}
                     className="w-full"
                     variant="outline"
