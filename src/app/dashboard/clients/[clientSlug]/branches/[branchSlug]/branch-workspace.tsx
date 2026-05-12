@@ -27,7 +27,7 @@ import { AppointmentsList } from '@/components/modules/appointments-list'
 import { BillingView } from '@/components/modules/billing-view'
 import { ContractsList } from '@/components/modules/contracts-list'
 import { ChecklistsList } from '@/components/modules/checklists-list'
-import { CertificatesList } from '@/components/modules/certificates-list'
+import { DocumentsList } from '@/components/modules/documents-list'
 import { EquipmentList } from '@/components/modules/equipment-list'
 import { ProjectFilter } from '@/components/modules/project-filter'
 import { ActivityPanel } from '@/components/modules/activity-panel'
@@ -236,7 +236,7 @@ export function BranchWorkspace({ clientId, branchId, branch, userRole, teamMemb
           </TabsContent>
 
           <TabsContent value="certificates" className="mt-0">
-            <CertificatesList branchId={branchId} userRole="CONTRACTOR" />
+            <DocumentsList branchId={branchId} userRole="CONTRACTOR" />
           </TabsContent>
 
           <TabsContent value="settings" className="mt-0">

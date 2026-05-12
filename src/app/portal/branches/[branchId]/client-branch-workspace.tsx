@@ -12,7 +12,7 @@ import { ClientBranchContracts } from './client-branch-contracts'
 import { BillingView } from '@/components/modules/billing-view'
 import { CalendarView } from '@/components/modules/calendar-view'
 import { ChecklistKanban } from '@/components/modules/checklist-kanban'
-import { CertificatesList } from '@/components/modules/certificates-list'
+import { DocumentsList } from '@/components/modules/documents-list'
 import { EquipmentList } from '@/components/modules/equipment-list'
 import { ProjectsTable } from '@/components/modules/projects-table'
 import {
@@ -348,9 +348,9 @@ export function ClientBranchWorkspace({ branchId, branch }: ClientBranchWorkspac
             <EquipmentList branchId={branchId} userRole="CLIENT" />
           </TabsContent>
 
-          {/* Certificates Tab */}
+          {/* Documents Tab */}
           <TabsContent value="certificates" className="mt-0">
-            <CertificatesList branchId={branchId} userRole="CLIENT" />
+            <DocumentsList branchId={branchId} userRole="CLIENT" />
           </TabsContent>
 
           {/* Settings Tab */}
