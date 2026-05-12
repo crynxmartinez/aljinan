@@ -73,7 +73,7 @@ async function getBranchForTeamMember(clientSlugOrId: string, branchSlugOrId: st
   })
 
   if (!branch) return null
-  
+
   // Check if team member has access to this branch
   if (!assignedBranchIds.includes(branch.id)) return null
 
@@ -99,7 +99,7 @@ export default async function BranchPage({
   }
 
   const { clientSlug, branchSlug } = await params
-  
+
   // Get branch data based on user role
   let data
   if (session.user.role === 'TEAM_MEMBER' && session.user.assignedBranchIds) {
@@ -131,17 +131,18 @@ export default async function BranchPage({
           <MapPin className="h-6 w-6 text-primary" />
         </div>
         <div>
-          <p className="text-sm text-muted-foreground">{client.companyName}</p>
-          <h1 className="text-2xl font-bold">{branch.address}</h1>
-          {branch.city && (
-            <p className="text-muted-foreground">{branch.city}{branch.state ? `, ${branch.state}` : ''}</p>
-          )}
+          <h1 className="text-2xl font-bold">{branch.name}</h1>
+          <p className="text-muted-foreground">
+            {branch.address}
+            {branch.city ? `, ${branch.city}` : ''}
+            {branch.state ? `, ${branch.state}` : ''}
+          </p>
         </div>
       </div>
 
-      <BranchWorkspace 
-        clientId={client.id} 
-        branchId={branch.id} 
+      <BranchWorkspace
+        clientId={client.id}
+        branchId={branch.id}
         branch={{
           ...branch,
           cdCertificateExpiry: branch.cdCertificateExpiry?.toISOString() || null,
