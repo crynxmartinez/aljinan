@@ -97,7 +97,7 @@ export async function GET() {
         checklist: {
           select: {
             branchId: true,
-            project: {
+            contract: {
               select: {
                 title: true
               }
@@ -178,13 +178,6 @@ export async function GET() {
           status: { in: ['SIGNED', 'PENDING_SIGNATURE'] },
           endDate: { lte: thirtyDaysFromNow }
         },
-        include: {
-          project: {
-            select: {
-              autoRenew: true
-            }
-          }
-        },
         orderBy: { endDate: 'asc' }
       })
 
@@ -201,7 +194,7 @@ export async function GET() {
           endDate: contract.endDate?.toISOString() || null,
           daysLeft: Math.max(0, daysLeft),
           isExpired,
-          autoRenew: contract.project?.autoRenew || false,
+          autoRenew: false,
           branchId: contract.branchId,
           branchName: branchInfo?.name || 'Unknown',
           clientId: branchInfo?.clientId || '',

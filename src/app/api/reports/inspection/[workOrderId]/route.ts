@@ -24,13 +24,9 @@ export async function GET(
       include: {
         checklist: {
           include: {
-            project: {
+            branch: {
               include: {
-                branch: {
-                  include: {
-                    client: true
-                  }
-                }
+                client: true
               }
             }
           }
@@ -42,8 +38,8 @@ export async function GET(
       return NextResponse.json({ error: 'Work order not found' }, { status: 404 })
     }
 
-    if (!workOrder.checklist.project) {
-      return NextResponse.json({ error: 'Work order has no associated project' }, { status: 404 })
+    if (!workOrder.checklist.branch) {
+      return NextResponse.json({ error: 'Work order has no associated branch' }, { status: 404 })
     }
 
     // Get contractor info
@@ -63,9 +59,9 @@ export async function GET(
         email: contractor?.companyEmail || contractor?.user?.email || '',
       },
       client: {
-        name: workOrder.checklist.project.branch.client.companyName,
-        branch: workOrder.checklist.project.branch.name,
-        address: workOrder.checklist.project.branch.address || '',
+        name: workOrder.checklist.branch.client.companyName,
+        branch: workOrder.checklist.branch.name,
+        address: workOrder.checklist.branch.address || '',
       },
       workOrder: {
         id: workOrder.id,

@@ -30,13 +30,11 @@ export async function GET() {
       allWorkOrders = await prisma.checklistItem.findMany({
         where: {
           checklist: {
-            project: {
-              branchId: { in: session.user.assignedBranchIds },
-              branch: {
-                client: {
-                  user: {
-                    status: { not: 'ARCHIVED' }
-                  }
+            branchId: { in: session.user.assignedBranchIds },
+            branch: {
+              client: {
+                user: {
+                  status: { not: 'ARCHIVED' }
                 }
               }
             }
@@ -46,16 +44,12 @@ export async function GET() {
         include: {
           checklist: {
             include: {
-              project: {
+              branch: {
                 include: {
-                  branch: {
+                  client: {
                     include: {
-                      client: {
-                        include: {
-                          user: {
-                            select: { status: true }
-                          }
-                        }
+                      user: {
+                        select: { status: true }
                       }
                     }
                   }
@@ -70,12 +64,10 @@ export async function GET() {
       allWorkOrders = await prisma.checklistItem.findMany({
         where: {
           checklist: {
-            project: {
-              branch: {
-                client: {
-                  user: {
-                    status: { not: 'ARCHIVED' }
-                  }
+            branch: {
+              client: {
+                user: {
+                  status: { not: 'ARCHIVED' }
                 }
               }
             }
@@ -85,16 +77,12 @@ export async function GET() {
         include: {
           checklist: {
             include: {
-              project: {
+              branch: {
                 include: {
-                  branch: {
+                  client: {
                     include: {
-                      client: {
-                        include: {
-                          user: {
-                            select: { status: true }
-                          }
-                        }
+                      user: {
+                        select: { status: true }
                       }
                     }
                   }
@@ -179,8 +167,8 @@ export async function GET() {
     const clientRevenue = new Map<string, { name: string; revenue: number }>()
 
     allWorkOrders.forEach(wo => {
-      if (wo.price && wo.checklist?.project?.branch?.client) {
-        const client = wo.checklist.project.branch.client
+      if (wo.price && wo.checklist?.branch?.client) {
+        const client = wo.checklist.branch.client
         const current = clientRevenue.get(client.id) || { name: client.companyName, revenue: 0 }
         current.revenue += wo.price
         clientRevenue.set(client.id, current)

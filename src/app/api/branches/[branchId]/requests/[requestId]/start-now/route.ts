@@ -24,23 +24,11 @@ export async function POST(
       return NextResponse.json({ error: 'Request not found' }, { status: 404 })
     }
 
-    // Find the active project
-    const activeProject = await prisma.project.findFirst({
-      where: {
-        branchId,
-        status: 'ACTIVE'
-      }
-    })
-
-    if (!activeProject) {
-      return NextResponse.json({ error: 'No active project found' }, { status: 400 })
-    }
-
-    // Find or create checklist for the active project
+    // Find or create adhoc checklist (no contract)
     let checklist = await prisma.checklist.findFirst({
       where: {
         branchId,
-        projectId: activeProject.id,
+        contractId: null, // Adhoc checklist has no contract
         status: 'IN_PROGRESS'
       }
     })
@@ -49,8 +37,8 @@ export async function POST(
       checklist = await prisma.checklist.create({
         data: {
           branchId,
-          projectId: activeProject.id,
-          title: `${activeProject.title} - Work Orders`,
+          contractId: null, // Adhoc - no contract
+          title: 'Adhoc Work Orders',
           description: 'Work orders from client requests',
           status: 'IN_PROGRESS',
           createdById: session.user.id,
@@ -128,7 +116,6 @@ export async function POST(
       success: true,
       workOrderId: workOrder.id,
       checklistId: checklist.id,
-      projectId: activeProject.id,
       stage: 'IN_PROGRESS',
       message: 'Work order created and moved to IN PROGRESS'
     })

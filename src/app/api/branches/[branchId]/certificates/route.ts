@@ -25,7 +25,7 @@ export async function GET(
     const certificates = await prisma.certificate.findMany({
       where: { branchId },
       include: {
-        project: { select: { id: true, title: true } },
+        contract: { select: { id: true, title: true } },
         equipment: { select: { id: true, equipmentNumber: true, equipmentType: true } }
       },
       orderBy: { createdAt: 'desc' }
@@ -55,15 +55,15 @@ export async function POST(
 
     const { branchId } = await params
     const body = await request.json()
-    const { 
-      type, 
-      title, 
-      description, 
-      fileUrl, 
-      issueDate, 
-      expiryDate, 
+    const {
+      type,
+      title,
+      description,
+      fileUrl,
+      issueDate,
+      expiryDate,
       issuedBy,
-      projectId,
+      contractId,
       workOrderId,
       notes
     } = body
@@ -96,12 +96,12 @@ export async function POST(
         expiryDate: expiryDate ? new Date(expiryDate) : null,
         issuedBy: issuedBy || null,
         issuedById: session.user.id,
-        projectId: projectId || null,
+        contractId: contractId || null,
         workOrderId: workOrderId || null,
         notes: notes || null,
       },
       include: {
-        project: { select: { id: true, title: true } }
+        contract: { select: { id: true, title: true } }
       }
     })
 

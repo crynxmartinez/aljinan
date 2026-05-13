@@ -25,8 +25,7 @@ export async function GET(
     const req = await prisma.request.findFirst({
       where: { id: requestId, branchId },
       include: {
-        photos: true,
-        project: { select: { id: true, title: true, status: true } }
+        photos: true
       }
     })
 
@@ -103,7 +102,6 @@ export async function PATCH(
     let workOrderCreated = false
     let workOrderId: string | null = null
     let checklist: any = null
-    let targetProjectId: string | null = null
 
     // ACTION: Contractor sends quote
     if (action === 'quote') {
@@ -140,27 +138,11 @@ export async function PATCH(
       updateData.acceptedAt = new Date()
       updateData.acceptedById = session.user.id
 
-      // ALWAYS use the active project for start_immediately work orders
-      // This ensures they appear on the Kanban board with other work orders
-      const activeProject = await prisma.project.findFirst({
-        where: {
-          branchId,
-          status: 'ACTIVE'
-        },
-        select: { id: true }
-      })
-
-      if (!activeProject) {
-        return NextResponse.json({ error: 'No active project found. Please create an active project first.' }, { status: 400 })
-      }
-
-      targetProjectId = activeProject.id
-
-      // Use the active project's checklist
+      // Use adhoc checklist (no contract) for start_immediately work orders
       checklist = await prisma.checklist.findFirst({
         where: {
           branchId,
-          projectId: activeProject.id,
+          contractId: null, // Adhoc checklist has no contract
           status: 'IN_PROGRESS'
         }
       })
@@ -169,8 +151,8 @@ export async function PATCH(
         checklist = await prisma.checklist.create({
           data: {
             branchId,
-            projectId: activeProject.id,
-            title: `${activeProject.id.slice(0, 8)} - Work Orders`,
+            contractId: null, // Adhoc - no contract
+            title: 'Adhoc Work Orders',
             description: 'Work orders from client requests',
             status: 'IN_PROGRESS',
             createdById: session.user.id,
@@ -263,11 +245,11 @@ export async function PATCH(
       updateData.acceptedById = session.user.id
 
       // Create work order (ChecklistItem) from accepted request
-      // First, find or create a checklist for this branch
+      // Use adhoc checklist (no contract)
       checklist = await prisma.checklist.findFirst({
         where: {
           branchId,
-          projectId: currentRequest.projectId,
+          contractId: null, // Adhoc checklist
           status: 'IN_PROGRESS'
         }
       })
@@ -276,8 +258,8 @@ export async function PATCH(
         checklist = await prisma.checklist.create({
           data: {
             branchId,
-            projectId: currentRequest.projectId,
-            title: 'Service Requests',
+            contractId: null, // Adhoc - no contract
+            title: 'Adhoc Work Orders',
             description: 'Work orders from client requests',
             status: 'IN_PROGRESS',
             createdById: session.user.id,
@@ -384,8 +366,7 @@ export async function PATCH(
       workOrderId,
       debug: {
         checklistId: action === 'start_immediately' || action === 'accept' ? checklist?.id : null,
-        checklistProjectId: action === 'start_immediately' || action === 'accept' ? checklist?.projectId : null,
-        targetProjectId: action === 'start_immediately' ? targetProjectId : null
+        checklistContractId: action === 'start_immediately' || action === 'accept' ? checklist?.contractId : null
       }
     })
   } catch (error) {

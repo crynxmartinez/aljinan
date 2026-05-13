@@ -23,15 +23,15 @@ export async function GET(
     }
 
     // For clients, only show SENT, PAID, PARTIAL, OVERDUE invoices (not DRAFT)
-    const whereClause = session.user.role === 'CLIENT' 
+    const whereClause = session.user.role === 'CLIENT'
       ? { branchId, status: { not: 'DRAFT' as const } }
       : { branchId }
 
     const invoices = await prisma.invoice.findMany({
       where: whereClause,
-      include: { 
+      include: {
         items: true,
-        project: { select: { id: true, title: true, status: true } }
+        contract: { select: { id: true, title: true, status: true } }
       },
       orderBy: { createdAt: 'desc' }
     })
@@ -64,7 +64,7 @@ export async function POST(
 
     const { branchId } = await params
     const body = await request.json()
-    const { title, description, items, taxRate, dueDate, quotationId, projectId } = body
+    const { title, description, items, taxRate, dueDate, quotationId, contractId } = body
 
     if (!title) {
       return NextResponse.json({ error: 'Title is required' }, { status: 400 })
@@ -91,7 +91,7 @@ export async function POST(
     const invoice = await prisma.invoice.create({
       data: {
         branchId,
-        projectId: projectId || null,
+        contractId: contractId || null,
         quotationId: quotationId || null,
         invoiceNumber,
         title,

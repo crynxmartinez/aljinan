@@ -29,10 +29,10 @@ export async function GET(request: Request) {
         checklist: {
           select: {
             id: true,
-            projectId: true,
+            contractId: true,
             branchId: true,
             title: true,
-            project: {
+            contract: {
               select: {
                 id: true,
                 title: true,
@@ -46,8 +46,8 @@ export async function GET(request: Request) {
       take: 50
     })
 
-    // Get all projects for this branch
-    const projects = await prisma.project.findMany({
+    // Get all contracts for this branch
+    const contracts = await prisma.contract.findMany({
       where: { branchId },
       select: {
         id: true,
@@ -59,16 +59,16 @@ export async function GET(request: Request) {
     return NextResponse.json({
       branchId,
       totalItems: items.length,
-      projects,
+      contracts,
       items: items.map(item => ({
         id: item.id.slice(0, 8),
         description: item.description,
         stage: item.stage,
         checklistId: item.checklistId.slice(0, 8),
         checklistTitle: item.checklist.title,
-        checklistProjectId: item.checklist.projectId?.slice(0, 8) || 'NULL',
-        projectTitle: item.checklist.project?.title || 'NULL',
-        projectStatus: item.checklist.project?.status || 'NULL',
+        checklistContractId: item.checklist.contractId?.slice(0, 8) || 'NULL',
+        contractTitle: item.checklist.contract?.title || 'NULL',
+        contractStatus: item.checklist.contract?.status || 'NULL',
         linkedRequestId: item.linkedRequestId?.slice(0, 8) || 'NULL',
         createdAt: item.createdAt.toISOString()
       }))

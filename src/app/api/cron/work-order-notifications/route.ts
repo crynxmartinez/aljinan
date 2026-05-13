@@ -40,15 +40,11 @@ export async function GET(request: Request) {
       include: {
         checklist: {
           include: {
-            project: {
+            branch: {
               include: {
-                branch: {
+                client: {
                   include: {
-                    client: {
-                      include: {
-                        user: true
-                      }
-                    }
+                    user: true
                   }
                 }
               }
@@ -73,20 +69,19 @@ export async function GET(request: Request) {
       const diffTime = scheduledDate.getTime() - today.getTime()
       const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24))
 
-      const project = workOrder.checklist.project
-      const branch = project?.branch
+      const branch = workOrder.checklist.branch
       const client = branch?.client
 
-      if (!project || !branch || !client) continue
+      if (!branch || !client) continue
 
       const link = `/dashboard/clients/${client.id}/branches/${branch.id}?tab=checklist`
       const clientLink = `/portal/branches/${branch.id}?tab=checklist`
 
       // Contractor notifications: 5 days, 3 days, 1 day, same day
       if ([5, 3, 1, 0].includes(diffDays)) {
-        const dayText = diffDays === 0 ? 'today' : 
-                        diffDays === 1 ? 'tomorrow' : 
-                        `in ${diffDays} days`
+        const dayText = diffDays === 0 ? 'today' :
+          diffDays === 1 ? 'tomorrow' :
+            `in ${diffDays} days`
 
         for (const contractorUserId of contractorUserIds) {
           notifications.push({

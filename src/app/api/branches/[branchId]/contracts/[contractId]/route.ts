@@ -99,27 +99,23 @@ export async function PATCH(
       const contract = await prisma.contract.findUnique({
         where: { id: contractId },
         include: {
-          project: {
+          checklist: {
             include: {
-              checklists: {
-                include: {
-                  items: true
-                }
-              }
+              items: true
             }
           }
         }
       })
 
-      if (contract?.project) {
-        const allItems = contract.project.checklists.flatMap(c => c.items)
+      if (contract?.checklist) {
+        const allItems = contract.checklist.items
         const allCompleted = allItems.length > 0 && allItems.every(item => item.stage === 'COMPLETED')
         const allPaid = allItems.length > 0 && allItems.every(item => item.paymentStatus === 'PAID')
-        
+
         if (!allCompleted) {
           return NextResponse.json({ error: 'All work orders must be completed before signing' }, { status: 400 })
         }
-        
+
         if (!allPaid) {
           return NextResponse.json({ error: 'All work orders must be paid before signing' }, { status: 400 })
         }

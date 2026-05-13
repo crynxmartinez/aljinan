@@ -28,12 +28,9 @@ export async function POST(
       return NextResponse.json({ error: error.error }, { status: error.status })
     }
 
-    // Get the invoice with its project
+    // Get the invoice
     const invoice = await prisma.invoice.findUnique({
-      where: { id: invoiceId },
-      include: {
-        project: true
-      }
+      where: { id: invoiceId }
     })
 
     if (!invoice) {
@@ -58,31 +55,12 @@ export async function POST(
         }
       })
 
-      // 2. If project is DONE, move it to CLOSED
-      let updatedProject = null
-      if (invoice.project && invoice.project.status === 'DONE') {
-        updatedProject = await tx.project.update({
-          where: { id: invoice.project.id },
-          data: {
-            status: 'CLOSED'
-          }
-        })
-
-        // Add activity
+      // 2. Add activity for payment if contract exists
+      if (invoice.contractId) {
         await tx.activity.create({
           data: {
-            projectId: invoice.project.id,
-            type: 'STATUS_CHANGE',
-            content: `Invoice paid. Project closed.`,
-            createdById: session.user.id,
-            createdByRole: session.user.role as 'CONTRACTOR' | 'CLIENT' | 'TEAM_MEMBER',
-          }
-        })
-      } else if (invoice.projectId) {
-        // Add activity for payment
-        await tx.activity.create({
-          data: {
-            projectId: invoice.projectId,
+            branchId: invoice.branchId,
+            contractId: invoice.contractId,
             type: 'UPDATED',
             content: `Invoice marked as paid.`,
             createdById: session.user.id,
@@ -92,8 +70,7 @@ export async function POST(
       }
 
       return {
-        invoice: updatedInvoice,
-        project: updatedProject
+        invoice: updatedInvoice
       }
     })
 
@@ -108,9 +85,8 @@ export async function POST(
 
     return NextResponse.json({
       success: true,
-      message: result.project ? 'Invoice paid and project closed' : 'Invoice marked as paid',
-      invoice: result.invoice,
-      project: result.project
+      message: 'Invoice marked as paid',
+      invoice: result.invoice
     })
   } catch (error) {
     console.error('Error paying invoice:', error)

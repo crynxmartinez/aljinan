@@ -299,7 +299,6 @@ model Branch {
   updatedAt   DateTime @updatedAt
 
   // Module relations
-  projects     Project[]
   requests     Request[]
   quotations   Quotation[]
   appointments Appointment[]
@@ -308,6 +307,7 @@ model Branch {
   checklists   Checklist[]
   certificates Certificate[]
   equipment    Equipment[]
+  activities   Activity[]
   
   @@unique([clientId, slug])  // Slug must be unique per client
 
@@ -316,49 +316,6 @@ model Branch {
   
   @@index([clientId])
   @@index([name])
-}
-
-// Project statuses - simplified for contract lifecycle
-enum ProjectStatus {
-  PENDING    // Created, awaiting client approval
-  ACTIVE     // Client accepted, work in progress
-  DONE       // End date reached, awaiting invoice payment
-  CLOSED     // Invoice paid, project complete
-  CANCELLED  // Cancelled
-}
-
-// Project - represents a contract for a branch
-model Project {
-  id            String        @id @default(cuid())
-  branchId      String
-  branch        Branch        @relation(fields: [branchId], references: [id], onDelete: Cascade)
-  title         String
-  description   String?
-  status        ProjectStatus @default(PENDING)
-  priority      RequestPriority @default(MEDIUM)
-  startDate     DateTime?     // Contract start date
-  endDate       DateTime?     // Contract end date
-  autoRenew     Boolean       @default(false)
-  totalValue    Float         @default(0)
-  createdById   String
-  createdByRole UserRole
-  completedAt   DateTime?
-  createdAt     DateTime      @default(now())
-  updatedAt     DateTime      @updatedAt
-
-  // Related modules
-  requests     Request[]
-  quotations   Quotation[]
-  appointments Appointment[]
-  invoices     Invoice[]
-  contracts    Contract[]
-  checklists   Checklist[]
-  activities   Activity[]
-  certificates Certificate[]
-  
-  @@index([branchId])
-  @@index([status])
-  @@index([branchId, status])
 }
 
 // Request priorities and statuses
@@ -387,8 +344,6 @@ model Request {
   id            String          @id @default(cuid())
   branchId      String
   branch        Branch          @relation(fields: [branchId], references: [id], onDelete: Cascade)
-  projectId     String?
-  project       Project?        @relation(fields: [projectId], references: [id], onDelete: SetNull)
   title         String
   description   String?
   priority      RequestPriority @default(MEDIUM)
@@ -448,7 +403,6 @@ model Request {
   @@index([title])
   @@index([assignedTo])
   @@index([workOrderType])
-  @@index([projectId])
   @@index([branchId, createdAt])
 }
 
@@ -577,8 +531,6 @@ model Quotation {
   id            String          @id @default(cuid())
   branchId      String
   branch        Branch          @relation(fields: [branchId], references: [id], onDelete: Cascade)
-  projectId     String?
-  project       Project?        @relation(fields: [projectId], references: [id], onDelete: SetNull)
   requestId     String?
   title         String
   description   String?
@@ -603,7 +555,6 @@ model Quotation {
   @@index([status])
   @@index([branchId, createdAt])
   @@index([requestId])
-  @@index([projectId])
 }
 
 // Quotation line items
@@ -634,8 +585,6 @@ model Appointment {
   id              String            @id @default(cuid())
   branchId        String
   branch          Branch            @relation(fields: [branchId], references: [id], onDelete: Cascade)
-  projectId       String?
-  project         Project?          @relation(fields: [projectId], references: [id], onDelete: SetNull)
   title           String
   description     String?
   date            DateTime
@@ -672,8 +621,8 @@ model Invoice {
   id            String        @id @default(cuid())
   branchId      String
   branch        Branch        @relation(fields: [branchId], references: [id], onDelete: Cascade)
-  projectId     String?
-  project       Project?      @relation(fields: [projectId], references: [id], onDelete: SetNull)
+  contractId    String?
+  contract      Contract?     @relation(fields: [contractId], references: [id], onDelete: SetNull)
   quotationId   String?
   invoiceNumber String?
   title         String
@@ -701,7 +650,7 @@ model Invoice {
   @@index([branchId])
   @@index([status])
   @@index([dueDate])
-  @@index([projectId])
+  @@index([contractId])
   @@index([branchId, createdAt])
 }
 
@@ -728,13 +677,11 @@ enum ContractStatus {
   TERMINATED
 }
 
-// Contract - service agreements for projects
+// Contract - service agreements with work orders
 model Contract {
   id                  String         @id @default(cuid())
   branchId            String
   branch              Branch         @relation(fields: [branchId], references: [id], onDelete: Cascade)
-  projectId           String?
-  project             Project?       @relation(fields: [projectId], references: [id], onDelete: SetNull)
   title               String
   description         String?
   fileName            String?        // PDF attachment file name
@@ -755,6 +702,14 @@ model Contract {
   createdById         String
   createdAt           DateTime       @default(now())
   updatedAt           DateTime       @updatedAt
+  
+  // Relations
+  checklist           Checklist?     // One checklist per contract (work orders)
+  invoices            Invoice[]      // Invoices linked to this contract
+  certificates        Certificate[]  // Certificates linked to this contract
+  
+  @@index([branchId])
+  @@index([status])
 }
 
 // Checklist statuses
@@ -795,13 +750,13 @@ enum RecurringType {
   ANNUALLY       // Repeats every 12 months
 }
 
-// Checklist - inspection checklists created by contractor
+// Checklist - work orders grouped by contract or standalone (adhoc)
 model Checklist {
   id            String          @id @default(cuid())
   branchId      String
   branch        Branch          @relation(fields: [branchId], references: [id], onDelete: Cascade)
-  projectId     String?
-  project       Project?        @relation(fields: [projectId], references: [id], onDelete: SetNull)
+  contractId    String?         @unique  // One checklist per contract, null for adhoc
+  contract      Contract?       @relation(fields: [contractId], references: [id], onDelete: SetNull)
   title         String
   description   String?
   items         ChecklistItem[]
@@ -812,6 +767,9 @@ model Checklist {
   createdById   String
   createdAt     DateTime        @default(now())
   updatedAt     DateTime        @updatedAt
+  
+  @@index([branchId])
+  @@index([contractId])
 }
 
 // Checklist items (Work Orders)
@@ -921,8 +879,8 @@ model Certificate {
   id          String          @id @default(cuid())
   branchId    String
   branch      Branch          @relation(fields: [branchId], references: [id], onDelete: Cascade)
-  projectId   String?
-  project     Project?        @relation(fields: [projectId], references: [id], onDelete: SetNull)
+  contractId  String?
+  contract    Contract?       @relation(fields: [contractId], references: [id], onDelete: SetNull)
   workOrderId String?         // Link to specific work order if applicable
   workOrder   ChecklistItem?  @relation(fields: [workOrderId], references: [id], onDelete: SetNull)
   equipmentId String?         @unique  // FK back to Equipment (if cert is per-item)
@@ -943,7 +901,7 @@ model Certificate {
   @@index([title])
   @@index([type])
   @@index([expiryDate])
-  @@index([projectId])
+  @@index([contractId])
 }
 
 // Activity types for tracking
@@ -957,17 +915,21 @@ enum ActivityType {
   COMPLETED
 }
 
-// Activity - comments and activity log for projects
+// Activity - comments and activity log for branches
 model Activity {
   id          String       @id @default(cuid())
-  projectId   String
-  project     Project      @relation(fields: [projectId], references: [id], onDelete: Cascade)
+  branchId    String
+  branch      Branch       @relation(fields: [branchId], references: [id], onDelete: Cascade)
+  contractId  String?      // Optional link to specific contract
   type        ActivityType
   content     String?
   metadata    String?      // JSON string for additional data
   createdById String
   createdByRole UserRole
   createdAt   DateTime     @default(now())
+  
+  @@index([branchId])
+  @@index([contractId])
 }
 
 // Branch Request statuses

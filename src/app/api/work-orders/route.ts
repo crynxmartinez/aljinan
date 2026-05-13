@@ -43,7 +43,7 @@ export async function GET() {
                   }
                 }
               },
-              project: true
+              contract: true
             }
           }
         },
@@ -85,7 +85,7 @@ export async function GET() {
                   }
                 }
               },
-              project: true
+              contract: true
             }
           }
         },
@@ -123,7 +123,7 @@ export async function GET() {
                   }
                 }
               },
-              project: true
+              contract: true
             }
           }
         },
@@ -147,7 +147,7 @@ export async function GET() {
       branchName: wo.checklist.branch.name,
       branchId: wo.checklist.branchId,
       clientId: wo.checklist.branch.clientId,
-      projectTitle: wo.checklist.project?.title || null,
+      contractTitle: wo.checklist.contract?.title || null,
       isCompleted: wo.isCompleted,
       paymentStatus: wo.paymentStatus,
       recurringType: wo.recurringType,

@@ -25,7 +25,7 @@ export async function canAccessBranch(
   if (userRole === 'CLIENT') {
     const branch = await prisma.branch.findUnique({
       where: { id: branchId },
-      select: { 
+      select: {
         client: {
           select: { userId: true }
         }
@@ -58,12 +58,12 @@ export async function verifyBranchAccess(
   role: string
 ): Promise<boolean> {
   const cacheKey = CACHE_TAGS.BRANCH_ACCESS(branchId, userId, role)
-  
+
   return getCached(cacheKey, async () => {
     if (role === 'CONTRACTOR') {
       const contractor = await prisma.contractor.findUnique({
         where: { userId },
-        select: { 
+        select: {
           id: true,
           clients: {
             select: {
@@ -81,7 +81,7 @@ export async function verifyBranchAccess(
     if (role === 'CLIENT') {
       const branch = await prisma.branch.findUnique({
         where: { id: branchId },
-        select: { 
+        select: {
           client: {
             select: { userId: true }
           }
@@ -106,26 +106,26 @@ export async function verifyBranchAccess(
 }
 
 /**
- * Check if user can access a specific project
+ * Check if user can access a specific contract
  */
-export async function canAccessProject(
+export async function canAccessContract(
   userId: string,
   userRole: UserRole,
-  projectId: string
+  contractId: string
 ): Promise<boolean> {
-  // Contractors can access all projects
+  // Contractors can access all contracts
   if (userRole === 'CONTRACTOR') {
     return true
   }
 
-  const project = await prisma.project.findUnique({
-    where: { id: projectId },
+  const contract = await prisma.contract.findUnique({
+    where: { id: contractId },
     select: { branchId: true }
   })
 
-  if (!project) return false
+  if (!contract) return false
 
-  return canAccessBranch(userId, userRole, project.branchId)
+  return canAccessBranch(userId, userRole, contract.branchId)
 }
 
 /**
@@ -147,15 +147,11 @@ export async function canEditWorkOrder(
       stage: true,
       checklist: {
         select: {
-          project: {
-            select: { 
-              branchId: true,
-              branch: {
-                select: {
-                  client: {
-                    select: { userId: true }
-                  }
-                }
+          branchId: true,
+          branch: {
+            select: {
+              client: {
+                select: { userId: true }
               }
             }
           }
@@ -164,47 +160,47 @@ export async function canEditWorkOrder(
     }
   })
 
-  if (!workOrder?.checklist.project) return false
+  if (!workOrder?.checklist) return false
 
   // Clients can edit work orders in FOR_REVIEW stage (to approve/reject)
   if (userRole === 'CLIENT') {
     // Check if this is the client's work order
-    const isOwnWorkOrder = workOrder.checklist.project.branch.client.userId === userId
+    const isOwnWorkOrder = workOrder.checklist.branch.client.userId === userId
     // Client can only edit if work order is in FOR_REVIEW stage
     return isOwnWorkOrder && workOrder.stage === 'FOR_REVIEW'
   }
 
   // Team members can edit if they have access to the branch
-  return canAccessBranch(userId, userRole, workOrder.checklist.project.branchId)
+  return canAccessBranch(userId, userRole, workOrder.checklist.branchId)
 }
 
 /**
  * Check if user can delete/archive a work order
  */
 export async function canDeleteWorkOrder(
-  userId: string,
+  _userId: string,
   userRole: UserRole,
-  workOrderId: string
+  _workOrderId: string
 ): Promise<boolean> {
   // Only contractors can delete work orders
   return userRole === 'CONTRACTOR'
 }
 
 /**
- * Check if user can approve a project
+ * Check if user can approve a contract
  */
-export async function canApproveProject(
+export async function canApproveContract(
   userId: string,
   userRole: UserRole,
-  projectId: string
+  contractId: string
 ): Promise<boolean> {
-  // Only clients can approve projects
+  // Only clients can approve contracts
   if (userRole !== 'CLIENT') {
     return false
   }
 
-  const project = await prisma.project.findUnique({
-    where: { id: projectId },
+  const contract = await prisma.contract.findUnique({
+    where: { id: contractId },
     select: {
       branch: {
         select: {
@@ -216,7 +212,7 @@ export async function canApproveProject(
     }
   })
 
-  return project?.branch.client.userId === userId
+  return contract?.branch.client.userId === userId
 }
 
 /**

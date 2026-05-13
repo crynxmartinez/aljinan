@@ -29,9 +29,7 @@ import { ContractsList } from '@/components/modules/contracts-list'
 import { ChecklistsList } from '@/components/modules/checklists-list'
 import { DocumentsList } from '@/components/modules/documents-list'
 import { EquipmentList } from '@/components/modules/equipment-list'
-import { ProjectFilter } from '@/components/modules/project-filter'
 import { ActivityPanel } from '@/components/modules/activity-panel'
-import { ProjectsTable } from '@/components/modules/projects-table'
 import { Badge } from '@/components/ui/badge'
 import {
   LayoutDashboard,
@@ -166,13 +164,8 @@ export function BranchWorkspace({ clientId, branchId, branch, userRole, teamMemb
   return (
     <>
       <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
-        {/* Project Filter and Activity Toggle */}
-        <div className="flex items-center justify-between mb-4">
-          <ProjectFilter
-            branchId={branchId}
-            selectedProjectId={selectedProjectId}
-            onProjectChange={setSelectedProjectId}
-          />
+        {/* Activity Toggle */}
+        <div className="flex items-center justify-end mb-4">
           <Button
             variant="outline"
             size="sm"
@@ -390,7 +383,9 @@ function BranchDashboard({ branch, branchId }: { branch: Branch; branchId: strin
 
   return (
     <div className="space-y-6">
-      <ProjectsTable branchId={branchId} onCreateProject={handleCreateProject} />
+      <div className="text-center py-8 text-muted-foreground">
+        <p>Use the Contracts tab to manage work orders for this branch.</p>
+      </div>
 
       <Dialog open={createDialogOpen} onOpenChange={setCreateDialogOpen}>
         <DialogContent className="sm:max-w-[700px] max-h-[90vh] overflow-y-auto">

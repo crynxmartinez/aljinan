@@ -58,35 +58,35 @@ export async function GET() {
           await Promise.all([
             branchIds.length > 0
               ? prisma.request.count({
-                  where: { branchId: { in: branchIds } },
-                })
+                where: { branchId: { in: branchIds } },
+              })
               : Promise.resolve(0),
             branchIds.length > 0
               ? prisma.checklistItem.count({
-                  where: {
-                    checklist: {
-                      project: { branchId: { in: branchIds } },
-                    },
+                where: {
+                  checklist: {
+                    branchId: { in: branchIds },
                   },
-                })
+                },
+              })
               : Promise.resolve(0),
             branchIds.length > 0
               ? prisma.request.count({
-                  where: {
-                    branchId: { in: branchIds },
-                    status: { in: ['REQUESTED', 'QUOTED'] },
-                  },
-                })
+                where: {
+                  branchId: { in: branchIds },
+                  status: { in: ['REQUESTED', 'QUOTED'] },
+                },
+              })
               : Promise.resolve(0),
             branchIds.length > 0
               ? prisma.checklistItem.count({
-                  where: {
-                    checklist: {
-                      project: { branchId: { in: branchIds } },
-                    },
-                    stage: { in: ['SCHEDULED', 'IN_PROGRESS'] },
+                where: {
+                  checklist: {
+                    branchId: { in: branchIds },
                   },
-                })
+                  stage: { in: ['SCHEDULED', 'IN_PROGRESS'] },
+                },
+              })
               : Promise.resolve(0),
           ])
 

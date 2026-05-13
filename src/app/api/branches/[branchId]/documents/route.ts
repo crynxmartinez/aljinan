@@ -217,7 +217,7 @@ export async function GET(
     const certificates = await prisma.certificate.findMany({
       where: { branchId },
       include: {
-        project: { select: { title: true } },
+        contract: { select: { title: true } },
         workOrder: { select: { description: true } },
         equipment: { select: { equipmentNumber: true, equipmentType: true } }
       }
@@ -238,8 +238,8 @@ export async function GET(
       let relatedTo = cert.title
       if (cert.workOrder) {
         relatedTo = cert.workOrder.description
-      } else if (cert.project) {
-        relatedTo = cert.project.title
+      } else if (cert.contract) {
+        relatedTo = cert.contract.title
       } else if (cert.equipment) {
         relatedTo = `${cert.equipment.equipmentType} - ${cert.equipment.equipmentNumber}`
       }

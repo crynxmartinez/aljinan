@@ -25,7 +25,7 @@ export async function GET(
     const certificate = await prisma.certificate.findFirst({
       where: { id: certificateId, branchId },
       include: {
-        project: { select: { id: true, title: true } }
+        contract: { select: { id: true, title: true } }
       }
     })
 
@@ -80,7 +80,7 @@ export async function PATCH(
       where: { id: certificateId },
       data: updateData,
       include: {
-        project: { select: { id: true, title: true } }
+        contract: { select: { id: true, title: true } }
       }
     })
 

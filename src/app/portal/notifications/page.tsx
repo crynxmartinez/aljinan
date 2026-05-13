@@ -34,9 +34,7 @@ async function getClientStats(userId: string) {
     prisma.checklistItem.count({
       where: {
         checklist: {
-          project: {
-            branchId: { in: branchIds }
-          }
+          branchId: { in: branchIds }
         },
         stage: 'FOR_REVIEW',
         deletedAt: null
@@ -47,9 +45,7 @@ async function getClientStats(userId: string) {
     prisma.checklistItem.count({
       where: {
         checklist: {
-          project: {
-            branchId: { in: branchIds }
-          }
+          branchId: { in: branchIds }
         },
         stage: 'IN_PROGRESS',
         deletedAt: null
@@ -60,9 +56,7 @@ async function getClientStats(userId: string) {
     prisma.checklistItem.count({
       where: {
         checklist: {
-          project: {
-            branchId: { in: branchIds }
-          }
+          branchId: { in: branchIds }
         },
         stage: 'COMPLETED',
         updatedAt: { gte: firstDayOfMonth },
@@ -92,25 +86,25 @@ export default async function ClientNotificationsPage() {
   const stats = await getClientStats(session.user.id)
 
   const statCards = [
-    { 
-      label: 'Awaiting My Review', 
-      value: stats.workOrdersForReview, 
+    {
+      label: 'Awaiting My Review',
+      value: stats.workOrdersForReview,
       icon: Eye,
       color: 'text-purple-600',
       bgColor: 'bg-purple-100',
       description: 'Work orders ready for your approval'
     },
-    { 
-      label: 'Work In Progress', 
-      value: stats.workOrdersInProgress, 
+    {
+      label: 'Work In Progress',
+      value: stats.workOrdersInProgress,
       icon: Wrench,
       color: 'text-orange-600',
       bgColor: 'bg-orange-100',
       description: 'Currently being worked on'
     },
-    { 
-      label: 'Completed This Month', 
-      value: stats.workOrdersCompleted, 
+    {
+      label: 'Completed This Month',
+      value: stats.workOrdersCompleted,
       icon: CheckCircle,
       color: 'text-green-600',
       bgColor: 'bg-green-100',

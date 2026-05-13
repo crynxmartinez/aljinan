@@ -35,7 +35,6 @@ export async function DELETE(
           include: {
             _count: {
               select: {
-                projects: true,
                 requests: true,
                 invoices: true,
                 contracts: true,
@@ -54,7 +53,6 @@ export async function DELETE(
 
     // Calculate total data to be deleted
     const totalBranches = client.branches.length
-    const totalProjects = client.branches.reduce((sum, b) => sum + b._count.projects, 0)
     const totalRequests = client.branches.reduce((sum, b) => sum + b._count.requests, 0)
     const totalInvoices = client.branches.reduce((sum, b) => sum + b._count.invoices, 0)
     const totalContracts = client.branches.reduce((sum, b) => sum + b._count.contracts, 0)
@@ -72,7 +70,6 @@ export async function DELETE(
       deleted: {
         client: client.companyName,
         branches: totalBranches,
-        projects: totalProjects,
         requests: totalRequests,
         invoices: totalInvoices,
         contracts: totalContracts,

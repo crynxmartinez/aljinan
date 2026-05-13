@@ -39,16 +39,12 @@ export async function GET(request: Request) {
             stage: true,
             checklist: {
               select: {
-                project: {
+                branchId: true,
+                branch: {
                   select: {
-                    branchId: true,
-                    branch: {
-                      select: {
-                        clientId: true,
-                        client: {
-                          select: { companyName: true }
-                        }
-                      }
+                    clientId: true,
+                    client: {
+                      select: { companyName: true }
                     }
                   }
                 }
@@ -61,19 +57,19 @@ export async function GET(request: Request) {
         // Search clients (contractors only)
         session.user.role === 'CONTRACTOR'
           ? prisma.client.findMany({
-              where: {
-                OR: [
-                  { companyName: { contains: searchTerm, mode: 'insensitive' } },
-                  { companyEmail: { contains: searchTerm, mode: 'insensitive' } },
-                ]
-              },
-              select: {
-                id: true,
-                companyName: true,
-                companyEmail: true
-              },
-              take: 5
-            })
+            where: {
+              OR: [
+                { companyName: { contains: searchTerm, mode: 'insensitive' } },
+                { companyEmail: { contains: searchTerm, mode: 'insensitive' } },
+              ]
+            },
+            select: {
+              id: true,
+              companyName: true,
+              companyEmail: true
+            },
+            take: 5
+          })
           : [],
 
         // Search requests - simplified
@@ -133,8 +129,8 @@ export async function GET(request: Request) {
           id: wo.id,
           type: 'work_order' as const,
           title: wo.description,
-          subtitle: `${wo.checklist?.project?.branch?.client?.companyName} - ${wo.stage}`,
-          link: `/dashboard/clients/${wo.checklist?.project?.branch?.clientId}/branches/${wo.checklist?.project?.branchId}`
+          subtitle: `${wo.checklist?.branch?.client?.companyName} - ${wo.stage}`,
+          link: `/dashboard/clients/${wo.checklist?.branch?.clientId}/branches/${wo.checklist?.branchId}`
         })),
         ...clients.map(client => ({
           id: client.id,

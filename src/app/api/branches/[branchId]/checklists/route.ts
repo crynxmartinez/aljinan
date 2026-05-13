@@ -23,15 +23,15 @@ export async function GET(
     }
 
     // For clients, only show COMPLETED checklists (reports)
-    const whereClause = session.user.role === 'CLIENT' 
+    const whereClause = session.user.role === 'CLIENT'
       ? { branchId, status: 'COMPLETED' as const }
       : { branchId }
 
     const checklists = await prisma.checklist.findMany({
       where: whereClause,
-      include: { 
+      include: {
         items: { orderBy: { order: 'asc' } },
-        project: { select: { id: true, title: true, status: true } }
+        contract: { select: { id: true, title: true, status: true } }
       },
       orderBy: { createdAt: 'desc' }
     })
@@ -64,7 +64,7 @@ export async function POST(
 
     const { branchId } = await params
     const body = await request.json()
-    const { title, description, items, projectId } = body
+    const { title, description, items, contractId } = body
 
     if (!title) {
       return NextResponse.json({ error: 'Title is required' }, { status: 400 })
@@ -78,7 +78,7 @@ export async function POST(
     const checklist = await prisma.checklist.create({
       data: {
         branchId,
-        projectId: projectId || null,
+        contractId: contractId || null,
         title,
         description,
         createdById: session.user.id,

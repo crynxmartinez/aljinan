@@ -24,9 +24,6 @@ export async function GET(
 
     const appointments = await prisma.appointment.findMany({
       where: { branchId },
-      include: {
-        project: { select: { id: true, title: true, status: true } }
-      },
       orderBy: { date: 'asc' }
     })
 
@@ -59,7 +56,7 @@ export async function POST(
 
     const { branchId } = await params
     const body = await request.json()
-    const { title, description, date, startTime, endTime, duration, assignedTo, projectId } = body
+    const { title, description, date, startTime, endTime, duration, assignedTo } = body
 
     if (!title || !date || !startTime) {
       return NextResponse.json(
@@ -76,7 +73,6 @@ export async function POST(
     const appointment = await prisma.appointment.create({
       data: {
         branchId,
-        projectId: projectId || null,
         title,
         description,
         date: new Date(date),

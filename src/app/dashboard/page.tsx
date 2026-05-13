@@ -112,9 +112,7 @@ async function getDashboardStats(userId: string) {
     prisma.checklistItem.count({
       where: {
         checklist: {
-          project: {
-            branchId: { in: branchIds }
-          }
+          branchId: { in: branchIds }
         },
         stage: 'IN_PROGRESS',
         deletedAt: null
@@ -125,9 +123,7 @@ async function getDashboardStats(userId: string) {
     prisma.checklistItem.count({
       where: {
         checklist: {
-          project: {
-            branchId: { in: branchIds }
-          }
+          branchId: { in: branchIds }
         },
         stage: 'FOR_REVIEW',
         deletedAt: null
@@ -138,9 +134,7 @@ async function getDashboardStats(userId: string) {
     prisma.checklistItem.count({
       where: {
         checklist: {
-          project: {
-            branchId: { in: branchIds }
-          }
+          branchId: { in: branchIds }
         },
         stage: 'COMPLETED',
         updatedAt: { gte: firstDayOfMonth },
@@ -152,9 +146,7 @@ async function getDashboardStats(userId: string) {
     prisma.checklistItem.count({
       where: {
         checklist: {
-          project: {
-            branchId: { in: branchIds }
-          }
+          branchId: { in: branchIds }
         },
         scheduledDate: { lt: today },
         stage: { notIn: ['COMPLETED', 'ARCHIVED'] },
@@ -255,9 +247,7 @@ async function getDashboardStatsForTeamMember(assignedBranchIds: string[]) {
     prisma.checklistItem.count({
       where: {
         checklist: {
-          project: {
-            branchId: { in: assignedBranchIds }
-          }
+          branchId: { in: assignedBranchIds }
         },
         stage: 'IN_PROGRESS',
         deletedAt: null
@@ -266,9 +256,7 @@ async function getDashboardStatsForTeamMember(assignedBranchIds: string[]) {
     prisma.checklistItem.count({
       where: {
         checklist: {
-          project: {
-            branchId: { in: assignedBranchIds }
-          }
+          branchId: { in: assignedBranchIds }
         },
         stage: 'FOR_REVIEW',
         deletedAt: null
@@ -277,9 +265,7 @@ async function getDashboardStatsForTeamMember(assignedBranchIds: string[]) {
     prisma.checklistItem.count({
       where: {
         checklist: {
-          project: {
-            branchId: { in: assignedBranchIds }
-          }
+          branchId: { in: assignedBranchIds }
         },
         stage: 'COMPLETED',
         updatedAt: { gte: firstDayOfMonth },
@@ -289,9 +275,7 @@ async function getDashboardStatsForTeamMember(assignedBranchIds: string[]) {
     prisma.checklistItem.count({
       where: {
         checklist: {
-          project: {
-            branchId: { in: assignedBranchIds }
-          }
+          branchId: { in: assignedBranchIds }
         },
         scheduledDate: { lt: today },
         stage: { notIn: ['COMPLETED', 'ARCHIVED'] },

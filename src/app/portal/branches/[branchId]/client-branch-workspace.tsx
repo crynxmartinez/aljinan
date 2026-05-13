@@ -5,7 +5,6 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
 import { Badge } from '@/components/ui/badge'
-import { ClientProjectFilter } from '@/components/modules/client-project-filter'
 import { ActivityPanel } from '@/components/modules/activity-panel'
 import { ClientBranchRequests } from './client-branch-requests'
 import { ClientBranchContracts } from './client-branch-contracts'
@@ -14,7 +13,6 @@ import { CalendarView } from '@/components/modules/calendar-view'
 import { ChecklistKanban } from '@/components/modules/checklist-kanban'
 import { DocumentsList } from '@/components/modules/documents-list'
 import { EquipmentList } from '@/components/modules/equipment-list'
-import { ProjectsTable } from '@/components/modules/projects-table'
 import {
   LayoutDashboard,
   FileText,
@@ -227,13 +225,8 @@ export function ClientBranchWorkspace({ branchId, branch }: ClientBranchWorkspac
   return (
     <>
       <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
-        {/* Project Filter and Activity Toggle */}
-        <div className="flex items-center justify-between mb-4">
-          <ClientProjectFilter
-            projects={projects}
-            selectedProjectId={selectedProjectId}
-            onProjectChange={setSelectedProjectId}
-          />
+        {/* Activity Toggle */}
+        <div className="flex items-center justify-end mb-4">
           <Button
             variant="outline"
             size="sm"
@@ -299,7 +292,9 @@ export function ClientBranchWorkspace({ branchId, branch }: ClientBranchWorkspac
         <div className="mt-6">
           {/* Dashboard Tab */}
           <TabsContent value="dashboard" className="mt-0">
-            <ProjectsTable branchId={branchId} />
+            <div className="text-center py-8 text-muted-foreground">
+              <p>Use the Contracts tab to view your work orders.</p>
+            </div>
           </TabsContent>
 
           {/* Kanban Board Tab - Read-only Kanban view for client */}

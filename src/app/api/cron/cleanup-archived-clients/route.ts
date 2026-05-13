@@ -42,7 +42,6 @@ export async function GET(request: Request) {
           include: {
             _count: {
               select: {
-                projects: true,
                 requests: true,
                 invoices: true,
                 contracts: true,
@@ -68,7 +67,6 @@ export async function GET(request: Request) {
     // Delete each client
     for (const client of clientsToDelete) {
       const totalBranches = client.branches.length
-      const totalProjects = client.branches.reduce((sum, b) => sum + b._count.projects, 0)
       const totalInvoices = client.branches.reduce((sum, b) => sum + b._count.invoices, 0)
       const totalContracts = client.branches.reduce((sum, b) => sum + b._count.contracts, 0)
       const totalChecklists = client.branches.reduce((sum, b) => sum + b._count.checklists, 0)
@@ -85,7 +83,6 @@ export async function GET(request: Request) {
         contractorName: client.contractor.user.name,
         dataDeleted: {
           branches: totalBranches,
-          projects: totalProjects,
           invoices: totalInvoices,
           contracts: totalContracts,
           workOrders: totalChecklists,

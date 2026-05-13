@@ -21,14 +21,14 @@ async function generateCertificatesForWorkOrder(
     findings: string | null
     recommendations: string | null
     checklist: {
-      projectId: string | null
-      project: { branchId: string } | null
+      branchId: string
+      contractId: string | null
     }
   },
   sessionUserId: string,
   sessionUserRole: string
 ) {
-  const branchId = workOrder.checklist?.project?.branchId
+  const branchId = workOrder.checklist?.branchId
   if (!branchId) return
 
   let needsCertificate = false
@@ -77,7 +77,7 @@ async function generateCertificatesForWorkOrder(
       const cert = await prisma.certificate.create({
         data: {
           branchId,
-          projectId: workOrder.checklist.projectId,
+          contractId: workOrder.checklist.contractId,
           workOrderId,
           equipmentId: eq.id,
           type: certType,
@@ -108,7 +108,7 @@ async function generateCertificatesForWorkOrder(
     await prisma.certificate.create({
       data: {
         branchId,
-        projectId: workOrder.checklist.projectId,
+        contractId: workOrder.checklist.contractId,
         workOrderId,
         type: certType,
         title: `${certType.charAt(0) + certType.slice(1).toLowerCase().replace('_', ' ')} Certificate - ${workOrder.description}`,
@@ -121,17 +121,17 @@ async function generateCertificatesForWorkOrder(
     })
   }
 
-  if (workOrder.checklist?.projectId) {
-    await prisma.activity.create({
-      data: {
-        projectId: workOrder.checklist.projectId,
-        type: 'UPDATED',
-        content: `Certificate auto-generated for work order "${workOrder.description}"`,
-        createdById: sessionUserId,
-        createdByRole: sessionUserRole as 'CONTRACTOR' | 'CLIENT' | 'TEAM_MEMBER',
-      }
-    })
-  }
+  // Create activity for the branch
+  await prisma.activity.create({
+    data: {
+      branchId,
+      contractId: workOrder.checklist?.contractId || null,
+      type: 'UPDATED',
+      content: `Certificate auto-generated for work order "${workOrder.description}"`,
+      createdById: sessionUserId,
+      createdByRole: sessionUserRole as 'CONTRACTOR' | 'CLIENT' | 'TEAM_MEMBER',
+    }
+  })
 }
 
 // GET - Fetch all checklist items for a branch (for Kanban view)
@@ -148,7 +148,7 @@ export async function GET(
 
     const { branchId } = await params
     const { searchParams } = new URL(request.url)
-    const projectId = searchParams.get('projectId')
+    const contractId = searchParams.get('contractId')
     const stage = searchParams.get('stage')
 
     const hasAccess = await verifyBranchAccess(branchId, session.user.id, session.user.role)
@@ -157,14 +157,14 @@ export async function GET(
     }
 
     // Build the where clause with proper Prisma typing
-    // When projectId is provided, show items for that project OR items with no project (standalone requests)
+    // When contractId is provided, show items for that contract OR adhoc items (no contract)
     const items = await prisma.checklistItem.findMany({
       where: {
-        checklist: projectId ? {
+        checklist: contractId ? {
           branchId,
           OR: [
-            { projectId: projectId },
-            { projectId: null }
+            { contractId: contractId },
+            { contractId: null }
           ]
         } : {
           branchId
@@ -175,7 +175,7 @@ export async function GET(
       include: {
         checklist: {
           include: {
-            project: {
+            contract: {
               select: {
                 title: true
               }
@@ -226,7 +226,7 @@ export async function GET(
         isCompleted: item.isCompleted,
         checklistId: item.checklistId,
         checklistTitle: item.checklist.title,
-        projectTitle: item.checklist.project?.title || null,
+        contractTitle: item.checklist.contract?.title || null,
         linkedRequestId: item.linkedRequestId,
         assignedTo: item.assignedTo,
         // Inspection fields
@@ -441,11 +441,7 @@ export async function PATCH(
       const currentWorkOrder = await prisma.checklistItem.findUnique({
         where: { id: workOrderId },
         include: {
-          checklist: {
-            include: {
-              project: true
-            }
-          }
+          checklist: true
         }
       })
 
@@ -489,17 +485,17 @@ export async function PATCH(
 
         await generateCertificatesForWorkOrder(workOrderId, currentWorkOrder, session.user.id, session.user.role)
 
-        if (currentWorkOrder.checklist?.projectId) {
-          await prisma.activity.create({
-            data: {
-              projectId: currentWorkOrder.checklist.projectId,
-              type: 'STATUS_CHANGE',
-              content: `Work order "${currentWorkOrder.description}" auto-completed after both parties signed`,
-              createdById: session.user.id,
-              createdByRole: session.user.role as 'CONTRACTOR' | 'CLIENT' | 'TEAM_MEMBER',
-            }
-          })
-        }
+        // Create activity for the branch
+        await prisma.activity.create({
+          data: {
+            branchId,
+            contractId: currentWorkOrder.checklist?.contractId || null,
+            type: 'STATUS_CHANGE',
+            content: `Work order "${currentWorkOrder.description}" auto-completed after both parties signed`,
+            createdById: session.user.id,
+            createdByRole: session.user.role as 'CONTRACTOR' | 'CLIENT' | 'TEAM_MEMBER',
+          }
+        })
       }
 
       return NextResponse.json(updatedWorkOrder)
@@ -520,11 +516,7 @@ export async function PATCH(
       const currentWorkOrder = await prisma.checklistItem.findUnique({
         where: { id: workOrderId },
         include: {
-          checklist: {
-            include: {
-              project: true
-            }
-          }
+          checklist: true
         }
       })
 
@@ -557,17 +549,17 @@ export async function PATCH(
 
         await generateCertificatesForWorkOrder(workOrderId, currentWorkOrder, session.user.id, session.user.role)
 
-        if (currentWorkOrder.checklist?.projectId) {
-          await prisma.activity.create({
-            data: {
-              projectId: currentWorkOrder.checklist.projectId,
-              type: 'STATUS_CHANGE',
-              content: `Work order "${currentWorkOrder.description}" auto-completed after both parties signed`,
-              createdById: session.user.id,
-              createdByRole: 'CLIENT',
-            }
-          })
-        }
+        // Create activity for the branch
+        await prisma.activity.create({
+          data: {
+            branchId,
+            contractId: currentWorkOrder.checklist?.contractId || null,
+            type: 'STATUS_CHANGE',
+            content: `Work order "${currentWorkOrder.description}" auto-completed after both parties signed`,
+            createdById: session.user.id,
+            createdByRole: 'CLIENT',
+          }
+        })
       }
 
       return NextResponse.json(updatedWorkOrder)
@@ -591,11 +583,7 @@ export async function PATCH(
       const workOrder = await prisma.checklistItem.findUnique({
         where: { id: workOrderId },
         include: {
-          checklist: {
-            include: {
-              project: true
-            }
-          }
+          checklist: true
         }
       })
 
@@ -631,11 +619,7 @@ export async function PATCH(
       include: {
         checklist: {
           include: {
-            project: {
-              include: {
-                contracts: true
-              }
-            }
+            contract: true
           }
         }
       }
@@ -670,9 +654,8 @@ export async function PATCH(
 
       // Create notification for contractor
       const firstWorkOrder = workOrders[0]
-      const contracts = firstWorkOrder.checklist.project?.contracts || []
-      if (contracts.length > 0) {
-        const contract = contracts[0]
+      const contract = firstWorkOrder.checklist.contract
+      if (contract) {
 
         // Get contractor user ID
         const branch = await prisma.branch.findUnique({
@@ -727,10 +710,8 @@ export async function PATCH(
 
       // Create notification for client
       const verifyFirstWorkOrder = workOrders[0]
-      const verifyContracts = verifyFirstWorkOrder.checklist.project?.contracts || []
-      if (verifyContracts.length > 0) {
-        const verifyContract = verifyContracts[0]
-
+      const verifyContract = verifyFirstWorkOrder.checklist.contract
+      if (verifyContract) {
         // Get client user ID
         const branch = await prisma.branch.findUnique({
           where: { id: branchId },
@@ -754,15 +735,14 @@ export async function PATCH(
         }
 
         // Check if all work orders in the contract are now paid - auto-complete contract
-        if (verifyContract.projectId) {
-          const allProjectWorkOrders = await prisma.checklistItem.findMany({
-            where: {
-              checklist: { projectId: verifyContract.projectId }
-            }
-          })
+        const contractChecklist = await prisma.checklist.findUnique({
+          where: { contractId: verifyContract.id },
+          include: { items: true }
+        })
 
-          const allPaid = allProjectWorkOrders.every(wo => wo.paymentStatus === 'PAID')
-          const allCompleted = allProjectWorkOrders.every(wo => wo.stage === 'COMPLETED')
+        if (contractChecklist) {
+          const allPaid = contractChecklist.items.every(wo => wo.paymentStatus === 'PAID')
+          const allCompleted = contractChecklist.items.every(wo => wo.stage === 'COMPLETED')
 
           if (allPaid && allCompleted && verifyContract.status !== 'SIGNED') {
             // Auto-complete the contract
@@ -774,19 +754,11 @@ export async function PATCH(
               }
             })
 
-            // Also complete the project
-            await prisma.project.update({
-              where: { id: verifyContract.projectId },
-              data: {
-                status: 'CLOSED',
-                completedAt: new Date()
-              }
-            })
-
             // Create activity for contract completion
             await prisma.activity.create({
               data: {
-                projectId: verifyContract.projectId,
+                branchId,
+                contractId: verifyContract.id,
                 type: 'STATUS_CHANGE',
                 content: `Contract "${verifyContract.title}" auto-completed - all work orders paid`,
                 createdById: session.user.id,
@@ -841,13 +813,9 @@ export async function PATCH(
         include: {
           checklist: {
             include: {
-              project: {
+              branch: {
                 include: {
-                  branch: {
-                    include: {
-                      client: true
-                    }
-                  }
+                  client: true
                 }
               }
             }
@@ -856,7 +824,7 @@ export async function PATCH(
       })
 
       // Send notifications based on stage changes
-      const clientId = updatedWorkOrder.checklist?.project?.branch?.client?.userId
+      const clientId = updatedWorkOrder.checklist?.branch?.client?.userId
 
       if (clientId) {
         if (stage === 'FOR_REVIEW' && oldStage !== 'FOR_REVIEW') {
@@ -912,13 +880,9 @@ export async function PATCH(
         include: {
           checklist: {
             include: {
-              project: {
+              branch: {
                 include: {
-                  branch: {
-                    include: {
-                      client: true
-                    }
-                  }
+                  client: true
                 }
               }
             }
@@ -927,7 +891,7 @@ export async function PATCH(
       })
 
       // Notify client about price being set
-      const clientId = updatedWorkOrder.checklist?.project?.branch?.client?.userId
+      const clientId = updatedWorkOrder.checklist?.branch?.client?.userId
       if (clientId && !workOrder.price) {
         await notifyPriceSet(
           clientId,

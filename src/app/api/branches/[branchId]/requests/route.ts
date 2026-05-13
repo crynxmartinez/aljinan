@@ -27,7 +27,6 @@ export async function GET(
     const requests = await prisma.request.findMany({
       where: { branchId },
       include: {
-        project: { select: { id: true, title: true, status: true } },
         photos: true,
         equipment: true
       },

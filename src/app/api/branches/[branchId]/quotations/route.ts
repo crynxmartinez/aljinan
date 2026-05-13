@@ -23,15 +23,14 @@ export async function GET(
     }
 
     // For clients, only show SENT, APPROVED, REJECTED quotations (not DRAFT)
-    const whereClause = session.user.role === 'CLIENT' 
+    const whereClause = session.user.role === 'CLIENT'
       ? { branchId, status: { not: 'DRAFT' as const } }
       : { branchId }
 
     const quotations = await prisma.quotation.findMany({
       where: whereClause,
       include: {
-        items: true,
-        project: { select: { id: true, title: true, status: true } }
+        items: true
       },
       orderBy: { createdAt: 'desc' }
     })
@@ -65,7 +64,7 @@ export async function POST(
 
     const { branchId } = await params
     const body = await request.json()
-    const { title, description, items, taxRate, validUntil, requestId, projectId } = body
+    const { title, description, items, taxRate, validUntil, requestId } = body
 
     if (!title) {
       return NextResponse.json(
@@ -91,7 +90,6 @@ export async function POST(
     const quotation = await prisma.quotation.create({
       data: {
         branchId,
-        projectId: projectId || null,
         requestId: requestId || null,
         title,
         description,

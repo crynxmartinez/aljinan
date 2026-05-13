@@ -23,28 +23,17 @@ export async function GET(
     }
 
     // For clients, only show ACTIVE contracts (not DRAFT)
-    const whereClause = session.user.role === 'CLIENT' 
+    const whereClause = session.user.role === 'CLIENT'
       ? { branchId, status: { not: 'DRAFT' as const } }
       : { branchId }
 
     const contracts = await prisma.contract.findMany({
       where: whereClause,
       include: {
-        project: { 
-          select: { 
-            id: true, 
-            title: true, 
-            status: true,
-            description: true,
-            startDate: true,
-            endDate: true,
-            totalValue: true,
-            checklists: {
-              include: {
-                items: true
-              }
-            }
-          } 
+        checklist: {
+          include: {
+            items: true
+          }
         }
       },
       orderBy: { createdAt: 'desc' }
@@ -78,7 +67,7 @@ export async function POST(
 
     const { branchId } = await params
     const body = await request.json()
-    const { title, description, fileName, fileUrl, fileSize, startDate, endDate, status, projectId } = body
+    const { title, description, fileName, fileUrl, fileSize, startDate, endDate, status } = body
 
     if (!title || !fileName || !fileUrl) {
       return NextResponse.json({ error: 'Title, file name, and file URL are required' }, { status: 400 })
@@ -92,7 +81,6 @@ export async function POST(
     const contract = await prisma.contract.create({
       data: {
         branchId,
-        projectId: projectId || null,
         title,
         description,
         fileName,
