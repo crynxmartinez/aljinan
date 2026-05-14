@@ -47,10 +47,9 @@ interface Appointment {
 
 interface ClientBranchAppointmentsProps {
   branchId: string
-  projectId?: string | null
 }
 
-export function ClientBranchAppointments({ branchId, projectId }: ClientBranchAppointmentsProps) {
+export function ClientBranchAppointments({ branchId }: ClientBranchAppointmentsProps) {
   const router = useRouter()
   const [appointments, setAppointments] = useState<Appointment[]>([])
   const [loading, setLoading] = useState(true)
@@ -65,10 +64,7 @@ export function ClientBranchAppointments({ branchId, projectId }: ClientBranchAp
       const response = await fetch(`/api/branches/${branchId}/appointments`)
       if (response.ok) {
         const data = await response.json()
-        const filtered = projectId 
-          ? data.filter((a: Appointment & { projectId?: string }) => a.projectId === projectId)
-          : data
-        setAppointments(filtered)
+        setAppointments(data)
       }
     } catch (err) {
       console.error('Failed to fetch appointments:', err)
@@ -79,7 +75,7 @@ export function ClientBranchAppointments({ branchId, projectId }: ClientBranchAp
 
   useEffect(() => {
     fetchAppointments()
-  }, [branchId, projectId])
+  }, [branchId])
 
   const handleAction = async () => {
     if (!selectedAppointment || !actionType) return
@@ -154,10 +150,10 @@ export function ClientBranchAppointments({ branchId, projectId }: ClientBranchAp
 
   // Separate upcoming and past appointments
   const now = new Date()
-  const upcomingAppointments = appointments.filter(apt => 
+  const upcomingAppointments = appointments.filter(apt =>
     new Date(apt.date) >= now && apt.status !== 'COMPLETED' && apt.status !== 'CANCELLED'
   )
-  const pastAppointments = appointments.filter(apt => 
+  const pastAppointments = appointments.filter(apt =>
     new Date(apt.date) < now || apt.status === 'COMPLETED' || apt.status === 'CANCELLED'
   )
 
@@ -258,8 +254,8 @@ export function ClientBranchAppointments({ branchId, projectId }: ClientBranchAp
             </CardDescription>
           </CardHeader>
           <CardContent>
-            {upcomingAppointments.filter(a => a.status !== 'SCHEDULED').length === 0 && 
-             upcomingAppointments.filter(a => a.status === 'SCHEDULED').length === 0 ? (
+            {upcomingAppointments.filter(a => a.status !== 'SCHEDULED').length === 0 &&
+              upcomingAppointments.filter(a => a.status === 'SCHEDULED').length === 0 ? (
               <div className="flex flex-col items-center justify-center py-12 text-center">
                 <Calendar className="h-12 w-12 text-muted-foreground/30 mb-4" />
                 <h3 className="text-lg font-semibold mb-2">No upcoming appointments</h3>
@@ -375,7 +371,7 @@ export function ClientBranchAppointments({ branchId, projectId }: ClientBranchAp
                     value={note}
                     onChange={(e) => setNote(e.target.value)}
                     placeholder={
-                      actionType === 'cancel' 
+                      actionType === 'cancel'
                         ? 'Please explain why you need to cancel...'
                         : 'Let us know your preferred dates and times...'
                     }

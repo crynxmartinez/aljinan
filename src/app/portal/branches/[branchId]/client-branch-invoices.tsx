@@ -40,10 +40,9 @@ interface Invoice {
 
 interface ClientBranchInvoicesProps {
   branchId: string
-  projectId?: string | null
 }
 
-export function ClientBranchInvoices({ branchId, projectId }: ClientBranchInvoicesProps) {
+export function ClientBranchInvoices({ branchId }: ClientBranchInvoicesProps) {
   const [invoices, setInvoices] = useState<Invoice[]>([])
   const [loading, setLoading] = useState(true)
   const [expandedInvoice, setExpandedInvoice] = useState<string | null>(null)
@@ -53,10 +52,7 @@ export function ClientBranchInvoices({ branchId, projectId }: ClientBranchInvoic
       const response = await fetch(`/api/branches/${branchId}/invoices`)
       if (response.ok) {
         const data = await response.json()
-        const filtered = projectId 
-          ? data.filter((i: Invoice & { projectId?: string }) => i.projectId === projectId)
-          : data
-        setInvoices(filtered)
+        setInvoices(data)
       }
     } catch (err) {
       console.error('Failed to fetch invoices:', err)
@@ -67,7 +63,7 @@ export function ClientBranchInvoices({ branchId, projectId }: ClientBranchInvoic
 
   useEffect(() => {
     fetchInvoices()
-  }, [branchId, projectId])
+  }, [branchId])
 
   const getStatusBadge = (status: Invoice['status']) => {
     const config = {

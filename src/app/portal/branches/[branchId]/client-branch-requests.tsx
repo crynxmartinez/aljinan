@@ -150,7 +150,6 @@ interface Request {
 
 interface ClientBranchRequestsProps {
   branchId: string
-  projectId?: string | null
   onDataChange?: () => void
   userId?: string
 }
@@ -295,7 +294,7 @@ function WorkOrdersGroupedView({ workOrders }: { workOrders: WorkOrder[] }) {
   )
 }
 
-export function ClientBranchRequests({ branchId, projectId, onDataChange, userId }: ClientBranchRequestsProps) {
+export function ClientBranchRequests({ branchId, onDataChange, userId }: ClientBranchRequestsProps) {
   const router = useRouter()
   const [requests, setRequests] = useState<Request[]>([])
   const [allRequests, setAllRequests] = useState<Request[]>([])
@@ -409,7 +408,7 @@ export function ClientBranchRequests({ branchId, projectId, onDataChange, userId
   useEffect(() => {
     fetchRequests()
     fetchProjects()
-  }, [branchId, projectId])
+  }, [branchId])
 
   // Handle project approval
   const handleApproveProject = async (projectId: string) => {

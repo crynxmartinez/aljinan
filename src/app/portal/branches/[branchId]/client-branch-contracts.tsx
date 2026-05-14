@@ -87,10 +87,9 @@ interface Contract {
 
 interface ClientBranchContractsProps {
   branchId: string
-  projectId?: string | null
 }
 
-export function ClientBranchContracts({ branchId, projectId }: ClientBranchContractsProps) {
+export function ClientBranchContracts({ branchId }: ClientBranchContractsProps) {
   const router = useRouter()
   const [contracts, setContracts] = useState<Contract[]>([])
   const [loading, setLoading] = useState(true)
@@ -107,10 +106,7 @@ export function ClientBranchContracts({ branchId, projectId }: ClientBranchContr
       const response = await fetch(`/api/branches/${branchId}/contracts`)
       if (response.ok) {
         const data = await response.json()
-        const filtered = projectId 
-          ? data.filter((c: Contract & { projectId?: string }) => c.projectId === projectId)
-          : data
-        setContracts(filtered)
+        setContracts(data)
       }
     } catch (err) {
       console.error('Failed to fetch contracts:', err)
@@ -121,7 +117,7 @@ export function ClientBranchContracts({ branchId, projectId }: ClientBranchContr
 
   useEffect(() => {
     fetchContracts()
-  }, [branchId, projectId])
+  }, [branchId])
 
   const [selectedContract, setSelectedContract] = useState<Contract | null>(null)
   const [detailsOpen, setDetailsOpen] = useState(false)
@@ -157,7 +153,7 @@ export function ClientBranchContracts({ branchId, projectId }: ClientBranchContr
     if (!canvas) return
     const ctx = canvas.getContext('2d')
     if (!ctx) return
-    
+
     setIsDrawing(true)
     const rect = canvas.getBoundingClientRect()
     ctx.beginPath()
@@ -170,7 +166,7 @@ export function ClientBranchContracts({ branchId, projectId }: ClientBranchContr
     if (!canvas) return
     const ctx = canvas.getContext('2d')
     if (!ctx) return
-    
+
     const rect = canvas.getBoundingClientRect()
     ctx.lineTo(e.clientX - rect.left, e.clientY - rect.top)
     ctx.strokeStyle = '#000'
@@ -230,16 +226,16 @@ export function ClientBranchContracts({ branchId, projectId }: ClientBranchContr
 
   const handleSign = async () => {
     if (!contractToSign || !canvasRef.current) return
-    
+
     const canvas = canvasRef.current
     const signatureDataUrl = canvas.toDataURL('image/png')
-    
+
     // Check if canvas is empty
     const ctx = canvas.getContext('2d')
     if (!ctx) return
     const imageData = ctx.getImageData(0, 0, canvas.width, canvas.height)
     const isEmpty = !imageData.data.some((channel, index) => index % 4 !== 3 ? channel !== 0 : channel !== 0)
-    
+
     if (isEmpty) {
       alert('Please draw your signature before signing')
       return
@@ -272,16 +268,16 @@ export function ClientBranchContracts({ branchId, projectId }: ClientBranchContr
 
   const handleEndSign = async () => {
     if (!contractToSign || !endCanvasRef.current) return
-    
+
     const canvas = endCanvasRef.current
     const signatureDataUrl = canvas.toDataURL('image/png')
-    
+
     // Check if canvas is empty
     const ctx = canvas.getContext('2d')
     if (!ctx) return
     const imageData = ctx.getImageData(0, 0, canvas.width, canvas.height)
     const isEmpty = !imageData.data.some((channel, index) => index % 4 !== 3 ? channel !== 0 : channel !== 0)
-    
+
     if (isEmpty) {
       alert('Please draw your signature before signing')
       return
@@ -405,112 +401,113 @@ export function ClientBranchContracts({ branchId, projectId }: ClientBranchContr
             {activeContracts.map((contract) => {
               const workOrders = contract.project?.checklists.flatMap(c => c.items) || []
               const completedCount = workOrders.filter(i => i.stage === 'COMPLETED').length
-              
+
               return (
-              <div
-                key={contract.id}
-                className="p-4 bg-white border rounded-lg"
-              >
-                <div className="flex items-start justify-between">
-                  <div className="space-y-1">
-                    <div className="flex items-center gap-2">
-                      <FileText className="h-4 w-4 text-muted-foreground" />
-                      <h4 className="font-medium">{contract.title}</h4>
-                      {getStatusBadge(contract.status)}
+                <div
+                  key={contract.id}
+                  className="p-4 bg-white border rounded-lg"
+                >
+                  <div className="flex items-start justify-between">
+                    <div className="space-y-1">
+                      <div className="flex items-center gap-2">
+                        <FileText className="h-4 w-4 text-muted-foreground" />
+                        <h4 className="font-medium">{contract.title}</h4>
+                        {getStatusBadge(contract.status)}
+                      </div>
+                      {contract.description && (
+                        <p className="text-sm text-muted-foreground">
+                          {contract.description}
+                        </p>
+                      )}
+                      <div className="flex items-center gap-4 text-sm text-muted-foreground">
+                        {contract.startDate && contract.endDate && (
+                          <span className="flex items-center gap-1">
+                            <Calendar className="h-3 w-3" />
+                            {new Date(contract.startDate).toLocaleDateString()} - {new Date(contract.endDate).toLocaleDateString()}
+                          </span>
+                        )}
+                        <span className="font-medium text-primary">
+                          SAR {(contract.totalValue || 0).toLocaleString('en-US', { minimumFractionDigits: 2 })}
+                        </span>
+                      </div>
                     </div>
-                    {contract.description && (
-                      <p className="text-sm text-muted-foreground">
-                        {contract.description}
-                      </p>
-                    )}
-                    <div className="flex items-center gap-4 text-sm text-muted-foreground">
-                      {contract.startDate && contract.endDate && (
-                        <span className="flex items-center gap-1">
-                          <Calendar className="h-3 w-3" />
-                          {new Date(contract.startDate).toLocaleDateString()} - {new Date(contract.endDate).toLocaleDateString()}
+                    <div className="flex gap-2">
+                      <Button
+                        variant="outline"
+                        size="sm"
+                        onClick={() => {
+                          setSelectedContract(contract)
+                          setDetailsOpen(true)
+                        }}
+                      >
+                        <ClipboardList className="mr-2 h-4 w-4" />
+                        View Details
+                      </Button>
+                      {canSignContract(contract) && (
+                        <Button
+                          size="sm"
+                          onClick={() => openEndSignDialog(contract)}
+                          className="bg-green-600 hover:bg-green-700"
+                        >
+                          <PenTool className="mr-2 h-4 w-4" />
+                          Sign to Complete
+                        </Button>
+                      )}
+                    </div>
+                  </div>
+
+                  {/* Indicator Badges & Progress */}
+                  <div className="mt-3 pt-3 border-t">
+                    <div className="flex items-center gap-2 flex-wrap">
+                      <Badge
+                        variant="outline"
+                        className={contract.fileUrl
+                          ? "bg-blue-50 text-blue-700 border-blue-200"
+                          : "bg-gray-50 text-gray-500 border-gray-200"
+                        }
+                      >
+                        <FileText className="h-3 w-3 mr-1" />
+                        PDF {contract.fileUrl ? '✓' : '—'}
+                      </Badge>
+                      <Badge
+                        variant="outline"
+                        className={contract.certificateUrl
+                          ? "bg-amber-50 text-amber-700 border-amber-200"
+                          : "bg-gray-50 text-gray-500 border-gray-200"
+                        }
+                      >
+                        <Award className="h-3 w-3 mr-1" />
+                        Cert {contract.certificateUrl ? '✓' : '—'}
+                      </Badge>
+
+                      {workOrders.length > 0 && (
+                        <Badge
+                          variant="outline"
+                          className={completedCount === workOrders.length
+                            ? "bg-green-50 text-green-700 border-green-200"
+                            : "bg-blue-50 text-blue-700 border-blue-200"
+                          }
+                        >
+                          <ClipboardList className="h-3 w-3 mr-1" />
+                          {completedCount}/{workOrders.length} Work Orders
+                        </Badge>
+                      )}
+
+                      {!canSignContract(contract) && workOrders.length > 0 && (
+                        <span className="text-xs text-muted-foreground ml-auto">
+                          {!areAllWorkOrdersCompleted(contract)
+                            ? 'Complete all work orders to finalize'
+                            : !areAllWorkOrdersPaid(contract)
+                              ? 'Pay all work orders to finalize'
+                              : ''
+                          }
                         </span>
                       )}
-                      <span className="font-medium text-primary">
-                        SAR {(contract.totalValue || 0).toLocaleString('en-US', { minimumFractionDigits: 2 })}
-                      </span>
                     </div>
                   </div>
-                  <div className="flex gap-2">
-                    <Button
-                      variant="outline"
-                      size="sm"
-                      onClick={() => {
-                        setSelectedContract(contract)
-                        setDetailsOpen(true)
-                      }}
-                    >
-                      <ClipboardList className="mr-2 h-4 w-4" />
-                      View Details
-                    </Button>
-                    {canSignContract(contract) && (
-                      <Button
-                        size="sm"
-                        onClick={() => openEndSignDialog(contract)}
-                        className="bg-green-600 hover:bg-green-700"
-                      >
-                        <PenTool className="mr-2 h-4 w-4" />
-                        Sign to Complete
-                      </Button>
-                    )}
-                  </div>
                 </div>
-                
-                {/* Indicator Badges & Progress */}
-                <div className="mt-3 pt-3 border-t">
-                  <div className="flex items-center gap-2 flex-wrap">
-                    <Badge 
-                      variant="outline" 
-                      className={contract.fileUrl 
-                        ? "bg-blue-50 text-blue-700 border-blue-200" 
-                        : "bg-gray-50 text-gray-500 border-gray-200"
-                      }
-                    >
-                      <FileText className="h-3 w-3 mr-1" />
-                      PDF {contract.fileUrl ? '✓' : '—'}
-                    </Badge>
-                    <Badge 
-                      variant="outline" 
-                      className={contract.certificateUrl 
-                        ? "bg-amber-50 text-amber-700 border-amber-200" 
-                        : "bg-gray-50 text-gray-500 border-gray-200"
-                      }
-                    >
-                      <Award className="h-3 w-3 mr-1" />
-                      Cert {contract.certificateUrl ? '✓' : '—'}
-                    </Badge>
-                    
-                    {workOrders.length > 0 && (
-                      <Badge 
-                        variant="outline" 
-                        className={completedCount === workOrders.length 
-                          ? "bg-green-50 text-green-700 border-green-200" 
-                          : "bg-blue-50 text-blue-700 border-blue-200"
-                        }
-                      >
-                        <ClipboardList className="h-3 w-3 mr-1" />
-                        {completedCount}/{workOrders.length} Work Orders
-                      </Badge>
-                    )}
-                    
-                    {!canSignContract(contract) && workOrders.length > 0 && (
-                      <span className="text-xs text-muted-foreground ml-auto">
-                        {!areAllWorkOrdersCompleted(contract) 
-                          ? 'Complete all work orders to finalize'
-                          : !areAllWorkOrdersPaid(contract)
-                            ? 'Pay all work orders to finalize'
-                            : ''
-                        }
-                      </span>
-                    )}
-                  </div>
-                </div>
-              </div>
-            )})}
+              )
+            })}
           </CardContent>
         </Card>
       )}
@@ -754,7 +751,7 @@ export function ClientBranchContracts({ branchId, projectId }: ClientBranchContr
                     <ClipboardList className="h-4 w-4" />
                     Work Orders
                   </h3>
-                  <ContractWorkOrdersDisplay 
+                  <ContractWorkOrdersDisplay
                     workOrders={selectedContract.project.checklists.flatMap(c => c.items)}
                     showStatus={true}
                   />

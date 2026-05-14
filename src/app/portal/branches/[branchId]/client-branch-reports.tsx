@@ -40,10 +40,9 @@ interface Checklist {
 
 interface ClientBranchReportsProps {
   branchId: string
-  projectId?: string | null
 }
 
-export function ClientBranchReports({ branchId, projectId }: ClientBranchReportsProps) {
+export function ClientBranchReports({ branchId }: ClientBranchReportsProps) {
   const [reports, setReports] = useState<Checklist[]>([])
   const [loading, setLoading] = useState(true)
   const [selectedReport, setSelectedReport] = useState<Checklist | null>(null)
@@ -55,11 +54,7 @@ export function ClientBranchReports({ branchId, projectId }: ClientBranchReports
       if (response.ok) {
         const data = await response.json()
         // Client only sees completed checklists (reports)
-        let filtered = data.filter((c: Checklist) => c.status === 'COMPLETED')
-        // Also filter by projectId if selected
-        if (projectId) {
-          filtered = filtered.filter((c: Checklist & { projectId?: string }) => c.projectId === projectId)
-        }
+        const filtered = data.filter((c: Checklist) => c.status === 'COMPLETED')
         setReports(filtered)
       }
     } catch (err) {
@@ -71,7 +66,7 @@ export function ClientBranchReports({ branchId, projectId }: ClientBranchReports
 
   useEffect(() => {
     fetchReports()
-  }, [branchId, projectId])
+  }, [branchId])
 
   const handleViewReport = (report: Checklist) => {
     setSelectedReport(report)
