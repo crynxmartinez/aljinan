@@ -63,10 +63,9 @@ interface Quotation {
 
 interface QuotationsListProps {
   branchId: string
-  projectId?: string | null
 }
 
-export function QuotationsList({ branchId, projectId }: QuotationsListProps) {
+export function QuotationsList({ branchId }: QuotationsListProps) {
   const router = useRouter()
   const [quotations, setQuotations] = useState<Quotation[]>([])
   const [loading, setLoading] = useState(true)
@@ -89,11 +88,7 @@ export function QuotationsList({ branchId, projectId }: QuotationsListProps) {
       const response = await fetch(`/api/branches/${branchId}/quotations`)
       if (response.ok) {
         const data = await response.json()
-        // Filter by projectId if one is selected
-        const filtered = projectId 
-          ? data.filter((q: Quotation & { projectId?: string }) => q.projectId === projectId)
-          : data
-        setQuotations(filtered)
+        setQuotations(data)
       }
     } catch (err) {
       console.error('Failed to fetch quotations:', err)
@@ -104,7 +99,7 @@ export function QuotationsList({ branchId, projectId }: QuotationsListProps) {
 
   useEffect(() => {
     fetchQuotations()
-  }, [branchId, projectId])
+  }, [branchId])
 
   const calculateTotals = (items: QuotationItem[], taxRate: number) => {
     const subtotal = items.reduce((sum, item) => sum + (item.quantity * item.unitPrice), 0)
@@ -116,11 +111,11 @@ export function QuotationsList({ branchId, projectId }: QuotationsListProps) {
   const handleItemChange = (index: number, field: keyof QuotationItem, value: string | number) => {
     const updatedItems = [...newQuotation.items]
     updatedItems[index] = { ...updatedItems[index], [field]: value }
-    
+
     if (field === 'quantity' || field === 'unitPrice') {
       updatedItems[index].total = updatedItems[index].quantity * updatedItems[index].unitPrice
     }
-    
+
     setNewQuotation({ ...newQuotation, items: updatedItems })
   }
 
@@ -154,7 +149,6 @@ export function QuotationsList({ branchId, projectId }: QuotationsListProps) {
           taxRate: newQuotation.taxRate,
           validUntil: newQuotation.validUntil || null,
           items: newQuotation.items.filter(item => item.description),
-          projectId: projectId || null,
         }),
       })
 
@@ -328,7 +322,7 @@ export function QuotationsList({ branchId, projectId }: QuotationsListProps) {
                             <Send className="mr-2 h-4 w-4" />
                             Send to Client
                           </DropdownMenuItem>
-                          <DropdownMenuItem 
+                          <DropdownMenuItem
                             onClick={() => handleDeleteQuotation(quotation.id)}
                             className="text-destructive"
                           >
@@ -484,8 +478,8 @@ export function QuotationsList({ branchId, projectId }: QuotationsListProps) {
               <Button type="button" variant="outline" onClick={() => setCreateDialogOpen(false)}>
                 Cancel
               </Button>
-              <Button 
-                type="button" 
+              <Button
+                type="button"
                 variant="outline"
                 disabled={creating}
                 onClick={(e) => handleCreateQuotation(e, false)}
@@ -493,8 +487,8 @@ export function QuotationsList({ branchId, projectId }: QuotationsListProps) {
                 {creating && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
                 Save as Draft
               </Button>
-              <Button 
-                type="submit" 
+              <Button
+                type="submit"
                 disabled={creating}
                 onClick={(e) => {
                   e.preventDefault()
@@ -605,7 +599,7 @@ export function QuotationsList({ branchId, projectId }: QuotationsListProps) {
 
               {selectedQuotation.status === 'DRAFT' && (
                 <div className="flex gap-2 pt-4 border-t">
-                  <Button 
+                  <Button
                     onClick={() => {
                       handleSendQuotation(selectedQuotation.id)
                       setDetailDialogOpen(false)

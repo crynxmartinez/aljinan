@@ -104,16 +104,6 @@ interface WorkOrder {
   recurringType?: 'ONCE' | 'MONTHLY' | 'QUARTERLY'
 }
 
-interface Project {
-  id: string
-  title: string
-  status: string
-  totalValue: number
-  startDate: string | null
-  endDate: string | null
-  workOrders: WorkOrder[]
-}
-
 interface RequestPhoto {
   id: string
   url: string
@@ -145,7 +135,6 @@ interface Request {
   completedAt: string | null
   createdAt: string
   updatedAt: string
-  projectId?: string
   requestNumber?: number | null
   // Service request fields
   workOrderType?: 'SERVICE' | 'INSPECTION' | 'MAINTENANCE' | 'INSTALLATION' | 'STICKER_INSPECTION' | null
@@ -445,24 +434,13 @@ function WorkOrdersGroupedViewContractor({
 export function RequestsList({ branchId, userRole, userId }: RequestsListProps) {
   const router = useRouter()
   const [requests, setRequests] = useState<Request[]>([])
-  const [projects, setProjects] = useState<Project[]>([])
   const [loading, setLoading] = useState(true)
   const [createDialogOpen, setCreateDialogOpen] = useState(false)
   const [detailDialogOpen, setDetailDialogOpen] = useState(false)
-  const [projectDialogOpen, setProjectDialogOpen] = useState(false)
   const [selectedRequest, setSelectedRequest] = useState<Request | null>(null)
-  const [selectedProject, setSelectedProject] = useState<Project | null>(null)
   const [creating, setCreating] = useState(false)
-  const [saving, setSaving] = useState(false)
   const [error, setError] = useState('')
   const [successMessage, setSuccessMessage] = useState('')
-
-  // Work order editing state
-  const [editingWorkOrderId, setEditingWorkOrderId] = useState<string | null>(null)
-  const [editWorkOrder, setEditWorkOrder] = useState<{
-    price: string
-    scheduledDate: string
-  }>({ price: '', scheduledDate: '' })
 
   const [newRequest, setNewRequest] = useState<{
     title: string
@@ -567,8 +545,6 @@ export function RequestsList({ branchId, userRole, userId }: RequestsListProps) 
       const response = await fetch(`/api/branches/${branchId}/requests`)
       if (response.ok) {
         const data = await response.json()
-        // Show all requests for this branch - don't filter by projectId
-        // Standalone service requests have no projectId
         setRequests(data)
       }
     } catch (err) {
@@ -582,18 +558,6 @@ export function RequestsList({ branchId, userRole, userId }: RequestsListProps) 
   // Once accepted (SCHEDULED+), they become work orders and appear in Kanban
   const activeRequestStatuses = ['REQUESTED', 'QUOTED']
   const filteredRequests = requests.filter(r => activeRequestStatuses.includes(r.status))
-
-  const fetchProjects = async () => {
-    try {
-      const response = await fetch(`/api/branches/${branchId}/projects`)
-      if (response.ok) {
-        const data = await response.json()
-        setProjects(data)
-      }
-    } catch (err) {
-      console.error('Failed to fetch projects:', err)
-    }
-  }
 
   const fetchTeamMembers = async () => {
     if (userRole !== 'CONTRACTOR') return
@@ -610,126 +574,8 @@ export function RequestsList({ branchId, userRole, userId }: RequestsListProps) 
 
   useEffect(() => {
     fetchRequests()
-    fetchProjects()
     fetchTeamMembers()
   }, [branchId])
-
-  // Get project for a request
-  const getProjectForRequest = (request: Request): Project | undefined => {
-    if (request.projectId) {
-      return projects.find(p => p.id === request.projectId)
-    }
-    return undefined
-  }
-
-  // Start editing a work order
-  const startEditWorkOrder = (wo: WorkOrder) => {
-    setEditingWorkOrderId(wo.id)
-    setEditWorkOrder({
-      price: wo.price?.toString() || '',
-      scheduledDate: wo.scheduledDate ? wo.scheduledDate.split('T')[0] : '',
-    })
-  }
-
-  // Save work order changes
-  const handleSaveWorkOrder = async (workOrderId: string) => {
-    if (!selectedProject) return
-    setSaving(true)
-    setError('')
-    try {
-      const payload = {
-        price: editWorkOrder.price || null,
-        scheduledDate: editWorkOrder.scheduledDate || null,
-      }
-      console.log('Saving work order:', workOrderId, payload)
-
-      const response = await fetch(`/api/projects/${selectedProject.id}/work-orders/${workOrderId}`, {
-        method: 'PATCH',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(payload),
-      })
-
-      const data = await response.json()
-      console.log('Response:', response.status, data)
-
-      if (!response.ok) {
-        throw new Error(data.error || 'Failed to update work order')
-      }
-
-      setEditingWorkOrderId(null)
-      // Refresh projects and update selected project
-      const updatedProjects = await fetch(`/api/branches/${branchId}/projects`).then(r => r.json())
-      setProjects(updatedProjects)
-      const updated = updatedProjects.find((p: Project) => p.id === selectedProject.id)
-      if (updated) setSelectedProject(updated)
-    } catch (err) {
-      console.error('Save error:', err)
-      setError(err instanceof Error ? err.message : 'An error occurred')
-    } finally {
-      setSaving(false)
-    }
-  }
-
-  // Save group price - applies same price to all work orders in the group
-  // For recurring groups, also recalculates occurrence dates based on start date
-  const handleSaveGroupPrice = async (groupName: string, price: string, scheduledDate: string, workOrderIds: string[]) => {
-    if (!selectedProject) return
-    setSaving(true)
-    setError('')
-    try {
-      const isSingleItem = workOrderIds.length === 1
-
-      // Find the work orders to get their recurring type
-      const workOrders = selectedProject.workOrders?.filter(wo => workOrderIds.includes(wo.id)) || []
-      const recurringType = workOrders[0]?.recurringType || 'ONCE'
-
-      // For recurring groups, calculate dates based on start date and interval
-      const startDate = scheduledDate ? new Date(scheduledDate) : null
-      const interval = recurringType === 'MONTHLY' ? 1 : recurringType === 'QUARTERLY' ? 3 : 0
-
-      for (let i = 0; i < workOrderIds.length; i++) {
-        const workOrderId = workOrderIds[i]
-        const payload: { price?: string; scheduledDate?: string } = {}
-
-        if (price) payload.price = price
-
-        // Calculate date for this occurrence
-        if (startDate && scheduledDate) {
-          if (isSingleItem || recurringType === 'ONCE') {
-            // Single item - use the date directly
-            payload.scheduledDate = scheduledDate
-          } else {
-            // Recurring group - calculate date based on occurrence index
-            const occurrenceDate = new Date(startDate)
-            occurrenceDate.setMonth(occurrenceDate.getMonth() + (i * interval))
-            payload.scheduledDate = occurrenceDate.toISOString().split('T')[0]
-          }
-        }
-
-        const response = await fetch(`/api/projects/${selectedProject.id}/work-orders/${workOrderId}`, {
-          method: 'PATCH',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify(payload),
-        })
-
-        if (!response.ok) {
-          const data = await response.json()
-          throw new Error(data.error || 'Failed to update work order')
-        }
-      }
-
-      // Refresh projects and update selected project
-      const updatedProjects = await fetch(`/api/branches/${branchId}/projects`).then(r => r.json())
-      setProjects(updatedProjects)
-      const updated = updatedProjects.find((p: Project) => p.id === selectedProject.id)
-      if (updated) setSelectedProject(updated)
-    } catch (err) {
-      console.error('Save group error:', err)
-      setError(err instanceof Error ? err.message : 'An error occurred')
-    } finally {
-      setSaving(false)
-    }
-  }
 
   const handleCreateRequest = async (e: React.FormEvent) => {
     e.preventDefault()
@@ -1078,14 +924,8 @@ export function RequestsList({ branchId, userRole, userId }: RequestsListProps) 
                   key={request.id}
                   className={`flex items-start justify-between p-4 border-2 rounded-lg transition-colors cursor-pointer ${request.status === 'QUOTED' ? 'border-purple-500 bg-purple-50 shadow-md ring-2 ring-purple-200' : 'border-gray-200 hover:bg-muted/50'}`}
                   onClick={() => {
-                    const project = getProjectForRequest(request)
-                    if (project && request.createdByRole === 'CONTRACTOR') {
-                      setSelectedProject(project)
-                      setProjectDialogOpen(true)
-                    } else {
-                      setSelectedRequest(request)
-                      setDetailDialogOpen(true)
-                    }
+                    setSelectedRequest(request)
+                    setDetailDialogOpen(true)
                   }}
                 >
                   <div className="space-y-1 flex-1">
@@ -1657,149 +1497,6 @@ export function RequestsList({ branchId, userRole, userId }: RequestsListProps) 
               </div>
             </div>
           )}
-        </DialogContent>
-      </Dialog>
-
-      {/* Project Proposal Dialog - For contractors to view/edit work orders */}
-      <Dialog open={projectDialogOpen} onOpenChange={(open) => { if (!open) { setProjectDialogOpen(false); setSelectedProject(null); setEditingWorkOrderId(null); } }}>
-        <DialogContent className="sm:max-w-[900px] max-h-[90vh] overflow-y-auto">
-          <DialogHeader>
-            <DialogTitle className="text-xl">{selectedProject?.title}</DialogTitle>
-            <DialogDescription>
-              Project proposal - Review and manage work orders
-            </DialogDescription>
-          </DialogHeader>
-
-          {error && (
-            <div className="bg-destructive/10 text-destructive p-3 rounded-lg text-sm">
-              {error}
-            </div>
-          )}
-
-          {successMessage && (
-            <div className="bg-green-100 text-green-800 p-3 rounded-lg text-sm flex items-center gap-2">
-              <CheckCircle className="h-4 w-4" />
-              {successMessage}
-            </div>
-          )}
-
-          {selectedProject && (() => {
-            // Calculate total from work orders directly
-            const calculatedTotal = selectedProject.workOrders?.reduce((sum, wo) => sum + (wo.price || 0), 0) || 0
-            return (
-              <div className="space-y-6">
-                {/* Project Info */}
-                <div className="grid grid-cols-2 md:grid-cols-4 gap-4 p-4 bg-muted/30 rounded-lg">
-                  <div>
-                    <p className="text-xs text-muted-foreground">Status</p>
-                    <Badge className={selectedProject.status === 'PENDING' ? 'bg-amber-100 text-amber-700' : 'bg-green-100 text-green-700'}>
-                      {selectedProject.status === 'PENDING' ? 'Pending Client Approval' : selectedProject.status}
-                    </Badge>
-                  </div>
-                  {selectedProject.startDate && (
-                    <div>
-                      <p className="text-xs text-muted-foreground">Start Date</p>
-                      <p className="font-medium text-sm">{new Date(selectedProject.startDate).toLocaleDateString()}</p>
-                    </div>
-                  )}
-                  {selectedProject.endDate && (
-                    <div>
-                      <p className="text-xs text-muted-foreground">End Date</p>
-                      <p className="font-medium text-sm">{new Date(selectedProject.endDate).toLocaleDateString()}</p>
-                    </div>
-                  )}
-                  <div>
-                    <p className="text-xs text-muted-foreground">Total Value</p>
-                    <p className="font-bold text-lg text-primary">
-                      SAR {calculatedTotal.toLocaleString('en-US', { minimumFractionDigits: 2 })}
-                    </p>
-                  </div>
-                </div>
-
-                {/* Work Orders Table */}
-                <div>
-                  <div className="flex items-center justify-between mb-3">
-                    <h3 className="font-semibold">Work Orders</h3>
-                    {selectedProject.workOrders?.some(wo => wo.price === null) && (
-                      <Badge variant="outline" className="text-orange-600 border-orange-300">
-                        <AlertCircle className="h-3 w-3 mr-1" />
-                        Some items need pricing
-                      </Badge>
-                    )}
-                  </div>
-
-                  {selectedProject.workOrders && selectedProject.workOrders.length > 0 ? (
-                    <>
-                      <WorkOrdersGroupedViewContractor
-                        workOrders={selectedProject.workOrders}
-                        editingWorkOrderId={editingWorkOrderId}
-                        editWorkOrder={editWorkOrder}
-                        saving={saving}
-                        onStartEdit={startEditWorkOrder}
-                        onSave={handleSaveWorkOrder}
-                        onCancel={() => setEditingWorkOrderId(null)}
-                        onEditChange={(field, value) => setEditWorkOrder({ ...editWorkOrder, [field]: value })}
-                        onSaveGroupPrice={handleSaveGroupPrice}
-                      />
-
-                      {/* Total Row */}
-                      <div className="flex items-center justify-between p-4 bg-primary/5 border rounded-lg mt-3">
-                        <span className="font-semibold">Total</span>
-                        <span className="text-xl font-bold">
-                          SAR {calculatedTotal.toLocaleString('en-US', { minimumFractionDigits: 2 })}
-                        </span>
-                      </div>
-                    </>
-                  ) : (
-                    <div className="text-center py-8 text-muted-foreground border rounded-lg">
-                      No work orders defined yet
-                    </div>
-                  )}
-                </div>
-
-                {/* Status Info */}
-                {selectedProject.status === 'PENDING' && (
-                  <div className="p-4 bg-amber-50 border border-amber-200 rounded-lg">
-                    <p className="text-sm text-amber-800">
-                      <strong>Waiting for client approval.</strong> Make sure all work orders have prices set.
-                      The client cannot accept the project until all items are priced.
-                    </p>
-                  </div>
-                )}
-
-                {selectedProject.status === 'ACTIVE' && (
-                  <div className="p-4 bg-green-50 border border-green-200 rounded-lg">
-                    <p className="text-sm text-green-800">
-                      <strong>Project is active.</strong> Work is in progress. Manage work orders in the Checklist tab.
-                    </p>
-                  </div>
-                )}
-              </div>
-            )
-          })()}
-
-          <DialogFooter className="flex gap-2">
-            <Button variant="outline" onClick={() => { setProjectDialogOpen(false); setSelectedProject(null); }}>
-              Close
-            </Button>
-            {selectedProject?.status === 'PENDING' && (
-              <Button
-                onClick={() => {
-                  setSuccessMessage('Proposal updated! Client will see the changes when they view the proposal.')
-                  setTimeout(() => {
-                    setSuccessMessage('')
-                    setProjectDialogOpen(false)
-                    setSelectedProject(null)
-                  }, 2000)
-                }}
-                disabled={selectedProject?.workOrders?.some(wo => wo.price === null)}
-                className="bg-primary"
-              >
-                <CheckCircle className="mr-2 h-4 w-4" />
-                Send to Client
-              </Button>
-            )}
-          </DialogFooter>
         </DialogContent>
       </Dialog>
 

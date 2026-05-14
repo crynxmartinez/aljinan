@@ -28,7 +28,6 @@ interface Activity {
 
 interface ActivityPanelProps {
   branchId: string
-  projectId?: string | null
   isOpen: boolean
   onClose: () => void
 }
@@ -43,7 +42,7 @@ const activityIcons: Record<string, React.ReactNode> = {
   COMPLETED: <CheckCircle className="h-4 w-4 text-emerald-600" />,
 }
 
-export function ActivityPanel({ branchId, projectId, isOpen, onClose }: ActivityPanelProps) {
+export function ActivityPanel({ branchId, isOpen, onClose }: ActivityPanelProps) {
   const [activities, setActivities] = useState<Activity[]>([])
   const [loading, setLoading] = useState(false)
   const [comment, setComment] = useState('')
@@ -51,10 +50,9 @@ export function ActivityPanel({ branchId, projectId, isOpen, onClose }: Activity
   const scrollRef = useRef<HTMLDivElement>(null)
 
   const fetchActivities = async () => {
-    if (!projectId) return
     setLoading(true)
     try {
-      const response = await fetch(`/api/branches/${branchId}/projects/${projectId}/activities`)
+      const response = await fetch(`/api/branches/${branchId}/activities`)
       if (response.ok) {
         const data = await response.json()
         setActivities(data)
@@ -67,18 +65,18 @@ export function ActivityPanel({ branchId, projectId, isOpen, onClose }: Activity
   }
 
   useEffect(() => {
-    if (isOpen && projectId) {
+    if (isOpen) {
       fetchActivities()
     }
-  }, [isOpen, projectId, branchId])
+  }, [isOpen, branchId])
 
   const handleSendComment = async (e: React.FormEvent) => {
     e.preventDefault()
-    if (!comment.trim() || !projectId) return
+    if (!comment.trim()) return
 
     setSending(true)
     try {
-      const response = await fetch(`/api/branches/${branchId}/projects/${projectId}/activities`, {
+      const response = await fetch(`/api/branches/${branchId}/activities`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ content: comment }),
@@ -126,14 +124,7 @@ export function ActivityPanel({ branchId, projectId, isOpen, onClose }: Activity
       </div>
 
       {/* Content */}
-      {!projectId ? (
-        <div className="flex-1 flex items-center justify-center p-4 text-center">
-          <div className="text-muted-foreground">
-            <MessageSquare className="h-12 w-12 mx-auto mb-2 opacity-30" />
-            <p>Select a project to view activity</p>
-          </div>
-        </div>
-      ) : loading ? (
+      {loading ? (
         <div className="flex-1 flex items-center justify-center">
           <Loader2 className="h-6 w-6 animate-spin text-muted-foreground" />
         </div>

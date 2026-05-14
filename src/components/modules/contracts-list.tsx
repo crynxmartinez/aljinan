@@ -71,17 +71,6 @@ interface Checklist {
   items: WorkOrder[]
 }
 
-interface Project {
-  id: string
-  title: string
-  description: string | null
-  status: string
-  startDate: string | null
-  endDate: string | null
-  totalValue: number
-  checklists: Checklist[]
-}
-
 interface Contract {
   id: string
   title: string
@@ -100,7 +89,7 @@ interface Contract {
   totalValue: number | null
   status: 'DRAFT' | 'PENDING_SIGNATURE' | 'SIGNED' | 'COMPLETED' | 'EXPIRED' | 'TERMINATED'
   createdAt: string
-  project: Project | null
+  checklist: Checklist | null
 }
 
 interface ContractsListProps {
@@ -399,7 +388,7 @@ export function ContractsList({ branchId }: ContractsListProps) {
           ) : (
             <div className="space-y-4">
               {contracts.map((contract) => {
-                const workOrderCount = contract.project?.checklists.flatMap(c => c.items).length || 0
+                const workOrderCount = contract.checklist?.items.length || 0
 
                 return (
                   <div
@@ -845,14 +834,14 @@ export function ContractsList({ branchId }: ContractsListProps) {
               </div>
 
               {/* Work Orders Section */}
-              {selectedContract.project && selectedContract.project.checklists.length > 0 && (
+              {selectedContract.checklist && selectedContract.checklist.items.length > 0 && (
                 <div className="space-y-3">
                   <h3 className="font-semibold text-sm flex items-center gap-2">
                     <ClipboardList className="h-4 w-4" />
                     Work Orders
                   </h3>
                   <ContractWorkOrdersDisplay
-                    workOrders={selectedContract.project.checklists.flatMap(c => c.items)}
+                    workOrders={selectedContract.checklist.items}
                     showStatus={true}
                   />
                 </div>

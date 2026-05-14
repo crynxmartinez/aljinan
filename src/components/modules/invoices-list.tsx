@@ -64,10 +64,9 @@ interface Invoice {
 
 interface InvoicesListProps {
   branchId: string
-  projectId?: string | null
 }
 
-export function InvoicesList({ branchId, projectId }: InvoicesListProps) {
+export function InvoicesList({ branchId }: InvoicesListProps) {
   const router = useRouter()
   const [invoices, setInvoices] = useState<Invoice[]>([])
   const [loading, setLoading] = useState(true)
@@ -90,10 +89,7 @@ export function InvoicesList({ branchId, projectId }: InvoicesListProps) {
       const response = await fetch(`/api/branches/${branchId}/invoices`)
       if (response.ok) {
         const data = await response.json()
-        const filtered = projectId 
-          ? data.filter((i: Invoice & { projectId?: string }) => i.projectId === projectId)
-          : data
-        setInvoices(filtered)
+        setInvoices(data)
       }
     } catch (err) {
       console.error('Failed to fetch invoices:', err)
@@ -104,7 +100,7 @@ export function InvoicesList({ branchId, projectId }: InvoicesListProps) {
 
   useEffect(() => {
     fetchInvoices()
-  }, [branchId, projectId])
+  }, [branchId])
 
   const calculateTotals = (items: InvoiceItem[], taxRate: number) => {
     const subtotal = items.reduce((sum, item) => sum + (item.quantity * item.unitPrice), 0)
@@ -151,7 +147,6 @@ export function InvoicesList({ branchId, projectId }: InvoicesListProps) {
           taxRate: newInvoice.taxRate,
           dueDate: newInvoice.dueDate || null,
           items: newInvoice.items.filter(item => item.description),
-          projectId: projectId || null,
         }),
       })
 
@@ -333,7 +328,7 @@ export function InvoicesList({ branchId, projectId }: InvoicesListProps) {
                             <Send className="mr-2 h-4 w-4" />
                             Send to Client
                           </DropdownMenuItem>
-                          <DropdownMenuItem 
+                          <DropdownMenuItem
                             onClick={() => handleDeleteInvoice(invoice.id)}
                             className="text-destructive"
                           >
@@ -490,8 +485,8 @@ export function InvoicesList({ branchId, projectId }: InvoicesListProps) {
               <Button type="button" variant="outline" onClick={() => setCreateDialogOpen(false)}>
                 Cancel
               </Button>
-              <Button 
-                type="button" 
+              <Button
+                type="button"
                 variant="outline"
                 disabled={creating}
                 onClick={(e) => handleCreateInvoice(e, false)}
@@ -499,8 +494,8 @@ export function InvoicesList({ branchId, projectId }: InvoicesListProps) {
                 {creating && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
                 Save as Draft
               </Button>
-              <Button 
-                type="submit" 
+              <Button
+                type="submit"
                 disabled={creating}
                 onClick={(e) => {
                   e.preventDefault()
@@ -606,7 +601,7 @@ export function InvoicesList({ branchId, projectId }: InvoicesListProps) {
 
               <div className="flex gap-2 pt-4 border-t">
                 {selectedInvoice.status === 'DRAFT' && (
-                  <Button 
+                  <Button
                     onClick={() => {
                       handleSendInvoice(selectedInvoice.id)
                       setDetailDialogOpen(false)
@@ -618,7 +613,7 @@ export function InvoicesList({ branchId, projectId }: InvoicesListProps) {
                   </Button>
                 )}
                 {(selectedInvoice.status === 'SENT' || selectedInvoice.status === 'PARTIAL') && (
-                  <Button 
+                  <Button
                     onClick={() => {
                       handleMarkPaid(selectedInvoice.id)
                       setDetailDialogOpen(false)
