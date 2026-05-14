@@ -4,10 +4,10 @@ import { useState, useEffect, useRef } from 'react'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { ScrollArea } from '@/components/ui/scroll-area'
-import { 
-  MessageSquare, 
-  X, 
-  Send, 
+import {
+  MessageSquare,
+  X,
+  Send,
   Loader2,
   Clock,
   CheckCircle,
@@ -28,7 +28,7 @@ interface Activity {
 
 interface ActivityPanelProps {
   branchId: string
-  projectId: string | null
+  projectId?: string | null
   isOpen: boolean
   onClose: () => void
 }
