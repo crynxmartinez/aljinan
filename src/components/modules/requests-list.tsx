@@ -170,7 +170,6 @@ interface Request {
 interface RequestsListProps {
   branchId: string
   userRole: 'CONTRACTOR' | 'CLIENT'
-  projectId?: string | null
   userId?: string
 }
 
@@ -443,7 +442,7 @@ function WorkOrdersGroupedViewContractor({
   )
 }
 
-export function RequestsList({ branchId, userRole, projectId, userId }: RequestsListProps) {
+export function RequestsList({ branchId, userRole, userId }: RequestsListProps) {
   const router = useRouter()
   const [requests, setRequests] = useState<Request[]>([])
   const [projects, setProjects] = useState<Project[]>([])
@@ -613,7 +612,7 @@ export function RequestsList({ branchId, userRole, projectId, userId }: Requests
     fetchRequests()
     fetchProjects()
     fetchTeamMembers()
-  }, [branchId, projectId])
+  }, [branchId])
 
   // Get project for a request
   const getProjectForRequest = (request: Request): Project | undefined => {

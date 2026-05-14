@@ -55,10 +55,9 @@ interface Appointment {
 
 interface AppointmentsListProps {
   branchId: string
-  projectId?: string | null
 }
 
-export function AppointmentsList({ branchId, projectId }: AppointmentsListProps) {
+export function AppointmentsList({ branchId }: AppointmentsListProps) {
   const router = useRouter()
   const [appointments, setAppointments] = useState<Appointment[]>([])
   const [loading, setLoading] = useState(true)
@@ -82,10 +81,7 @@ export function AppointmentsList({ branchId, projectId }: AppointmentsListProps)
       const response = await fetch(`/api/branches/${branchId}/appointments`)
       if (response.ok) {
         const data = await response.json()
-        const filtered = projectId
-          ? data.filter((a: Appointment & { projectId?: string }) => a.projectId === projectId)
-          : data
-        setAppointments(filtered)
+        setAppointments(data)
       }
     } catch (err) {
       console.error('Failed to fetch appointments:', err)
@@ -96,7 +92,7 @@ export function AppointmentsList({ branchId, projectId }: AppointmentsListProps)
 
   useEffect(() => {
     fetchAppointments()
-  }, [branchId, projectId])
+  }, [branchId])
 
   const handleCreateAppointment = async (e: React.FormEvent, confirmImmediately: boolean = false) => {
     e.preventDefault()
@@ -115,7 +111,6 @@ export function AppointmentsList({ branchId, projectId }: AppointmentsListProps)
           startTime: newAppointment.startTime,
           endTime: newAppointment.endTime || null,
           assignedTo: newAppointment.assignedTo || null,
-          projectId: projectId || null,
         }),
       })
 
@@ -243,7 +238,7 @@ export function AppointmentsList({ branchId, projectId }: AppointmentsListProps)
           </div>
         </div>
 
-        <CalendarView branchId={branchId} projectId={projectId} />
+        <CalendarView branchId={branchId} />
       </div>
 
       {/* Create Appointment Dialog */}

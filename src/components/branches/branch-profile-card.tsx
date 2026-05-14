@@ -4,7 +4,7 @@ import { useState } from 'react'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
 import { Badge } from '@/components/ui/badge'
-import { 
+import {
   MapPin, Phone, Building2, FileText, Calendar, Edit,
   AlertTriangle, Layers, Ruler
 } from 'lucide-react'
@@ -50,15 +50,10 @@ interface BranchProfileCardProps {
     cdCertificateExpiry: string | null
     cdCertificateUrl: string | null
   }
-  activeProject?: {
-    title: string
-    startDate: string | null
-    endDate: string | null
-  } | null
   canEdit: boolean
 }
 
-export function BranchProfileCard({ branch, activeProject, canEdit }: BranchProfileCardProps) {
+export function BranchProfileCard({ branch, canEdit }: BranchProfileCardProps) {
   const [editOpen, setEditOpen] = useState(false)
 
   const formatDate = (dateString: string | null) => {
@@ -220,9 +215,9 @@ export function BranchProfileCard({ branch, activeProject, canEdit }: BranchProf
                 <FileText className="h-4 w-4 text-muted-foreground mt-0.5" />
                 <div>
                   <p className="text-xs text-muted-foreground">Certificate Document</p>
-                  <a 
-                    href={branch.cdCertificateUrl} 
-                    target="_blank" 
+                  <a
+                    href={branch.cdCertificateUrl}
+                    target="_blank"
                     rel="noopener noreferrer"
                     className="text-sm text-primary hover:underline font-medium"
                   >
@@ -233,31 +228,6 @@ export function BranchProfileCard({ branch, activeProject, canEdit }: BranchProf
             )}
           </div>
 
-          {/* Active Project / Contract Period */}
-          <div className="pt-4 border-t space-y-3">
-            <h4 className="text-sm font-semibold text-muted-foreground uppercase tracking-wide">
-              Active Contract
-            </h4>
-            {activeProject ? (
-              <div className="flex items-start gap-3">
-                <Calendar className="h-4 w-4 text-muted-foreground mt-0.5" />
-                <div>
-                  <p className="font-medium text-sm">{activeProject.title}</p>
-                  <p className="text-sm text-muted-foreground">
-                    {activeProject.startDate || activeProject.endDate ? (
-                      <>
-                        {formatDate(activeProject.startDate) || 'Not set'} → {formatDate(activeProject.endDate) || 'Not set'}
-                      </>
-                    ) : (
-                      'No dates set'
-                    )}
-                  </p>
-                </div>
-              </div>
-            ) : (
-              <p className="text-sm text-muted-foreground italic">No active contract</p>
-            )}
-          </div>
 
           {/* Notes */}
           <div className="pt-4 border-t">
@@ -279,9 +249,9 @@ export function BranchProfileCard({ branch, activeProject, canEdit }: BranchProf
                   <p className="text-xs text-amber-600 mt-1">
                     Complete your facility profile for Civil Defense compliance.
                   </p>
-                  <Button 
-                    variant="outline" 
-                    size="sm" 
+                  <Button
+                    variant="outline"
+                    size="sm"
                     className="mt-3 bg-white"
                     onClick={() => setEditOpen(true)}
                   >

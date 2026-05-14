@@ -188,7 +188,6 @@ export function ClientBranchWorkspace({ branchId, branch }: ClientBranchWorkspac
               <div className="w-full max-w-2xl">
                 <BranchProfileCard
                   branch={branch}
-                  activeProject={null}
                   canEdit={true}
                 />
               </div>

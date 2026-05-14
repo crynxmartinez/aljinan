@@ -41,7 +41,6 @@ interface ScheduledTask {
 
 interface CalendarViewProps {
   branchId: string
-  projectId?: string | null
 }
 
 const STAGE_COLORS: Record<ChecklistItemStage, string> = {
@@ -65,7 +64,7 @@ function formatCurrency(amount: number) {
   }).format(amount)
 }
 
-export function CalendarView({ branchId, projectId }: CalendarViewProps) {
+export function CalendarView({ branchId }: CalendarViewProps) {
   const [tasks, setTasks] = useState<ScheduledTask[]>([])
   const [loading, setLoading] = useState(true)
   const [currentDate, setCurrentDate] = useState(new Date())
@@ -75,14 +74,11 @@ export function CalendarView({ branchId, projectId }: CalendarViewProps) {
 
   useEffect(() => {
     fetchTasks()
-  }, [branchId, projectId])
+  }, [branchId])
 
   async function fetchTasks() {
     try {
-      const url = projectId 
-        ? `/api/branches/${branchId}/checklist-items?projectId=${projectId}`
-        : `/api/branches/${branchId}/checklist-items`
-      const response = await fetch(url)
+      const response = await fetch(`/api/branches/${branchId}/checklist-items`)
       if (response.ok) {
         const data = await response.json()
         // Filter only items with scheduled dates
@@ -103,7 +99,7 @@ export function CalendarView({ branchId, projectId }: CalendarViewProps) {
     const lastDay = new Date(year, month + 1, 0)
     const daysInMonth = lastDay.getDate()
     const startingDayOfWeek = firstDay.getDay()
-    
+
     return { daysInMonth, startingDayOfWeek, year, month }
   }
 
@@ -277,13 +273,13 @@ export function CalendarView({ branchId, projectId }: CalendarViewProps) {
         <Card>
           <CardHeader>
             <CardTitle className="text-lg">
-              {selectedDate 
+              {selectedDate
                 ? selectedDate.toLocaleDateString('en-US', { weekday: 'long', month: 'long', day: 'numeric' })
                 : 'Upcoming Tasks'
               }
             </CardTitle>
             <CardDescription>
-              {selectedDate 
+              {selectedDate
                 ? `${tasksForSelectedDate.length} task${tasksForSelectedDate.length !== 1 ? 's' : ''} scheduled`
                 : `Next ${upcomingTasks.length} scheduled tasks`
               }
@@ -318,12 +314,12 @@ export function CalendarView({ branchId, projectId }: CalendarViewProps) {
                             </p>
                           )}
                           <div className="flex items-center gap-2 mt-2">
-                            <Badge 
-                              variant="outline" 
+                            <Badge
+                              variant="outline"
                               className={cn(
                                 'text-xs',
-                                task.type === 'ADHOC' 
-                                  ? 'border-yellow-300 text-yellow-700 bg-yellow-50' 
+                                task.type === 'ADHOC'
+                                  ? 'border-yellow-300 text-yellow-700 bg-yellow-50'
                                   : 'border-blue-300 text-blue-700 bg-blue-50'
                               )}
                             >
@@ -342,8 +338,8 @@ export function CalendarView({ branchId, projectId }: CalendarViewProps) {
             </ScrollArea>
 
             {selectedDate && (
-              <Button 
-                variant="outline" 
+              <Button
+                variant="outline"
                 className="w-full mt-4"
                 onClick={() => setSelectedDate(null)}
               >
@@ -363,21 +359,21 @@ export function CalendarView({ branchId, projectId }: CalendarViewProps) {
               Scheduled work order details
             </DialogDescription>
           </DialogHeader>
-          
+
           {selectedTask && (
             <div className="space-y-4">
               <div>
                 <h4 className="text-sm font-medium text-muted-foreground mb-1">Description</h4>
                 <p className="text-sm">{selectedTask.description}</p>
               </div>
-              
+
               {selectedTask.notes && (
                 <div>
                   <h4 className="text-sm font-medium text-muted-foreground mb-1">Notes</h4>
                   <p className="text-sm">{selectedTask.notes}</p>
                 </div>
               )}
-              
+
               <div className="grid grid-cols-2 gap-4">
                 <div>
                   <h4 className="text-sm font-medium text-muted-foreground mb-1">Scheduled Date</h4>
@@ -391,7 +387,7 @@ export function CalendarView({ branchId, projectId }: CalendarViewProps) {
                     })}
                   </p>
                 </div>
-                
+
                 <div>
                   <h4 className="text-sm font-medium text-muted-foreground mb-1">Status</h4>
                   <Badge className={cn(STAGE_COLORS[selectedTask.stage], 'text-white')}>
@@ -399,7 +395,7 @@ export function CalendarView({ branchId, projectId }: CalendarViewProps) {
                   </Badge>
                 </div>
               </div>
-              
+
               <div className="grid grid-cols-2 gap-4">
                 <div>
                   <h4 className="text-sm font-medium text-muted-foreground mb-1">Type</h4>
@@ -407,7 +403,7 @@ export function CalendarView({ branchId, projectId }: CalendarViewProps) {
                     {selectedTask.type === 'ADHOC' ? 'Ad-hoc' : 'Scheduled'}
                   </Badge>
                 </div>
-                
+
                 {selectedTask.price && (
                   <div>
                     <h4 className="text-sm font-medium text-muted-foreground mb-1">Price</h4>
@@ -417,7 +413,7 @@ export function CalendarView({ branchId, projectId }: CalendarViewProps) {
                   </div>
                 )}
               </div>
-              
+
               {selectedTask.projectTitle && (
                 <div>
                   <h4 className="text-sm font-medium text-muted-foreground mb-1">Project</h4>

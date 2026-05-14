@@ -105,10 +105,9 @@ interface Contract {
 
 interface ContractsListProps {
   branchId: string
-  projectId?: string | null
 }
 
-export function ContractsList({ branchId, projectId }: ContractsListProps) {
+export function ContractsList({ branchId }: ContractsListProps) {
   const router = useRouter()
   const [contracts, setContracts] = useState<Contract[]>([])
   const [loading, setLoading] = useState(true)
@@ -146,10 +145,7 @@ export function ContractsList({ branchId, projectId }: ContractsListProps) {
       const response = await fetch(`/api/branches/${branchId}/contracts`)
       if (response.ok) {
         const data = await response.json()
-        const filtered = projectId 
-          ? data.filter((c: Contract & { projectId?: string }) => c.projectId === projectId)
-          : data
-        setContracts(filtered)
+        setContracts(data)
       }
     } catch (err) {
       console.error('Failed to fetch contracts:', err)
@@ -163,14 +159,14 @@ export function ContractsList({ branchId, projectId }: ContractsListProps) {
       const response = await fetch(`/api/branches/${branchId}/checklist-items`)
       if (response.ok) {
         const data = await response.json()
-        // Filter for standalone work orders (projectTitle is null) - excludes sticker inspections
-        const standalone = data.filter((wo: { projectTitle: string | null; workOrderType: string | null }) => 
-          wo.projectTitle === null && wo.workOrderType !== 'STICKER_INSPECTION'
+        // Filter for standalone work orders (contractTitle is null) - excludes sticker inspections
+        const standalone = data.filter((wo: { contractTitle: string | null; workOrderType: string | null }) =>
+          wo.contractTitle === null && wo.workOrderType !== 'STICKER_INSPECTION'
         )
         setStandaloneWorkOrders(standalone)
         // Filter for sticker inspections
-        const stickers = data.filter((wo: { projectTitle: string | null; workOrderType: string | null }) => 
-          wo.projectTitle === null && wo.workOrderType === 'STICKER_INSPECTION'
+        const stickers = data.filter((wo: { contractTitle: string | null; workOrderType: string | null }) =>
+          wo.contractTitle === null && wo.workOrderType === 'STICKER_INSPECTION'
         )
         setStickerInspections(stickers)
       }
@@ -182,7 +178,7 @@ export function ContractsList({ branchId, projectId }: ContractsListProps) {
   useEffect(() => {
     fetchContracts()
     fetchStandaloneWorkOrders()
-  }, [branchId, projectId])
+  }, [branchId])
 
   const handleCreateContract = async (e: React.FormEvent, activateImmediately: boolean = false) => {
     e.preventDefault()
@@ -202,7 +198,6 @@ export function ContractsList({ branchId, projectId }: ContractsListProps) {
           startDate: newContract.startDate || null,
           endDate: newContract.endDate || null,
           status: activateImmediately ? 'ACTIVE' : 'DRAFT',
-          projectId: projectId || null,
         }),
       })
 
@@ -405,99 +400,99 @@ export function ContractsList({ branchId, projectId }: ContractsListProps) {
             <div className="space-y-4">
               {contracts.map((contract) => {
                 const workOrderCount = contract.project?.checklists.flatMap(c => c.items).length || 0
-                
+
                 return (
-                <div
-                  key={contract.id}
-                  className="p-4 border rounded-lg hover:bg-muted/50 transition-colors cursor-pointer"
-                  onClick={() => {
-                    setSelectedContract(contract)
-                    setDetailDialogOpen(true)
-                  }}
-                >
-                  <div className="flex items-start justify-between">
-                    <div className="space-y-1 flex-1">
-                      <div className="flex items-center gap-2">
-                        <FileText className="h-4 w-4 text-muted-foreground" />
-                        <h4 className="font-medium">{contract.title}</h4>
-                        {getStatusBadge(contract.status)}
-                      </div>
-                      {contract.description && (
-                        <p className="text-sm text-muted-foreground line-clamp-1">
-                          {contract.description}
-                        </p>
-                      )}
-                      <div className="flex items-center gap-4 text-sm text-muted-foreground">
-                        {contract.startDate && contract.endDate && (
-                          <span className="flex items-center gap-1">
-                            <Calendar className="h-3 w-3" />
-                            {new Date(contract.startDate).toLocaleDateString()} - {new Date(contract.endDate).toLocaleDateString()}
-                          </span>
+                  <div
+                    key={contract.id}
+                    className="p-4 border rounded-lg hover:bg-muted/50 transition-colors cursor-pointer"
+                    onClick={() => {
+                      setSelectedContract(contract)
+                      setDetailDialogOpen(true)
+                    }}
+                  >
+                    <div className="flex items-start justify-between">
+                      <div className="space-y-1 flex-1">
+                        <div className="flex items-center gap-2">
+                          <FileText className="h-4 w-4 text-muted-foreground" />
+                          <h4 className="font-medium">{contract.title}</h4>
+                          {getStatusBadge(contract.status)}
+                        </div>
+                        {contract.description && (
+                          <p className="text-sm text-muted-foreground line-clamp-1">
+                            {contract.description}
+                          </p>
                         )}
-                        {contract.totalValue && (
-                          <span className="font-medium text-primary">
-                            SAR {contract.totalValue.toLocaleString('en-US', { minimumFractionDigits: 2 })}
-                          </span>
-                        )}
-                        {workOrderCount > 0 && (
-                          <span className="flex items-center gap-1">
-                            <ClipboardList className="h-3 w-3" />
-                            {workOrderCount} work orders
-                          </span>
-                        )}
+                        <div className="flex items-center gap-4 text-sm text-muted-foreground">
+                          {contract.startDate && contract.endDate && (
+                            <span className="flex items-center gap-1">
+                              <Calendar className="h-3 w-3" />
+                              {new Date(contract.startDate).toLocaleDateString()} - {new Date(contract.endDate).toLocaleDateString()}
+                            </span>
+                          )}
+                          {contract.totalValue && (
+                            <span className="font-medium text-primary">
+                              SAR {contract.totalValue.toLocaleString('en-US', { minimumFractionDigits: 2 })}
+                            </span>
+                          )}
+                          {workOrderCount > 0 && (
+                            <span className="flex items-center gap-1">
+                              <ClipboardList className="h-3 w-3" />
+                              {workOrderCount} work orders
+                            </span>
+                          )}
+                        </div>
                       </div>
                     </div>
+
+                    {/* Indicator Badges */}
+                    <div className="flex items-center gap-2 mt-3 pt-3 border-t">
+                      <Badge
+                        variant="outline"
+                        className={contract.fileUrl
+                          ? "bg-blue-50 text-blue-700 border-blue-200"
+                          : "bg-gray-50 text-gray-500 border-gray-200"
+                        }
+                      >
+                        <FileText className="h-3 w-3 mr-1" />
+                        PDF {contract.fileUrl ? '✓' : '—'}
+                      </Badge>
+                      <Badge
+                        variant="outline"
+                        className={contract.certificateUrl
+                          ? "bg-amber-50 text-amber-700 border-amber-200"
+                          : "bg-gray-50 text-gray-500 border-gray-200"
+                        }
+                      >
+                        <Award className="h-3 w-3 mr-1" />
+                        Cert {contract.certificateUrl ? '✓' : '—'}
+                      </Badge>
+                      <Badge
+                        variant="outline"
+                        className={contract.startSignedAt
+                          ? "bg-green-50 text-green-700 border-green-200"
+                          : "bg-gray-50 text-gray-500 border-gray-200"
+                        }
+                      >
+                        <PenTool className="h-3 w-3 mr-1" />
+                        Signed {contract.startSignedAt ? '✓' : '—'}
+                      </Badge>
+
+                      <div className="flex-1" />
+
+                      <Button
+                        variant="outline"
+                        size="sm"
+                        onClick={(e) => {
+                          e.stopPropagation()
+                          setSelectedContract(contract)
+                          setDetailDialogOpen(true)
+                        }}
+                      >
+                        View Details
+                      </Button>
+                    </div>
                   </div>
-                  
-                  {/* Indicator Badges */}
-                  <div className="flex items-center gap-2 mt-3 pt-3 border-t">
-                    <Badge 
-                      variant="outline" 
-                      className={contract.fileUrl 
-                        ? "bg-blue-50 text-blue-700 border-blue-200" 
-                        : "bg-gray-50 text-gray-500 border-gray-200"
-                      }
-                    >
-                      <FileText className="h-3 w-3 mr-1" />
-                      PDF {contract.fileUrl ? '✓' : '—'}
-                    </Badge>
-                    <Badge 
-                      variant="outline" 
-                      className={contract.certificateUrl 
-                        ? "bg-amber-50 text-amber-700 border-amber-200" 
-                        : "bg-gray-50 text-gray-500 border-gray-200"
-                      }
-                    >
-                      <Award className="h-3 w-3 mr-1" />
-                      Cert {contract.certificateUrl ? '✓' : '—'}
-                    </Badge>
-                    <Badge 
-                      variant="outline" 
-                      className={contract.startSignedAt 
-                        ? "bg-green-50 text-green-700 border-green-200" 
-                        : "bg-gray-50 text-gray-500 border-gray-200"
-                      }
-                    >
-                      <PenTool className="h-3 w-3 mr-1" />
-                      Signed {contract.startSignedAt ? '✓' : '—'}
-                    </Badge>
-                    
-                    <div className="flex-1" />
-                    
-                    <Button
-                      variant="outline"
-                      size="sm"
-                      onClick={(e) => {
-                        e.stopPropagation()
-                        setSelectedContract(contract)
-                        setDetailDialogOpen(true)
-                      }}
-                    >
-                      View Details
-                    </Button>
-                  </div>
-                </div>
-              )
+                )
               })}
             </div>
           )}
@@ -741,8 +736,8 @@ export function ContractsList({ branchId, projectId }: ContractsListProps) {
               <Button type="button" variant="outline" onClick={() => setCreateDialogOpen(false)}>
                 Cancel
               </Button>
-              <Button 
-                type="button" 
+              <Button
+                type="button"
                 variant="outline"
                 disabled={creating}
                 onClick={(e) => handleCreateContract(e, false)}
@@ -750,8 +745,8 @@ export function ContractsList({ branchId, projectId }: ContractsListProps) {
                 {creating && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
                 Save as Draft
               </Button>
-              <Button 
-                type="submit" 
+              <Button
+                type="submit"
                 disabled={creating}
                 onClick={(e) => {
                   e.preventDefault()
@@ -856,7 +851,7 @@ export function ContractsList({ branchId, projectId }: ContractsListProps) {
                     <ClipboardList className="h-4 w-4" />
                     Work Orders
                   </h3>
-                  <ContractWorkOrdersDisplay 
+                  <ContractWorkOrdersDisplay
                     workOrders={selectedContract.project.checklists.flatMap(c => c.items)}
                     showStatus={true}
                   />

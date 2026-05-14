@@ -26,7 +26,7 @@ interface WorkOrder {
   isCompleted: boolean
   checklistId: string
   checklistTitle: string
-  projectTitle: string | null
+  contractTitle: string | null
   paymentStatus: 'UNPAID' | 'PENDING_VERIFICATION' | 'PAID'
   paymentProofUrl: string | null
   paymentProofType: string | null
@@ -34,23 +34,14 @@ interface WorkOrder {
   paymentSubmittedAt: string | null
 }
 
-interface Project {
-  id: string
-  title: string
-  status: string
-  totalValue: number
-}
-
 interface BillingViewProps {
   branchId: string
-  projectId?: string | null
   userRole: 'CONTRACTOR' | 'CLIENT'
 }
 
-export function BillingView({ branchId, projectId, userRole }: BillingViewProps) {
+export function BillingView({ branchId, userRole }: BillingViewProps) {
   const router = useRouter()
   const [workOrders, setWorkOrders] = useState<WorkOrder[]>([])
-  const [projects, setProjects] = useState<Project[]>([])
   const [loading, setLoading] = useState(true)
 
   // Work order payment dialog state
@@ -67,28 +58,17 @@ export function BillingView({ branchId, projectId, userRole }: BillingViewProps)
   const [contractsExpanded, setContractsExpanded] = useState(true)
   const [standaloneExpanded, setStandaloneExpanded] = useState(true)
   const [stickerInspectionsExpanded, setStickerInspectionsExpanded] = useState(true)
-  const [expandedProjects, setExpandedProjects] = useState<string[]>([])
+  const [expandedContracts, setExpandedContracts] = useState<string[]>([])
 
   const fetchData = async () => {
     try {
-      // Fetch work orders
-      const workOrdersUrl = projectId 
-        ? `/api/branches/${branchId}/checklist-items?projectId=${projectId}`
-        : `/api/branches/${branchId}/checklist-items`
-      const woResponse = await fetch(workOrdersUrl)
+      const woResponse = await fetch(`/api/branches/${branchId}/checklist-items`)
       if (woResponse.ok) {
         const woData = await woResponse.json()
         setWorkOrders(woData)
       }
-
-      // Fetch projects
-      const projectsResponse = await fetch(`/api/branches/${branchId}/projects`)
-      if (projectsResponse.ok) {
-        const projData = await projectsResponse.json()
-        setProjects(projData)
-      }
-    } catch (err) {
-      console.error('Failed to fetch billing data:', err)
+    } catch {
+      // Silently fail
     } finally {
       setLoading(false)
     }
@@ -96,12 +76,12 @@ export function BillingView({ branchId, projectId, userRole }: BillingViewProps)
 
   useEffect(() => {
     fetchData()
-  }, [branchId, projectId])
+  }, [branchId])
 
-  // Initialize expanded projects when work orders load
+  // Initialize expanded contracts when work orders load
   useEffect(() => {
-    const projectTitles = [...new Set(workOrders.filter(wo => wo.projectTitle).map(wo => wo.projectTitle as string))]
-    setExpandedProjects(projectTitles)
+    const contractTitles = [...new Set(workOrders.filter(wo => wo.contractTitle).map(wo => wo.contractTitle as string))]
+    setExpandedContracts(contractTitles)
   }, [workOrders])
 
   const formatCurrency = (amount: number | null) => {
@@ -134,10 +114,10 @@ export function BillingView({ branchId, projectId, userRole }: BillingViewProps)
       // Find all work orders with the same payment proof (paid together)
       // They will have the same paymentSubmittedAt timestamp
       const relatedWorkOrders = wo.paymentSubmittedAt
-        ? workOrders.filter(w => 
-            w.paymentStatus === 'PENDING_VERIFICATION' && 
-            w.paymentSubmittedAt === wo.paymentSubmittedAt
-          )
+        ? workOrders.filter(w =>
+          w.paymentStatus === 'PENDING_VERIFICATION' &&
+          w.paymentSubmittedAt === wo.paymentSubmittedAt
+        )
         : [wo]
       setVerifyWorkOrders(relatedWorkOrders)
       setWoVerifyDialogOpen(true)
@@ -150,10 +130,10 @@ export function BillingView({ branchId, projectId, userRole }: BillingViewProps)
     if (fullWo) {
       // Find all work orders with the same payment proof (paid together)
       const relatedWorkOrders = fullWo.paymentSubmittedAt
-        ? workOrders.filter(w => 
-            w.paymentStatus === 'PENDING_VERIFICATION' && 
-            w.paymentSubmittedAt === fullWo.paymentSubmittedAt
-          )
+        ? workOrders.filter(w =>
+          w.paymentStatus === 'PENDING_VERIFICATION' &&
+          w.paymentSubmittedAt === fullWo.paymentSubmittedAt
+        )
         : [fullWo]
       setVerifyWorkOrders(relatedWorkOrders)
       setWoVerifyDialogOpen(true)
@@ -170,18 +150,18 @@ export function BillingView({ branchId, projectId, userRole }: BillingViewProps)
     )
   }
 
-  // Separate work orders into contract (project-based), standalone (ad-hoc), and sticker inspections
-  const contractWorkOrders = workOrders.filter(wo => wo.projectTitle !== null)
-  const standaloneWorkOrders = workOrders.filter(wo => wo.projectTitle === null && wo.workOrderType !== 'STICKER_INSPECTION')
-  const stickerInspectionWorkOrders = workOrders.filter(wo => wo.projectTitle === null && wo.workOrderType === 'STICKER_INSPECTION')
+  // Separate work orders into contract-based, standalone (ad-hoc), and sticker inspections
+  const contractWorkOrders = workOrders.filter(wo => wo.contractTitle !== null)
+  const standaloneWorkOrders = workOrders.filter(wo => wo.contractTitle === null && wo.workOrderType !== 'STICKER_INSPECTION')
+  const stickerInspectionWorkOrders = workOrders.filter(wo => wo.contractTitle === null && wo.workOrderType === 'STICKER_INSPECTION')
 
-  // Group contract work orders by project
-  const workOrdersByProject = contractWorkOrders.reduce((acc, wo) => {
-    const projectTitle = wo.projectTitle || 'Unknown Project'
-    if (!acc[projectTitle]) {
-      acc[projectTitle] = []
+  // Group contract work orders by contract title
+  const workOrdersByContract = contractWorkOrders.reduce((acc, wo) => {
+    const contractTitle = wo.contractTitle || 'Unknown Contract'
+    if (!acc[contractTitle]) {
+      acc[contractTitle] = []
     }
-    acc[projectTitle].push(wo)
+    acc[contractTitle].push(wo)
     return acc
   }, {} as Record<string, WorkOrder[]>)
 
@@ -209,11 +189,11 @@ export function BillingView({ branchId, projectId, userRole }: BillingViewProps)
   const totalPendingValue = contractPendingValue + standalonePendingValue + stickerPendingValue
   const totalUnpaidValue = contractUnpaidValue + standaloneUnpaidValue + stickerUnpaidValue
 
-  const toggleProject = (projectTitle: string) => {
-    setExpandedProjects(prev => 
-      prev.includes(projectTitle) 
-        ? prev.filter(p => p !== projectTitle)
-        : [...prev, projectTitle]
+  const toggleContract = (contractTitle: string) => {
+    setExpandedContracts(prev =>
+      prev.includes(contractTitle)
+        ? prev.filter(c => c !== contractTitle)
+        : [...prev, contractTitle]
     )
   }
 
@@ -298,27 +278,27 @@ export function BillingView({ branchId, projectId, userRole }: BillingViewProps)
             </CollapsibleTrigger>
             <CollapsibleContent>
               <CardContent className="pt-0 space-y-4">
-                {Object.entries(workOrdersByProject).map(([projectTitle, projectWorkOrders]) => (
-                  <Collapsible 
-                    key={projectTitle} 
-                    open={expandedProjects.includes(projectTitle)}
-                    onOpenChange={() => toggleProject(projectTitle)}
+                {Object.entries(workOrdersByContract).map(([contractTitle, contractWOs]) => (
+                  <Collapsible
+                    key={contractTitle}
+                    open={expandedContracts.includes(contractTitle)}
+                    onOpenChange={() => toggleContract(contractTitle)}
                   >
                     <div className="border rounded-lg">
                       <CollapsibleTrigger className="w-full p-3 flex items-center justify-between hover:bg-muted/50 transition-colors">
                         <div className="flex items-center gap-2">
-                          {expandedProjects.includes(projectTitle) ? <ChevronDown className="h-4 w-4" /> : <ChevronRight className="h-4 w-4" />}
-                          <span className="font-medium">{projectTitle}</span>
-                          <Badge variant="outline">{projectWorkOrders.length} work orders</Badge>
+                          {expandedContracts.includes(contractTitle) ? <ChevronDown className="h-4 w-4" /> : <ChevronRight className="h-4 w-4" />}
+                          <span className="font-medium">{contractTitle}</span>
+                          <Badge variant="outline">{contractWOs.length} work orders</Badge>
                         </div>
                         <span className="font-semibold">
-                          {formatCurrency(projectWorkOrders.reduce((sum, wo) => sum + (wo.price || 0), 0))}
+                          {formatCurrency(contractWOs.reduce((sum, wo) => sum + (wo.price || 0), 0))}
                         </span>
                       </CollapsibleTrigger>
                       <CollapsibleContent>
                         <div className="border-t p-3">
                           <BillingWorkOrdersDisplay
-                            workOrders={projectWorkOrders}
+                            workOrders={contractWOs}
                             userRole={userRole}
                             onPaySingle={handlePaySingle}
                             onPayGroup={handlePayGroup}

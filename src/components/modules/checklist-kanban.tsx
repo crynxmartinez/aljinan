@@ -158,7 +158,6 @@ interface ChecklistItem {
 
 interface ChecklistKanbanProps {
   branchId: string
-  projectId?: string | null
   readOnly?: boolean // For client view
   userRole?: 'CONTRACTOR' | 'CLIENT' | 'TEAM_MEMBER'
 }
@@ -525,7 +524,7 @@ function sortByPriority(items: ChecklistItem[]): ChecklistItem[] {
   })
 }
 
-export function ChecklistKanban({ branchId, projectId, readOnly = false, userRole }: ChecklistKanbanProps) {
+export function ChecklistKanban({ branchId, readOnly = false, userRole }: ChecklistKanbanProps) {
   const router = useRouter()
   const [items, setItems] = useState<ChecklistItem[]>([])
   const [loading, setLoading] = useState(true)
@@ -614,14 +613,11 @@ export function ChecklistKanban({ branchId, projectId, readOnly = false, userRol
     }, 30000) // 30 seconds
 
     return () => clearInterval(refreshInterval)
-  }, [branchId, projectId])
+  }, [branchId])
 
   async function fetchItems() {
     try {
-      const url = projectId
-        ? `/api/branches/${branchId}/checklist-items?projectId=${projectId}`
-        : `/api/branches/${branchId}/checklist-items`
-      const response = await fetch(url)
+      const response = await fetch(`/api/branches/${branchId}/checklist-items`)
       if (response.ok) {
         const data = await response.json()
         setItems(data)
@@ -847,20 +843,19 @@ export function ChecklistKanban({ branchId, projectId, readOnly = false, userRol
 
         // If there's a pending move (from drag-and-drop), complete it now
         if (pendingMove && pendingMove.targetStage === 'COMPLETED') {
-          const checklistResponse = await fetch(`/api/branches/${branchId}/checklists/${selectedItem.checklistId}`)
-          if (checklistResponse.ok) {
-            const checklist = await checklistResponse.json()
-
-            const completeResponse = await fetch(`/api/projects/${checklist.projectId}/work-orders/${selectedItem.id}`, {
-              method: 'PATCH',
-              headers: { 'Content-Type': 'application/json' },
-              body: JSON.stringify({ stage: 'COMPLETED' })
+          const completeResponse = await fetch(`/api/branches/${branchId}/checklist-items`, {
+            method: 'PATCH',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+              action: 'update_stage',
+              itemId: selectedItem.id,
+              stage: 'COMPLETED'
             })
+          })
 
-            if (completeResponse.ok) {
-              toast.success('Work order completed')
-              setPendingMove(null)
-            }
+          if (completeResponse.ok) {
+            toast.success('Work order completed')
+            setPendingMove(null)
           }
         }
 
@@ -890,35 +885,16 @@ export function ChecklistKanban({ branchId, projectId, readOnly = false, userRol
       const item = items.find(i => i.id === itemId)
       if (!item) return
 
-      // Find the project ID from the checklist
-      const checklistResponse = await fetch(`/api/branches/${branchId}/checklists/${item.checklistId}`)
-      if (!checklistResponse.ok) {
-        toast.error('Failed to fetch checklist information')
-        return
-      }
-      const checklist = await checklistResponse.json()
-
-      // Update the work order price - use different API based on whether project exists
-      let response
-      if (checklist.projectId) {
-        // Use project-based API if project exists
-        response = await fetch(`/api/projects/${checklist.projectId}/work-orders/${itemId}`, {
-          method: 'PATCH',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ price })
+      // Update the work order price using checklist-items API
+      const response = await fetch(`/api/branches/${branchId}/checklist-items`, {
+        method: 'PATCH',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          action: 'update_price',
+          itemId: itemId,
+          price: price
         })
-      } else {
-        // Use checklist-items API for work orders without projects
-        response = await fetch(`/api/branches/${branchId}/checklist-items`, {
-          method: 'PATCH',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({
-            action: 'update_price',
-            itemId: itemId,
-            price: price
-          })
-        })
-      }
+      })
 
       if (response.ok) {
         toast.success('Price updated successfully')
@@ -1007,20 +983,16 @@ export function ChecklistKanban({ branchId, projectId, readOnly = false, userRol
     // Close the details modal
     setDetailsOpen(false)
 
-    // Update on server (exact same as drag-and-drop)
+    // Update on server using checklist-items API
     try {
-      const checklistResponse = await fetch(`/api/branches/${branchId}/checklists/${item.checklistId}`)
-      if (!checklistResponse.ok) {
-        // Revert on error
-        fetchItems()
-        return
-      }
-      const checklist = await checklistResponse.json()
-
-      const response = await fetch(`/api/projects/${checklist.projectId}/work-orders/${itemId}`, {
+      const response = await fetch(`/api/branches/${branchId}/checklist-items`, {
         method: 'PATCH',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ stage: targetStage })
+        body: JSON.stringify({
+          action: 'update_stage',
+          itemId: itemId,
+          stage: targetStage
+        })
       })
 
       if (!response.ok) {
@@ -1094,20 +1066,16 @@ export function ChecklistKanban({ branchId, projectId, readOnly = false, userRol
       i.id === itemId ? { ...i, stage: targetStage } : i
     ))
 
-    // Update on server
+    // Update on server using checklist-items API
     try {
-      const checklistResponse = await fetch(`/api/branches/${branchId}/checklists/${item.checklistId}`)
-      if (!checklistResponse.ok) {
-        // Revert on error
-        fetchItems()
-        return
-      }
-      const checklist = await checklistResponse.json()
-
-      const response = await fetch(`/api/projects/${checklist.projectId}/work-orders/${itemId}`, {
+      const response = await fetch(`/api/branches/${branchId}/checklist-items`, {
         method: 'PATCH',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ stage: targetStage })
+        body: JSON.stringify({
+          action: 'update_stage',
+          itemId: itemId,
+          stage: targetStage
+        })
       })
 
       if (!response.ok) {
