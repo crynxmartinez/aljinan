@@ -1704,8 +1704,6 @@ export function ContractsList({ branchId }: ContractsListProps) {
                   branchId={branchId}
                   fileUrl={selectedContract.fileUrl}
                   fileName={selectedContract.fileName}
-                  certificateUrl={selectedContract.certificateUrl}
-                  certificateFileName={selectedContract.certificateFileName}
                   isContractor={true}
                   onUpdate={() => {
                     fetchContracts()
