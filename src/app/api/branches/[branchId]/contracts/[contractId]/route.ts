@@ -2,6 +2,24 @@ import { getServerSession } from 'next-auth'
 import { NextResponse } from 'next/server'
 import { authOptions } from '@/lib/auth'
 import { prisma } from '@/lib/prisma'
+import { ContractSystemFrequency } from '@prisma/client'
+
+// Type for system input
+interface SystemInput {
+  id?: string
+  name: string
+  description?: string
+  frequency: ContractSystemFrequency
+  visitDates: string[]
+}
+
+// Type for payment input
+interface PaymentInput {
+  id?: string
+  paymentNo: number
+  dueDate?: string
+  amount?: number
+}
 
 // GET - Fetch a single contract
 export async function GET(
@@ -23,7 +41,20 @@ export async function GET(
     }
 
     const contract = await prisma.contract.findFirst({
-      where: { id: contractId, branchId }
+      where: { id: contractId, branchId },
+      include: {
+        checklist: {
+          include: {
+            items: true
+          }
+        },
+        systems: {
+          orderBy: { order: 'asc' }
+        },
+        payments: {
+          orderBy: { paymentNo: 'asc' }
+        }
+      }
     })
 
     if (!contract) {
@@ -139,23 +170,93 @@ export async function PATCH(
       return NextResponse.json({ error: 'Only contractors can update contracts' }, { status: 403 })
     }
 
-    const { title, description, startDate, endDate, status, fileName, fileUrl, fileSize, certificateFileName, certificateUrl } = body
+    const {
+      title,
+      description,
+      startDate,
+      endDate,
+      autoRenew,
+      status,
+      fileName,
+      fileUrl,
+      fileSize,
+      certificateFileName,
+      certificateUrl,
+      systems,
+      payments
+    } = body
 
-    const updateData: Record<string, unknown> = {}
-    if (title !== undefined) updateData.title = title
-    if (description !== undefined) updateData.description = description
-    if (startDate !== undefined) updateData.startDate = startDate ? new Date(startDate) : null
-    if (endDate !== undefined) updateData.endDate = endDate ? new Date(endDate) : null
-    if (status !== undefined) updateData.status = status
-    if (fileName !== undefined) updateData.fileName = fileName
-    if (fileUrl !== undefined) updateData.fileUrl = fileUrl
-    if (fileSize !== undefined) updateData.fileSize = fileSize
-    if (certificateFileName !== undefined) updateData.certificateFileName = certificateFileName
-    if (certificateUrl !== undefined) updateData.certificateUrl = certificateUrl
+    // Use transaction to update contract with systems and payments
+    const updated = await prisma.$transaction(async (tx) => {
+      // Build update data for contract
+      const updateData: Record<string, unknown> = {}
+      if (title !== undefined) updateData.title = title
+      if (description !== undefined) updateData.description = description
+      if (startDate !== undefined) updateData.startDate = startDate ? new Date(startDate) : null
+      if (endDate !== undefined) updateData.endDate = endDate ? new Date(endDate) : null
+      if (autoRenew !== undefined) updateData.autoRenew = autoRenew
+      if (status !== undefined) updateData.status = status
+      if (fileName !== undefined) updateData.fileName = fileName
+      if (fileUrl !== undefined) updateData.fileUrl = fileUrl
+      if (fileSize !== undefined) updateData.fileSize = fileSize
+      if (certificateFileName !== undefined) updateData.certificateFileName = certificateFileName
+      if (certificateUrl !== undefined) updateData.certificateUrl = certificateUrl
 
-    const updated = await prisma.contract.update({
-      where: { id: contractId },
-      data: updateData
+      // Update contract
+      await tx.contract.update({
+        where: { id: contractId },
+        data: updateData
+      })
+
+      // Update systems if provided
+      if (systems !== undefined && Array.isArray(systems)) {
+        // Delete existing systems and recreate
+        await tx.contractSystem.deleteMany({
+          where: { contractId }
+        })
+
+        if (systems.length > 0) {
+          await tx.contractSystem.createMany({
+            data: systems.map((system: SystemInput, index: number) => ({
+              contractId,
+              name: system.name,
+              description: system.description || null,
+              frequency: system.frequency,
+              visitDates: system.visitDates || [],
+              order: index
+            }))
+          })
+        }
+      }
+
+      // Update payments if provided
+      if (payments !== undefined && Array.isArray(payments)) {
+        // Delete existing payments and recreate
+        await tx.contractPayment.deleteMany({
+          where: { contractId }
+        })
+
+        if (payments.length > 0) {
+          await tx.contractPayment.createMany({
+            data: payments.map((payment: PaymentInput, index: number) => ({
+              contractId,
+              paymentNo: payment.paymentNo || index + 1,
+              dueDate: payment.dueDate ? new Date(payment.dueDate) : null,
+              amount: payment.amount || null,
+              order: index
+            }))
+          })
+        }
+      }
+
+      // Return updated contract with relations
+      return tx.contract.findUnique({
+        where: { id: contractId },
+        include: {
+          systems: { orderBy: { order: 'asc' } },
+          payments: { orderBy: { paymentNo: 'asc' } }
+        }
+      })
     })
 
     return NextResponse.json(updated)

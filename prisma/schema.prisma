@@ -698,6 +698,7 @@ model Contract {
   totalValue          Float          @default(0)
   startDate           DateTime?
   endDate             DateTime?
+  autoRenew           Boolean        @default(false)  // Auto-renew contract
   status              ContractStatus @default(DRAFT)
   createdById         String
   createdAt           DateTime       @default(now())
@@ -707,9 +708,53 @@ model Contract {
   checklist           Checklist?     // One checklist per contract (work orders)
   invoices            Invoice[]      // Invoices linked to this contract
   certificates        Certificate[]  // Certificates linked to this contract
+  systems             ContractSystem[]   // Scope of work systems
+  payments            ContractPayment[]  // Payment schedule
   
   @@index([branchId])
   @@index([status])
+}
+
+// Frequency for contract system visits
+enum ContractSystemFrequency {
+  MONTHLY        // 12 visits per year
+  QUARTERLY      // 4 visits per year
+  SEMI_ANNUALLY  // 2 visits per year
+  ANNUALLY       // 1 visit per year
+}
+
+// Contract System - scope of work items (e.g., Fire Alarm System, HVAC)
+model ContractSystem {
+  id          String                   @id @default(cuid())
+  contractId  String
+  contract    Contract                 @relation(fields: [contractId], references: [id], onDelete: Cascade)
+  name        String                   // e.g., "Fire Alarm System"
+  description String?
+  frequency   ContractSystemFrequency  // How often visits occur
+  visitDates  Json                     // Array of visit dates: ["2026-01-15", "2026-04-15", ...]
+  order       Int                      @default(0)  // Display order
+  createdAt   DateTime                 @default(now())
+  updatedAt   DateTime                 @updatedAt
+  
+  @@index([contractId])
+}
+
+// Contract Payment - payment schedule
+model ContractPayment {
+  id          String    @id @default(cuid())
+  contractId  String
+  contract    Contract  @relation(fields: [contractId], references: [id], onDelete: Cascade)
+  paymentNo   Int       // 1, 2, 3, 4...
+  dueDate     DateTime?
+  amount      Float?    // Can be null/blank initially
+  status      String    @default("PENDING")  // PENDING, PAID
+  paidAt      DateTime?
+  order       Int       @default(0)  // Display order
+  createdAt   DateTime  @default(now())
+  updatedAt   DateTime  @updatedAt
+  
+  @@index([contractId])
+  @@index([dueDate])
 }
 
 // Checklist statuses

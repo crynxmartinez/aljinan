@@ -2,6 +2,7 @@ import { getServerSession } from 'next-auth'
 import { NextResponse } from 'next/server'
 import { authOptions } from '@/lib/auth'
 import { prisma } from '@/lib/prisma'
+import { ContractSystemFrequency } from '@prisma/client'
 
 // GET - Fetch all contracts for a branch
 export async function GET(
@@ -34,6 +35,12 @@ export async function GET(
           include: {
             items: true
           }
+        },
+        systems: {
+          orderBy: { order: 'asc' }
+        },
+        payments: {
+          orderBy: { paymentNo: 'asc' }
         }
       },
       orderBy: { createdAt: 'desc' }
@@ -47,6 +54,21 @@ export async function GET(
       { status: 500 }
     )
   }
+}
+
+// Type for system input
+interface SystemInput {
+  name: string
+  description?: string
+  frequency: ContractSystemFrequency
+  visitDates: string[]
+}
+
+// Type for payment input
+interface PaymentInput {
+  paymentNo: number
+  dueDate?: string
+  amount?: number
 }
 
 // POST - Create a new contract (contractor only)
@@ -67,10 +89,22 @@ export async function POST(
 
     const { branchId } = await params
     const body = await request.json()
-    const { title, description, fileName, fileUrl, fileSize, startDate, endDate, status } = body
+    const {
+      title,
+      description,
+      fileName,
+      fileUrl,
+      fileSize,
+      startDate,
+      endDate,
+      autoRenew,
+      status,
+      systems,
+      payments
+    } = body
 
-    if (!title || !fileName || !fileUrl) {
-      return NextResponse.json({ error: 'Title, file name, and file URL are required' }, { status: 400 })
+    if (!title) {
+      return NextResponse.json({ error: 'Title is required' }, { status: 400 })
     }
 
     const hasAccess = await verifyBranchAccess(branchId, session.user.id, session.user.role)
@@ -78,19 +112,60 @@ export async function POST(
       return NextResponse.json({ error: 'Access denied' }, { status: 403 })
     }
 
-    const contract = await prisma.contract.create({
-      data: {
-        branchId,
-        title,
-        description,
-        fileName,
-        fileUrl,
-        fileSize: fileSize || null,
-        startDate: startDate ? new Date(startDate) : null,
-        endDate: endDate ? new Date(endDate) : null,
-        status: status || 'DRAFT',
-        createdById: session.user.id,
+    // Create contract with systems and payments in a transaction
+    const contract = await prisma.$transaction(async (tx) => {
+      // Create the contract
+      const newContract = await tx.contract.create({
+        data: {
+          branchId,
+          title,
+          description: description || null,
+          fileName: fileName || null,
+          fileUrl: fileUrl || null,
+          fileSize: fileSize || null,
+          startDate: startDate ? new Date(startDate) : null,
+          endDate: endDate ? new Date(endDate) : null,
+          autoRenew: autoRenew || false,
+          status: status || 'DRAFT',
+          createdById: session.user.id,
+        }
+      })
+
+      // Create systems if provided
+      if (systems && Array.isArray(systems) && systems.length > 0) {
+        await tx.contractSystem.createMany({
+          data: systems.map((system: SystemInput, index: number) => ({
+            contractId: newContract.id,
+            name: system.name,
+            description: system.description || null,
+            frequency: system.frequency,
+            visitDates: system.visitDates || [],
+            order: index
+          }))
+        })
       }
+
+      // Create payments if provided
+      if (payments && Array.isArray(payments) && payments.length > 0) {
+        await tx.contractPayment.createMany({
+          data: payments.map((payment: PaymentInput, index: number) => ({
+            contractId: newContract.id,
+            paymentNo: payment.paymentNo || index + 1,
+            dueDate: payment.dueDate ? new Date(payment.dueDate) : null,
+            amount: payment.amount || null,
+            order: index
+          }))
+        })
+      }
+
+      // Fetch the complete contract with relations
+      return tx.contract.findUnique({
+        where: { id: newContract.id },
+        include: {
+          systems: { orderBy: { order: 'asc' } },
+          payments: { orderBy: { paymentNo: 'asc' } }
+        }
+      })
     })
 
     return NextResponse.json(contract, { status: 201 })
