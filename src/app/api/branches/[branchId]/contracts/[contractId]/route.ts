@@ -186,6 +186,17 @@ export async function PATCH(
       payments
     } = body
 
+    // Check if contract was already signed - if so, editing will require re-signature
+    const existingContract = await prisma.contract.findUnique({
+      where: { id: contractId },
+      select: { startSignedAt: true, status: true }
+    })
+
+    const wasAlreadySigned = existingContract?.startSignedAt !== null
+    const isSubstantiveEdit = systems !== undefined || payments !== undefined ||
+      title !== undefined || startDate !== undefined ||
+      endDate !== undefined
+
     // Use transaction to update contract with systems and payments
     const updated = await prisma.$transaction(async (tx) => {
       // Build update data for contract
@@ -201,6 +212,15 @@ export async function PATCH(
       if (fileSize !== undefined) updateData.fileSize = fileSize
       if (certificateFileName !== undefined) updateData.certificateFileName = certificateFileName
       if (certificateUrl !== undefined) updateData.certificateUrl = certificateUrl
+
+      // If contract was already signed and this is a substantive edit, reset signature
+      // This requires the client to re-sign the updated contract
+      if (wasAlreadySigned && isSubstantiveEdit) {
+        updateData.startSignedAt = null
+        updateData.startSignatureUrl = null
+        updateData.startSignedById = null
+        updateData.status = 'PENDING_SIGNATURE'
+      }
 
       // Update contract
       await tx.contract.update({
@@ -259,7 +279,13 @@ export async function PATCH(
       })
     })
 
-    return NextResponse.json(updated)
+    // Include flag to indicate if re-signature is required
+    const requiresResignature = wasAlreadySigned && isSubstantiveEdit
+
+    return NextResponse.json({
+      ...updated,
+      requiresResignature
+    })
   } catch (error) {
     console.error('Error updating contract:', error)
     return NextResponse.json(

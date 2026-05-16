@@ -460,8 +460,9 @@ export function ContractsList({ branchId }: ContractsListProps) {
         }),
       })
 
+      const data = await response.json()
+
       if (!response.ok) {
-        const data = await response.json()
         throw new Error(data.error || 'Failed to update contract')
       }
 
@@ -469,6 +470,11 @@ export function ContractsList({ branchId }: ContractsListProps) {
       setEditContract(null)
       fetchContracts()
       router.refresh()
+
+      // Show notification if re-signature is required
+      if (data.requiresResignature) {
+        alert('Contract updated. The client will need to re-sign the contract to approve the changes.')
+      }
     } catch (err) {
       setError(err instanceof Error ? err.message : 'An error occurred')
     } finally {
