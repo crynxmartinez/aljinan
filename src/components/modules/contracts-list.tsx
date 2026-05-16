@@ -9,6 +9,14 @@ import { Label } from '@/components/ui/label'
 import { Textarea } from '@/components/ui/textarea'
 import { Badge } from '@/components/ui/badge'
 import {
+  Table,
+  TableBody,
+  TableCell,
+  TableHead,
+  TableHeader,
+  TableRow,
+} from '@/components/ui/table'
+import {
   Dialog,
   DialogContent,
   DialogDescription,
@@ -49,6 +57,8 @@ import {
   ChevronDown,
   ChevronRight,
   X,
+  Building,
+  Edit,
 } from 'lucide-react'
 import { Switch } from '@/components/ui/switch'
 import {
@@ -708,6 +718,16 @@ export function ContractsList({ branchId }: ContractsListProps) {
         {label}
       </Badge>
     )
+  }
+
+  const getFrequencyLabel = (frequency: string) => {
+    const labels: Record<string, string> = {
+      MONTHLY: 'Monthly',
+      QUARTERLY: 'Quarterly',
+      SEMI_ANNUALLY: 'Semi-Annually',
+      ANNUALLY: 'Annually'
+    }
+    return labels[frequency] || frequency
   }
 
   const formatFileSize = (bytes: number | null) => {
@@ -1545,6 +1565,90 @@ export function ContractsList({ branchId }: ContractsListProps) {
                   </div>
                 </div>
               </div>
+
+              {/* Scope of Work (Systems) Section */}
+              {selectedContract.systems && selectedContract.systems.length > 0 && (
+                <div className="space-y-3">
+                  <div className="flex items-center justify-between">
+                    <h3 className="font-semibold text-sm flex items-center gap-2">
+                      <Building className="h-4 w-4" />
+                      Scope of Work
+                    </h3>
+                    <Button
+                      variant="outline"
+                      size="sm"
+                      onClick={() => {
+                        setDetailDialogOpen(false)
+                        openEditDialog(selectedContract)
+                      }}
+                    >
+                      <Edit className="h-3 w-3 mr-1" />
+                      Edit
+                    </Button>
+                  </div>
+                  <div className="space-y-3">
+                    {selectedContract.systems.map((system, index) => (
+                      <div key={system.id || index} className="p-3 border rounded-lg bg-muted/30">
+                        <div className="flex items-center justify-between mb-2">
+                          <p className="font-medium">{system.name}</p>
+                          <Badge variant="outline">{getFrequencyLabel(system.frequency)}</Badge>
+                        </div>
+                        {system.description && (
+                          <p className="text-sm text-muted-foreground mb-2">{system.description}</p>
+                        )}
+                        {system.visitDates && system.visitDates.length > 0 && (
+                          <div className="flex flex-wrap gap-2">
+                            {system.visitDates.map((date: string, i: number) => (
+                              <Badge key={i} variant="secondary" className="text-xs">
+                                <Calendar className="h-3 w-3 mr-1" />
+                                {date ? new Date(date).toLocaleDateString() : `Visit ${i + 1}`}
+                              </Badge>
+                            ))}
+                          </div>
+                        )}
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              )}
+
+              {/* Payment Terms Section */}
+              {selectedContract.payments && selectedContract.payments.length > 0 && (
+                <div className="space-y-3">
+                  <h3 className="font-semibold text-sm flex items-center gap-2">
+                    <FileText className="h-4 w-4" />
+                    Payment Terms
+                  </h3>
+                  <Table>
+                    <TableHeader>
+                      <TableRow>
+                        <TableHead>Payment</TableHead>
+                        <TableHead>Due Date</TableHead>
+                        <TableHead>Amount</TableHead>
+                        <TableHead>Status</TableHead>
+                      </TableRow>
+                    </TableHeader>
+                    <TableBody>
+                      {selectedContract.payments.map((payment) => (
+                        <TableRow key={payment.id}>
+                          <TableCell className="font-medium">Payment #{payment.paymentNo}</TableCell>
+                          <TableCell>
+                            {payment.dueDate ? new Date(payment.dueDate).toLocaleDateString() : '—'}
+                          </TableCell>
+                          <TableCell>
+                            {payment.amount ? `SAR ${payment.amount.toLocaleString('en-US', { minimumFractionDigits: 2 })}` : '—'}
+                          </TableCell>
+                          <TableCell>
+                            <Badge variant={payment.status === 'PAID' ? 'default' : payment.status === 'OVERDUE' ? 'destructive' : 'secondary'}>
+                              {payment.status}
+                            </Badge>
+                          </TableCell>
+                        </TableRow>
+                      ))}
+                    </TableBody>
+                  </Table>
+                </div>
+              )}
 
               {/* Work Orders Section */}
               {selectedContract.checklist && selectedContract.checklist.items.length > 0 && (
