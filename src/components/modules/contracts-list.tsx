@@ -58,6 +58,7 @@ import {
 } from '@/components/ui/collapsible'
 import { ContractWorkOrdersDisplay } from './contract-work-orders-display'
 import { ContractAttachmentsSection } from './contract-attachments-section'
+import { FileUploadDropzone } from '@/components/ui/file-upload-dropzone'
 
 interface WorkOrder {
   id: string
@@ -137,6 +138,12 @@ export function ContractsList({ branchId }: ContractsListProps) {
   const [pdfFileName, setPdfFileName] = useState('')
   const [certUrl, setCertUrl] = useState('')
   const [certFileName, setCertFileName] = useState('')
+
+  // Contract file upload state
+  const [contractFile, setContractFile] = useState<{ url: string; name: string } | null>(null)
+  const [uploadingContract, setUploadingContract] = useState(false)
+  const [editContractFile, setEditContractFile] = useState<{ url: string; name: string } | null>(null)
+  const [uploadingEditContract, setUploadingEditContract] = useState(false)
 
   // System form type
   type SystemForm = {
@@ -262,6 +269,50 @@ export function ContractsList({ branchId }: ContractsListProps) {
     return n + (s[(v - 20) % 10] || s[v] || s[0])
   }
 
+  // Handle contract file upload (create form)
+  const handleContractFileUpload = async (files: File[]) => {
+    if (files.length === 0) return
+    setUploadingContract(true)
+    try {
+      const formData = new FormData()
+      formData.append('file', files[0])
+      formData.append('type', 'document')
+      formData.append('folder', 'contracts')
+      const response = await fetch('/api/upload', { method: 'POST', body: formData })
+      if (!response.ok) throw new Error('Upload failed')
+      const data = await response.json()
+      setContractFile({ url: data.url, name: data.filename })
+      setNewContract({ ...newContract, fileName: data.filename, fileUrl: data.url })
+    } catch (err) {
+      console.error('Failed to upload contract file:', err)
+      setError('Failed to upload contract file')
+    } finally {
+      setUploadingContract(false)
+    }
+  }
+
+  // Handle contract file upload (edit form)
+  const handleEditContractFileUpload = async (files: File[]) => {
+    if (files.length === 0 || !editContract) return
+    setUploadingEditContract(true)
+    try {
+      const formData = new FormData()
+      formData.append('file', files[0])
+      formData.append('type', 'document')
+      formData.append('folder', 'contracts')
+      const response = await fetch('/api/upload', { method: 'POST', body: formData })
+      if (!response.ok) throw new Error('Upload failed')
+      const data = await response.json()
+      setEditContractFile({ url: data.url, name: data.filename })
+      setEditContract({ ...editContract, fileName: data.filename, fileUrl: data.url })
+    } catch (err) {
+      console.error('Failed to upload contract file:', err)
+      setError('Failed to upload contract file')
+    } finally {
+      setUploadingEditContract(false)
+    }
+  }
+
   // Helper: Open edit dialog with contract data
   const openEditDialog = (contract: Contract) => {
     setEditContract({
@@ -292,6 +343,12 @@ export function ContractsList({ branchId }: ContractsListProps) {
           { paymentNo: 4, dueDate: '', amount: '' },
         ]
     })
+    // Set existing file if present
+    if (contract.fileUrl && contract.fileName) {
+      setEditContractFile({ url: contract.fileUrl, name: contract.fileName })
+    } else {
+      setEditContractFile(null)
+    }
     setEditDialogOpen(true)
   }
 
@@ -498,6 +555,7 @@ export function ContractsList({ branchId }: ContractsListProps) {
       }
 
       setCreateDialogOpen(false)
+      setContractFile(null)
       setNewContract({
         title: '',
         description: '',
@@ -1140,22 +1198,18 @@ export function ContractsList({ branchId }: ContractsListProps) {
               {/* Upload Contract Section */}
               <div className="space-y-2">
                 <Label>Upload Contract (optional)</Label>
-                <div className="grid grid-cols-2 gap-4">
-                  <Input
-                    value={newContract.fileName}
-                    onChange={(e) => setNewContract({ ...newContract, fileName: e.target.value })}
-                    placeholder="File name (e.g., contract.pdf)"
-                  />
-                  <Input
-                    type="url"
-                    value={newContract.fileUrl}
-                    onChange={(e) => setNewContract({ ...newContract, fileUrl: e.target.value })}
-                    placeholder="File URL (https://...)"
-                  />
-                </div>
-                <p className="text-xs text-muted-foreground">
-                  Enter the URL where the contract PDF or image is hosted.
-                </p>
+                <FileUploadDropzone
+                  onFilesSelected={handleContractFileUpload}
+                  accept=".pdf,.jpg,.jpeg,.png"
+                  multiple={false}
+                  uploading={uploadingContract}
+                  uploadedFiles={contractFile ? [contractFile] : []}
+                  onRemoveFile={() => {
+                    setContractFile(null)
+                    setNewContract({ ...newContract, fileName: '', fileUrl: '' })
+                  }}
+                  label="Click to upload or drag and drop contract file"
+                />
               </div>
             </div>
 
@@ -1375,19 +1429,18 @@ export function ContractsList({ branchId }: ContractsListProps) {
                 {/* Upload Contract Section */}
                 <div className="space-y-2">
                   <Label>Contract Document (optional)</Label>
-                  <div className="grid grid-cols-2 gap-4">
-                    <Input
-                      value={editContract.fileName}
-                      onChange={(e) => setEditContract({ ...editContract, fileName: e.target.value })}
-                      placeholder="File name (e.g., contract.pdf)"
-                    />
-                    <Input
-                      type="url"
-                      value={editContract.fileUrl}
-                      onChange={(e) => setEditContract({ ...editContract, fileUrl: e.target.value })}
-                      placeholder="File URL (https://...)"
-                    />
-                  </div>
+                  <FileUploadDropzone
+                    onFilesSelected={handleEditContractFileUpload}
+                    accept=".pdf,.jpg,.jpeg,.png"
+                    multiple={false}
+                    uploading={uploadingEditContract}
+                    uploadedFiles={editContractFile ? [editContractFile] : []}
+                    onRemoveFile={() => {
+                      setEditContractFile(null)
+                      setEditContract({ ...editContract, fileName: '', fileUrl: '' })
+                    }}
+                    label="Click to upload or drag and drop contract file"
+                  />
                 </div>
               </div>
 
