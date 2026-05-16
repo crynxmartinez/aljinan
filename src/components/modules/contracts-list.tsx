@@ -155,6 +155,9 @@ export function ContractsList({ branchId }: ContractsListProps) {
   const [editContractFile, setEditContractFile] = useState<{ url: string; name: string } | null>(null)
   const [uploadingEditContract, setUploadingEditContract] = useState(false)
 
+  // Success message state
+  const [successMessage, setSuccessMessage] = useState('')
+
   // System form type
   type SystemForm = {
     name: string
@@ -473,7 +476,9 @@ export function ContractsList({ branchId }: ContractsListProps) {
 
       // Show notification if re-signature is required
       if (data.requiresResignature) {
-        alert('Contract updated. The client will need to re-sign the contract to approve the changes.')
+        setSuccessMessage('Contract updated. The client will need to re-sign the contract to approve the changes.')
+        // Auto-hide after 5 seconds
+        setTimeout(() => setSuccessMessage(''), 5000)
       }
     } catch (err) {
       setError(err instanceof Error ? err.message : 'An error occurred')
@@ -755,6 +760,24 @@ export function ContractsList({ branchId }: ContractsListProps) {
 
   return (
     <>
+      {/* Success Message Notification */}
+      {successMessage && (
+        <div className="fixed top-4 right-4 z-50 max-w-md animate-in slide-in-from-top-2 fade-in duration-300">
+          <div className="bg-amber-50 border border-amber-200 text-amber-800 px-4 py-3 rounded-lg shadow-lg flex items-start gap-3">
+            <CheckCircle className="h-5 w-5 text-amber-600 flex-shrink-0 mt-0.5" />
+            <div className="flex-1">
+              <p className="text-sm font-medium">{successMessage}</p>
+            </div>
+            <button
+              onClick={() => setSuccessMessage('')}
+              className="text-amber-600 hover:text-amber-800"
+            >
+              <X className="h-4 w-4" />
+            </button>
+          </div>
+        </div>
+      )}
+
       <Card>
         <CardHeader className="flex flex-row items-center justify-between">
           <div>
