@@ -90,6 +90,7 @@ interface ContractSystem {
   description: string | null
   frequency: 'MONTHLY' | 'QUARTERLY' | 'SEMI_ANNUALLY' | 'ANNUALLY'
   visitDates: string[]
+  dateMode: 'MANUAL' | 'AUTOMATIC'
   order: number
 }
 
@@ -164,6 +165,7 @@ export function ContractsList({ branchId }: ContractsListProps) {
     description: string
     frequency: 'MONTHLY' | 'QUARTERLY' | 'SEMI_ANNUALLY' | 'ANNUALLY'
     visitDates: string[]
+    dateMode: 'MANUAL' | 'AUTOMATIC'
   }
 
   // Payment form type
@@ -228,7 +230,7 @@ export function ContractsList({ branchId }: ContractsListProps) {
       ...newContract,
       systems: [
         ...newContract.systems,
-        { name: '', description: '', frequency: 'QUARTERLY', visitDates: ['', '', '', ''] }
+        { name: '', description: '', frequency: 'QUARTERLY', visitDates: ['', '', '', ''], dateMode: 'MANUAL' }
       ]
     })
   }
@@ -240,16 +242,61 @@ export function ContractsList({ branchId }: ContractsListProps) {
     setNewContract({ ...newContract, systems: updated })
   }
 
+  // Helper: Calculate auto dates based on frequency and first date
+  const calculateAutoDates = (firstDate: string, frequency: 'MONTHLY' | 'QUARTERLY' | 'SEMI_ANNUALLY' | 'ANNUALLY'): string[] => {
+    if (!firstDate) return Array(getVisitCount(frequency)).fill('')
+
+    const monthIncrement = {
+      'MONTHLY': 1,
+      'QUARTERLY': 3,
+      'SEMI_ANNUALLY': 6,
+      'ANNUALLY': 12
+    }
+
+    const visitCount = getVisitCount(frequency)
+    const dates: string[] = [firstDate]
+    const startDate = new Date(firstDate)
+
+    for (let i = 1; i < visitCount; i++) {
+      const nextDate = new Date(startDate)
+      nextDate.setMonth(nextDate.getMonth() + (monthIncrement[frequency] * i))
+      dates.push(nextDate.toISOString().split('T')[0])
+    }
+
+    return dates
+  }
+
   // Helper: Update a system field
   const updateSystem = (index: number, field: keyof SystemForm, value: string | string[]) => {
     const updated = [...newContract.systems]
     if (field === 'frequency') {
       const freq = value as 'MONTHLY' | 'QUARTERLY' | 'SEMI_ANNUALLY' | 'ANNUALLY'
       const visitCount = getVisitCount(freq)
-      updated[index] = {
-        ...updated[index],
-        frequency: freq,
-        visitDates: Array(visitCount).fill('')
+      // If automatic mode, recalculate dates from first date
+      if (updated[index].dateMode === 'AUTOMATIC' && updated[index].visitDates[0]) {
+        updated[index] = {
+          ...updated[index],
+          frequency: freq,
+          visitDates: calculateAutoDates(updated[index].visitDates[0], freq)
+        }
+      } else {
+        updated[index] = {
+          ...updated[index],
+          frequency: freq,
+          visitDates: Array(visitCount).fill('')
+        }
+      }
+    } else if (field === 'dateMode') {
+      const mode = value as 'MANUAL' | 'AUTOMATIC'
+      if (mode === 'AUTOMATIC' && updated[index].visitDates[0]) {
+        // Auto-calculate dates from first date
+        updated[index] = {
+          ...updated[index],
+          dateMode: mode,
+          visitDates: calculateAutoDates(updated[index].visitDates[0], updated[index].frequency)
+        }
+      } else {
+        updated[index] = { ...updated[index], dateMode: mode }
       }
     } else if (field === 'visitDates') {
       updated[index] = { ...updated[index], visitDates: value as string[] }
@@ -262,9 +309,18 @@ export function ContractsList({ branchId }: ContractsListProps) {
   // Helper: Update a visit date for a system
   const updateVisitDate = (systemIndex: number, dateIndex: number, value: string) => {
     const updated = [...newContract.systems]
-    const dates = [...updated[systemIndex].visitDates]
-    dates[dateIndex] = value
-    updated[systemIndex] = { ...updated[systemIndex], visitDates: dates }
+
+    // If automatic mode and changing first date, recalculate all dates
+    if (updated[systemIndex].dateMode === 'AUTOMATIC' && dateIndex === 0) {
+      updated[systemIndex] = {
+        ...updated[systemIndex],
+        visitDates: calculateAutoDates(value, updated[systemIndex].frequency)
+      }
+    } else {
+      const dates = [...updated[systemIndex].visitDates]
+      dates[dateIndex] = value
+      updated[systemIndex] = { ...updated[systemIndex], visitDates: dates }
+    }
     setNewContract({ ...newContract, systems: updated })
   }
 
@@ -341,7 +397,8 @@ export function ContractsList({ branchId }: ContractsListProps) {
         name: s.name,
         description: s.description || '',
         frequency: s.frequency,
-        visitDates: Array.isArray(s.visitDates) ? s.visitDates.map((d: string) => d ? d.split('T')[0] : '') : []
+        visitDates: Array.isArray(s.visitDates) ? s.visitDates.map((d: string) => d ? d.split('T')[0] : '') : [],
+        dateMode: (s.dateMode as 'MANUAL' | 'AUTOMATIC') || 'MANUAL'
       })) || [],
       payments: contract.payments?.length > 0
         ? contract.payments.map(p => ({
@@ -372,7 +429,7 @@ export function ContractsList({ branchId }: ContractsListProps) {
       ...editContract,
       systems: [
         ...editContract.systems,
-        { name: '', description: '', frequency: 'QUARTERLY', visitDates: ['', '', '', ''] }
+        { name: '', description: '', frequency: 'QUARTERLY', visitDates: ['', '', '', ''], dateMode: 'MANUAL' }
       ]
     })
   }
@@ -390,10 +447,31 @@ export function ContractsList({ branchId }: ContractsListProps) {
     if (field === 'frequency') {
       const freq = value as 'MONTHLY' | 'QUARTERLY' | 'SEMI_ANNUALLY' | 'ANNUALLY'
       const visitCount = getVisitCount(freq)
-      updated[index] = {
-        ...updated[index],
-        frequency: freq,
-        visitDates: Array(visitCount).fill('')
+      // If automatic mode, recalculate dates from first date
+      if (updated[index].dateMode === 'AUTOMATIC' && updated[index].visitDates[0]) {
+        updated[index] = {
+          ...updated[index],
+          frequency: freq,
+          visitDates: calculateAutoDates(updated[index].visitDates[0], freq)
+        }
+      } else {
+        updated[index] = {
+          ...updated[index],
+          frequency: freq,
+          visitDates: Array(visitCount).fill('')
+        }
+      }
+    } else if (field === 'dateMode') {
+      const mode = value as 'MANUAL' | 'AUTOMATIC'
+      if (mode === 'AUTOMATIC' && updated[index].visitDates[0]) {
+        // Auto-calculate dates from first date
+        updated[index] = {
+          ...updated[index],
+          dateMode: mode,
+          visitDates: calculateAutoDates(updated[index].visitDates[0], updated[index].frequency)
+        }
+      } else {
+        updated[index] = { ...updated[index], dateMode: mode }
       }
     } else if (field === 'visitDates') {
       updated[index] = { ...updated[index], visitDates: value as string[] }
@@ -406,9 +484,18 @@ export function ContractsList({ branchId }: ContractsListProps) {
   const updateEditVisitDate = (systemIndex: number, dateIndex: number, value: string) => {
     if (!editContract) return
     const updated = [...editContract.systems]
-    const dates = [...updated[systemIndex].visitDates]
-    dates[dateIndex] = value
-    updated[systemIndex] = { ...updated[systemIndex], visitDates: dates }
+
+    // If automatic mode and changing first date, recalculate all dates
+    if (updated[systemIndex].dateMode === 'AUTOMATIC' && dateIndex === 0) {
+      updated[systemIndex] = {
+        ...updated[systemIndex],
+        visitDates: calculateAutoDates(value, updated[systemIndex].frequency)
+      }
+    } else {
+      const dates = [...updated[systemIndex].visitDates]
+      dates[dateIndex] = value
+      updated[systemIndex] = { ...updated[systemIndex], visitDates: dates }
+    }
     setEditContract({ ...editContract, systems: updated })
   }
 
@@ -435,7 +522,8 @@ export function ContractsList({ branchId }: ContractsListProps) {
           name: s.name,
           description: s.description || null,
           frequency: s.frequency,
-          visitDates: s.visitDates.filter(d => d)
+          visitDates: s.visitDates.filter(d => d),
+          dateMode: s.dateMode
         }))
 
       // Prepare payments data
@@ -540,7 +628,8 @@ export function ContractsList({ branchId }: ContractsListProps) {
           name: s.name,
           description: s.description || null,
           frequency: s.frequency,
-          visitDates: s.visitDates.filter(d => d) // Filter out empty dates
+          visitDates: s.visitDates.filter(d => d), // Filter out empty dates
+          dateMode: s.dateMode
         }))
 
       // Prepare payments data - filter out payments without dates
@@ -1190,10 +1279,39 @@ export function ContractsList({ branchId }: ContractsListProps) {
                           </Select>
                         </div>
 
+                        {/* Date Mode Toggle */}
+                        <div className="flex items-center gap-3 py-2">
+                          <Label className="text-xs text-muted-foreground">Date Entry:</Label>
+                          <div className="flex items-center gap-2">
+                            <button
+                              type="button"
+                              onClick={() => updateSystem(sysIndex, 'dateMode', 'MANUAL')}
+                              className={`px-3 py-1 text-xs rounded-md transition-colors ${system.dateMode === 'MANUAL'
+                                ? 'bg-primary text-primary-foreground'
+                                : 'bg-muted text-muted-foreground hover:bg-muted/80'
+                                }`}
+                            >
+                              Manual
+                            </button>
+                            <button
+                              type="button"
+                              onClick={() => updateSystem(sysIndex, 'dateMode', 'AUTOMATIC')}
+                              className={`px-3 py-1 text-xs rounded-md transition-colors ${system.dateMode === 'AUTOMATIC'
+                                ? 'bg-primary text-primary-foreground'
+                                : 'bg-muted text-muted-foreground hover:bg-muted/80'
+                                }`}
+                            >
+                              Auto-Calculate
+                            </button>
+                          </div>
+                        </div>
+
                         {/* Visit Dates */}
                         <div className="space-y-2">
                           <Label className="text-xs text-muted-foreground">
-                            Visit Dates (editable in kanban board)
+                            {system.dateMode === 'AUTOMATIC'
+                              ? 'Visit Dates (enter first date, others auto-calculated)'
+                              : 'Visit Dates (enter all dates manually)'}
                           </Label>
                           <div className="grid grid-cols-2 sm:grid-cols-4 gap-2">
                             {system.visitDates.map((date, dateIndex) => (
@@ -1203,6 +1321,8 @@ export function ContractsList({ branchId }: ContractsListProps) {
                                   type="date"
                                   value={date}
                                   onChange={(e) => updateVisitDate(sysIndex, dateIndex, e.target.value)}
+                                  disabled={system.dateMode === 'AUTOMATIC' && dateIndex > 0}
+                                  className={system.dateMode === 'AUTOMATIC' && dateIndex > 0 ? 'bg-muted' : ''}
                                 />
                               </div>
                             ))}
@@ -1421,10 +1541,39 @@ export function ContractsList({ branchId }: ContractsListProps) {
                             </Select>
                           </div>
 
+                          {/* Date Mode Toggle */}
+                          <div className="flex items-center gap-3 py-2">
+                            <Label className="text-xs text-muted-foreground">Date Entry:</Label>
+                            <div className="flex items-center gap-2">
+                              <button
+                                type="button"
+                                onClick={() => updateEditSystem(sysIndex, 'dateMode', 'MANUAL')}
+                                className={`px-3 py-1 text-xs rounded-md transition-colors ${system.dateMode === 'MANUAL'
+                                  ? 'bg-primary text-primary-foreground'
+                                  : 'bg-muted text-muted-foreground hover:bg-muted/80'
+                                  }`}
+                              >
+                                Manual
+                              </button>
+                              <button
+                                type="button"
+                                onClick={() => updateEditSystem(sysIndex, 'dateMode', 'AUTOMATIC')}
+                                className={`px-3 py-1 text-xs rounded-md transition-colors ${system.dateMode === 'AUTOMATIC'
+                                  ? 'bg-primary text-primary-foreground'
+                                  : 'bg-muted text-muted-foreground hover:bg-muted/80'
+                                  }`}
+                              >
+                                Auto-Calculate
+                              </button>
+                            </div>
+                          </div>
+
                           {/* Visit Dates */}
                           <div className="space-y-2">
                             <Label className="text-xs text-muted-foreground">
-                              Visit Dates
+                              {system.dateMode === 'AUTOMATIC'
+                                ? 'Visit Dates (enter first date, others auto-calculated)'
+                                : 'Visit Dates (enter all dates manually)'}
                             </Label>
                             <div className="grid grid-cols-2 sm:grid-cols-4 gap-2">
                               {system.visitDates.map((date, dateIndex) => (
@@ -1434,6 +1583,8 @@ export function ContractsList({ branchId }: ContractsListProps) {
                                     type="date"
                                     value={date}
                                     onChange={(e) => updateEditVisitDate(sysIndex, dateIndex, e.target.value)}
+                                    disabled={system.dateMode === 'AUTOMATIC' && dateIndex > 0}
+                                    className={system.dateMode === 'AUTOMATIC' && dateIndex > 0 ? 'bg-muted' : ''}
                                   />
                                 </div>
                               ))}

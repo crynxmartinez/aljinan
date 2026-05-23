@@ -132,6 +132,9 @@ interface ChecklistItem {
   deletedAt: string | null
   deletedBy: string | null
   deletedReason: string | null
+  // Contract fields
+  contractSystemId?: string | null
+  contractTitle?: string | null
   // Inspection fields
   workOrderType?: 'SERVICE' | 'INSPECTION' | 'MAINTENANCE' | 'INSTALLATION' | 'STICKER_INSPECTION' | 'OTHER' | null
   workOrderNumber?: number | null
@@ -353,6 +356,16 @@ function DraggableCard({
           {item.projectTitle && (
             <div className="mt-2 text-xs text-muted-foreground truncate">
               {item.projectTitle}
+            </div>
+          )}
+
+          {/* Contract badge for contract-linked work orders */}
+          {item.contractTitle && (
+            <div className="mt-2">
+              <Badge variant="outline" className="text-xs border-purple-300 text-purple-700 bg-purple-50">
+                <ClipboardList className="h-3 w-3 mr-1" />
+                {item.contractTitle}
+              </Badge>
             </div>
           )}
 

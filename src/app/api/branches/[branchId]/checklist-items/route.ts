@@ -182,7 +182,13 @@ export async function GET(
             }
           }
         },
-        photos: true
+        photos: true,
+        contractSystem: {
+          select: {
+            id: true,
+            name: true
+          }
+        }
       },
       orderBy: [
         { stage: 'asc' },
@@ -227,6 +233,7 @@ export async function GET(
         checklistId: item.checklistId,
         checklistTitle: item.checklist.title,
         contractTitle: item.checklist.contract?.title || null,
+        contractSystemId: item.contractSystem?.id || null,
         linkedRequestId: item.linkedRequestId,
         assignedTo: item.assignedTo,
         // Inspection fields

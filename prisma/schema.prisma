@@ -732,9 +732,13 @@ model ContractSystem {
   description String?
   frequency   ContractSystemFrequency  // How often visits occur
   visitDates  Json                     // Array of visit dates: ["2026-01-15", "2026-04-15", ...]
+  dateMode    String                   @default("MANUAL")  // "MANUAL" or "AUTOMATIC"
   order       Int                      @default(0)  // Display order
   createdAt   DateTime                 @default(now())
   updatedAt   DateTime                 @updatedAt
+  
+  // Work orders generated from this system
+  workOrders  ChecklistItem[]
   
   @@index([contractId])
 }
@@ -747,14 +751,22 @@ model ContractPayment {
   paymentNo   Int       // 1, 2, 3, 4...
   dueDate     DateTime?
   amount      Float?    // Can be null/blank initially
-  status      String    @default("PENDING")  // PENDING, PAID
+  status      String    @default("PENDING")  // PENDING, PENDING_VERIFICATION, PAID
   paidAt      DateTime?
   order       Int       @default(0)  // Display order
+  
+  // Payment proof fields
+  paymentProofUrl       String?
+  paymentProofType      String?   // TRANSFER, CASH, CHECK, etc.
+  paymentProofFileName  String?
+  paymentSubmittedAt    DateTime?
+  
   createdAt   DateTime  @default(now())
   updatedAt   DateTime  @updatedAt
   
   @@index([contractId])
   @@index([dueDate])
+  @@index([status])
 }
 
 // Checklist statuses
@@ -840,6 +852,10 @@ model ChecklistItem {
   // Link to original request (if created from request)
   linkedRequestId String?            // Request ID that created this work order
   
+  // Link to contract system (if created from contract)
+  contractSystemId String?           // Contract system that generated this work order
+  contractSystem   ContractSystem?   @relation(fields: [contractSystemId], references: [id])
+  
   // Assignment
   assignedTo      String?            // User ID of assigned team member
   
@@ -906,6 +922,7 @@ model ChecklistItem {
   @@index([checklistId, order])
   @@index([linkedRequestId])
   @@index([workOrderNumber])
+  @@index([contractSystemId])
 }
 
 // Photos attached to work order inspections

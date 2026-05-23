@@ -72,6 +72,7 @@ interface ContractSystem {
   description: string | null
   frequency: 'MONTHLY' | 'QUARTERLY' | 'SEMI_ANNUALLY' | 'ANNUALLY'
   visitDates: string[]
+  dateMode: 'MANUAL' | 'AUTOMATIC'
 }
 
 interface ContractPayment {

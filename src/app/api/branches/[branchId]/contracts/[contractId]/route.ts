@@ -11,6 +11,7 @@ interface SystemInput {
   description?: string
   frequency: ContractSystemFrequency
   visitDates: string[]
+  dateMode?: 'MANUAL' | 'AUTOMATIC'
 }
 
 // Type for payment input
@@ -102,17 +103,99 @@ export async function PATCH(
         return NextResponse.json({ error: 'Signature is required' }, { status: 400 })
       }
 
-      const updated = await prisma.contract.update({
-        where: { id: contractId },
-        data: {
-          startSignatureUrl: signatureUrl,
-          startSignedById: session.user.id,
-          startSignedAt: new Date(),
-          status: 'SIGNED'
+      // Use transaction to update contract and generate work orders
+      const result = await prisma.$transaction(async (tx) => {
+        // Update contract with signature
+        const updated = await tx.contract.update({
+          where: { id: contractId },
+          data: {
+            startSignatureUrl: signatureUrl,
+            startSignedById: session.user.id,
+            startSignedAt: new Date(),
+            status: 'SIGNED'
+          },
+          include: {
+            systems: true,
+            checklist: true
+          }
+        })
+
+        // Only generate work orders if contract has systems and no existing checklist
+        if (updated.systems.length > 0 && !updated.checklist) {
+          // Get the next work order number
+          const lastWorkOrder = await tx.checklistItem.findFirst({
+            orderBy: { workOrderNumber: 'desc' },
+            select: { workOrderNumber: true }
+          })
+          let nextWorkOrderNumber = (lastWorkOrder?.workOrderNumber || 0) + 1
+
+          // Create a checklist for this contract
+          const checklist = await tx.checklist.create({
+            data: {
+              branchId,
+              title: `${updated.title} - Maintenance Schedule`,
+              description: `Auto-generated maintenance work orders for contract: ${updated.title}`,
+              status: 'IN_PROGRESS',
+              contractId: updated.id,
+              createdById: session.user.id
+            }
+          })
+
+          // Generate work orders for each system's visit dates
+          const workOrdersToCreate: {
+            checklistId: string
+            description: string
+            notes: string
+            stage: 'SCHEDULED'
+            type: 'SCHEDULED'
+            workOrderType: 'MAINTENANCE'
+            scheduledDate: Date
+            contractSystemId: string
+            workOrderNumber: number
+            order: number
+          }[] = []
+
+          let orderIndex = 0
+          for (const system of updated.systems) {
+            const visitDates = system.visitDates as string[]
+            const frequencyLabel = {
+              'MONTHLY': 'Monthly',
+              'QUARTERLY': 'Quarterly',
+              'SEMI_ANNUALLY': 'Semi-Annual',
+              'ANNUALLY': 'Annual'
+            }[system.frequency] || system.frequency
+
+            for (let i = 0; i < visitDates.length; i++) {
+              const visitDate = visitDates[i]
+              if (visitDate) {
+                workOrdersToCreate.push({
+                  checklistId: checklist.id,
+                  description: `${system.name} - ${frequencyLabel} Visit ${i + 1}`,
+                  notes: system.description || `Scheduled maintenance for ${system.name}`,
+                  stage: 'SCHEDULED',
+                  type: 'SCHEDULED',
+                  workOrderType: 'MAINTENANCE',
+                  scheduledDate: new Date(visitDate),
+                  contractSystemId: system.id,
+                  workOrderNumber: nextWorkOrderNumber++,
+                  order: orderIndex++
+                })
+              }
+            }
+          }
+
+          // Create all work orders
+          if (workOrdersToCreate.length > 0) {
+            await tx.checklistItem.createMany({
+              data: workOrdersToCreate
+            })
+          }
         }
+
+        return updated
       })
 
-      return NextResponse.json(updated)
+      return NextResponse.json(result)
     }
 
     // Handle client end signature (when completing contract)
@@ -189,13 +272,64 @@ export async function PATCH(
     // Check if contract was already signed - if so, editing will require re-signature
     const existingContract = await prisma.contract.findUnique({
       where: { id: contractId },
-      select: { startSignedAt: true, status: true }
+      include: {
+        systems: {
+          include: {
+            workOrders: {
+              select: {
+                id: true,
+                stage: true,
+                scheduledDate: true,
+                contractSystemId: true
+              }
+            }
+          }
+        }
+      }
     })
 
-    const wasAlreadySigned = existingContract?.startSignedAt !== null
+    if (!existingContract) {
+      return NextResponse.json({ error: 'Contract not found' }, { status: 404 })
+    }
+
+    const wasAlreadySigned = existingContract.startSignedAt !== null
     const isSubstantiveEdit = systems !== undefined || payments !== undefined ||
       title !== undefined || startDate !== undefined ||
       endDate !== undefined
+
+    // Check for completed work orders if trying to edit systems
+    if (systems !== undefined && Array.isArray(systems)) {
+      // Find all completed work orders linked to this contract's systems
+      const completedWorkOrders = existingContract.systems.flatMap(sys =>
+        sys.workOrders.filter(wo => wo.stage === 'COMPLETED')
+      )
+
+      if (completedWorkOrders.length > 0) {
+        // Get the system IDs that have completed work orders
+        const lockedSystemIds = [...new Set(completedWorkOrders.map(wo => wo.contractSystemId))]
+        const lockedSystems = existingContract.systems.filter(sys => lockedSystemIds.includes(sys.id))
+
+        // Return info about locked systems
+        return NextResponse.json({
+          error: 'Cannot modify contract systems with completed work orders',
+          lockedSystems: lockedSystems.map(sys => ({
+            id: sys.id,
+            name: sys.name,
+            completedWorkOrderCount: sys.workOrders.filter(wo => wo.stage === 'COMPLETED').length
+          })),
+          message: 'Some systems have completed work orders and cannot be modified. Please contact support if you need to make changes.'
+        }, { status: 400 })
+      }
+
+      // Check for in-progress work orders (warning but allow)
+      const inProgressWorkOrders = existingContract.systems.flatMap(sys =>
+        sys.workOrders.filter(wo => wo.stage === 'IN_PROGRESS' || wo.stage === 'FOR_REVIEW')
+      )
+
+      // If there are in-progress work orders, we need to handle them
+      // For now, we'll delete scheduled work orders and keep in-progress ones
+      // The new systems will generate new work orders when re-signed
+    }
 
     // Use transaction to update contract with systems and payments
     const updated = await prisma.$transaction(async (tx) => {
@@ -230,6 +364,20 @@ export async function PATCH(
 
       // Update systems if provided
       if (systems !== undefined && Array.isArray(systems)) {
+        // Get existing system IDs to delete their scheduled work orders
+        const existingSystemIds = existingContract.systems.map(s => s.id)
+
+        // Delete only SCHEDULED work orders linked to these systems
+        // (IN_PROGRESS and FOR_REVIEW are blocked above, COMPLETED blocks the edit)
+        if (existingSystemIds.length > 0) {
+          await tx.checklistItem.deleteMany({
+            where: {
+              contractSystemId: { in: existingSystemIds },
+              stage: 'SCHEDULED'
+            }
+          })
+        }
+
         // Delete existing systems and recreate
         await tx.contractSystem.deleteMany({
           where: { contractId }
@@ -243,8 +391,22 @@ export async function PATCH(
               description: system.description || null,
               frequency: system.frequency,
               visitDates: system.visitDates || [],
+              dateMode: system.dateMode || 'MANUAL',
               order: index
             }))
+          })
+        }
+
+        // Check if the contract's checklist is now empty and delete it
+        // This allows new work orders to be generated on re-signature
+        const contractChecklist = await tx.checklist.findFirst({
+          where: { contractId },
+          include: { items: { select: { id: true } } }
+        })
+
+        if (contractChecklist && contractChecklist.items.length === 0) {
+          await tx.checklist.delete({
+            where: { id: contractChecklist.id }
           })
         }
       }

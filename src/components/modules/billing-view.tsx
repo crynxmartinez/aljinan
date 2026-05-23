@@ -34,6 +34,21 @@ interface WorkOrder {
   paymentSubmittedAt: string | null
 }
 
+interface ContractPayment {
+  id: string
+  contractId: string
+  contractTitle: string
+  paymentNo: number
+  dueDate: string | null
+  amount: number | null
+  status: 'PENDING' | 'PENDING_VERIFICATION' | 'PAID'
+  paymentProofUrl: string | null
+  paymentProofType: string | null
+  paymentProofFileName: string | null
+  paymentSubmittedAt: string | null
+  paidAt: string | null
+}
+
 interface BillingViewProps {
   branchId: string
   userRole: 'CONTRACTOR' | 'CLIENT'
@@ -42,6 +57,7 @@ interface BillingViewProps {
 export function BillingView({ branchId, userRole }: BillingViewProps) {
   const router = useRouter()
   const [workOrders, setWorkOrders] = useState<WorkOrder[]>([])
+  const [contractPayments, setContractPayments] = useState<ContractPayment[]>([])
   const [loading, setLoading] = useState(true)
 
   // Work order payment dialog state
@@ -56,16 +72,26 @@ export function BillingView({ branchId, userRole }: BillingViewProps) {
 
   // Collapsible states - must be at top level before any conditional returns
   const [contractsExpanded, setContractsExpanded] = useState(true)
+  const [contractPaymentsExpanded, setContractPaymentsExpanded] = useState(true)
   const [standaloneExpanded, setStandaloneExpanded] = useState(true)
   const [stickerInspectionsExpanded, setStickerInspectionsExpanded] = useState(true)
   const [expandedContracts, setExpandedContracts] = useState<string[]>([])
 
   const fetchData = async () => {
     try {
-      const woResponse = await fetch(`/api/branches/${branchId}/checklist-items`)
+      const [woResponse, cpResponse] = await Promise.all([
+        fetch(`/api/branches/${branchId}/checklist-items`),
+        fetch(`/api/branches/${branchId}/contract-payments`)
+      ])
+
       if (woResponse.ok) {
         const woData = await woResponse.json()
         setWorkOrders(woData)
+      }
+
+      if (cpResponse.ok) {
+        const cpData = await cpResponse.json()
+        setContractPayments(cpData)
       }
     } catch {
       // Silently fail
@@ -310,6 +336,69 @@ export function BillingView({ branchId, userRole }: BillingViewProps) {
                     </div>
                   </Collapsible>
                 ))}
+              </CardContent>
+            </CollapsibleContent>
+          </Card>
+        </Collapsible>
+      )}
+
+      {/* Contract Payments Section */}
+      {contractPayments.length > 0 && (
+        <Collapsible open={contractPaymentsExpanded} onOpenChange={setContractPaymentsExpanded}>
+          <Card className="border-purple-200 bg-purple-50/30">
+            <CollapsibleTrigger className="w-full">
+              <CardHeader className="cursor-pointer hover:bg-purple-50/50 transition-colors">
+                <div className="flex items-center justify-between">
+                  <div className="flex items-center gap-2">
+                    {contractPaymentsExpanded ? <ChevronDown className="h-5 w-5 text-purple-600" /> : <ChevronRight className="h-5 w-5 text-purple-600" />}
+                    <CardTitle className="flex items-center gap-2 text-purple-700">
+                      <DollarSign className="h-5 w-5" />
+                      Contract Payments
+                    </CardTitle>
+                    <Badge className="bg-purple-100 text-purple-700">Scheduled</Badge>
+                    <Badge variant="secondary">{contractPayments.length}</Badge>
+                  </div>
+                  <div className="text-right">
+                    <p className="font-semibold text-purple-700">
+                      {formatCurrency(contractPayments.reduce((sum, p) => sum + (p.amount || 0), 0))}
+                    </p>
+                    <p className="text-xs text-purple-600">
+                      {contractPayments.filter(p => p.status === 'PAID').length} of {contractPayments.length} paid
+                    </p>
+                  </div>
+                </div>
+              </CardHeader>
+            </CollapsibleTrigger>
+            <CollapsibleContent>
+              <CardContent className="pt-0">
+                <div className="space-y-2">
+                  {contractPayments.map(payment => (
+                    <div
+                      key={payment.id}
+                      className="flex items-center justify-between p-3 rounded-lg border bg-white"
+                    >
+                      <div>
+                        <p className="font-medium text-sm">{payment.contractTitle}</p>
+                        <p className="text-xs text-muted-foreground">
+                          Payment {payment.paymentNo} • Due: {payment.dueDate ? new Date(payment.dueDate).toLocaleDateString() : 'Not set'}
+                        </p>
+                      </div>
+                      <div className="flex items-center gap-3">
+                        <span className="font-semibold">{formatCurrency(payment.amount)}</span>
+                        <Badge
+                          variant={payment.status === 'PAID' ? 'default' : payment.status === 'PENDING_VERIFICATION' ? 'secondary' : 'outline'}
+                          className={
+                            payment.status === 'PAID' ? 'bg-green-100 text-green-700' :
+                              payment.status === 'PENDING_VERIFICATION' ? 'bg-yellow-100 text-yellow-700' :
+                                'bg-gray-100 text-gray-700'
+                          }
+                        >
+                          {payment.status === 'PAID' ? 'Paid' : payment.status === 'PENDING_VERIFICATION' ? 'Pending' : 'Unpaid'}
+                        </Badge>
+                      </div>
+                    </div>
+                  ))}
+                </div>
               </CardContent>
             </CollapsibleContent>
           </Card>
