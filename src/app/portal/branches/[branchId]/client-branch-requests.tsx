@@ -121,6 +121,7 @@ interface Request {
   createdById: string
   createdByRole: string
   assignedTo: string | null
+  assignedToUser?: { id: string; name: string | null; email: string } | null
   dueDate: string | null
   completedAt: string | null
   createdAt: string
@@ -1867,7 +1868,7 @@ export function ClientBranchRequests({ branchId, onDataChange, userId }: ClientB
                   <div>
                     <p className="text-xs text-purple-600 mb-1">
                       {quoteResponseRequest.recurringType && quoteResponseRequest.recurringType !== 'ONCE'
-                        ? 'Price per Occurrence'
+                        ? 'Total Price'
                         : 'Price'}
                     </p>
                     <p className="text-2xl font-bold text-purple-800">
@@ -1888,7 +1889,9 @@ export function ClientBranchRequests({ branchId, onDataChange, userId }: ClientB
                 {quoteResponseRequest.assignedTo && (
                   <div>
                     <p className="text-xs text-purple-600 mb-1">Assigned Technician</p>
-                    <p className="text-sm font-medium text-purple-800">{quoteResponseRequest.assignedTo}</p>
+                    <p className="text-sm font-medium text-purple-800">
+                      {quoteResponseRequest.assignedToUser?.name || quoteResponseRequest.assignedToUser?.email || 'Assigned'}
+                    </p>
                   </div>
                 )}
                 {quoteResponseRequest.quotedNotes && (
@@ -1917,36 +1920,59 @@ export function ClientBranchRequests({ branchId, onDataChange, userId }: ClientB
               {quoteResponseRequest.recurringType && quoteResponseRequest.recurringType !== 'ONCE' && quoteResponseRequest.quotedDate && quoteResponseRequest.quotedPrice && (
                 <div className="p-4 bg-blue-50 border border-blue-200 rounded-lg">
                   <h5 className="font-medium text-blue-800 mb-3">
-                    Work Orders ({quoteResponseRequest.recurringType === 'MONTHLY' ? 'Monthly' : 'Quarterly'})
+                    Work Orders ({quoteResponseRequest.recurringType === 'MONTHLY' ? 'Monthly' :
+                      quoteResponseRequest.recurringType === 'QUARTERLY' ? 'Quarterly' : 'Semi-Annually'})
                   </h5>
                   <div className="space-y-1 text-sm">
                     {(() => {
-                      const startDate = new Date(quoteResponseRequest.quotedDate)
-                      const interval = quoteResponseRequest.recurringType === 'MONTHLY' ? 1 : 3
-                      const occurrences = quoteResponseRequest.recurringType === 'MONTHLY' ? 12 : 4
-                      const price = quoteResponseRequest.quotedPrice || 0
+                      // Use occurrences data if available (new format)
+                      if (quoteResponseRequest.occurrences && quoteResponseRequest.occurrences.length > 0) {
+                        return (
+                          <>
+                            {quoteResponseRequest.occurrences.map((occ, idx) => (
+                              <div key={idx} className="flex justify-between items-center py-1 border-b border-blue-100 last:border-0">
+                                <span className="text-blue-700">
+                                  └ #{occ.order}: {occ.visitDate ? new Date(occ.visitDate).toLocaleDateString() : 'TBD'}
+                                </span>
+                                <span className="font-medium text-blue-800">
+                                  {occ.price ? `SAR ${occ.price.toLocaleString()}` : '-'}
+                                </span>
+                              </div>
+                            ))}
+                            <div className="flex justify-between items-center pt-3 mt-2 border-t border-blue-300 font-semibold">
+                              <span className="text-blue-800">Total ({quoteResponseRequest.occurrences.length} work orders)</span>
+                              <span className="text-blue-900 text-lg">SAR {quoteResponseRequest.quotedPrice?.toLocaleString()}</span>
+                            </div>
+                          </>
+                        )
+                      }
+
+                      // Fallback: Calculate dates for old requests without occurrences
+                      const startDate = new Date(quoteResponseRequest.quotedDate!)
+                      const interval = quoteResponseRequest.recurringType === 'MONTHLY' ? 1 :
+                        quoteResponseRequest.recurringType === 'QUARTERLY' ? 3 : 6
+                      const occurrenceCount = quoteResponseRequest.recurringType === 'MONTHLY' ? 12 :
+                        quoteResponseRequest.recurringType === 'QUARTERLY' ? 4 : 2
+                      const pricePerOccurrence = (quoteResponseRequest.quotedPrice || 0) / occurrenceCount
                       const dates = []
-                      for (let i = 0; i < occurrences; i++) {
+                      for (let i = 0; i < occurrenceCount; i++) {
                         const date = new Date(startDate)
                         date.setMonth(date.getMonth() + (i * interval))
                         dates.push(date)
                       }
                       return (
                         <>
-                          {dates.slice(0, 4).map((date, idx) => (
+                          {dates.map((date, idx) => (
                             <div key={idx} className="flex justify-between items-center py-1 border-b border-blue-100 last:border-0">
                               <span className="text-blue-700">
-                                └ {quoteResponseRequest.recurringType === 'MONTHLY' ? `Month ${idx + 1}` : `Q${idx + 1}`}: {date.toLocaleDateString()}
+                                └ #{idx + 1}: {date.toLocaleDateString()}
                               </span>
-                              <span className="font-medium text-blue-800">SAR {price.toLocaleString()}</span>
+                              <span className="font-medium text-blue-800">SAR {pricePerOccurrence.toLocaleString()}</span>
                             </div>
                           ))}
-                          {dates.length > 4 && (
-                            <p className="text-blue-600 text-xs mt-2">... and {dates.length - 4} more work orders</p>
-                          )}
                           <div className="flex justify-between items-center pt-3 mt-2 border-t border-blue-300 font-semibold">
                             <span className="text-blue-800">Total ({dates.length} work orders)</span>
-                            <span className="text-blue-900 text-lg">SAR {(price * dates.length).toLocaleString()}</span>
+                            <span className="text-blue-900 text-lg">SAR {quoteResponseRequest.quotedPrice?.toLocaleString()}</span>
                           </div>
                         </>
                       )

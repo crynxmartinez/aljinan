@@ -33,7 +33,27 @@ export async function GET(
       orderBy: { createdAt: 'desc' }
     })
 
-    return NextResponse.json(requests)
+    // Fetch assigned user names for requests that have assignedTo
+    const assignedUserIds = requests
+      .filter(r => r.assignedTo)
+      .map(r => r.assignedTo as string)
+
+    const assignedUsers = assignedUserIds.length > 0
+      ? await prisma.user.findMany({
+        where: { id: { in: assignedUserIds } },
+        select: { id: true, name: true, email: true }
+      })
+      : []
+
+    const userMap = new Map(assignedUsers.map(u => [u.id, u]))
+
+    // Add assignedToUser to each request
+    const requestsWithUsers = requests.map(r => ({
+      ...r,
+      assignedToUser: r.assignedTo ? userMap.get(r.assignedTo) || null : null
+    }))
+
+    return NextResponse.json(requestsWithUsers)
   } catch (error) {
     console.error('Error fetching requests:', error)
     return NextResponse.json(
