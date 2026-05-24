@@ -171,6 +171,7 @@ export async function PATCH(
       let occurrenceCount = 1
       if (recurringType === 'MONTHLY') occurrenceCount = 12
       else if (recurringType === 'QUARTERLY') occurrenceCount = 4
+      else if (recurringType === 'SEMI_ANNUALLY') occurrenceCount = 2
 
       const startDate = new Date(quotedDate)
       const createdWorkOrders: string[] = []
@@ -195,6 +196,8 @@ export async function PATCH(
             scheduledDate.setMonth(scheduledDate.getMonth() + i)
           } else if (recurringType === 'QUARTERLY') {
             scheduledDate.setMonth(scheduledDate.getMonth() + (i * 3))
+          } else if (recurringType === 'SEMI_ANNUALLY') {
+            scheduledDate.setMonth(scheduledDate.getMonth() + (i * 6))
           }
 
           const workOrder = await prisma.checklistItem.create({
@@ -278,6 +281,10 @@ export async function PATCH(
       let occurrenceCount = 1
       if (recurringType === 'MONTHLY') occurrenceCount = 12
       else if (recurringType === 'QUARTERLY') occurrenceCount = 4
+      else if (recurringType === 'SEMI_ANNUALLY') occurrenceCount = 2
+
+      // Check if we have occurrences data (new format with individual dates/prices)
+      const occurrencesData = currentRequest.occurrences as Array<{ order: number; visitDate: string; price: number | null }> | null
 
       const startDate = currentRequest.quotedDate ? new Date(currentRequest.quotedDate) : new Date()
       const createdWorkOrders: string[] = []
@@ -295,12 +302,25 @@ export async function PATCH(
 
       // Create work orders for each occurrence
       for (let i = 0; i < occurrenceCount; i++) {
-        // Calculate scheduled date for this occurrence
-        const scheduledDate = new Date(startDate)
-        if (recurringType === 'MONTHLY') {
-          scheduledDate.setMonth(scheduledDate.getMonth() + i)
-        } else if (recurringType === 'QUARTERLY') {
-          scheduledDate.setMonth(scheduledDate.getMonth() + (i * 3))
+        // Use occurrences data if available, otherwise calculate
+        let scheduledDate: Date
+        let price: number | null
+
+        if (occurrencesData && occurrencesData[i]) {
+          // Use individual occurrence data
+          scheduledDate = new Date(occurrencesData[i].visitDate)
+          price = occurrencesData[i].price
+        } else {
+          // Calculate date based on recurring type (legacy/fallback)
+          scheduledDate = new Date(startDate)
+          if (recurringType === 'MONTHLY') {
+            scheduledDate.setMonth(scheduledDate.getMonth() + i)
+          } else if (recurringType === 'QUARTERLY') {
+            scheduledDate.setMonth(scheduledDate.getMonth() + (i * 3))
+          } else if (recurringType === 'SEMI_ANNUALLY') {
+            scheduledDate.setMonth(scheduledDate.getMonth() + (i * 6))
+          }
+          price = currentRequest.quotedPrice
         }
 
         const workOrder = await prisma.checklistItem.create({
@@ -317,11 +337,9 @@ export async function PATCH(
             occurrenceIndex: i + 1,
             workOrderNumber: startingWoNumber + i,
             scheduledDate: scheduledDate,
-            price: currentRequest.quotedPrice,
+            price: price,
             linkedRequestId: requestId,
             assignedTo: currentRequest.assignedTo || null,
-            // Note: clientSignature should only be added when client accepts COMPLETED work,
-            // not when accepting the quote. Quote acceptance signature is stored in Request model.
           }
         })
         createdWorkOrders.push(workOrder.id)

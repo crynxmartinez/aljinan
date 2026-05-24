@@ -77,6 +77,8 @@ export async function POST(
       quotationFileName, // Original quotation filename
       // Equipment for sticker inspections
       equipment,
+      // Occurrences for recurring work orders
+      occurrences, // [{ order, visitDate, price }]
     } = body
 
     if (!title) {
@@ -139,6 +141,8 @@ export async function POST(
           quotedDate: isContractorCreated ? new Date(quotedDate) : null,
           quotedById: isContractorCreated ? session.user.id : null,
           quotedAt: isContractorCreated ? new Date() : null,
+          // Occurrences for recurring work orders
+          occurrences: occurrences || null,
           photos: photoUrls && photoUrls.length > 0 ? {
             create: photoUrls.map((url: string) => ({ url }))
           } : undefined,

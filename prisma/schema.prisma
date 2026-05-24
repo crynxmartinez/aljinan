@@ -387,6 +387,9 @@ model Request {
   // Link to created work order
   workOrderId         String?         // ChecklistItem ID once accepted
   
+  // Occurrences for recurring requests (individual dates and prices)
+  occurrences         Json?           // [{ order: 1, visitDate: "2026-01-15", price: 500 }, ...]
+  
   // Photos
   photos              RequestPhoto[]
   

@@ -496,7 +496,7 @@ export function RequestsList({ branchId, userRole, userId }: RequestsListProps) 
     title: string
     description: string
     workOrderType: 'SERVICE' | 'INSPECTION' | 'MAINTENANCE' | 'INSTALLATION'
-    recurringType: 'ONCE' | 'MONTHLY' | 'QUARTERLY' | 'SEMI_ANNUALLY' | 'ANNUALLY'
+    recurringType: 'ONCE' | 'MONTHLY' | 'QUARTERLY' | 'SEMI_ANNUALLY'
     needsCertificate: boolean
     quotedPrice: string
     quotedDate: string
@@ -512,6 +512,51 @@ export function RequestsList({ branchId, userRole, userId }: RequestsListProps) 
     assignedTo: '',
   })
   const [contractorCreating, setContractorCreating] = useState(false)
+
+  // Occurrences state for recurring work orders
+  interface Occurrence {
+    order: number
+    visitDate: string
+    price: string
+  }
+  const [occurrences, setOccurrences] = useState<Occurrence[]>([])
+  const [scheduleType, setScheduleType] = useState<'auto' | 'manual'>('auto')
+
+  // Generate occurrences based on frequency and start date
+  const generateOccurrences = (startDate: string, recurringType: string) => {
+    if (!startDate || recurringType === 'ONCE') {
+      setOccurrences([])
+      return
+    }
+
+    let count = 1
+    let monthIncrement = 1
+    if (recurringType === 'MONTHLY') { count = 12; monthIncrement = 1 }
+    else if (recurringType === 'QUARTERLY') { count = 4; monthIncrement = 3 }
+    else if (recurringType === 'SEMI_ANNUALLY') { count = 2; monthIncrement = 6 }
+
+    const newOccurrences: Occurrence[] = []
+    const start = new Date(startDate)
+
+    for (let i = 0; i < count; i++) {
+      const date = new Date(start)
+      date.setMonth(date.getMonth() + (i * monthIncrement))
+      newOccurrences.push({
+        order: i + 1,
+        visitDate: date.toISOString().split('T')[0],
+        price: ''
+      })
+    }
+
+    setOccurrences(newOccurrences)
+  }
+
+  // Update single occurrence
+  const updateOccurrence = (index: number, field: 'visitDate' | 'price', value: string) => {
+    const updated = [...occurrences]
+    updated[index] = { ...updated[index], [field]: value }
+    setOccurrences(updated)
+  }
 
   // Team members for assignment
   const [teamMembers, setTeamMembers] = useState<Array<{ id: string; userId: string; user: { name: string | null; email: string }; teamRole: string }>>([])
@@ -608,14 +653,45 @@ export function RequestsList({ branchId, userRole, userId }: RequestsListProps) 
   // Contractor creates a work order request (already quoted, goes to client for approval)
   const handleContractorCreateRequest = async (e: React.FormEvent) => {
     e.preventDefault()
-    if (!contractorNewRequest.quotedPrice || !contractorNewRequest.quotedDate) {
-      setError('Please provide both price and scheduled date')
-      return
+
+    // Validation for recurring vs one-time
+    if (contractorNewRequest.recurringType === 'ONCE') {
+      if (!contractorNewRequest.quotedPrice || !contractorNewRequest.quotedDate) {
+        setError('Please provide both price and scheduled date')
+        return
+      }
+    } else {
+      // For recurring, check occurrences
+      if (occurrences.length === 0) {
+        setError('Please set a start date to generate work orders')
+        return
+      }
+      // Check if at least one occurrence has a price
+      const hasAnyPrice = occurrences.some(o => o.price && parseFloat(o.price) > 0)
+      if (!hasAnyPrice) {
+        setError('Please set price for at least one work order')
+        return
+      }
     }
+
     setContractorCreating(true)
     setError('')
 
     try {
+      // Prepare occurrences data for recurring
+      const occurrencesData = contractorNewRequest.recurringType !== 'ONCE'
+        ? occurrences.map(o => ({
+          order: o.order,
+          visitDate: o.visitDate,
+          price: o.price ? parseFloat(o.price) : null
+        }))
+        : null
+
+      // Calculate total price for recurring (sum of all occurrence prices)
+      const totalPrice = contractorNewRequest.recurringType !== 'ONCE'
+        ? occurrences.reduce((sum, o) => sum + (o.price ? parseFloat(o.price) : 0), 0)
+        : parseFloat(contractorNewRequest.quotedPrice)
+
       const response = await fetch(`/api/branches/${branchId}/requests`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
@@ -625,12 +701,15 @@ export function RequestsList({ branchId, userRole, userId }: RequestsListProps) 
           workOrderType: contractorNewRequest.workOrderType,
           recurringType: contractorNewRequest.recurringType,
           needsCertificate: contractorNewRequest.needsCertificate,
-          quotedPrice: parseFloat(contractorNewRequest.quotedPrice),
-          quotedDate: contractorNewRequest.quotedDate,
+          quotedPrice: totalPrice,
+          quotedDate: contractorNewRequest.recurringType !== 'ONCE'
+            ? occurrences[0]?.visitDate
+            : contractorNewRequest.quotedDate,
           assignedTo: contractorNewRequest.assignedTo && contractorNewRequest.assignedTo !== 'unassigned' ? contractorNewRequest.assignedTo : null,
           quotationUrl: quotationFile?.url || null,
           quotationFileName: quotationFile?.name || null,
           priority: 'MEDIUM',
+          occurrences: occurrencesData,
           // These fields indicate it's contractor-created and already quoted
           status: 'QUOTED',
         }),
@@ -652,6 +731,8 @@ export function RequestsList({ branchId, userRole, userId }: RequestsListProps) 
         quotedDate: '',
         assignedTo: '',
       })
+      setOccurrences([])
+      setScheduleType('auto')
       setSuccessMessage('Work order request sent to client for approval')
       setTimeout(() => setSuccessMessage(''), 3000)
       fetchRequests()
@@ -1141,7 +1222,7 @@ export function RequestsList({ branchId, userRole, userId }: RequestsListProps) 
                 <Label htmlFor="contractor-recurringType">Frequency</Label>
                 <Select
                   value={contractorNewRequest.recurringType}
-                  onValueChange={(value: 'ONCE' | 'MONTHLY' | 'QUARTERLY' | 'SEMI_ANNUALLY' | 'ANNUALLY') => setContractorNewRequest({ ...contractorNewRequest, recurringType: value })}
+                  onValueChange={(value: 'ONCE' | 'MONTHLY' | 'QUARTERLY' | 'SEMI_ANNUALLY') => setContractorNewRequest({ ...contractorNewRequest, recurringType: value })}
                 >
                   <SelectTrigger>
                     <SelectValue />
@@ -1151,7 +1232,6 @@ export function RequestsList({ branchId, userRole, userId }: RequestsListProps) 
                     <SelectItem value="MONTHLY">Monthly (12 work orders)</SelectItem>
                     <SelectItem value="QUARTERLY">Quarterly (4 work orders)</SelectItem>
                     <SelectItem value="SEMI_ANNUALLY">Semi-Annually (2 work orders)</SelectItem>
-                    <SelectItem value="ANNUALLY">Annually (1 work order)</SelectItem>
                   </SelectContent>
                 </Select>
               </div>
@@ -1197,53 +1277,158 @@ export function RequestsList({ branchId, userRole, userId }: RequestsListProps) 
                 />
               </div>
 
-              {/* Price and Date */}
-              <div className="grid grid-cols-2 gap-4">
-                <div className="space-y-2">
-                  <Label htmlFor="contractor-quotedPrice">
-                    Price (SAR) * {contractorNewRequest.recurringType !== 'ONCE' && <span className="text-xs text-muted-foreground">(per occurrence)</span>}
-                  </Label>
-                  <Input
-                    id="contractor-quotedPrice"
-                    type="number"
-                    step="0.01"
-                    min="0"
-                    value={contractorNewRequest.quotedPrice}
-                    onChange={(e) => setContractorNewRequest({ ...contractorNewRequest, quotedPrice: e.target.value })}
-                    placeholder="0.00"
-                    required
-                  />
+              {/* One-time: Simple Price and Date */}
+              {contractorNewRequest.recurringType === 'ONCE' && (
+                <div className="grid grid-cols-2 gap-4">
+                  <div className="space-y-2">
+                    <Label htmlFor="contractor-quotedPrice">Price (SAR) *</Label>
+                    <Input
+                      id="contractor-quotedPrice"
+                      type="number"
+                      step="0.01"
+                      min="0"
+                      value={contractorNewRequest.quotedPrice}
+                      onChange={(e) => setContractorNewRequest({ ...contractorNewRequest, quotedPrice: e.target.value })}
+                      placeholder="0.00"
+                      required
+                    />
+                  </div>
+                  <div className="space-y-2">
+                    <Label htmlFor="contractor-quotedDate">Scheduled Date *</Label>
+                    <Input
+                      id="contractor-quotedDate"
+                      type="date"
+                      value={contractorNewRequest.quotedDate}
+                      onChange={(e) => setContractorNewRequest({ ...contractorNewRequest, quotedDate: e.target.value })}
+                      min={new Date().toISOString().split('T')[0]}
+                      required
+                    />
+                  </div>
                 </div>
-                <div className="space-y-2">
-                  <Label htmlFor="contractor-quotedDate">
-                    {contractorNewRequest.recurringType !== 'ONCE' ? 'Start Date *' : 'Scheduled Date *'}
-                  </Label>
-                  <Input
-                    id="contractor-quotedDate"
-                    type="date"
-                    value={contractorNewRequest.quotedDate}
-                    onChange={(e) => setContractorNewRequest({ ...contractorNewRequest, quotedDate: e.target.value })}
-                    min={new Date().toISOString().split('T')[0]}
-                    required
-                  />
-                </div>
-              </div>
+              )}
 
-              {/* Total Preview for Recurring */}
-              {contractorNewRequest.recurringType !== 'ONCE' && contractorNewRequest.quotedPrice && (
-                <div className="p-3 bg-blue-50 border border-blue-200 rounded-lg">
-                  <p className="text-sm text-blue-800">
-                    <strong>Total:</strong> SAR {(parseFloat(contractorNewRequest.quotedPrice) * (
-                      contractorNewRequest.recurringType === 'MONTHLY' ? 12 :
-                        contractorNewRequest.recurringType === 'QUARTERLY' ? 4 :
-                          contractorNewRequest.recurringType === 'SEMI_ANNUALLY' ? 2 : 1
-                    )).toLocaleString('en-US', { minimumFractionDigits: 2 })}
-                    {' '}({
-                      contractorNewRequest.recurringType === 'MONTHLY' ? '12 monthly' :
-                        contractorNewRequest.recurringType === 'QUARTERLY' ? '4 quarterly' :
-                          contractorNewRequest.recurringType === 'SEMI_ANNUALLY' ? '2 semi-annual' : '1 annual'
-                    } work orders)
-                  </p>
+              {/* Recurring: Schedule Type and Occurrences Table */}
+              {contractorNewRequest.recurringType !== 'ONCE' && (
+                <div className="space-y-4 p-4 bg-muted/30 rounded-lg border">
+                  {/* Schedule Type Toggle */}
+                  <div className="flex items-center gap-4">
+                    <Label className="text-sm font-medium">Schedule:</Label>
+                    <div className="flex items-center gap-4">
+                      <label className="flex items-center gap-2 cursor-pointer">
+                        <input
+                          type="radio"
+                          name="scheduleType"
+                          checked={scheduleType === 'auto'}
+                          onChange={() => setScheduleType('auto')}
+                          className="h-4 w-4"
+                        />
+                        <span className="text-sm">Auto (set start date)</span>
+                      </label>
+                      <label className="flex items-center gap-2 cursor-pointer">
+                        <input
+                          type="radio"
+                          name="scheduleType"
+                          checked={scheduleType === 'manual'}
+                          onChange={() => setScheduleType('manual')}
+                          className="h-4 w-4"
+                        />
+                        <span className="text-sm">Manual (set each date)</span>
+                      </label>
+                    </div>
+                  </div>
+
+                  {/* Start Date for Auto */}
+                  {scheduleType === 'auto' && (
+                    <div className="space-y-2">
+                      <Label htmlFor="contractor-startDate">Start Date *</Label>
+                      <Input
+                        id="contractor-startDate"
+                        type="date"
+                        value={contractorNewRequest.quotedDate}
+                        onChange={(e) => {
+                          setContractorNewRequest({ ...contractorNewRequest, quotedDate: e.target.value })
+                          generateOccurrences(e.target.value, contractorNewRequest.recurringType)
+                        }}
+                        min={new Date().toISOString().split('T')[0]}
+                        className="max-w-xs"
+                      />
+                    </div>
+                  )}
+
+                  {/* Manual: Generate empty occurrences */}
+                  {scheduleType === 'manual' && occurrences.length === 0 && (
+                    <Button
+                      type="button"
+                      variant="outline"
+                      onClick={() => {
+                        const count = contractorNewRequest.recurringType === 'MONTHLY' ? 12 :
+                          contractorNewRequest.recurringType === 'QUARTERLY' ? 4 : 2
+                        const emptyOccurrences = Array.from({ length: count }, (_, i) => ({
+                          order: i + 1,
+                          visitDate: '',
+                          price: ''
+                        }))
+                        setOccurrences(emptyOccurrences)
+                      }}
+                    >
+                      Generate {contractorNewRequest.recurringType === 'MONTHLY' ? '12' :
+                        contractorNewRequest.recurringType === 'QUARTERLY' ? '4' : '2'} Work Orders
+                    </Button>
+                  )}
+
+                  {/* Occurrences Table */}
+                  {occurrences.length > 0 && (
+                    <div className="space-y-2">
+                      <Label className="text-sm font-medium">Work Orders:</Label>
+                      <div className="border rounded-lg overflow-hidden">
+                        <table className="w-full text-sm">
+                          <thead className="bg-muted">
+                            <tr>
+                              <th className="px-3 py-2 text-left font-medium w-12">#</th>
+                              <th className="px-3 py-2 text-left font-medium">Visit Date</th>
+                              <th className="px-3 py-2 text-left font-medium">Price (SAR)</th>
+                            </tr>
+                          </thead>
+                          <tbody>
+                            {occurrences.map((occ, idx) => (
+                              <tr key={idx} className="border-t">
+                                <td className="px-3 py-2 text-muted-foreground">{occ.order}</td>
+                                <td className="px-3 py-2">
+                                  <Input
+                                    type="date"
+                                    value={occ.visitDate}
+                                    onChange={(e) => updateOccurrence(idx, 'visitDate', e.target.value)}
+                                    min={new Date().toISOString().split('T')[0]}
+                                    disabled={scheduleType === 'auto'}
+                                    className="h-8"
+                                  />
+                                </td>
+                                <td className="px-3 py-2">
+                                  <Input
+                                    type="number"
+                                    step="0.01"
+                                    min="0"
+                                    value={occ.price}
+                                    onChange={(e) => updateOccurrence(idx, 'price', e.target.value)}
+                                    placeholder="0.00"
+                                    className="h-8"
+                                  />
+                                </td>
+                              </tr>
+                            ))}
+                          </tbody>
+                        </table>
+                      </div>
+
+                      {/* Total */}
+                      <div className="p-3 bg-blue-50 border border-blue-200 rounded-lg">
+                        <p className="text-sm text-blue-800">
+                          <strong>Total:</strong> SAR {occurrences.reduce((sum, o) => sum + (o.price ? parseFloat(o.price) : 0), 0).toLocaleString('en-US', { minimumFractionDigits: 2 })}
+                          {' '}({occurrences.length} work orders)
+                        </p>
+                      </div>
+                    </div>
+                  )}
                 </div>
               )}
             </div>
