@@ -13,6 +13,7 @@ interface SystemInput {
   visitDates: string[]
   dateMode?: 'MANUAL' | 'AUTOMATIC'
   paymentDueDates?: string[]
+  paymentAmounts?: string[]
   paymentDateMode?: 'AUTOMATIC' | 'MANUAL'
 }
 
@@ -171,6 +172,8 @@ export async function PATCH(
               'ANNUALLY': 'Annual'
             }[system.frequency] || system.frequency
 
+            const paymentAmounts = (system.paymentAmounts as (number | null)[]) || []
+
             for (let i = 0; i < visitDates.length; i++) {
               const visitDate = visitDates[i]
               if (visitDate) {
@@ -183,6 +186,9 @@ export async function PATCH(
                   paymentDueDate.setDate(paymentDueDate.getDate() + 10)
                 }
 
+                // Get price from payment amounts if set, otherwise null (contractor sets manually)
+                const price = paymentAmounts[i] ?? null
+
                 workOrdersToCreate.push({
                   checklistId: checklist.id,
                   description: `${system.name} - ${frequencyLabel} Visit ${i + 1}`,
@@ -194,7 +200,7 @@ export async function PATCH(
                   contractSystemId: system.id,
                   workOrderNumber: nextWorkOrderNumber++,
                   order: orderIndex++,
-                  price: null, // Contractor sets price manually on Kanban
+                  price,
                   visitIndex: i,
                   paymentDueDate
                 })
@@ -423,6 +429,7 @@ export async function PATCH(
                 visitDates: system.visitDates || [],
                 dateMode: system.dateMode || 'MANUAL',
                 paymentDueDates: system.paymentDueDates || [],
+                paymentAmounts: system.paymentAmounts?.map(a => a ? parseFloat(a) : null) || [],
                 paymentDateMode: system.paymentDateMode || 'AUTOMATIC',
                 order: index
               }))

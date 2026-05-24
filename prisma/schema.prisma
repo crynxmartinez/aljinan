@@ -734,6 +734,7 @@ model ContractSystem {
   visitDates      Json                     // Array of visit dates: ["2026-01-15", "2026-04-15", ...]
   dateMode        String                   @default("MANUAL")  // "MANUAL" or "AUTOMATIC" for visit dates
   paymentDueDates Json?                    // Array of payment due dates (parallel to visitDates)
+  paymentAmounts  Json?                    // Array of payment amounts (parallel to visitDates)
   paymentDateMode String                   @default("AUTOMATIC")  // "AUTOMATIC" (+10 days) or "MANUAL"
   pricePerVisit   Float?                   // Price for each visit (contract total / number of visits)
   order           Int                      @default(0)  // Display order

@@ -64,6 +64,7 @@ interface SystemInput {
   visitDates: string[]
   dateMode?: 'MANUAL' | 'AUTOMATIC'
   paymentDueDates?: string[]
+  paymentAmounts?: string[]
   paymentDateMode?: 'AUTOMATIC' | 'MANUAL'
 }
 
@@ -145,6 +146,7 @@ export async function POST(
             visitDates: system.visitDates || [],
             dateMode: system.dateMode || 'MANUAL',
             paymentDueDates: system.paymentDueDates || [],
+            paymentAmounts: system.paymentAmounts?.map(a => a ? parseFloat(a) : null) || [],
             paymentDateMode: system.paymentDateMode || 'AUTOMATIC',
             order: index
           }))
