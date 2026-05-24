@@ -236,12 +236,32 @@ export async function GET(
         contractSystemId: item.contractSystem?.id || null,
         linkedRequestId: item.linkedRequestId,
         assignedTo: item.assignedTo,
-        // Inspection fields
+        // Report Fields - Universal
         inspectionDate: item.inspectionDate?.toISOString() || null,
-        systemsChecked: item.systemsChecked,
+        problemScope: item.problemScope,
         findings: item.findings,
+        actionTaken: item.actionTaken,
+        systemStatus: item.systemStatus,
+        technicianNotes: item.technicianNotes,
+        // Report Fields - SERVICE
+        partsReplaced: item.partsReplaced,
+        // Report Fields - INSTALLATION
+        equipmentInstalled: item.equipmentInstalled,
+        installQuantity: item.installQuantity,
+        completionStatus: item.completionStatus,
+        // Report Fields - INSPECTION
+        areasInspected: item.areasInspected,
+        systemsChecked: item.systemsChecked,
         deficiencies: item.deficiencies,
         recommendations: item.recommendations,
+        inspectionResult: item.inspectionResult,
+        // Report Fields - MAINTENANCE
+        systemsMaintained: item.systemsMaintained,
+        maintenancePerformed: item.maintenancePerformed,
+        partsServiced: item.partsServiced,
+        testResult: item.testResult,
+        nextMaintenanceDate: item.nextMaintenanceDate?.toISOString() || null,
+        // Signatures
         technicianSignature: item.technicianSignature,
         technicianSignedAt: item.technicianSignedAt?.toISOString() || null,
         supervisorSignature: item.supervisorSignature,
@@ -317,12 +337,31 @@ export async function PATCH(
       paymentProofType,
       paymentProofFileName,
       signature,
-      // Inspection fields
+      // Report Fields - Universal
       inspectionDate,
-      systemsChecked,
+      problemScope,
       findings,
+      actionTaken,
+      systemStatus,
+      technicianNotes,
+      // Report Fields - SERVICE
+      partsReplaced,
+      // Report Fields - INSTALLATION
+      equipmentInstalled,
+      installQuantity,
+      completionStatus,
+      // Report Fields - INSPECTION
+      areasInspected,
+      systemsChecked,
       deficiencies,
       recommendations,
+      inspectionResult,
+      // Report Fields - MAINTENANCE
+      systemsMaintained,
+      maintenancePerformed,
+      partsServiced,
+      testResult,
+      nextMaintenanceDate,
       // Photo management
       photoUrls,
       removePhotoIds,
@@ -353,13 +392,40 @@ export async function PATCH(
         return NextResponse.json({ error: 'Work order not found' }, { status: 404 })
       }
 
-      // Build update data
+      // Build update data with all report fields
       const updateData: Record<string, unknown> = {}
+
+      // Universal fields
       if (inspectionDate !== undefined) updateData.inspectionDate = inspectionDate ? new Date(inspectionDate) : null
-      if (systemsChecked !== undefined) updateData.systemsChecked = systemsChecked
-      if (findings !== undefined) updateData.findings = findings
-      if (deficiencies !== undefined) updateData.deficiencies = deficiencies
-      if (recommendations !== undefined) updateData.recommendations = recommendations
+      if (problemScope !== undefined) updateData.problemScope = problemScope || null
+      if (findings !== undefined) updateData.findings = findings || null
+      if (actionTaken !== undefined) updateData.actionTaken = actionTaken || null
+      if (systemStatus !== undefined) updateData.systemStatus = systemStatus || null
+      if (technicianNotes !== undefined) updateData.technicianNotes = technicianNotes || null
+
+      // SERVICE fields
+      if (partsReplaced !== undefined) updateData.partsReplaced = partsReplaced || null
+
+      // INSTALLATION fields
+      if (equipmentInstalled !== undefined) updateData.equipmentInstalled = equipmentInstalled || null
+      if (installQuantity !== undefined) updateData.installQuantity = installQuantity || null
+      if (completionStatus !== undefined) updateData.completionStatus = completionStatus || null
+
+      // INSPECTION fields
+      if (areasInspected !== undefined) updateData.areasInspected = areasInspected || null
+      if (systemsChecked !== undefined) updateData.systemsChecked = systemsChecked || null
+      if (deficiencies !== undefined) updateData.deficiencies = deficiencies || null
+      if (recommendations !== undefined) updateData.recommendations = recommendations || null
+      if (inspectionResult !== undefined) updateData.inspectionResult = inspectionResult || null
+
+      // MAINTENANCE fields
+      if (systemsMaintained !== undefined) updateData.systemsMaintained = systemsMaintained || null
+      if (maintenancePerformed !== undefined) updateData.maintenancePerformed = maintenancePerformed || null
+      if (partsServiced !== undefined) updateData.partsServiced = partsServiced || null
+      if (testResult !== undefined) updateData.testResult = testResult || null
+      if (nextMaintenanceDate !== undefined) updateData.nextMaintenanceDate = nextMaintenanceDate ? new Date(nextMaintenanceDate) : null
+
+      // Legacy reportData (for backward compatibility)
       if (body.reportData !== undefined) updateData.reportData = body.reportData
 
       // Update work order

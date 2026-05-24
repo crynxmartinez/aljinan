@@ -127,6 +127,25 @@ enum BuildingType {
   OTHER
 }
 
+// Work Order Report Enums
+enum SystemStatus {
+  WORKING
+  NEEDS_ATTENTION
+  CRITICAL
+}
+
+enum CompletionStatus {
+  COMPLETED
+  PARTIAL
+  PENDING
+}
+
+enum TestResult {
+  PASSED
+  FAILED
+  PARTIAL
+}
+
 model User {
   id             String     @id @default(cuid())
   email          String     @unique
@@ -457,12 +476,15 @@ enum EquipmentStatus {
   NEEDS_ATTENTION  // Failed inspection or needs repair
 }
 
-// Inspection result for equipment
+// Inspection result for equipment and work orders
 enum InspectionResult {
-  PASS          // Equipment passed inspection
-  FAIL          // Equipment failed inspection
-  NEEDS_REPAIR  // Equipment needs repair before passing
-  PENDING       // Not yet inspected
+  PASS              // Equipment passed inspection
+  PASSED            // Work order inspection passed
+  FAIL              // Equipment failed inspection
+  FAILED            // Work order inspection failed
+  NEEDS_REPAIR      // Equipment needs repair before passing
+  ATTENTION_REQUIRED // Work order needs attention
+  PENDING           // Not yet inspected
 }
 
 // Equipment tracked for sticker inspections
@@ -868,19 +890,38 @@ model ChecklistItem {
   // Assignment
   assignedTo      String?            // User ID of assigned team member
   
-  // Report Fields (shared across all service types)
+  // Report Fields - Universal (ALL work order types)
   inspectionDate        DateTime?     // When work was performed
+  problemScope          String?       // Problem reported / Scope of work
+  findings              String?       // What was discovered
+  actionTaken           String?       // What was done
+  systemStatus          SystemStatus? // Working, NeedsAttention, Critical
+  technicianNotes       String?       // Optional technician notes
+  
+  // Report Fields - SERVICE specific
+  partsReplaced         String?       // Parts replaced (text)
+  
+  // Report Fields - INSTALLATION specific
+  equipmentInstalled    String?       // Equipment installed
+  installQuantity       String?       // Quantity installed
+  completionStatus      CompletionStatus? // Completed, Partial, Pending
+  
+  // Report Fields - INSPECTION specific
+  areasInspected        String?       // Areas inspected
   systemsChecked        Json?         // Array of systems inspected ["Fire Alarm", "Sprinklers", ...]
-  findings              String?       // What was observed
   deficiencies          String?       // Problems found
   recommendations       String?       // What should be done
+  inspectionResult      InspectionResult? // Passed, AttentionRequired, Failed
   
-  // Service-type-specific report data (JSON for flexibility)
-  reportData            Json?         // Stores service-type-specific fields:
-                                      // SERVICE: { problemDescription, rootCause, workPerformed, partsReplaced, laborHours, laborCost, warrantyInfo }
-                                      // INSPECTION: { checklistItems, overallStatus, riskLevel, nextInspectionDate }
-                                      // MAINTENANCE: { tasksPerformed, equipmentCondition, measurements, consumablesUsed, nextMaintenanceDate }
-                                      // INSTALLATION: { equipmentInstalled, configurationDetails, commissioningChecklist, testingResults, trainingProvided, warrantyStartDate, warrantyEndDate, handoverSignature }
+  // Report Fields - MAINTENANCE specific
+  systemsMaintained     String?       // Systems maintained
+  maintenancePerformed  String?       // Work performed
+  partsServiced         String?       // Parts serviced
+  testResult            TestResult?   // Passed, Failed, Partial
+  nextMaintenanceDate   DateTime?     // Next scheduled maintenance
+  
+  // Legacy field for backward compatibility
+  reportData            Json?         // Legacy: service-type-specific fields
   
   // Signatures
   technicianSignature   String?       // URL to technician signature image

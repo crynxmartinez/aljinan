@@ -142,10 +142,37 @@ interface ChecklistItem {
   workOrderNumber?: number | null
   linkedRequestId?: string | null
   inspectionDate?: string | null
-  systemsChecked?: string | null
+
+  // Report Fields - Universal
+  problemScope?: string | null
   findings?: string | null
+  actionTaken?: string | null
+  systemStatus?: 'WORKING' | 'NEEDS_ATTENTION' | 'CRITICAL' | null
+  technicianNotes?: string | null
+
+  // Report Fields - SERVICE
+  partsReplaced?: string | null
+
+  // Report Fields - INSTALLATION
+  equipmentInstalled?: string | null
+  installQuantity?: string | null
+  completionStatus?: 'COMPLETED' | 'PARTIAL' | 'PENDING' | null
+
+  // Report Fields - INSPECTION
+  areasInspected?: string | null
+  systemsChecked?: string | null
   deficiencies?: string | null
   recommendations?: string | null
+  inspectionResult?: 'PASS' | 'PASSED' | 'FAIL' | 'FAILED' | 'NEEDS_REPAIR' | 'ATTENTION_REQUIRED' | 'PENDING' | null
+
+  // Report Fields - MAINTENANCE
+  systemsMaintained?: string | null
+  maintenancePerformed?: string | null
+  partsServiced?: string | null
+  testResult?: 'PASSED' | 'FAILED' | 'PARTIAL' | null
+  nextMaintenanceDate?: string | null
+
+  // Signatures
   technicianSignature?: string | null
   technicianSignedAt?: string | null
   supervisorSignature?: string | null
@@ -578,10 +605,30 @@ export function ChecklistKanban({ branchId, readOnly = false, userRole }: Checkl
   const [inspectionMode, setInspectionMode] = useState(false)
   const [inspectionData, setInspectionData] = useState({
     inspectionDate: '',
-    systemsChecked: '',
+    // Universal fields
+    problemScope: '',
     findings: '',
+    actionTaken: '',
+    systemStatus: '' as '' | 'WORKING' | 'NEEDS_ATTENTION' | 'CRITICAL',
+    technicianNotes: '',
+    // SERVICE fields
+    partsReplaced: '',
+    // INSTALLATION fields
+    equipmentInstalled: '',
+    installQuantity: '',
+    completionStatus: '' as '' | 'COMPLETED' | 'PARTIAL' | 'PENDING',
+    // INSPECTION fields
+    areasInspected: '',
+    systemsChecked: '',
     deficiencies: '',
     recommendations: '',
+    inspectionResult: '' as '' | 'PASSED' | 'ATTENTION_REQUIRED' | 'FAILED',
+    // MAINTENANCE fields
+    systemsMaintained: '',
+    maintenancePerformed: '',
+    partsServiced: '',
+    testResult: '' as '' | 'PASSED' | 'FAILED' | 'PARTIAL',
+    nextMaintenanceDate: '',
   })
   const [inspectionPhotos, setInspectionPhotos] = useState<{ url: string; name: string; type: string }[]>([])
   const [uploadingPhoto, setUploadingPhoto] = useState(false)
@@ -689,10 +736,32 @@ export function ChecklistKanban({ branchId, readOnly = false, userRole }: Checkl
     // Pre-populate inspection data if exists
     setInspectionData({
       inspectionDate: item.inspectionDate ? new Date(item.inspectionDate).toISOString().split('T')[0] : new Date().toISOString().split('T')[0],
-      systemsChecked: item.systemsChecked || '',
+      // Universal fields
+      problemScope: item.problemScope || '',
       findings: item.findings || '',
+      actionTaken: item.actionTaken || '',
+      systemStatus: (item.systemStatus as '' | 'WORKING' | 'NEEDS_ATTENTION' | 'CRITICAL') || '',
+      technicianNotes: item.technicianNotes || '',
+      // SERVICE fields
+      partsReplaced: item.partsReplaced || '',
+      // INSTALLATION fields
+      equipmentInstalled: item.equipmentInstalled || '',
+      installQuantity: item.installQuantity || '',
+      completionStatus: (item.completionStatus as '' | 'COMPLETED' | 'PARTIAL' | 'PENDING') || '',
+      // INSPECTION fields
+      areasInspected: item.areasInspected || '',
+      systemsChecked: item.systemsChecked || '',
       deficiencies: item.deficiencies || '',
       recommendations: item.recommendations || '',
+      inspectionResult: (item.inspectionResult === 'PASS' || item.inspectionResult === 'PASSED' ? 'PASSED' :
+        item.inspectionResult === 'FAIL' || item.inspectionResult === 'FAILED' ? 'FAILED' :
+          item.inspectionResult === 'ATTENTION_REQUIRED' ? 'ATTENTION_REQUIRED' : '') as '' | 'PASSED' | 'ATTENTION_REQUIRED' | 'FAILED',
+      // MAINTENANCE fields
+      systemsMaintained: item.systemsMaintained || '',
+      maintenancePerformed: item.maintenancePerformed || '',
+      partsServiced: item.partsServiced || '',
+      testResult: (item.testResult as '' | 'PASSED' | 'FAILED' | 'PARTIAL') || '',
+      nextMaintenanceDate: item.nextMaintenanceDate ? new Date(item.nextMaintenanceDate).toISOString().split('T')[0] : '',
     })
     setInspectionPhotos(item.photos?.map(p => ({ url: p.url, name: p.caption || 'Photo', type: p.photoType })) || [])
 
@@ -1352,96 +1421,338 @@ export function ChecklistKanban({ branchId, readOnly = false, userRole }: Checkl
                 <>
                   {inspectionMode ? (
                     <div className="space-y-4 border-t pt-4">
-                      {/* Service Report Form */}
-                      {selectedItem.workOrderType === 'SERVICE' && reportData && (
-                        <ServiceReportForm
-                          data={reportData as ServiceReportData}
-                          onChange={(data) => setReportData(data)}
+                      {/* Dynamic Report Form Header */}
+                      <h4 className="font-semibold flex items-center gap-2 text-blue-600">
+                        <FileText className="h-4 w-4" />
+                        {selectedItem.workOrderType === 'SERVICE' ? 'Service Report' :
+                          selectedItem.workOrderType === 'INSTALLATION' ? 'Installation Report' :
+                            selectedItem.workOrderType === 'MAINTENANCE' ? 'Maintenance Report' :
+                              selectedItem.workOrderType === 'INSPECTION' ? 'Inspection Report' : 'Work Report'}
+                      </h4>
+
+                      {/* Date Field - Universal */}
+                      <div className="space-y-2">
+                        <Label htmlFor="inspectionDate">Date</Label>
+                        <Input
+                          id="inspectionDate"
+                          type="date"
+                          value={inspectionData.inspectionDate}
+                          onChange={(e) => setInspectionData({ ...inspectionData, inspectionDate: e.target.value })}
                         />
+                      </div>
+
+                      {/* SERVICE Report Fields */}
+                      {selectedItem.workOrderType === 'SERVICE' && (
+                        <>
+                          <div className="space-y-2">
+                            <Label htmlFor="problemScope">Issue Reported</Label>
+                            <Textarea
+                              id="problemScope"
+                              value={inspectionData.problemScope}
+                              onChange={(e) => setInspectionData({ ...inspectionData, problemScope: e.target.value })}
+                              placeholder="What issue was reported..."
+                              rows={2}
+                            />
+                          </div>
+                          <div className="space-y-2">
+                            <Label htmlFor="findings">Findings</Label>
+                            <Textarea
+                              id="findings"
+                              value={inspectionData.findings}
+                              onChange={(e) => setInspectionData({ ...inspectionData, findings: e.target.value })}
+                              placeholder="What was discovered..."
+                              rows={2}
+                            />
+                          </div>
+                          <div className="space-y-2">
+                            <Label htmlFor="actionTaken">Action Taken</Label>
+                            <Textarea
+                              id="actionTaken"
+                              value={inspectionData.actionTaken}
+                              onChange={(e) => setInspectionData({ ...inspectionData, actionTaken: e.target.value })}
+                              placeholder="What was done to fix the issue..."
+                              rows={2}
+                            />
+                          </div>
+                          <div className="space-y-2">
+                            <Label htmlFor="partsReplaced">Parts Replaced</Label>
+                            <Input
+                              id="partsReplaced"
+                              value={inspectionData.partsReplaced}
+                              onChange={(e) => setInspectionData({ ...inspectionData, partsReplaced: e.target.value })}
+                              placeholder="e.g., 1x Smoke Detector, 2x Batteries"
+                            />
+                          </div>
+                          <div className="space-y-2">
+                            <Label>System Status</Label>
+                            <div className="flex gap-2">
+                              {[
+                                { value: 'WORKING', label: '✅ Working', color: 'bg-green-100 border-green-500 text-green-700' },
+                                { value: 'NEEDS_ATTENTION', label: '⚠️ Needs Attention', color: 'bg-yellow-100 border-yellow-500 text-yellow-700' },
+                                { value: 'CRITICAL', label: '❌ Critical', color: 'bg-red-100 border-red-500 text-red-700' },
+                              ].map((status) => (
+                                <button
+                                  key={status.value}
+                                  type="button"
+                                  onClick={() => setInspectionData({ ...inspectionData, systemStatus: status.value as 'WORKING' | 'NEEDS_ATTENTION' | 'CRITICAL' })}
+                                  className={`flex-1 py-2 px-3 rounded-lg border-2 text-sm font-medium transition-all ${inspectionData.systemStatus === status.value
+                                      ? status.color + ' border-2'
+                                      : 'bg-gray-50 border-gray-200 text-gray-600 hover:bg-gray-100'
+                                    }`}
+                                >
+                                  {status.label}
+                                </button>
+                              ))}
+                            </div>
+                          </div>
+                        </>
                       )}
 
-                      {/* Maintenance Report Form */}
-                      {selectedItem.workOrderType === 'MAINTENANCE' && reportData && (
-                        <MaintenanceReportForm
-                          data={reportData as MaintenanceReportData}
-                          onChange={(data) => setReportData(data)}
-                        />
+                      {/* INSTALLATION Report Fields */}
+                      {selectedItem.workOrderType === 'INSTALLATION' && (
+                        <>
+                          <div className="space-y-2">
+                            <Label htmlFor="problemScope">Scope of Installation</Label>
+                            <Textarea
+                              id="problemScope"
+                              value={inspectionData.problemScope}
+                              onChange={(e) => setInspectionData({ ...inspectionData, problemScope: e.target.value })}
+                              placeholder="What was installed..."
+                              rows={2}
+                            />
+                          </div>
+                          <div className="grid grid-cols-2 gap-4">
+                            <div className="space-y-2">
+                              <Label htmlFor="equipmentInstalled">Equipment Installed</Label>
+                              <Input
+                                id="equipmentInstalled"
+                                value={inspectionData.equipmentInstalled}
+                                onChange={(e) => setInspectionData({ ...inspectionData, equipmentInstalled: e.target.value })}
+                                placeholder="e.g., Smoke Detectors, MCPs"
+                              />
+                            </div>
+                            <div className="space-y-2">
+                              <Label htmlFor="installQuantity">Quantity</Label>
+                              <Input
+                                id="installQuantity"
+                                value={inspectionData.installQuantity}
+                                onChange={(e) => setInspectionData({ ...inspectionData, installQuantity: e.target.value })}
+                                placeholder="e.g., 12 Devices"
+                              />
+                            </div>
+                          </div>
+                          <div className="space-y-2">
+                            <Label htmlFor="findings">Testing Result</Label>
+                            <Textarea
+                              id="findings"
+                              value={inspectionData.findings}
+                              onChange={(e) => setInspectionData({ ...inspectionData, findings: e.target.value })}
+                              placeholder="Results of testing..."
+                              rows={2}
+                            />
+                          </div>
+                          <div className="space-y-2">
+                            <Label>Completion Status</Label>
+                            <div className="flex gap-2">
+                              {[
+                                { value: 'COMPLETED', label: '✅ Completed', color: 'bg-green-100 border-green-500 text-green-700' },
+                                { value: 'PARTIAL', label: '⚠️ Partial', color: 'bg-yellow-100 border-yellow-500 text-yellow-700' },
+                                { value: 'PENDING', label: '⏳ Pending', color: 'bg-gray-100 border-gray-500 text-gray-700' },
+                              ].map((status) => (
+                                <button
+                                  key={status.value}
+                                  type="button"
+                                  onClick={() => setInspectionData({ ...inspectionData, completionStatus: status.value as 'COMPLETED' | 'PARTIAL' | 'PENDING' })}
+                                  className={`flex-1 py-2 px-3 rounded-lg border-2 text-sm font-medium transition-all ${inspectionData.completionStatus === status.value
+                                      ? status.color + ' border-2'
+                                      : 'bg-gray-50 border-gray-200 text-gray-600 hover:bg-gray-100'
+                                    }`}
+                                >
+                                  {status.label}
+                                </button>
+                              ))}
+                            </div>
+                          </div>
+                        </>
                       )}
 
-                      {/* Installation Report Form */}
-                      {selectedItem.workOrderType === 'INSTALLATION' && reportData && (
-                        <InstallationReportForm
-                          data={reportData as InstallationReportData}
-                          onChange={(data) => setReportData(data)}
-                        />
+                      {/* INSPECTION Report Fields */}
+                      {(selectedItem.workOrderType === 'INSPECTION' || selectedItem.workOrderType === 'STICKER_INSPECTION' || !selectedItem.workOrderType || selectedItem.workOrderType === 'OTHER') && (
+                        <>
+                          <div className="grid grid-cols-2 gap-4">
+                            <div className="space-y-2">
+                              <Label htmlFor="areasInspected">Areas Inspected</Label>
+                              <Input
+                                id="areasInspected"
+                                value={inspectionData.areasInspected}
+                                onChange={(e) => setInspectionData({ ...inspectionData, areasInspected: e.target.value })}
+                                placeholder="e.g., Ground floor, Electrical room"
+                              />
+                            </div>
+                            <div className="space-y-2">
+                              <Label htmlFor="systemsChecked">Systems Checked</Label>
+                              <Input
+                                id="systemsChecked"
+                                value={inspectionData.systemsChecked}
+                                onChange={(e) => setInspectionData({ ...inspectionData, systemsChecked: e.target.value })}
+                                placeholder="e.g., Fire Alarm, Fire Pump"
+                              />
+                            </div>
+                          </div>
+                          <div className="space-y-2">
+                            <Label htmlFor="findings">Findings</Label>
+                            <Textarea
+                              id="findings"
+                              value={inspectionData.findings}
+                              onChange={(e) => setInspectionData({ ...inspectionData, findings: e.target.value })}
+                              placeholder="What was discovered during inspection..."
+                              rows={2}
+                            />
+                          </div>
+                          <div className="space-y-2">
+                            <Label htmlFor="deficiencies">Deficiencies</Label>
+                            <Textarea
+                              id="deficiencies"
+                              value={inspectionData.deficiencies}
+                              onChange={(e) => setInspectionData({ ...inspectionData, deficiencies: e.target.value })}
+                              placeholder="Problems found..."
+                              rows={2}
+                            />
+                          </div>
+                          <div className="space-y-2">
+                            <Label htmlFor="recommendations">Recommendation</Label>
+                            <Textarea
+                              id="recommendations"
+                              value={inspectionData.recommendations}
+                              onChange={(e) => setInspectionData({ ...inspectionData, recommendations: e.target.value })}
+                              placeholder="What should be done..."
+                              rows={2}
+                            />
+                          </div>
+                          <div className="space-y-2">
+                            <Label>Inspection Result</Label>
+                            <div className="flex gap-2">
+                              {[
+                                { value: 'PASSED', label: '✅ Passed', color: 'bg-green-100 border-green-500 text-green-700' },
+                                { value: 'ATTENTION_REQUIRED', label: '⚠️ Attention Required', color: 'bg-yellow-100 border-yellow-500 text-yellow-700' },
+                                { value: 'FAILED', label: '❌ Failed', color: 'bg-red-100 border-red-500 text-red-700' },
+                              ].map((status) => (
+                                <button
+                                  key={status.value}
+                                  type="button"
+                                  onClick={() => setInspectionData({ ...inspectionData, inspectionResult: status.value as 'PASSED' | 'ATTENTION_REQUIRED' | 'FAILED' })}
+                                  className={`flex-1 py-2 px-3 rounded-lg border-2 text-sm font-medium transition-all ${inspectionData.inspectionResult === status.value
+                                      ? status.color + ' border-2'
+                                      : 'bg-gray-50 border-gray-200 text-gray-600 hover:bg-gray-100'
+                                    }`}
+                                >
+                                  {status.label}
+                                </button>
+                              ))}
+                            </div>
+                          </div>
+                        </>
                       )}
 
-                      {/* Inspection Report Form (for INSPECTION, STICKER_INSPECTION, and default) */}
-                      {(selectedItem.workOrderType === 'INSPECTION' ||
-                        selectedItem.workOrderType === 'STICKER_INSPECTION' ||
-                        !selectedItem.workOrderType ||
-                        selectedItem.workOrderType === 'OTHER') && (
-                          <>
-                            <h4 className="font-semibold flex items-center gap-2 text-blue-600">
-                              <FileText className="h-4 w-4" />
-                              Report
-                            </h4>
-
-                            <div className="grid grid-cols-2 gap-4">
-                              <div className="space-y-2">
-                                <Label htmlFor="inspectionDate">Inspection Date</Label>
-                                <Input
-                                  id="inspectionDate"
-                                  type="date"
-                                  value={inspectionData.inspectionDate}
-                                  onChange={(e) => setInspectionData({ ...inspectionData, inspectionDate: e.target.value })}
-                                />
+                      {/* MAINTENANCE Report Fields */}
+                      {selectedItem.workOrderType === 'MAINTENANCE' && (
+                        <>
+                          <div className="space-y-2">
+                            <Label htmlFor="systemsMaintained">Systems Maintained</Label>
+                            <Input
+                              id="systemsMaintained"
+                              value={inspectionData.systemsMaintained}
+                              onChange={(e) => setInspectionData({ ...inspectionData, systemsMaintained: e.target.value })}
+                              placeholder="e.g., Fire Alarm System, Fire Pump"
+                            />
+                          </div>
+                          <div className="space-y-2">
+                            <Label htmlFor="maintenancePerformed">Maintenance Performed</Label>
+                            <Textarea
+                              id="maintenancePerformed"
+                              value={inspectionData.maintenancePerformed}
+                              onChange={(e) => setInspectionData({ ...inspectionData, maintenancePerformed: e.target.value })}
+                              placeholder="Cleaning, testing, calibration..."
+                              rows={2}
+                            />
+                          </div>
+                          <div className="space-y-2">
+                            <Label htmlFor="partsServiced">Parts Serviced</Label>
+                            <Input
+                              id="partsServiced"
+                              value={inspectionData.partsServiced}
+                              onChange={(e) => setInspectionData({ ...inspectionData, partsServiced: e.target.value })}
+                              placeholder="e.g., Smoke Detectors, Panel"
+                            />
+                          </div>
+                          <div className="space-y-2">
+                            <Label>Test Result</Label>
+                            <div className="flex gap-2">
+                              {[
+                                { value: 'PASSED', label: '✅ Passed', color: 'bg-green-100 border-green-500 text-green-700' },
+                                { value: 'PARTIAL', label: '⚠️ Partial', color: 'bg-yellow-100 border-yellow-500 text-yellow-700' },
+                                { value: 'FAILED', label: '❌ Failed', color: 'bg-red-100 border-red-500 text-red-700' },
+                              ].map((status) => (
+                                <button
+                                  key={status.value}
+                                  type="button"
+                                  onClick={() => setInspectionData({ ...inspectionData, testResult: status.value as 'PASSED' | 'PARTIAL' | 'FAILED' })}
+                                  className={`flex-1 py-2 px-3 rounded-lg border-2 text-sm font-medium transition-all ${inspectionData.testResult === status.value
+                                      ? status.color + ' border-2'
+                                      : 'bg-gray-50 border-gray-200 text-gray-600 hover:bg-gray-100'
+                                    }`}
+                                >
+                                  {status.label}
+                                </button>
+                              ))}
+                            </div>
+                          </div>
+                          <div className="space-y-2">
+                            <Label htmlFor="nextMaintenanceDate">Next Maintenance Date</Label>
+                            <div className="flex gap-2">
+                              <Input
+                                id="nextMaintenanceDate"
+                                type="date"
+                                value={inspectionData.nextMaintenanceDate}
+                                onChange={(e) => setInspectionData({ ...inspectionData, nextMaintenanceDate: e.target.value })}
+                                className="flex-1"
+                              />
+                              <div className="flex gap-1">
+                                {[
+                                  { label: '+3mo', months: 3 },
+                                  { label: '+6mo', months: 6 },
+                                  { label: '+12mo', months: 12 },
+                                ].map((opt) => (
+                                  <button
+                                    key={opt.months}
+                                    type="button"
+                                    onClick={() => {
+                                      const date = new Date()
+                                      date.setMonth(date.getMonth() + opt.months)
+                                      setInspectionData({ ...inspectionData, nextMaintenanceDate: date.toISOString().split('T')[0] })
+                                    }}
+                                    className="px-2 py-1 text-xs bg-blue-50 text-blue-600 rounded hover:bg-blue-100"
+                                  >
+                                    {opt.label}
+                                  </button>
+                                ))}
                               </div>
-                              <div className="space-y-2">
-                                <Label htmlFor="systemsChecked">Systems Checked</Label>
-                                <Input
-                                  id="systemsChecked"
-                                  value={inspectionData.systemsChecked}
-                                  onChange={(e) => setInspectionData({ ...inspectionData, systemsChecked: e.target.value })}
-                                  placeholder="e.g., Fire alarm, Sprinklers"
-                                />
-                              </div>
                             </div>
+                          </div>
+                        </>
+                      )}
 
-                            <div className="space-y-2">
-                              <Label htmlFor="findings">Findings</Label>
-                              <Textarea
-                                id="findings"
-                                value={inspectionData.findings}
-                                onChange={(e) => setInspectionData({ ...inspectionData, findings: e.target.value })}
-                                placeholder="Describe what was found during inspection..."
-                                rows={3}
-                              />
-                            </div>
-
-                            <div className="space-y-2">
-                              <Label htmlFor="deficiencies">Deficiencies</Label>
-                              <Textarea
-                                id="deficiencies"
-                                value={inspectionData.deficiencies}
-                                onChange={(e) => setInspectionData({ ...inspectionData, deficiencies: e.target.value })}
-                                placeholder="List any deficiencies found..."
-                                rows={2}
-                              />
-                            </div>
-
-                            <div className="space-y-2">
-                              <Label htmlFor="recommendations">Recommendations</Label>
-                              <Textarea
-                                id="recommendations"
-                                value={inspectionData.recommendations}
-                                onChange={(e) => setInspectionData({ ...inspectionData, recommendations: e.target.value })}
-                                placeholder="Recommendations for the client..."
-                                rows={2}
-                              />
-                            </div>
-                          </>
-                        )}
+                      {/* Technician Notes - Universal */}
+                      <div className="space-y-2">
+                        <Label htmlFor="technicianNotes">Technician Notes <span className="text-xs text-muted-foreground">(optional)</span></Label>
+                        <Textarea
+                          id="technicianNotes"
+                          value={inspectionData.technicianNotes}
+                          onChange={(e) => setInspectionData({ ...inspectionData, technicianNotes: e.target.value })}
+                          placeholder="Any additional notes..."
+                          rows={2}
+                        />
+                      </div>
 
                       {/* Photo Upload - Common for all report types */}
                       <div className="space-y-2">
