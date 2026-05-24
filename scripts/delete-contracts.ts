@@ -1,5 +1,16 @@
 import 'dotenv/config'
-import { prisma } from '../src/lib/prisma'
+import { PrismaClient } from '@prisma/client'
+import { PrismaPg } from '@prisma/adapter-pg'
+import { Pool } from 'pg'
+
+const connectionString = process.env.DATABASE_URL_POOLED || process.env.DATABASE_URL
+if (!connectionString) {
+  throw new Error('DATABASE_URL must be set')
+}
+
+const pool = new Pool({ connectionString })
+const adapter = new PrismaPg(pool)
+const prisma = new PrismaClient({ adapter })
 
 async function main() {
   // Delete orphaned contract work orders (items with contractSystemId or contract-like descriptions)
