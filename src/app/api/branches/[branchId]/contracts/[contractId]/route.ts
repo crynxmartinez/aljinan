@@ -364,51 +364,65 @@ export async function PATCH(
 
       // Update systems if provided
       if (systems !== undefined && Array.isArray(systems)) {
-        // Get existing system IDs to delete their scheduled work orders
-        const existingSystemIds = existingContract.systems.map(s => s.id)
-
-        // Delete only SCHEDULED work orders linked to these systems
-        // (IN_PROGRESS and FOR_REVIEW are blocked above, COMPLETED blocks the edit)
-        if (existingSystemIds.length > 0) {
-          await tx.checklistItem.deleteMany({
-            where: {
-              contractSystemId: { in: existingSystemIds },
-              stage: 'SCHEDULED'
-            }
+        // Check if systems actually changed (compare names, frequencies, visitDates)
+        const existingSystems = existingContract.systems
+        const systemsChanged = systems.length !== existingSystems.length ||
+          systems.some((newSys: SystemInput, idx: number) => {
+            const oldSys = existingSystems[idx]
+            if (!oldSys) return true
+            return newSys.name !== oldSys.name ||
+              newSys.frequency !== oldSys.frequency ||
+              JSON.stringify(newSys.visitDates || []) !== JSON.stringify(oldSys.visitDates || [])
           })
-        }
 
-        // Delete existing systems and recreate
-        await tx.contractSystem.deleteMany({
-          where: { contractId }
-        })
+        if (systemsChanged) {
+          // Get existing system IDs to delete their scheduled work orders
+          const existingSystemIds = existingSystems.map(s => s.id)
 
-        if (systems.length > 0) {
-          await tx.contractSystem.createMany({
-            data: systems.map((system: SystemInput, index: number) => ({
-              contractId,
-              name: system.name,
-              description: system.description || null,
-              frequency: system.frequency,
-              visitDates: system.visitDates || [],
-              dateMode: system.dateMode || 'MANUAL',
-              order: index
-            }))
+          // Delete only SCHEDULED work orders linked to these systems
+          // (IN_PROGRESS and FOR_REVIEW work orders are kept, COMPLETED blocks the edit)
+          if (existingSystemIds.length > 0) {
+            await tx.checklistItem.deleteMany({
+              where: {
+                contractSystemId: { in: existingSystemIds },
+                stage: 'SCHEDULED'
+              }
+            })
+          }
+
+          // Delete existing systems and recreate
+          await tx.contractSystem.deleteMany({
+            where: { contractId }
           })
-        }
 
-        // Check if the contract's checklist is now empty and delete it
-        // This allows new work orders to be generated on re-signature
-        const contractChecklist = await tx.checklist.findFirst({
-          where: { contractId },
-          include: { items: { select: { id: true } } }
-        })
+          if (systems.length > 0) {
+            await tx.contractSystem.createMany({
+              data: systems.map((system: SystemInput, index: number) => ({
+                contractId,
+                name: system.name,
+                description: system.description || null,
+                frequency: system.frequency,
+                visitDates: system.visitDates || [],
+                dateMode: system.dateMode || 'MANUAL',
+                order: index
+              }))
+            })
+          }
 
-        if (contractChecklist && contractChecklist.items.length === 0) {
-          await tx.checklist.delete({
-            where: { id: contractChecklist.id }
+          // Check if the contract's checklist is now empty and delete it
+          // This allows new work orders to be generated on re-signature
+          const contractChecklist = await tx.checklist.findFirst({
+            where: { contractId },
+            include: { items: { select: { id: true } } }
           })
+
+          if (contractChecklist && contractChecklist.items.length === 0) {
+            await tx.checklist.delete({
+              where: { id: contractChecklist.id }
+            })
+          }
         }
+        // If systems didn't change, don't delete work orders or recreate systems
       }
 
       // Update payments if provided
