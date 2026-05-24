@@ -116,6 +116,20 @@ export async function POST(
       return NextResponse.json({ error: 'Access denied' }, { status: 403 })
     }
 
+    // Calculate total value from payment amounts in systems
+    let calculatedTotalValue = 0
+    if (systems && Array.isArray(systems)) {
+      for (const system of systems) {
+        if (system.paymentAmounts && Array.isArray(system.paymentAmounts)) {
+          for (const amount of system.paymentAmounts) {
+            if (amount) {
+              calculatedTotalValue += parseFloat(amount) || 0
+            }
+          }
+        }
+      }
+    }
+
     // Create contract with systems and payments in a transaction
     const contract = await prisma.$transaction(async (tx) => {
       // Create the contract
@@ -131,6 +145,7 @@ export async function POST(
           endDate: endDate ? new Date(endDate) : null,
           autoRenew: autoRenew || false,
           status: status || 'DRAFT',
+          totalValue: calculatedTotalValue,
           createdById: session.user.id,
         }
       })

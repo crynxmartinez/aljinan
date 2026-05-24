@@ -355,6 +355,20 @@ export async function PATCH(
       // The new systems will generate new work orders when re-signed
     }
 
+    // Calculate total value from payment amounts in systems
+    let calculatedTotalValue = 0
+    if (systems && Array.isArray(systems)) {
+      for (const system of systems) {
+        if (system.paymentAmounts && Array.isArray(system.paymentAmounts)) {
+          for (const amount of system.paymentAmounts) {
+            if (amount) {
+              calculatedTotalValue += parseFloat(amount) || 0
+            }
+          }
+        }
+      }
+    }
+
     // Use transaction to update contract with systems and payments
     const updated = await prisma.$transaction(async (tx) => {
       // Build update data for contract
@@ -370,6 +384,7 @@ export async function PATCH(
       if (fileSize !== undefined) updateData.fileSize = fileSize
       if (certificateFileName !== undefined) updateData.certificateFileName = certificateFileName
       if (certificateUrl !== undefined) updateData.certificateUrl = certificateUrl
+      if (systems !== undefined) updateData.totalValue = calculatedTotalValue
 
       // If contract was already signed and this is a substantive edit, reset signature
       // This requires the client to re-sign the updated contract
