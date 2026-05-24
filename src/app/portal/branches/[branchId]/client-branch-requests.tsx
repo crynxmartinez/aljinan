@@ -146,6 +146,7 @@ interface Request {
   quotationFileName?: string | null
   photos?: RequestPhoto[]
   equipment?: Equipment[]
+  occurrences?: Array<{ order: number; visitDate: string; price: number | null }> | null
 }
 
 interface ClientBranchRequestsProps {
@@ -1384,18 +1385,64 @@ export function ClientBranchRequests({ branchId, onDataChange, userId }: ClientB
               {selectedRequest.status === 'QUOTED' && selectedRequest.quotedPrice && (
                 <div className="bg-purple-50 border border-purple-200 p-4 rounded-lg">
                   <p className="text-sm font-medium text-purple-800 mb-2">Quote from Contractor</p>
-                  <div className="grid grid-cols-2 gap-4 text-sm mb-3">
-                    <div>
-                      <p className="text-purple-600">Quoted Price</p>
-                      <p className="font-bold text-lg">SAR {selectedRequest.quotedPrice.toLocaleString()}</p>
-                    </div>
-                    {selectedRequest.quotedDate && (
-                      <div>
-                        <p className="text-purple-600">Scheduled Date</p>
-                        <p className="font-semibold">{new Date(selectedRequest.quotedDate).toLocaleDateString()}</p>
+
+                  {/* For recurring requests with occurrences - show table */}
+                  {selectedRequest.recurringType && selectedRequest.recurringType !== 'ONCE' && selectedRequest.occurrences && selectedRequest.occurrences.length > 0 ? (
+                    <div className="space-y-3">
+                      <p className="text-sm text-purple-700">
+                        {selectedRequest.recurringType === 'MONTHLY' ? '12 Monthly' :
+                          selectedRequest.recurringType === 'QUARTERLY' ? '4 Quarterly' :
+                            selectedRequest.recurringType === 'SEMI_ANNUALLY' ? '2 Semi-Annual' : ''} Work Orders
+                      </p>
+                      <div className="border border-purple-200 rounded-lg overflow-hidden bg-white">
+                        <table className="w-full text-sm">
+                          <thead className="bg-purple-100">
+                            <tr>
+                              <th className="px-3 py-2 text-left text-purple-800 font-medium">#</th>
+                              <th className="px-3 py-2 text-left text-purple-800 font-medium">Visit Date</th>
+                              <th className="px-3 py-2 text-right text-purple-800 font-medium">Price (SAR)</th>
+                            </tr>
+                          </thead>
+                          <tbody className="divide-y divide-purple-100">
+                            {selectedRequest.occurrences.map((occ, idx) => (
+                              <tr key={idx}>
+                                <td className="px-3 py-2 text-muted-foreground">{occ.order}</td>
+                                <td className="px-3 py-2">
+                                  {occ.visitDate ? new Date(occ.visitDate).toLocaleDateString() : '-'}
+                                </td>
+                                <td className="px-3 py-2 text-right font-medium">
+                                  {occ.price ? occ.price.toLocaleString() : '-'}
+                                </td>
+                              </tr>
+                            ))}
+                          </tbody>
+                          <tfoot className="bg-purple-50 border-t border-purple-200">
+                            <tr>
+                              <td colSpan={2} className="px-3 py-2 font-semibold text-purple-800">Total</td>
+                              <td className="px-3 py-2 text-right font-bold text-purple-900">
+                                SAR {selectedRequest.quotedPrice.toLocaleString()}
+                              </td>
+                            </tr>
+                          </tfoot>
+                        </table>
                       </div>
-                    )}
-                  </div>
+                    </div>
+                  ) : (
+                    /* For one-time requests - show simple view */
+                    <div className="grid grid-cols-2 gap-4 text-sm mb-3">
+                      <div>
+                        <p className="text-purple-600">Quoted Price</p>
+                        <p className="font-bold text-lg">SAR {selectedRequest.quotedPrice.toLocaleString()}</p>
+                      </div>
+                      {selectedRequest.quotedDate && (
+                        <div>
+                          <p className="text-purple-600">Scheduled Date</p>
+                          <p className="font-semibold">{new Date(selectedRequest.quotedDate).toLocaleDateString()}</p>
+                        </div>
+                      )}
+                    </div>
+                  )}
+
                   {selectedRequest.quotedNotes && (
                     <div className="mt-3 pt-3 border-t border-purple-200">
                       <p className="text-purple-600 text-sm mb-1">Notes from Contractor</p>
