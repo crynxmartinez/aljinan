@@ -10,6 +10,90 @@ interface Equipment {
   expectedExpiry: string | null
 }
 
+// Maintenance report types
+interface MaintenanceTask {
+  task: string
+  completed: boolean
+  notes: string
+}
+
+interface Measurement {
+  name: string
+  value: string
+  unit: string
+  normalRange: string
+  status: 'normal' | 'warning' | 'critical'
+}
+
+interface ConsumableUsed {
+  item: string
+  quantity: string
+}
+
+interface MaintenanceReportData {
+  tasksPerformed: MaintenanceTask[]
+  equipmentCondition: 'good' | 'fair' | 'poor' | 'critical'
+  measurements: Measurement[]
+  consumablesUsed: ConsumableUsed[]
+  nextMaintenanceDate: string
+}
+
+// Service report types
+interface PartReplaced {
+  name: string
+  quantity: number
+  unitCost: number
+  total: number
+}
+
+interface ServiceReportData {
+  problemDescription: string
+  rootCause: string
+  workPerformed: string
+  partsReplaced: PartReplaced[]
+  laborHours: number
+  laborRate: number
+  laborCost: number
+  totalPartsCost: number
+  totalCost: number
+  warrantyInfo: string
+  beforePhotos: string[]
+  afterPhotos: string[]
+}
+
+// Installation report types
+interface EquipmentInstalled {
+  name: string
+  model: string
+  serialNumber: string
+  location: string
+}
+
+interface CommissioningItem {
+  item: string
+  completed: boolean
+  notes: string
+}
+
+interface TestResult {
+  test: string
+  result: 'pass' | 'fail'
+  notes: string
+}
+
+interface InstallationReportData {
+  equipmentInstalled: EquipmentInstalled[]
+  configurationDetails: string
+  commissioningChecklist: CommissioningItem[]
+  testingResults: TestResult[]
+  handoverNotes: string
+  trainingProvided: string
+  warrantyStartDate: string
+  warrantyEndDate: string
+}
+
+type ReportData = MaintenanceReportData | ServiceReportData | InstallationReportData | null
+
 interface WorkOrderPrintData {
   id: string
   workOrderNumber: number
@@ -30,6 +114,7 @@ interface WorkOrderPrintData {
   findings: string | null
   deficiencies: string | null
   recommendations: string | null
+  reportData: ReportData
   technicianName: string | null
   technicianSignature: string | null
   technicianSignedAt: string | null
@@ -318,8 +403,213 @@ export function WorkOrderPrint({ workOrderId }: WorkOrderPrintProps) {
           </div>
         )}
 
-        {/* Inspection Results (if completed) */}
-        {data.inspectionDate && (
+        {/* Maintenance Report */}
+        {data.workOrderType === 'MAINTENANCE' && data.reportData && (
+          <div className="mb-6 print-section">
+            <h3 className="text-lg font-bold mb-3 text-primary border-b pb-2">MAINTENANCE REPORT</h3>
+            <div className="space-y-4">
+              {/* Equipment Condition */}
+              <div>
+                <p className="text-sm text-muted-foreground">Equipment Condition</p>
+                <p className="font-semibold capitalize">{(data.reportData as MaintenanceReportData).equipmentCondition || '-'}</p>
+              </div>
+
+              {/* Tasks Performed */}
+              {(data.reportData as MaintenanceReportData).tasksPerformed?.length > 0 && (
+                <div>
+                  <p className="text-sm font-semibold mb-2">Tasks Performed:</p>
+                  <table className="w-full border-collapse border border-gray-300">
+                    <thead>
+                      <tr className="bg-gray-100">
+                        <th className="border border-gray-300 px-3 py-2 text-left text-sm font-semibold w-8">✓</th>
+                        <th className="border border-gray-300 px-3 py-2 text-left text-sm font-semibold">Task</th>
+                        <th className="border border-gray-300 px-3 py-2 text-left text-sm font-semibold">Notes</th>
+                      </tr>
+                    </thead>
+                    <tbody>
+                      {(data.reportData as MaintenanceReportData).tasksPerformed.map((task, idx) => (
+                        <tr key={idx}>
+                          <td className="border border-gray-300 px-3 py-2 text-sm text-center">
+                            {task.completed ? '✓' : '—'}
+                          </td>
+                          <td className="border border-gray-300 px-3 py-2 text-sm">{task.task}</td>
+                          <td className="border border-gray-300 px-3 py-2 text-sm">{task.notes || '-'}</td>
+                        </tr>
+                      ))}
+                    </tbody>
+                  </table>
+                </div>
+              )}
+
+              {/* Measurements */}
+              {(data.reportData as MaintenanceReportData).measurements?.length > 0 && (
+                <div>
+                  <p className="text-sm font-semibold mb-2">Measurements:</p>
+                  <table className="w-full border-collapse border border-gray-300">
+                    <thead>
+                      <tr className="bg-gray-100">
+                        <th className="border border-gray-300 px-3 py-2 text-left text-sm font-semibold">Parameter</th>
+                        <th className="border border-gray-300 px-3 py-2 text-left text-sm font-semibold">Value</th>
+                        <th className="border border-gray-300 px-3 py-2 text-left text-sm font-semibold">Normal Range</th>
+                        <th className="border border-gray-300 px-3 py-2 text-left text-sm font-semibold">Status</th>
+                      </tr>
+                    </thead>
+                    <tbody>
+                      {(data.reportData as MaintenanceReportData).measurements.map((m, idx) => (
+                        <tr key={idx}>
+                          <td className="border border-gray-300 px-3 py-2 text-sm">{m.name}</td>
+                          <td className="border border-gray-300 px-3 py-2 text-sm">{m.value} {m.unit}</td>
+                          <td className="border border-gray-300 px-3 py-2 text-sm">{m.normalRange}</td>
+                          <td className={`border border-gray-300 px-3 py-2 text-sm capitalize ${m.status === 'critical' ? 'text-red-600 font-semibold' :
+                              m.status === 'warning' ? 'text-yellow-600' : 'text-green-600'
+                            }`}>{m.status}</td>
+                        </tr>
+                      ))}
+                    </tbody>
+                  </table>
+                </div>
+              )}
+
+              {/* Consumables Used */}
+              {(data.reportData as MaintenanceReportData).consumablesUsed?.length > 0 && (
+                <div>
+                  <p className="text-sm font-semibold mb-2">Consumables Used:</p>
+                  <table className="w-full border-collapse border border-gray-300">
+                    <thead>
+                      <tr className="bg-gray-100">
+                        <th className="border border-gray-300 px-3 py-2 text-left text-sm font-semibold">Item</th>
+                        <th className="border border-gray-300 px-3 py-2 text-left text-sm font-semibold">Quantity</th>
+                      </tr>
+                    </thead>
+                    <tbody>
+                      {(data.reportData as MaintenanceReportData).consumablesUsed.map((c, idx) => (
+                        <tr key={idx}>
+                          <td className="border border-gray-300 px-3 py-2 text-sm">{c.item}</td>
+                          <td className="border border-gray-300 px-3 py-2 text-sm">{c.quantity}</td>
+                        </tr>
+                      ))}
+                    </tbody>
+                  </table>
+                </div>
+              )}
+
+              {/* Next Maintenance Date */}
+              {(data.reportData as MaintenanceReportData).nextMaintenanceDate && (
+                <div>
+                  <p className="text-sm text-muted-foreground">Next Maintenance Date</p>
+                  <p className="font-semibold">{formatDate((data.reportData as MaintenanceReportData).nextMaintenanceDate)}</p>
+                </div>
+              )}
+            </div>
+          </div>
+        )}
+
+        {/* Service Report */}
+        {data.workOrderType === 'SERVICE' && data.reportData && (
+          <div className="mb-6 print-section">
+            <h3 className="text-lg font-bold mb-3 text-primary border-b pb-2">SERVICE REPORT</h3>
+            <div className="space-y-3">
+              {(data.reportData as ServiceReportData).problemDescription && (
+                <div>
+                  <p className="text-sm font-semibold mb-1">Problem Description:</p>
+                  <p className="text-sm whitespace-pre-wrap">{(data.reportData as ServiceReportData).problemDescription}</p>
+                </div>
+              )}
+              {(data.reportData as ServiceReportData).rootCause && (
+                <div>
+                  <p className="text-sm font-semibold mb-1">Root Cause:</p>
+                  <p className="text-sm whitespace-pre-wrap">{(data.reportData as ServiceReportData).rootCause}</p>
+                </div>
+              )}
+              {(data.reportData as ServiceReportData).workPerformed && (
+                <div>
+                  <p className="text-sm font-semibold mb-1">Work Performed:</p>
+                  <p className="text-sm whitespace-pre-wrap">{(data.reportData as ServiceReportData).workPerformed}</p>
+                </div>
+              )}
+              {(data.reportData as ServiceReportData).partsReplaced?.length > 0 && (
+                <div>
+                  <p className="text-sm font-semibold mb-2">Parts Replaced:</p>
+                  <table className="w-full border-collapse border border-gray-300">
+                    <thead>
+                      <tr className="bg-gray-100">
+                        <th className="border border-gray-300 px-3 py-2 text-left text-sm font-semibold">Part</th>
+                        <th className="border border-gray-300 px-3 py-2 text-left text-sm font-semibold">Qty</th>
+                        <th className="border border-gray-300 px-3 py-2 text-left text-sm font-semibold">Unit Cost</th>
+                        <th className="border border-gray-300 px-3 py-2 text-left text-sm font-semibold">Total</th>
+                      </tr>
+                    </thead>
+                    <tbody>
+                      {(data.reportData as ServiceReportData).partsReplaced.map((part, idx) => (
+                        <tr key={idx}>
+                          <td className="border border-gray-300 px-3 py-2 text-sm">{part.name}</td>
+                          <td className="border border-gray-300 px-3 py-2 text-sm">{part.quantity}</td>
+                          <td className="border border-gray-300 px-3 py-2 text-sm">{formatCurrency(part.unitCost)}</td>
+                          <td className="border border-gray-300 px-3 py-2 text-sm">{formatCurrency(part.total)}</td>
+                        </tr>
+                      ))}
+                    </tbody>
+                  </table>
+                </div>
+              )}
+              {(data.reportData as ServiceReportData).warrantyInfo && (
+                <div>
+                  <p className="text-sm font-semibold mb-1">Warranty Information:</p>
+                  <p className="text-sm whitespace-pre-wrap">{(data.reportData as ServiceReportData).warrantyInfo}</p>
+                </div>
+              )}
+            </div>
+          </div>
+        )}
+
+        {/* Installation Report */}
+        {data.workOrderType === 'INSTALLATION' && data.reportData && (
+          <div className="mb-6 print-section">
+            <h3 className="text-lg font-bold mb-3 text-primary border-b pb-2">INSTALLATION REPORT</h3>
+            <div className="space-y-3">
+              {(data.reportData as InstallationReportData).equipmentInstalled?.length > 0 && (
+                <div>
+                  <p className="text-sm font-semibold mb-2">Equipment Installed:</p>
+                  <table className="w-full border-collapse border border-gray-300">
+                    <thead>
+                      <tr className="bg-gray-100">
+                        <th className="border border-gray-300 px-3 py-2 text-left text-sm font-semibold">Name</th>
+                        <th className="border border-gray-300 px-3 py-2 text-left text-sm font-semibold">Model</th>
+                        <th className="border border-gray-300 px-3 py-2 text-left text-sm font-semibold">Serial #</th>
+                        <th className="border border-gray-300 px-3 py-2 text-left text-sm font-semibold">Location</th>
+                      </tr>
+                    </thead>
+                    <tbody>
+                      {(data.reportData as InstallationReportData).equipmentInstalled.map((eq, idx) => (
+                        <tr key={idx}>
+                          <td className="border border-gray-300 px-3 py-2 text-sm">{eq.name}</td>
+                          <td className="border border-gray-300 px-3 py-2 text-sm">{eq.model}</td>
+                          <td className="border border-gray-300 px-3 py-2 text-sm">{eq.serialNumber}</td>
+                          <td className="border border-gray-300 px-3 py-2 text-sm">{eq.location}</td>
+                        </tr>
+                      ))}
+                    </tbody>
+                  </table>
+                </div>
+              )}
+              {(data.reportData as InstallationReportData).configurationDetails && (
+                <div>
+                  <p className="text-sm font-semibold mb-1">Configuration Details:</p>
+                  <p className="text-sm whitespace-pre-wrap">{(data.reportData as InstallationReportData).configurationDetails}</p>
+                </div>
+              )}
+              {(data.reportData as InstallationReportData).handoverNotes && (
+                <div>
+                  <p className="text-sm font-semibold mb-1">Handover Notes:</p>
+                  <p className="text-sm whitespace-pre-wrap">{(data.reportData as InstallationReportData).handoverNotes}</p>
+                </div>
+              )}
+            </div>
+          </div>
+        )}
+
+        {/* Inspection Results (legacy - for INSPECTION type or when inspectionDate exists) */}
+        {(data.workOrderType === 'INSPECTION' || data.workOrderType === 'STICKER_INSPECTION') && data.inspectionDate && (
           <div className="mb-6 print-section">
             <h3 className="text-lg font-bold mb-3 text-primary border-b pb-2">INSPECTION RESULTS</h3>
             <div className="space-y-3">

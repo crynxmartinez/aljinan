@@ -119,11 +119,14 @@ export async function GET(
       branchName: workOrder.checklist.branch.name,
       branchAddress: workOrder.checklist.branch.address,
       branchPhone: workOrder.checklist.branch.phone,
+      // Inspection fields (legacy)
       inspectionDate: workOrder.inspectionDate?.toISOString() || null,
       systemsChecked: workOrder.systemsChecked,
       findings: workOrder.findings,
       deficiencies: workOrder.deficiencies,
       recommendations: workOrder.recommendations,
+      // Report data (new - contains service/maintenance/installation specific data)
+      reportData: workOrder.reportData,
       technicianName: technicianSignedByName || technicianName,
       technicianSignature: workOrder.technicianSignature,
       technicianSignedAt: workOrder.technicianSignedAt?.toISOString() || null,
