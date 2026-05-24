@@ -135,6 +135,8 @@ interface ChecklistItem {
   // Contract fields
   contractSystemId?: string | null
   contractTitle?: string | null
+  visitIndex?: number | null
+  paymentDueDate?: string | null
   // Inspection fields
   workOrderType?: 'SERVICE' | 'INSPECTION' | 'MAINTENANCE' | 'INSTALLATION' | 'STICKER_INSPECTION' | 'OTHER' | null
   workOrderNumber?: number | null

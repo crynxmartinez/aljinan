@@ -258,6 +258,9 @@ export async function GET(
         paymentProofType: item.paymentProofType,
         paymentProofFileName: item.paymentProofFileName,
         paymentSubmittedAt: item.paymentSubmittedAt?.toISOString() || null,
+        // Contract work order fields
+        visitIndex: item.visitIndex,
+        paymentDueDate: item.paymentDueDate?.toISOString() || null,
         // Equipment for sticker inspections
         equipment: itemEquipment.map(eq => ({
           id: eq.id,

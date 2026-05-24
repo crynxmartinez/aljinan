@@ -725,17 +725,20 @@ enum ContractSystemFrequency {
 
 // Contract System - scope of work items (e.g., Fire Alarm System, HVAC)
 model ContractSystem {
-  id          String                   @id @default(cuid())
-  contractId  String
-  contract    Contract                 @relation(fields: [contractId], references: [id], onDelete: Cascade)
-  name        String                   // e.g., "Fire Alarm System"
-  description String?
-  frequency   ContractSystemFrequency  // How often visits occur
-  visitDates  Json                     // Array of visit dates: ["2026-01-15", "2026-04-15", ...]
-  dateMode    String                   @default("MANUAL")  // "MANUAL" or "AUTOMATIC"
-  order       Int                      @default(0)  // Display order
-  createdAt   DateTime                 @default(now())
-  updatedAt   DateTime                 @updatedAt
+  id              String                   @id @default(cuid())
+  contractId      String
+  contract        Contract                 @relation(fields: [contractId], references: [id], onDelete: Cascade)
+  name            String                   // e.g., "Fire Alarm System"
+  description     String?
+  frequency       ContractSystemFrequency  // How often visits occur
+  visitDates      Json                     // Array of visit dates: ["2026-01-15", "2026-04-15", ...]
+  dateMode        String                   @default("MANUAL")  // "MANUAL" or "AUTOMATIC" for visit dates
+  paymentDueDates Json?                    // Array of payment due dates (parallel to visitDates)
+  paymentDateMode String                   @default("AUTOMATIC")  // "AUTOMATIC" (+10 days) or "MANUAL"
+  pricePerVisit   Float?                   // Price for each visit (contract total / number of visits)
+  order           Int                      @default(0)  // Display order
+  createdAt       DateTime                 @default(now())
+  updatedAt       DateTime                 @updatedAt
   
   // Work orders generated from this system
   workOrders  ChecklistItem[]
@@ -855,6 +858,8 @@ model ChecklistItem {
   // Link to contract system (if created from contract)
   contractSystemId String?           // Contract system that generated this work order
   contractSystem   ContractSystem?   @relation(fields: [contractSystemId], references: [id])
+  visitIndex       Int?              // Which visit number (0-indexed) for payment tracking
+  paymentDueDate   DateTime?         // Payment due date for this contract work order
   
   // Assignment
   assignedTo      String?            // User ID of assigned team member

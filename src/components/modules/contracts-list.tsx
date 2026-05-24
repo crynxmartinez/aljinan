@@ -91,6 +91,9 @@ interface ContractSystem {
   frequency: 'MONTHLY' | 'QUARTERLY' | 'SEMI_ANNUALLY' | 'ANNUALLY'
   visitDates: string[]
   dateMode: 'MANUAL' | 'AUTOMATIC'
+  paymentDueDates: string[]
+  paymentDateMode: 'AUTOMATIC' | 'MANUAL'
+  pricePerVisit: number | null
   order: number
 }
 
@@ -166,6 +169,8 @@ export function ContractsList({ branchId }: ContractsListProps) {
     frequency: 'MONTHLY' | 'QUARTERLY' | 'SEMI_ANNUALLY' | 'ANNUALLY'
     visitDates: string[]
     dateMode: 'MANUAL' | 'AUTOMATIC'
+    paymentDueDates: string[]
+    paymentDateMode: 'AUTOMATIC' | 'MANUAL'
   }
 
   // Payment form type
@@ -230,7 +235,7 @@ export function ContractsList({ branchId }: ContractsListProps) {
       ...newContract,
       systems: [
         ...newContract.systems,
-        { name: '', description: '', frequency: 'QUARTERLY', visitDates: ['', '', '', ''], dateMode: 'MANUAL' }
+        { name: '', description: '', frequency: 'QUARTERLY', visitDates: ['', '', '', ''], dateMode: 'MANUAL', paymentDueDates: ['', '', '', ''], paymentDateMode: 'AUTOMATIC' }
       ]
     })
   }
@@ -266,6 +271,16 @@ export function ContractsList({ branchId }: ContractsListProps) {
     return dates
   }
 
+  // Helper: Calculate payment due dates (visit date + 10 days)
+  const calculatePaymentDueDates = (visitDates: string[]): string[] => {
+    return visitDates.map(visitDate => {
+      if (!visitDate) return ''
+      const date = new Date(visitDate)
+      date.setDate(date.getDate() + 10)
+      return date.toISOString().split('T')[0]
+    })
+  }
+
   // Helper: Update a system field
   const updateSystem = (index: number, field: keyof SystemForm, value: string | string[]) => {
     const updated = [...newContract.systems]
@@ -274,32 +289,54 @@ export function ContractsList({ branchId }: ContractsListProps) {
       const visitCount = getVisitCount(freq)
       // If automatic mode, recalculate dates from first date
       if (updated[index].dateMode === 'AUTOMATIC' && updated[index].visitDates[0]) {
+        const newVisitDates = calculateAutoDates(updated[index].visitDates[0], freq)
         updated[index] = {
           ...updated[index],
           frequency: freq,
-          visitDates: calculateAutoDates(updated[index].visitDates[0], freq)
+          visitDates: newVisitDates,
+          paymentDueDates: updated[index].paymentDateMode === 'AUTOMATIC' ? calculatePaymentDueDates(newVisitDates) : Array(visitCount).fill('')
         }
       } else {
         updated[index] = {
           ...updated[index],
           frequency: freq,
-          visitDates: Array(visitCount).fill('')
+          visitDates: Array(visitCount).fill(''),
+          paymentDueDates: Array(visitCount).fill('')
         }
       }
     } else if (field === 'dateMode') {
       const mode = value as 'MANUAL' | 'AUTOMATIC'
       if (mode === 'AUTOMATIC' && updated[index].visitDates[0]) {
         // Auto-calculate dates from first date
+        const newVisitDates = calculateAutoDates(updated[index].visitDates[0], updated[index].frequency)
         updated[index] = {
           ...updated[index],
           dateMode: mode,
-          visitDates: calculateAutoDates(updated[index].visitDates[0], updated[index].frequency)
+          visitDates: newVisitDates,
+          paymentDueDates: updated[index].paymentDateMode === 'AUTOMATIC' ? calculatePaymentDueDates(newVisitDates) : updated[index].paymentDueDates
         }
       } else {
         updated[index] = { ...updated[index], dateMode: mode }
       }
+    } else if (field === 'paymentDateMode') {
+      const mode = value as 'AUTOMATIC' | 'MANUAL'
+      if (mode === 'AUTOMATIC') {
+        // Auto-calculate payment dates from visit dates
+        updated[index] = {
+          ...updated[index],
+          paymentDateMode: mode,
+          paymentDueDates: calculatePaymentDueDates(updated[index].visitDates)
+        }
+      } else {
+        updated[index] = { ...updated[index], paymentDateMode: mode }
+      }
     } else if (field === 'visitDates') {
-      updated[index] = { ...updated[index], visitDates: value as string[] }
+      const newVisitDates = value as string[]
+      updated[index] = {
+        ...updated[index],
+        visitDates: newVisitDates,
+        paymentDueDates: updated[index].paymentDateMode === 'AUTOMATIC' ? calculatePaymentDueDates(newVisitDates) : updated[index].paymentDueDates
+      }
     } else {
       updated[index] = { ...updated[index], [field]: value }
     }
@@ -312,15 +349,33 @@ export function ContractsList({ branchId }: ContractsListProps) {
 
     // If automatic mode and changing first date, recalculate all dates
     if (updated[systemIndex].dateMode === 'AUTOMATIC' && dateIndex === 0) {
+      const newVisitDates = calculateAutoDates(value, updated[systemIndex].frequency)
       updated[systemIndex] = {
         ...updated[systemIndex],
-        visitDates: calculateAutoDates(value, updated[systemIndex].frequency)
+        visitDates: newVisitDates,
+        paymentDueDates: updated[systemIndex].paymentDateMode === 'AUTOMATIC' ? calculatePaymentDueDates(newVisitDates) : updated[systemIndex].paymentDueDates
       }
     } else {
       const dates = [...updated[systemIndex].visitDates]
       dates[dateIndex] = value
-      updated[systemIndex] = { ...updated[systemIndex], visitDates: dates }
+      // Also update payment due date if in automatic mode
+      const paymentDates = [...updated[systemIndex].paymentDueDates]
+      if (updated[systemIndex].paymentDateMode === 'AUTOMATIC' && value) {
+        const paymentDate = new Date(value)
+        paymentDate.setDate(paymentDate.getDate() + 10)
+        paymentDates[dateIndex] = paymentDate.toISOString().split('T')[0]
+      }
+      updated[systemIndex] = { ...updated[systemIndex], visitDates: dates, paymentDueDates: paymentDates }
     }
+    setNewContract({ ...newContract, systems: updated })
+  }
+
+  // Helper: Update a payment due date for a system
+  const updatePaymentDueDate = (systemIndex: number, dateIndex: number, value: string) => {
+    const updated = [...newContract.systems]
+    const paymentDates = [...updated[systemIndex].paymentDueDates]
+    paymentDates[dateIndex] = value
+    updated[systemIndex] = { ...updated[systemIndex], paymentDueDates: paymentDates }
     setNewContract({ ...newContract, systems: updated })
   }
 
@@ -398,7 +453,9 @@ export function ContractsList({ branchId }: ContractsListProps) {
         description: s.description || '',
         frequency: s.frequency,
         visitDates: Array.isArray(s.visitDates) ? s.visitDates.map((d: string) => d ? d.split('T')[0] : '') : [],
-        dateMode: (s.dateMode as 'MANUAL' | 'AUTOMATIC') || 'MANUAL'
+        dateMode: (s.dateMode as 'MANUAL' | 'AUTOMATIC') || 'MANUAL',
+        paymentDueDates: Array.isArray(s.paymentDueDates) ? s.paymentDueDates.map((d: string) => d ? d.split('T')[0] : '') : [],
+        paymentDateMode: (s.paymentDateMode as 'AUTOMATIC' | 'MANUAL') || 'AUTOMATIC'
       })) || [],
       payments: contract.payments?.length > 0
         ? contract.payments.map(p => ({
@@ -429,7 +486,7 @@ export function ContractsList({ branchId }: ContractsListProps) {
       ...editContract,
       systems: [
         ...editContract.systems,
-        { name: '', description: '', frequency: 'QUARTERLY', visitDates: ['', '', '', ''], dateMode: 'MANUAL' }
+        { name: '', description: '', frequency: 'QUARTERLY', visitDates: ['', '', '', ''], dateMode: 'MANUAL', paymentDueDates: ['', '', '', ''], paymentDateMode: 'AUTOMATIC' }
       ]
     })
   }
@@ -449,32 +506,54 @@ export function ContractsList({ branchId }: ContractsListProps) {
       const visitCount = getVisitCount(freq)
       // If automatic mode, recalculate dates from first date
       if (updated[index].dateMode === 'AUTOMATIC' && updated[index].visitDates[0]) {
+        const newVisitDates = calculateAutoDates(updated[index].visitDates[0], freq)
         updated[index] = {
           ...updated[index],
           frequency: freq,
-          visitDates: calculateAutoDates(updated[index].visitDates[0], freq)
+          visitDates: newVisitDates,
+          paymentDueDates: updated[index].paymentDateMode === 'AUTOMATIC' ? calculatePaymentDueDates(newVisitDates) : Array(visitCount).fill('')
         }
       } else {
         updated[index] = {
           ...updated[index],
           frequency: freq,
-          visitDates: Array(visitCount).fill('')
+          visitDates: Array(visitCount).fill(''),
+          paymentDueDates: Array(visitCount).fill('')
         }
       }
     } else if (field === 'dateMode') {
       const mode = value as 'MANUAL' | 'AUTOMATIC'
       if (mode === 'AUTOMATIC' && updated[index].visitDates[0]) {
         // Auto-calculate dates from first date
+        const newVisitDates = calculateAutoDates(updated[index].visitDates[0], updated[index].frequency)
         updated[index] = {
           ...updated[index],
           dateMode: mode,
-          visitDates: calculateAutoDates(updated[index].visitDates[0], updated[index].frequency)
+          visitDates: newVisitDates,
+          paymentDueDates: updated[index].paymentDateMode === 'AUTOMATIC' ? calculatePaymentDueDates(newVisitDates) : updated[index].paymentDueDates
         }
       } else {
         updated[index] = { ...updated[index], dateMode: mode }
       }
+    } else if (field === 'paymentDateMode') {
+      const mode = value as 'AUTOMATIC' | 'MANUAL'
+      if (mode === 'AUTOMATIC') {
+        // Auto-calculate payment dates from visit dates
+        updated[index] = {
+          ...updated[index],
+          paymentDateMode: mode,
+          paymentDueDates: calculatePaymentDueDates(updated[index].visitDates)
+        }
+      } else {
+        updated[index] = { ...updated[index], paymentDateMode: mode }
+      }
     } else if (field === 'visitDates') {
-      updated[index] = { ...updated[index], visitDates: value as string[] }
+      const newVisitDates = value as string[]
+      updated[index] = {
+        ...updated[index],
+        visitDates: newVisitDates,
+        paymentDueDates: updated[index].paymentDateMode === 'AUTOMATIC' ? calculatePaymentDueDates(newVisitDates) : updated[index].paymentDueDates
+      }
     } else {
       updated[index] = { ...updated[index], [field]: value }
     }
@@ -487,15 +566,34 @@ export function ContractsList({ branchId }: ContractsListProps) {
 
     // If automatic mode and changing first date, recalculate all dates
     if (updated[systemIndex].dateMode === 'AUTOMATIC' && dateIndex === 0) {
+      const newVisitDates = calculateAutoDates(value, updated[systemIndex].frequency)
       updated[systemIndex] = {
         ...updated[systemIndex],
-        visitDates: calculateAutoDates(value, updated[systemIndex].frequency)
+        visitDates: newVisitDates,
+        paymentDueDates: updated[systemIndex].paymentDateMode === 'AUTOMATIC' ? calculatePaymentDueDates(newVisitDates) : updated[systemIndex].paymentDueDates
       }
     } else {
       const dates = [...updated[systemIndex].visitDates]
       dates[dateIndex] = value
-      updated[systemIndex] = { ...updated[systemIndex], visitDates: dates }
+      // Also update payment due date if in automatic mode
+      const paymentDates = [...updated[systemIndex].paymentDueDates]
+      if (updated[systemIndex].paymentDateMode === 'AUTOMATIC' && value) {
+        const paymentDate = new Date(value)
+        paymentDate.setDate(paymentDate.getDate() + 10)
+        paymentDates[dateIndex] = paymentDate.toISOString().split('T')[0]
+      }
+      updated[systemIndex] = { ...updated[systemIndex], visitDates: dates, paymentDueDates: paymentDates }
     }
+    setEditContract({ ...editContract, systems: updated })
+  }
+
+  // Helper: Update a payment due date for edit form
+  const updateEditPaymentDueDate = (systemIndex: number, dateIndex: number, value: string) => {
+    if (!editContract) return
+    const updated = [...editContract.systems]
+    const paymentDates = [...updated[systemIndex].paymentDueDates]
+    paymentDates[dateIndex] = value
+    updated[systemIndex] = { ...updated[systemIndex], paymentDueDates: paymentDates }
     setEditContract({ ...editContract, systems: updated })
   }
 
@@ -523,7 +621,9 @@ export function ContractsList({ branchId }: ContractsListProps) {
           description: s.description || null,
           frequency: s.frequency,
           visitDates: s.visitDates.filter(d => d),
-          dateMode: s.dateMode
+          dateMode: s.dateMode,
+          paymentDueDates: s.paymentDueDates.filter(d => d),
+          paymentDateMode: s.paymentDateMode
         }))
 
       // Prepare payments data
@@ -629,7 +729,9 @@ export function ContractsList({ branchId }: ContractsListProps) {
           description: s.description || null,
           frequency: s.frequency,
           visitDates: s.visitDates.filter(d => d), // Filter out empty dates
-          dateMode: s.dateMode
+          dateMode: s.dateMode,
+          paymentDueDates: s.paymentDueDates.filter(d => d),
+          paymentDateMode: s.paymentDateMode
         }))
 
       // Prepare payments data - filter out payments without dates
@@ -1328,40 +1430,53 @@ export function ContractsList({ branchId }: ContractsListProps) {
                             ))}
                           </div>
                         </div>
+
+                        {/* Payment Due Dates */}
+                        <div className="space-y-2 pt-2 border-t">
+                          <div className="flex items-center justify-between">
+                            <Label className="text-xs text-muted-foreground">Payment Due Dates</Label>
+                            <div className="flex items-center gap-2">
+                              <button
+                                type="button"
+                                onClick={() => updateSystem(sysIndex, 'paymentDateMode', 'MANUAL')}
+                                className={`text-xs px-2 py-1 rounded ${system.paymentDateMode === 'MANUAL'
+                                  ? 'bg-primary text-primary-foreground'
+                                  : 'bg-muted text-muted-foreground hover:bg-muted/80'
+                                  }`}
+                              >
+                                Manual
+                              </button>
+                              <button
+                                type="button"
+                                onClick={() => updateSystem(sysIndex, 'paymentDateMode', 'AUTOMATIC')}
+                                className={`text-xs px-2 py-1 rounded ${system.paymentDateMode === 'AUTOMATIC'
+                                  ? 'bg-primary text-primary-foreground'
+                                  : 'bg-muted text-muted-foreground hover:bg-muted/80'
+                                  }`}
+                              >
+                                Auto (+10 days)
+                              </button>
+                            </div>
+                          </div>
+                          <div className="grid grid-cols-2 sm:grid-cols-4 gap-2">
+                            {system.paymentDueDates.map((date, dateIndex) => (
+                              <div key={dateIndex} className="space-y-1">
+                                <Label className="text-xs">{getOrdinal(dateIndex + 1)} Payment</Label>
+                                <Input
+                                  type="date"
+                                  value={date}
+                                  onChange={(e) => updatePaymentDueDate(sysIndex, dateIndex, e.target.value)}
+                                  disabled={system.paymentDateMode === 'AUTOMATIC'}
+                                  className={system.paymentDateMode === 'AUTOMATIC' ? 'bg-muted' : ''}
+                                />
+                              </div>
+                            ))}
+                          </div>
+                        </div>
                       </div>
                     ))}
                   </div>
                 )}
-              </div>
-
-              {/* Payment Terms Section */}
-              <div className="space-y-4">
-                <h3 className="text-sm font-semibold uppercase tracking-wide">Payment Terms</h3>
-                <div className="space-y-3">
-                  {newContract.payments.map((payment, index) => (
-                    <div key={index} className="grid grid-cols-2 gap-4 items-end">
-                      <div className="space-y-1">
-                        <Label className="text-xs">{getOrdinal(payment.paymentNo)} Payment</Label>
-                        <Input
-                          type="date"
-                          value={payment.dueDate}
-                          onChange={(e) => updatePayment(index, 'dueDate', e.target.value)}
-                          placeholder="Date"
-                        />
-                      </div>
-                      <div className="space-y-1">
-                        <Label className="text-xs">Amount (optional)</Label>
-                        <Input
-                          type="number"
-                          step="0.01"
-                          value={payment.amount}
-                          onChange={(e) => updatePayment(index, 'amount', e.target.value)}
-                          placeholder="SAR 0.00"
-                        />
-                      </div>
-                    </div>
-                  ))}
-                </div>
               </div>
 
               {/* Upload Contract Section */}
@@ -1590,40 +1705,53 @@ export function ContractsList({ branchId }: ContractsListProps) {
                               ))}
                             </div>
                           </div>
+
+                          {/* Payment Due Dates */}
+                          <div className="space-y-2 pt-2 border-t">
+                            <div className="flex items-center justify-between">
+                              <Label className="text-xs text-muted-foreground">Payment Due Dates</Label>
+                              <div className="flex items-center gap-2">
+                                <button
+                                  type="button"
+                                  onClick={() => updateEditSystem(sysIndex, 'paymentDateMode', 'MANUAL')}
+                                  className={`text-xs px-2 py-1 rounded ${system.paymentDateMode === 'MANUAL'
+                                    ? 'bg-primary text-primary-foreground'
+                                    : 'bg-muted text-muted-foreground hover:bg-muted/80'
+                                    }`}
+                                >
+                                  Manual
+                                </button>
+                                <button
+                                  type="button"
+                                  onClick={() => updateEditSystem(sysIndex, 'paymentDateMode', 'AUTOMATIC')}
+                                  className={`text-xs px-2 py-1 rounded ${system.paymentDateMode === 'AUTOMATIC'
+                                    ? 'bg-primary text-primary-foreground'
+                                    : 'bg-muted text-muted-foreground hover:bg-muted/80'
+                                    }`}
+                                >
+                                  Auto (+10 days)
+                                </button>
+                              </div>
+                            </div>
+                            <div className="grid grid-cols-2 sm:grid-cols-4 gap-2">
+                              {system.paymentDueDates.map((date, dateIndex) => (
+                                <div key={dateIndex} className="space-y-1">
+                                  <Label className="text-xs">{getOrdinal(dateIndex + 1)} Payment</Label>
+                                  <Input
+                                    type="date"
+                                    value={date}
+                                    onChange={(e) => updateEditPaymentDueDate(sysIndex, dateIndex, e.target.value)}
+                                    disabled={system.paymentDateMode === 'AUTOMATIC'}
+                                    className={system.paymentDateMode === 'AUTOMATIC' ? 'bg-muted' : ''}
+                                  />
+                                </div>
+                              ))}
+                            </div>
+                          </div>
                         </div>
                       ))}
                     </div>
                   )}
-                </div>
-
-                {/* Payment Terms Section */}
-                <div className="space-y-4">
-                  <h3 className="text-sm font-semibold uppercase tracking-wide">Payment Terms</h3>
-                  <div className="space-y-3">
-                    {editContract.payments.map((payment, index) => (
-                      <div key={index} className="grid grid-cols-2 gap-4 items-end">
-                        <div className="space-y-1">
-                          <Label className="text-xs">{getOrdinal(payment.paymentNo)} Payment</Label>
-                          <Input
-                            type="date"
-                            value={payment.dueDate}
-                            onChange={(e) => updateEditPayment(index, 'dueDate', e.target.value)}
-                            placeholder="Date"
-                          />
-                        </div>
-                        <div className="space-y-1">
-                          <Label className="text-xs">Amount (optional)</Label>
-                          <Input
-                            type="number"
-                            step="0.01"
-                            value={payment.amount}
-                            onChange={(e) => updateEditPayment(index, 'amount', e.target.value)}
-                            placeholder="SAR 0.00"
-                          />
-                        </div>
-                      </div>
-                    ))}
-                  </div>
                 </div>
 
                 {/* Upload Contract Section */}

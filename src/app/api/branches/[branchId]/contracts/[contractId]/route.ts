@@ -12,6 +12,8 @@ interface SystemInput {
   frequency: ContractSystemFrequency
   visitDates: string[]
   dateMode?: 'MANUAL' | 'AUTOMATIC'
+  paymentDueDates?: string[]
+  paymentDateMode?: 'AUTOMATIC' | 'MANUAL'
 }
 
 // Type for payment input
@@ -129,6 +131,17 @@ export async function PATCH(
           })
           let nextWorkOrderNumber = (lastWorkOrder?.workOrderNumber || 0) + 1
 
+          // Calculate total visits across all systems
+          const totalVisits = updated.systems.reduce((sum, sys) => {
+            const dates = sys.visitDates as string[]
+            return sum + dates.filter(d => d).length
+          }, 0)
+
+          // Calculate price per visit from contract total value
+          const pricePerVisit = totalVisits > 0 && updated.totalValue > 0
+            ? updated.totalValue / totalVisits
+            : null
+
           // Create a checklist for this contract
           const checklist = await tx.checklist.create({
             data: {
@@ -153,11 +166,15 @@ export async function PATCH(
             contractSystemId: string
             workOrderNumber: number
             order: number
+            price: number | null
+            visitIndex: number
+            paymentDueDate: Date | null
           }[] = []
 
           let orderIndex = 0
           for (const system of updated.systems) {
             const visitDates = system.visitDates as string[]
+            const paymentDueDates = (system.paymentDueDates as string[]) || []
             const frequencyLabel = {
               'MONTHLY': 'Monthly',
               'QUARTERLY': 'Quarterly',
@@ -168,6 +185,15 @@ export async function PATCH(
             for (let i = 0; i < visitDates.length; i++) {
               const visitDate = visitDates[i]
               if (visitDate) {
+                // Get payment due date - either from system or calculate as visit date + 10 days
+                let paymentDueDate: Date | null = null
+                if (paymentDueDates[i]) {
+                  paymentDueDate = new Date(paymentDueDates[i])
+                } else if (system.paymentDateMode === 'AUTOMATIC') {
+                  paymentDueDate = new Date(visitDate)
+                  paymentDueDate.setDate(paymentDueDate.getDate() + 10)
+                }
+
                 workOrdersToCreate.push({
                   checklistId: checklist.id,
                   description: `${system.name} - ${frequencyLabel} Visit ${i + 1}`,
@@ -178,7 +204,10 @@ export async function PATCH(
                   scheduledDate: new Date(visitDate),
                   contractSystemId: system.id,
                   workOrderNumber: nextWorkOrderNumber++,
-                  order: orderIndex++
+                  order: orderIndex++,
+                  price: pricePerVisit,
+                  visitIndex: i,
+                  paymentDueDate
                 })
               }
             }
@@ -404,6 +433,8 @@ export async function PATCH(
                 frequency: system.frequency,
                 visitDates: system.visitDates || [],
                 dateMode: system.dateMode || 'MANUAL',
+                paymentDueDates: system.paymentDueDates || [],
+                paymentDateMode: system.paymentDateMode || 'AUTOMATIC',
                 order: index
               }))
             })

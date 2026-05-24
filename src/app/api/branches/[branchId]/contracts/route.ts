@@ -63,6 +63,8 @@ interface SystemInput {
   frequency: ContractSystemFrequency
   visitDates: string[]
   dateMode?: 'MANUAL' | 'AUTOMATIC'
+  paymentDueDates?: string[]
+  paymentDateMode?: 'AUTOMATIC' | 'MANUAL'
 }
 
 // Type for payment input
@@ -142,6 +144,8 @@ export async function POST(
             frequency: system.frequency,
             visitDates: system.visitDates || [],
             dateMode: system.dateMode || 'MANUAL',
+            paymentDueDates: system.paymentDueDates || [],
+            paymentDateMode: system.paymentDateMode || 'AUTOMATIC',
             order: index
           }))
         })
