@@ -612,6 +612,128 @@ export async function PATCH(
       return NextResponse.json({ success: true })
     }
 
+    // Handle stage update (for drag-and-drop on Kanban)
+    if (action === 'update_stage') {
+      const { itemId, stage } = body
+
+      if (!itemId || !stage) {
+        return NextResponse.json({ error: 'Item ID and stage required' }, { status: 400 })
+      }
+
+      // Verify work order belongs to this branch
+      const workOrder = await prisma.checklistItem.findFirst({
+        where: {
+          id: itemId,
+          checklist: { branchId }
+        }
+      })
+
+      if (!workOrder) {
+        return NextResponse.json({ error: 'Work order not found' }, { status: 404 })
+      }
+
+      const oldStage = workOrder.stage
+
+      // Update the stage
+      const updatedWorkOrder = await prisma.checklistItem.update({
+        where: { id: itemId },
+        data: { stage },
+        include: {
+          checklist: {
+            include: {
+              branch: {
+                include: {
+                  client: true
+                }
+              }
+            }
+          }
+        }
+      })
+
+      // Send notifications based on stage changes
+      const clientId = updatedWorkOrder.checklist?.branch?.client?.userId
+
+      if (clientId) {
+        if (stage === 'FOR_REVIEW' && oldStage !== 'FOR_REVIEW') {
+          await notifyWorkOrderForReview(
+            clientId,
+            updatedWorkOrder.description,
+            itemId,
+            branchId
+          )
+        } else if (stage === 'IN_PROGRESS' && oldStage !== 'IN_PROGRESS') {
+          await notifyWorkOrderStarted(
+            clientId,
+            updatedWorkOrder.description,
+            itemId,
+            branchId
+          )
+        } else if (stage === 'COMPLETED' && oldStage !== 'COMPLETED') {
+          await notifyWorkOrderCompleted(
+            clientId,
+            updatedWorkOrder.description,
+            itemId,
+            branchId
+          )
+        }
+      }
+
+      return NextResponse.json(updatedWorkOrder)
+    }
+
+    // Handle price update
+    if (action === 'update_price') {
+      const { itemId, price } = body
+
+      if (!itemId || price === undefined || price === null) {
+        return NextResponse.json({ error: 'Item ID and price required' }, { status: 400 })
+      }
+
+      // Verify work order belongs to this branch
+      const workOrder = await prisma.checklistItem.findFirst({
+        where: {
+          id: itemId,
+          checklist: { branchId }
+        }
+      })
+
+      if (!workOrder) {
+        return NextResponse.json({ error: 'Work order not found' }, { status: 404 })
+      }
+
+      // Update the price
+      const updatedWorkOrder = await prisma.checklistItem.update({
+        where: { id: itemId },
+        data: { price },
+        include: {
+          checklist: {
+            include: {
+              branch: {
+                include: {
+                  client: true
+                }
+              }
+            }
+          }
+        }
+      })
+
+      // Notify client about price being set
+      const clientId = updatedWorkOrder.checklist?.branch?.client?.userId
+      if (clientId && !workOrder.price) {
+        await notifyPriceSet(
+          clientId,
+          updatedWorkOrder.description,
+          price,
+          itemId,
+          branchId
+        )
+      }
+
+      return NextResponse.json(updatedWorkOrder)
+    }
+
     // For bulk payment actions, require workOrderIds array
     if (!workOrderIds || !Array.isArray(workOrderIds) || workOrderIds.length === 0) {
       return NextResponse.json({ error: 'Work order IDs required' }, { status: 400 })
@@ -790,126 +912,6 @@ export async function PATCH(
       }
 
       return NextResponse.json({ success: true, message: 'Payment verified' })
-
-    } else if (action === 'update_stage') {
-      // Update work order stage (for work orders without projects)
-      const { itemId, stage } = body
-
-      if (!itemId || !stage) {
-        return NextResponse.json({ error: 'Item ID and stage required' }, { status: 400 })
-      }
-
-      // Verify work order belongs to this branch
-      const workOrder = await prisma.checklistItem.findFirst({
-        where: {
-          id: itemId,
-          checklist: { branchId }
-        }
-      })
-
-      if (!workOrder) {
-        return NextResponse.json({ error: 'Work order not found' }, { status: 404 })
-      }
-
-      const oldStage = workOrder.stage
-
-      // Update the stage
-      const updatedWorkOrder = await prisma.checklistItem.update({
-        where: { id: itemId },
-        data: { stage },
-        include: {
-          checklist: {
-            include: {
-              branch: {
-                include: {
-                  client: true
-                }
-              }
-            }
-          }
-        }
-      })
-
-      // Send notifications based on stage changes
-      const clientId = updatedWorkOrder.checklist?.branch?.client?.userId
-
-      if (clientId) {
-        if (stage === 'FOR_REVIEW' && oldStage !== 'FOR_REVIEW') {
-          await notifyWorkOrderForReview(
-            clientId,
-            updatedWorkOrder.description,
-            itemId,
-            branchId
-          )
-        } else if (stage === 'IN_PROGRESS' && oldStage !== 'IN_PROGRESS') {
-          await notifyWorkOrderStarted(
-            clientId,
-            updatedWorkOrder.description,
-            itemId,
-            branchId
-          )
-        } else if (stage === 'COMPLETED' && oldStage !== 'COMPLETED') {
-          await notifyWorkOrderCompleted(
-            clientId,
-            updatedWorkOrder.description,
-            itemId,
-            branchId
-          )
-        }
-      }
-
-      return NextResponse.json(updatedWorkOrder)
-
-    } else if (action === 'update_price') {
-      // Update work order price
-      const { itemId, price } = body
-
-      if (!itemId || price === undefined || price === null) {
-        return NextResponse.json({ error: 'Item ID and price required' }, { status: 400 })
-      }
-
-      // Verify work order belongs to this branch
-      const workOrder = await prisma.checklistItem.findFirst({
-        where: {
-          id: itemId,
-          checklist: { branchId }
-        }
-      })
-
-      if (!workOrder) {
-        return NextResponse.json({ error: 'Work order not found' }, { status: 404 })
-      }
-
-      // Update the price
-      const updatedWorkOrder = await prisma.checklistItem.update({
-        where: { id: itemId },
-        data: { price },
-        include: {
-          checklist: {
-            include: {
-              branch: {
-                include: {
-                  client: true
-                }
-              }
-            }
-          }
-        }
-      })
-
-      // Notify client about price being set
-      const clientId = updatedWorkOrder.checklist?.branch?.client?.userId
-      if (clientId && !workOrder.price) {
-        await notifyPriceSet(
-          clientId,
-          updatedWorkOrder.description,
-          price,
-          itemId,
-          branchId
-        )
-      }
-
-      return NextResponse.json(updatedWorkOrder)
 
     } else {
       return NextResponse.json({ error: 'Invalid action' }, { status: 400 })
