@@ -131,17 +131,6 @@ export async function PATCH(
           })
           let nextWorkOrderNumber = (lastWorkOrder?.workOrderNumber || 0) + 1
 
-          // Calculate total visits across all systems
-          const totalVisits = updated.systems.reduce((sum, sys) => {
-            const dates = sys.visitDates as string[]
-            return sum + dates.filter(d => d).length
-          }, 0)
-
-          // Calculate price per visit from contract total value
-          const pricePerVisit = totalVisits > 0 && updated.totalValue > 0
-            ? updated.totalValue / totalVisits
-            : null
-
           // Create a checklist for this contract
           const checklist = await tx.checklist.create({
             data: {
@@ -205,7 +194,7 @@ export async function PATCH(
                   contractSystemId: system.id,
                   workOrderNumber: nextWorkOrderNumber++,
                   order: orderIndex++,
-                  price: pricePerVisit,
+                  price: null, // Contractor sets price manually on Kanban
                   visitIndex: i,
                   paymentDueDate
                 })

@@ -2,11 +2,23 @@ import 'dotenv/config'
 import { prisma } from '../src/lib/prisma'
 
 async function main() {
-  // Delete all contracts (cascade will delete systems, payments, and linked checklists)
+  // Delete orphaned contract work orders (items with contractSystemId or contract-like descriptions)
+  const deletedItems = await prisma.checklistItem.deleteMany({
+    where: {
+      OR: [
+        { contractSystemId: { not: null } },
+        { description: { contains: 'Visit' } },
+        { type: 'SCHEDULED' }
+      ]
+    }
+  })
+  console.log('Deleted contract work orders:', deletedItems.count)
+
+  // Delete all contracts (cascade will delete systems, payments)
   const deletedContracts = await prisma.contract.deleteMany({})
   console.log('Deleted contracts:', deletedContracts.count)
 
-  // Also delete any orphaned checklists that were linked to contracts
+  // Delete any orphaned checklists that were linked to contracts
   const deletedChecklists = await prisma.checklist.deleteMany({
     where: { contractId: { not: null } }
   })
