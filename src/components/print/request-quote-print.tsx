@@ -274,10 +274,6 @@ export function RequestQuotePrint({ requestId, branchId }: RequestQuotePrintProp
               <p className="font-semibold">{getRecurringLabel(data.recurringType)}</p>
             </div>
             <div>
-              <p className="text-sm text-muted-foreground">Certificate Required</p>
-              <p className="font-semibold">{data.needsCertificate ? 'Yes' : 'No'}</p>
-            </div>
-            <div>
               <p className="text-sm text-muted-foreground">Requested Date</p>
               <p className="font-semibold">{formatDate(data.createdAt)}</p>
             </div>

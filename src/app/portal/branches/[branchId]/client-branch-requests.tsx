@@ -998,21 +998,6 @@ export function ClientBranchRequests({ branchId, onDataChange, userId }: ClientB
                 </div>
               </div>
 
-              {/* Certificate Checkbox */}
-              <div className="flex items-center space-x-2 p-3 bg-muted/50 rounded-lg">
-                <input
-                  type="checkbox"
-                  id="needsCertificate"
-                  checked={newRequest.needsCertificate}
-                  onChange={(e) => setNewRequest({ ...newRequest, needsCertificate: e.target.checked })}
-                  className="h-4 w-4 rounded border-gray-300"
-                />
-                <Label htmlFor="needsCertificate" className="text-sm font-normal cursor-pointer">
-                  Certificate Required
-                  <span className="text-muted-foreground ml-1">(auto-generated on completion)</span>
-                </Label>
-              </div>
-
               {/* Equipment List - Only for Sticker Inspection */}
               {newRequest.workOrderType === 'STICKER_INSPECTION' && (
                 <div className="space-y-3 p-4 bg-amber-50 border border-amber-200 rounded-lg">
@@ -1313,9 +1298,6 @@ export function ClientBranchRequests({ branchId, onDataChange, userId }: ClientB
                 )}
                 {selectedRequest.recurringType && selectedRequest.recurringType !== 'ONCE' && (
                   <Badge variant="secondary">{selectedRequest.recurringType === 'MONTHLY' ? 'Monthly' : 'Quarterly'}</Badge>
-                )}
-                {selectedRequest.needsCertificate && (
-                  <Badge variant="outline" className="text-green-600">Certificate Required</Badge>
                 )}
               </div>
 
