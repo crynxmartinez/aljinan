@@ -496,7 +496,7 @@ export function RequestsList({ branchId, userRole, userId }: RequestsListProps) 
     title: string
     description: string
     workOrderType: 'SERVICE' | 'INSPECTION' | 'MAINTENANCE' | 'INSTALLATION'
-    recurringType: 'ONCE' | 'MONTHLY' | 'QUARTERLY'
+    recurringType: 'ONCE' | 'MONTHLY' | 'QUARTERLY' | 'SEMI_ANNUALLY' | 'ANNUALLY'
     needsCertificate: boolean
     quotedPrice: string
     quotedDate: string
@@ -1141,7 +1141,7 @@ export function RequestsList({ branchId, userRole, userId }: RequestsListProps) 
                 <Label htmlFor="contractor-recurringType">Frequency</Label>
                 <Select
                   value={contractorNewRequest.recurringType}
-                  onValueChange={(value: 'ONCE' | 'MONTHLY' | 'QUARTERLY') => setContractorNewRequest({ ...contractorNewRequest, recurringType: value })}
+                  onValueChange={(value: 'ONCE' | 'MONTHLY' | 'QUARTERLY' | 'SEMI_ANNUALLY' | 'ANNUALLY') => setContractorNewRequest({ ...contractorNewRequest, recurringType: value })}
                 >
                   <SelectTrigger>
                     <SelectValue />
@@ -1150,6 +1150,8 @@ export function RequestsList({ branchId, userRole, userId }: RequestsListProps) 
                     <SelectItem value="ONCE">One-time</SelectItem>
                     <SelectItem value="MONTHLY">Monthly (12 work orders)</SelectItem>
                     <SelectItem value="QUARTERLY">Quarterly (4 work orders)</SelectItem>
+                    <SelectItem value="SEMI_ANNUALLY">Semi-Annually (2 work orders)</SelectItem>
+                    <SelectItem value="ANNUALLY">Annually (1 work order)</SelectItem>
                   </SelectContent>
                 </Select>
               </div>
@@ -1231,8 +1233,16 @@ export function RequestsList({ branchId, userRole, userId }: RequestsListProps) 
               {contractorNewRequest.recurringType !== 'ONCE' && contractorNewRequest.quotedPrice && (
                 <div className="p-3 bg-blue-50 border border-blue-200 rounded-lg">
                   <p className="text-sm text-blue-800">
-                    <strong>Total:</strong> SAR {(parseFloat(contractorNewRequest.quotedPrice) * (contractorNewRequest.recurringType === 'MONTHLY' ? 12 : 4)).toLocaleString('en-US', { minimumFractionDigits: 2 })}
-                    {' '}({contractorNewRequest.recurringType === 'MONTHLY' ? '12 monthly' : '4 quarterly'} work orders)
+                    <strong>Total:</strong> SAR {(parseFloat(contractorNewRequest.quotedPrice) * (
+                      contractorNewRequest.recurringType === 'MONTHLY' ? 12 :
+                        contractorNewRequest.recurringType === 'QUARTERLY' ? 4 :
+                          contractorNewRequest.recurringType === 'SEMI_ANNUALLY' ? 2 : 1
+                    )).toLocaleString('en-US', { minimumFractionDigits: 2 })}
+                    {' '}({
+                      contractorNewRequest.recurringType === 'MONTHLY' ? '12 monthly' :
+                        contractorNewRequest.recurringType === 'QUARTERLY' ? '4 quarterly' :
+                          contractorNewRequest.recurringType === 'SEMI_ANNUALLY' ? '2 semi-annual' : '1 annual'
+                    } work orders)
                   </p>
                 </div>
               )}
