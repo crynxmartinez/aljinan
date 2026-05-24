@@ -1945,27 +1945,44 @@ export function ContractsList({ branchId }: ContractsListProps) {
                     </Button>
                   </div>
                   <div className="space-y-3">
-                    {selectedContract.systems.map((system, index) => (
-                      <div key={system.id || index} className="p-3 border rounded-lg bg-muted/30">
-                        <div className="flex items-center justify-between mb-2">
-                          <p className="font-medium">{system.name}</p>
-                          <Badge variant="outline">{getFrequencyLabel(system.frequency)}</Badge>
-                        </div>
-                        {system.description && (
-                          <p className="text-sm text-muted-foreground mb-2">{system.description}</p>
-                        )}
-                        {system.visitDates && system.visitDates.length > 0 && (
-                          <div className="flex flex-wrap gap-2">
-                            {system.visitDates.map((date: string, i: number) => (
-                              <Badge key={i} variant="secondary" className="text-xs">
-                                <Calendar className="h-3 w-3 mr-1" />
-                                {date ? new Date(date).toLocaleDateString() : `Visit ${i + 1}`}
-                              </Badge>
-                            ))}
+                    {selectedContract.systems.map((system, index) => {
+                      const paymentDueDates = (system.paymentDueDates as string[]) || []
+                      const paymentAmounts = (system.paymentAmounts as unknown as (number | null)[]) || []
+                      return (
+                        <div key={system.id || index} className="p-3 border rounded-lg bg-muted/30">
+                          <div className="flex items-center justify-between mb-2">
+                            <p className="font-medium">{system.name}</p>
+                            <Badge variant="outline">{getFrequencyLabel(system.frequency)}</Badge>
                           </div>
-                        )}
-                      </div>
-                    ))}
+                          {system.description && (
+                            <p className="text-sm text-muted-foreground mb-2">{system.description}</p>
+                          )}
+                          {system.visitDates && system.visitDates.length > 0 && (
+                            <div className="space-y-2 mt-3">
+                              <div className="grid grid-cols-3 gap-2 text-xs font-medium text-muted-foreground border-b pb-1">
+                                <span>Visit Date</span>
+                                <span>Payment Due</span>
+                                <span>Amount</span>
+                              </div>
+                              {system.visitDates.map((date: string, i: number) => (
+                                <div key={i} className="grid grid-cols-3 gap-2 text-sm">
+                                  <div className="flex items-center gap-1">
+                                    <Calendar className="h-3 w-3 text-muted-foreground" />
+                                    {date ? new Date(date).toLocaleDateString() : '—'}
+                                  </div>
+                                  <div className="text-muted-foreground">
+                                    {paymentDueDates[i] ? new Date(paymentDueDates[i]).toLocaleDateString() : '—'}
+                                  </div>
+                                  <div className="font-medium">
+                                    {paymentAmounts[i] ? `SAR ${paymentAmounts[i]?.toLocaleString('en-US', { minimumFractionDigits: 2 })}` : '—'}
+                                  </div>
+                                </div>
+                              ))}
+                            </div>
+                          )}
+                        </div>
+                      )
+                    })}
                   </div>
                 </div>
               )}
