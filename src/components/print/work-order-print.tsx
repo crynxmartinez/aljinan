@@ -86,13 +86,30 @@ interface InstallationReportData {
   configurationDetails: string
   commissioningChecklist: CommissioningItem[]
   testingResults: TestResult[]
-  handoverNotes: string
-  trainingProvided: string
+  trainingProvided: boolean
+  trainingNotes: string
   warrantyStartDate: string
   warrantyEndDate: string
+  handoverSignature: string
+  handoverDate: string
+  handoverName: string
 }
 
-type ReportData = MaintenanceReportData | ServiceReportData | InstallationReportData | null
+// Inspection report types
+interface InspectionChecklistItem {
+  item: string
+  status: 'pass' | 'fail' | 'na'
+  notes: string
+}
+
+interface InspectionReportData {
+  checklistItems: InspectionChecklistItem[]
+  overallStatus: 'pass' | 'fail' | 'conditional'
+  riskLevel: 'low' | 'medium' | 'high' | 'critical'
+  nextInspectionDate: string
+}
+
+type ReportData = MaintenanceReportData | ServiceReportData | InstallationReportData | InspectionReportData | null
 
 interface WorkOrderPrintData {
   id: string
@@ -461,7 +478,7 @@ export function WorkOrderPrint({ workOrderId }: WorkOrderPrintProps) {
                           <td className="border border-gray-300 px-3 py-2 text-sm">{m.value} {m.unit}</td>
                           <td className="border border-gray-300 px-3 py-2 text-sm">{m.normalRange}</td>
                           <td className={`border border-gray-300 px-3 py-2 text-sm capitalize ${m.status === 'critical' ? 'text-red-600 font-semibold' :
-                              m.status === 'warning' ? 'text-yellow-600' : 'text-green-600'
+                            m.status === 'warning' ? 'text-yellow-600' : 'text-green-600'
                             }`}>{m.status}</td>
                         </tr>
                       ))}
@@ -527,6 +544,8 @@ export function WorkOrderPrint({ workOrderId }: WorkOrderPrintProps) {
                   <p className="text-sm whitespace-pre-wrap">{(data.reportData as ServiceReportData).workPerformed}</p>
                 </div>
               )}
+
+              {/* Parts Replaced */}
               {(data.reportData as ServiceReportData).partsReplaced?.length > 0 && (
                 <div>
                   <p className="text-sm font-semibold mb-2">Parts Replaced:</p>
@@ -552,6 +571,77 @@ export function WorkOrderPrint({ workOrderId }: WorkOrderPrintProps) {
                   </table>
                 </div>
               )}
+
+              {/* Labor & Cost Summary */}
+              {((data.reportData as ServiceReportData).laborHours > 0 || (data.reportData as ServiceReportData).totalCost > 0) && (
+                <div>
+                  <p className="text-sm font-semibold mb-2">Cost Summary:</p>
+                  <table className="w-full border-collapse border border-gray-300">
+                    <tbody>
+                      {(data.reportData as ServiceReportData).laborHours > 0 && (
+                        <tr>
+                          <td className="border border-gray-300 px-3 py-2 text-sm">Labor Hours</td>
+                          <td className="border border-gray-300 px-3 py-2 text-sm text-right">{(data.reportData as ServiceReportData).laborHours} hrs</td>
+                        </tr>
+                      )}
+                      {(data.reportData as ServiceReportData).laborRate > 0 && (
+                        <tr>
+                          <td className="border border-gray-300 px-3 py-2 text-sm">Labor Rate</td>
+                          <td className="border border-gray-300 px-3 py-2 text-sm text-right">{formatCurrency((data.reportData as ServiceReportData).laborRate)}/hr</td>
+                        </tr>
+                      )}
+                      {(data.reportData as ServiceReportData).laborCost > 0 && (
+                        <tr>
+                          <td className="border border-gray-300 px-3 py-2 text-sm">Labor Cost</td>
+                          <td className="border border-gray-300 px-3 py-2 text-sm text-right">{formatCurrency((data.reportData as ServiceReportData).laborCost)}</td>
+                        </tr>
+                      )}
+                      {(data.reportData as ServiceReportData).totalPartsCost > 0 && (
+                        <tr>
+                          <td className="border border-gray-300 px-3 py-2 text-sm">Total Parts Cost</td>
+                          <td className="border border-gray-300 px-3 py-2 text-sm text-right">{formatCurrency((data.reportData as ServiceReportData).totalPartsCost)}</td>
+                        </tr>
+                      )}
+                      {(data.reportData as ServiceReportData).totalCost > 0 && (
+                        <tr className="bg-gray-100 font-semibold">
+                          <td className="border border-gray-300 px-3 py-2 text-sm">Total Cost</td>
+                          <td className="border border-gray-300 px-3 py-2 text-sm text-right">{formatCurrency((data.reportData as ServiceReportData).totalCost)}</td>
+                        </tr>
+                      )}
+                    </tbody>
+                  </table>
+                </div>
+              )}
+
+              {/* Before/After Photos */}
+              {((data.reportData as ServiceReportData).beforePhotos?.length > 0 || (data.reportData as ServiceReportData).afterPhotos?.length > 0) && (
+                <div>
+                  <p className="text-sm font-semibold mb-2">Documentation Photos:</p>
+                  <div className="grid grid-cols-2 gap-4">
+                    {(data.reportData as ServiceReportData).beforePhotos?.length > 0 && (
+                      <div>
+                        <p className="text-xs text-muted-foreground mb-1">Before:</p>
+                        <div className="flex flex-wrap gap-2">
+                          {(data.reportData as ServiceReportData).beforePhotos.map((photo, idx) => (
+                            <img key={idx} src={photo} alt={`Before ${idx + 1}`} className="w-24 h-24 object-cover border rounded" />
+                          ))}
+                        </div>
+                      </div>
+                    )}
+                    {(data.reportData as ServiceReportData).afterPhotos?.length > 0 && (
+                      <div>
+                        <p className="text-xs text-muted-foreground mb-1">After:</p>
+                        <div className="flex flex-wrap gap-2">
+                          {(data.reportData as ServiceReportData).afterPhotos.map((photo, idx) => (
+                            <img key={idx} src={photo} alt={`After ${idx + 1}`} className="w-24 h-24 object-cover border rounded" />
+                          ))}
+                        </div>
+                      </div>
+                    )}
+                  </div>
+                </div>
+              )}
+
               {(data.reportData as ServiceReportData).warrantyInfo && (
                 <div>
                   <p className="text-sm font-semibold mb-1">Warranty Information:</p>
@@ -567,6 +657,7 @@ export function WorkOrderPrint({ workOrderId }: WorkOrderPrintProps) {
           <div className="mb-6 print-section">
             <h3 className="text-lg font-bold mb-3 text-primary border-b pb-2">INSTALLATION REPORT</h3>
             <div className="space-y-3">
+              {/* Equipment Installed */}
               {(data.reportData as InstallationReportData).equipmentInstalled?.length > 0 && (
                 <div>
                   <p className="text-sm font-semibold mb-2">Equipment Installed:</p>
@@ -592,24 +683,184 @@ export function WorkOrderPrint({ workOrderId }: WorkOrderPrintProps) {
                   </table>
                 </div>
               )}
+
+              {/* Configuration Details */}
               {(data.reportData as InstallationReportData).configurationDetails && (
                 <div>
                   <p className="text-sm font-semibold mb-1">Configuration Details:</p>
                   <p className="text-sm whitespace-pre-wrap">{(data.reportData as InstallationReportData).configurationDetails}</p>
                 </div>
               )}
-              {(data.reportData as InstallationReportData).handoverNotes && (
+
+              {/* Commissioning Checklist */}
+              {(data.reportData as InstallationReportData).commissioningChecklist?.length > 0 && (
                 <div>
-                  <p className="text-sm font-semibold mb-1">Handover Notes:</p>
-                  <p className="text-sm whitespace-pre-wrap">{(data.reportData as InstallationReportData).handoverNotes}</p>
+                  <p className="text-sm font-semibold mb-2">Commissioning Checklist:</p>
+                  <table className="w-full border-collapse border border-gray-300">
+                    <thead>
+                      <tr className="bg-gray-100">
+                        <th className="border border-gray-300 px-3 py-2 text-left text-sm font-semibold w-8">✓</th>
+                        <th className="border border-gray-300 px-3 py-2 text-left text-sm font-semibold">Item</th>
+                        <th className="border border-gray-300 px-3 py-2 text-left text-sm font-semibold">Notes</th>
+                      </tr>
+                    </thead>
+                    <tbody>
+                      {(data.reportData as InstallationReportData).commissioningChecklist.map((item, idx) => (
+                        <tr key={idx}>
+                          <td className="border border-gray-300 px-3 py-2 text-sm text-center">
+                            {item.completed ? '✓' : '—'}
+                          </td>
+                          <td className="border border-gray-300 px-3 py-2 text-sm">{item.item}</td>
+                          <td className="border border-gray-300 px-3 py-2 text-sm">{item.notes || '-'}</td>
+                        </tr>
+                      ))}
+                    </tbody>
+                  </table>
+                </div>
+              )}
+
+              {/* Testing Results */}
+              {(data.reportData as InstallationReportData).testingResults?.length > 0 && (
+                <div>
+                  <p className="text-sm font-semibold mb-2">Testing Results:</p>
+                  <table className="w-full border-collapse border border-gray-300">
+                    <thead>
+                      <tr className="bg-gray-100">
+                        <th className="border border-gray-300 px-3 py-2 text-left text-sm font-semibold">Test</th>
+                        <th className="border border-gray-300 px-3 py-2 text-left text-sm font-semibold">Result</th>
+                        <th className="border border-gray-300 px-3 py-2 text-left text-sm font-semibold">Notes</th>
+                      </tr>
+                    </thead>
+                    <tbody>
+                      {(data.reportData as InstallationReportData).testingResults.map((test, idx) => (
+                        <tr key={idx}>
+                          <td className="border border-gray-300 px-3 py-2 text-sm">{test.test}</td>
+                          <td className={`border border-gray-300 px-3 py-2 text-sm font-semibold ${test.result === 'pass' ? 'text-green-600' : 'text-red-600'
+                            }`}>
+                            {test.result === 'pass' ? 'PASS' : 'FAIL'}
+                          </td>
+                          <td className="border border-gray-300 px-3 py-2 text-sm">{test.notes || '-'}</td>
+                        </tr>
+                      ))}
+                    </tbody>
+                  </table>
+                </div>
+              )}
+
+              {/* Training */}
+              {(data.reportData as InstallationReportData).trainingProvided && (
+                <div>
+                  <p className="text-sm font-semibold mb-1">Training Provided:</p>
+                  <p className="text-sm">Yes</p>
+                  {(data.reportData as InstallationReportData).trainingNotes && (
+                    <p className="text-sm whitespace-pre-wrap mt-1">{(data.reportData as InstallationReportData).trainingNotes}</p>
+                  )}
+                </div>
+              )}
+
+              {/* Warranty Period */}
+              {((data.reportData as InstallationReportData).warrantyStartDate || (data.reportData as InstallationReportData).warrantyEndDate) && (
+                <div>
+                  <p className="text-sm font-semibold mb-1">Warranty Period:</p>
+                  <p className="text-sm">
+                    {formatDate((data.reportData as InstallationReportData).warrantyStartDate)} - {formatDate((data.reportData as InstallationReportData).warrantyEndDate)}
+                  </p>
+                </div>
+              )}
+
+              {/* Handover */}
+              {(data.reportData as InstallationReportData).handoverName && (
+                <div>
+                  <p className="text-sm font-semibold mb-1">Handover:</p>
+                  <p className="text-sm">Received by: {(data.reportData as InstallationReportData).handoverName}</p>
+                  {(data.reportData as InstallationReportData).handoverDate && (
+                    <p className="text-sm">Date: {formatDate((data.reportData as InstallationReportData).handoverDate)}</p>
+                  )}
+                  {(data.reportData as InstallationReportData).handoverSignature && (
+                    <div className="mt-2">
+                      <img
+                        src={(data.reportData as InstallationReportData).handoverSignature}
+                        alt="Handover signature"
+                        className="max-h-16 border rounded"
+                      />
+                    </div>
+                  )}
                 </div>
               )}
             </div>
           </div>
         )}
 
-        {/* Inspection Results (legacy - for INSPECTION type or when inspectionDate exists) */}
-        {(data.workOrderType === 'INSPECTION' || data.workOrderType === 'STICKER_INSPECTION') && data.inspectionDate && (
+        {/* Inspection Report - using new reportData structure */}
+        {(data.workOrderType === 'INSPECTION' || data.workOrderType === 'STICKER_INSPECTION') && data.reportData && (
+          <div className="mb-6 print-section">
+            <h3 className="text-lg font-bold mb-3 text-primary border-b pb-2">
+              {data.workOrderType === 'STICKER_INSPECTION' ? 'STICKER INSPECTION REPORT' : 'INSPECTION REPORT'}
+            </h3>
+            <div className="space-y-3">
+              {/* Overall Status & Risk Level */}
+              <div className="grid grid-cols-2 gap-4">
+                <div>
+                  <p className="text-sm text-muted-foreground">Overall Status</p>
+                  <p className={`font-semibold capitalize ${(data.reportData as InspectionReportData).overallStatus === 'pass' ? 'text-green-600' :
+                      (data.reportData as InspectionReportData).overallStatus === 'fail' ? 'text-red-600' : 'text-yellow-600'
+                    }`}>
+                    {(data.reportData as InspectionReportData).overallStatus || '-'}
+                  </p>
+                </div>
+                <div>
+                  <p className="text-sm text-muted-foreground">Risk Level</p>
+                  <p className={`font-semibold capitalize ${(data.reportData as InspectionReportData).riskLevel === 'critical' ? 'text-red-600' :
+                      (data.reportData as InspectionReportData).riskLevel === 'high' ? 'text-orange-600' :
+                        (data.reportData as InspectionReportData).riskLevel === 'medium' ? 'text-yellow-600' : 'text-green-600'
+                    }`}>
+                    {(data.reportData as InspectionReportData).riskLevel || '-'}
+                  </p>
+                </div>
+              </div>
+
+              {/* Checklist Items */}
+              {(data.reportData as InspectionReportData).checklistItems?.length > 0 && (
+                <div>
+                  <p className="text-sm font-semibold mb-2">Inspection Checklist:</p>
+                  <table className="w-full border-collapse border border-gray-300">
+                    <thead>
+                      <tr className="bg-gray-100">
+                        <th className="border border-gray-300 px-3 py-2 text-left text-sm font-semibold">Item</th>
+                        <th className="border border-gray-300 px-3 py-2 text-left text-sm font-semibold w-20">Status</th>
+                        <th className="border border-gray-300 px-3 py-2 text-left text-sm font-semibold">Notes</th>
+                      </tr>
+                    </thead>
+                    <tbody>
+                      {(data.reportData as InspectionReportData).checklistItems.map((item, idx) => (
+                        <tr key={idx}>
+                          <td className="border border-gray-300 px-3 py-2 text-sm">{item.item}</td>
+                          <td className={`border border-gray-300 px-3 py-2 text-sm font-semibold text-center ${item.status === 'pass' ? 'text-green-600' :
+                              item.status === 'fail' ? 'text-red-600' : 'text-gray-500'
+                            }`}>
+                            {item.status === 'pass' ? 'PASS' : item.status === 'fail' ? 'FAIL' : 'N/A'}
+                          </td>
+                          <td className="border border-gray-300 px-3 py-2 text-sm">{item.notes || '-'}</td>
+                        </tr>
+                      ))}
+                    </tbody>
+                  </table>
+                </div>
+              )}
+
+              {/* Next Inspection Date */}
+              {(data.reportData as InspectionReportData).nextInspectionDate && (
+                <div>
+                  <p className="text-sm text-muted-foreground">Next Inspection Date</p>
+                  <p className="font-semibold">{formatDate((data.reportData as InspectionReportData).nextInspectionDate)}</p>
+                </div>
+              )}
+            </div>
+          </div>
+        )}
+
+        {/* Inspection Results - legacy fields fallback (when no reportData but has inspectionDate) */}
+        {(data.workOrderType === 'INSPECTION' || data.workOrderType === 'STICKER_INSPECTION') && !data.reportData && data.inspectionDate && (
           <div className="mb-6 print-section">
             <h3 className="text-lg font-bold mb-3 text-primary border-b pb-2">INSPECTION RESULTS</h3>
             <div className="space-y-3">
