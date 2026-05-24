@@ -71,6 +71,7 @@ export async function POST(
       // Contractor-created request fields (already quoted)
       quotedPrice,
       quotedDate,
+      quotedNotes, // Work order notes
       status, // Can be 'QUOTED' for contractor-created requests
       assignedTo, // Personnel assignment
       quotationUrl, // Quotation document URL (uploaded to S3)
@@ -139,6 +140,7 @@ export async function POST(
           // Contractor quote fields (for contractor-created requests)
           quotedPrice: isContractorCreated ? quotedPrice : null,
           quotedDate: isContractorCreated ? new Date(quotedDate) : null,
+          quotedNotes: isContractorCreated ? (quotedNotes || null) : null,
           quotedById: isContractorCreated ? session.user.id : null,
           quotedAt: isContractorCreated ? new Date() : null,
           // Occurrences for recurring work orders

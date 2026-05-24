@@ -502,6 +502,7 @@ export function RequestsList({ branchId, userRole, userId }: RequestsListProps) 
     quotedPrice: string
     quotedDate: string
     assignedTo: string
+    workOrderNotes: string
   }>({
     title: '',
     description: '',
@@ -511,6 +512,7 @@ export function RequestsList({ branchId, userRole, userId }: RequestsListProps) 
     quotedPrice: '',
     quotedDate: '',
     assignedTo: '',
+    workOrderNotes: '',
   })
   const [contractorCreating, setContractorCreating] = useState(false)
 
@@ -709,6 +711,7 @@ export function RequestsList({ branchId, userRole, userId }: RequestsListProps) 
           assignedTo: contractorNewRequest.assignedTo && contractorNewRequest.assignedTo !== 'unassigned' ? contractorNewRequest.assignedTo : null,
           quotationUrl: quotationFile?.url || null,
           quotationFileName: quotationFile?.name || null,
+          quotedNotes: contractorNewRequest.workOrderNotes || null,
           priority: 'MEDIUM',
           occurrences: occurrencesData,
           // These fields indicate it's contractor-created and already quoted
@@ -731,6 +734,7 @@ export function RequestsList({ branchId, userRole, userId }: RequestsListProps) 
         quotedPrice: '',
         quotedDate: '',
         assignedTo: '',
+        workOrderNotes: '',
       })
       setOccurrences([])
       setScheduleType('auto')
@@ -1263,9 +1267,21 @@ export function RequestsList({ branchId, userRole, userId }: RequestsListProps) 
                 </div>
               )}
 
-              {/* Quotation Upload */}
+              {/* Work Order Notes */}
               <div className="space-y-2">
-                <Label>Upload Quotation <span className="text-xs text-muted-foreground">(optional)</span></Label>
+                <Label htmlFor="contractor-workOrderNotes">Work Order Notes <span className="text-xs text-muted-foreground">(optional)</span></Label>
+                <Textarea
+                  id="contractor-workOrderNotes"
+                  value={contractorNewRequest.workOrderNotes}
+                  onChange={(e) => setContractorNewRequest({ ...contractorNewRequest, workOrderNotes: e.target.value })}
+                  placeholder="Additional notes or instructions for this work order..."
+                  rows={3}
+                />
+              </div>
+
+              {/* Document Upload */}
+              <div className="space-y-2">
+                <Label>Upload Document <span className="text-xs text-muted-foreground">(optional)</span></Label>
                 <FileUploadDropzone
                   onFilesSelected={handleQuotationUpload}
                   accept=".pdf,.jpg,.jpeg,.png"
@@ -1273,7 +1289,7 @@ export function RequestsList({ branchId, userRole, userId }: RequestsListProps) 
                   uploading={uploadingQuotation}
                   uploadedFiles={quotationFile ? [quotationFile] : []}
                   onRemoveFile={() => setQuotationFile(null)}
-                  label="Upload quotation (PDF or image)"
+                  label="Upload document (PDF or image)"
                   maxFiles={1}
                 />
               </div>
@@ -1502,6 +1518,16 @@ export function RequestsList({ branchId, userRole, userId }: RequestsListProps) 
                   <p className="font-medium text-muted-foreground">Created By</p>
                   <p className="capitalize">{selectedRequest.createdByRole.toLowerCase()}</p>
                 </div>
+                {selectedRequest.assignedTo && (
+                  <div>
+                    <p className="font-medium text-muted-foreground">Assigned Technician</p>
+                    <p className="text-sm font-medium text-blue-600">
+                      {teamMembers.find(m => m.userId === selectedRequest.assignedTo)?.user.name ||
+                        teamMembers.find(m => m.userId === selectedRequest.assignedTo)?.user.email ||
+                        selectedRequest.assignedTo}
+                    </p>
+                  </div>
+                )}
               </div>
 
               {/* Photos */}
