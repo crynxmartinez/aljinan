@@ -27,6 +27,9 @@ interface WorkOrder {
   checklistId: string
   checklistTitle: string
   contractTitle: string | null
+  contractSystemId: string | null
+  visitIndex: number | null
+  paymentDueDate: string | null
   paymentStatus: 'UNPAID' | 'PENDING_VERIFICATION' | 'PAID'
   paymentProofUrl: string | null
   paymentProofType: string | null

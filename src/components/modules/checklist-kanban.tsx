@@ -361,13 +361,19 @@ function DraggableCard({
             </div>
           )}
 
-          {/* Contract badge for contract-linked work orders */}
+          {/* Contract Work Order badge */}
           {item.contractTitle && (
-            <div className="mt-2">
+            <div className="mt-2 space-y-1">
               <Badge variant="outline" className="text-xs border-purple-300 text-purple-700 bg-purple-50">
                 <ClipboardList className="h-3 w-3 mr-1" />
-                {item.contractTitle}
+                Contract Work Order
               </Badge>
+              <div className="text-xs text-purple-600 truncate">{item.contractTitle}</div>
+              {item.paymentDueDate && (
+                <div className="text-xs text-muted-foreground">
+                  Payment due: {new Date(item.paymentDueDate).toLocaleDateString()}
+                </div>
+              )}
             </div>
           )}
 

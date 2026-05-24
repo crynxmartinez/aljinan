@@ -10,9 +10,9 @@ import {
   CollapsibleContent,
   CollapsibleTrigger,
 } from '@/components/ui/collapsible'
-import { 
-  Wrench, 
-  Calendar, 
+import {
+  Wrench,
+  Calendar,
   CheckCircle,
   Clock,
   AlertCircle,
@@ -36,6 +36,8 @@ export interface BillingWorkOrder {
   paymentProofType: string | null
   paymentProofFileName: string | null
   paymentSubmittedAt: string | null
+  paymentDueDate: string | null
+  contractTitle: string | null
 }
 
 interface BillingWorkOrdersDisplayProps {
@@ -57,7 +59,7 @@ function getBaseWorkOrderName(title: string): string {
 
 function groupWorkOrders(workOrders: BillingWorkOrder[]): Map<string, BillingWorkOrder[]> {
   const groups = new Map<string, BillingWorkOrder[]>()
-  
+
   for (const wo of workOrders) {
     const baseName = getBaseWorkOrderName(wo.description)
     if (!groups.has(baseName)) {
@@ -65,7 +67,7 @@ function groupWorkOrders(workOrders: BillingWorkOrder[]): Map<string, BillingWor
     }
     groups.get(baseName)!.push(wo)
   }
-  
+
   return groups
 }
 
@@ -124,8 +126,8 @@ function getStageBadge(stage: string) {
   return <Badge className={style}>{label}</Badge>
 }
 
-export function BillingWorkOrdersDisplay({ 
-  workOrders, 
+export function BillingWorkOrdersDisplay({
+  workOrders,
   userRole,
   onPaySingle,
   onPayGroup,
@@ -134,7 +136,7 @@ export function BillingWorkOrdersDisplay({
 }: BillingWorkOrdersDisplayProps) {
   const [expandedGroups, setExpandedGroups] = useState<Set<string>>(new Set())
   const [payAllMode, setPayAllMode] = useState<Record<string, boolean>>({})
-  
+
   const groups = groupWorkOrders(workOrders)
   const totalValue = workOrders.reduce((sum, wo) => sum + (wo.price || 0), 0)
   const paidValue = workOrders
@@ -190,10 +192,10 @@ export function BillingWorkOrdersDisplay({
           const isPayAllMode = payAllMode[groupName] ?? true
           const isSingleItem = items.length === 1
           const unpaidItems = items.filter(wo => !wo.paymentStatus || wo.paymentStatus === 'UNPAID')
-          
+
           return (
-            <Collapsible 
-              key={groupName} 
+            <Collapsible
+              key={groupName}
               open={isExpanded}
               onOpenChange={() => toggleGroup(groupName)}
             >
@@ -232,11 +234,11 @@ export function BillingWorkOrdersDisplay({
                             {pendingCount} Pending
                           </Badge>
                         ) : null}
-                        
+
                         <span className="font-semibold text-sm text-primary">
                           {formatCurrency(groupTotal)}
                         </span>
-                        
+
                         {/* Pay All button (header) - for client: show for multi-item groups in pay all mode, or single items */}
                         {userRole === 'CLIENT' && unpaidItems.length > 0 && (isPayAllMode || isSingleItem) && (
                           <Button
@@ -289,12 +291,12 @@ export function BillingWorkOrdersDisplay({
                       {items.map((wo, idx) => {
                         // Extract suffix from either "(Q1)" format or "Q1:" prefix format
                         const suffixMatch = wo.description.match(/\((Q\d+|Month\d+)\)/i)?.[1] ||
-                                           wo.description.match(/^(Q\d+|Month\d+):/i)?.[1]
+                          wo.description.match(/^(Q\d+|Month\d+):/i)?.[1]
                         const suffix = suffixMatch || (isSingleItem ? '' : `#${idx + 1}`)
-                        
+
                         return (
-                          <div 
-                            key={wo.id} 
+                          <div
+                            key={wo.id}
                             className={cn(
                               "px-4 py-3",
                               wo.paymentStatus === 'PAID' && "bg-green-50/50"
@@ -318,16 +320,26 @@ export function BillingWorkOrdersDisplay({
                                     {wo.type === 'ADHOC' && (
                                       <Badge variant="outline" className="text-xs">Ad-hoc</Badge>
                                     )}
+                                    {wo.contractTitle && (
+                                      <Badge variant="outline" className="text-xs border-purple-300 text-purple-700 bg-purple-50">
+                                        Contract
+                                      </Badge>
+                                    )}
                                   </div>
+                                  {wo.paymentDueDate && (
+                                    <div className="text-xs text-muted-foreground">
+                                      Payment due: {formatDate(wo.paymentDueDate)}
+                                    </div>
+                                  )}
                                 </div>
                               </div>
-                              
+
                               <div className="flex items-center gap-3">
                                 {getPaymentStatusBadge(wo.paymentStatus)}
                                 <span className="text-sm font-medium min-w-[80px] text-right">
                                   {formatCurrency(wo.price)}
                                 </span>
-                                
+
                                 {/* Action buttons */}
                                 {(!wo.paymentStatus || wo.paymentStatus === 'UNPAID') && userRole === 'CLIENT' && !isPayAllMode && (
                                   <Button
@@ -339,7 +351,7 @@ export function BillingWorkOrdersDisplay({
                                     Pay
                                   </Button>
                                 )}
-                                
+
                                 {wo.paymentStatus === 'PENDING_VERIFICATION' && (
                                   <>
                                     <Button
