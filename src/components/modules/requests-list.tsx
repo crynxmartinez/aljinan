@@ -61,6 +61,7 @@ import {
   Upload,
   Paperclip,
   Printer,
+  Zap,
 } from 'lucide-react'
 import { FileUploadDropzone } from '@/components/ui/file-upload-dropzone'
 import { ExportDialog } from '@/components/export/export-dialog'
@@ -515,6 +516,7 @@ export function RequestsList({ branchId, userRole, userId }: RequestsListProps) 
     workOrderNotes: '',
   })
   const [contractorCreating, setContractorCreating] = useState(false)
+  const [startingImmediately, setStartingImmediately] = useState(false)
 
   // Occurrences state for recurring work orders
   interface Occurrence {
@@ -746,6 +748,77 @@ export function RequestsList({ branchId, userRole, userId }: RequestsListProps) 
       setError(err instanceof Error ? err.message : 'An error occurred')
     } finally {
       setContractorCreating(false)
+    }
+  }
+
+  const handleStartImmediatelyFromCreate = async (e: React.FormEvent) => {
+    e.preventDefault()
+
+    if (!contractorNewRequest.title) {
+      setError('Title is required')
+      return
+    }
+
+    setStartingImmediately(true)
+    setError('')
+
+    try {
+      // Prepare occurrences data for recurring
+      const occurrencesData = contractorNewRequest.recurringType !== 'ONCE' && occurrences.length > 0
+        ? occurrences.map(o => ({
+          order: o.order,
+          visitDate: o.visitDate || null,
+          price: o.price || null
+        }))
+        : null
+
+      const response = await fetch(`/api/branches/${branchId}/work-orders/create-immediate`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          title: contractorNewRequest.title,
+          description: contractorNewRequest.description,
+          workOrderType: contractorNewRequest.workOrderType,
+          recurringType: contractorNewRequest.recurringType,
+          price: contractorNewRequest.quotedPrice || null,
+          scheduledDate: contractorNewRequest.quotedDate || null,
+          assignedTo: contractorNewRequest.assignedTo && contractorNewRequest.assignedTo !== 'unassigned'
+            ? contractorNewRequest.assignedTo
+            : null,
+          notes: contractorNewRequest.workOrderNotes || null,
+          occurrences: occurrencesData,
+        }),
+      })
+
+      if (!response.ok) {
+        const data = await response.json()
+        throw new Error(data.error || 'Failed to create work order')
+      }
+
+      const result = await response.json()
+
+      setContractorCreateDialogOpen(false)
+      setContractorNewRequest({
+        title: '',
+        description: '',
+        workOrderType: 'SERVICE',
+        recurringType: 'ONCE',
+        needsCertificate: false,
+        quotedPrice: '',
+        quotedDate: '',
+        assignedTo: '',
+        workOrderNotes: '',
+      })
+      setOccurrences([])
+      setQuotationFile(null)
+
+      toast.success(`${result.count} work order(s) started immediately!`)
+      fetchRequests()
+      router.refresh()
+    } catch (err) {
+      setError(err instanceof Error ? err.message : 'An error occurred')
+    } finally {
+      setStartingImmediately(false)
     }
   }
 
@@ -1449,11 +1522,22 @@ export function RequestsList({ branchId, userRole, userId }: RequestsListProps) 
                 </div>
               )}
             </div>
-            <DialogFooter className="mt-6">
+            <DialogFooter className="mt-6 flex-col sm:flex-row gap-2">
               <Button type="button" variant="outline" onClick={() => setContractorCreateDialogOpen(false)}>
                 Cancel
               </Button>
-              <Button type="submit" disabled={contractorCreating}>
+              <Button
+                type="button"
+                variant="secondary"
+                onClick={handleStartImmediatelyFromCreate}
+                disabled={startingImmediately || contractorCreating || !contractorNewRequest.title}
+                className="bg-blue-600 hover:bg-blue-700 text-white"
+              >
+                {startingImmediately && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
+                <Zap className="mr-2 h-4 w-4" />
+                Start Immediately
+              </Button>
+              <Button type="submit" disabled={contractorCreating || startingImmediately}>
                 {contractorCreating && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
                 <Send className="mr-2 h-4 w-4" />
                 Send to Client
