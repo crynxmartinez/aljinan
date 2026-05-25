@@ -119,14 +119,34 @@ export async function GET(
       branchName: workOrder.checklist.branch.name,
       branchAddress: workOrder.checklist.branch.address,
       branchPhone: workOrder.checklist.branch.phone,
-      // Inspection fields (legacy)
+      // Report Fields - Universal
       inspectionDate: workOrder.inspectionDate?.toISOString() || null,
-      systemsChecked: workOrder.systemsChecked,
+      problemScope: workOrder.problemScope,
       findings: workOrder.findings,
+      actionTaken: workOrder.actionTaken,
+      systemStatus: workOrder.systemStatus,
+      technicianNotes: workOrder.technicianNotes,
+      // Report Fields - SERVICE
+      partsReplaced: workOrder.partsReplaced,
+      // Report Fields - INSTALLATION
+      equipmentInstalled: workOrder.equipmentInstalled,
+      installQuantity: workOrder.installQuantity,
+      completionStatus: workOrder.completionStatus,
+      // Report Fields - INSPECTION
+      areasInspected: workOrder.areasInspected,
+      systemsChecked: workOrder.systemsChecked,
       deficiencies: workOrder.deficiencies,
       recommendations: workOrder.recommendations,
-      // Report data (new - contains service/maintenance/installation specific data)
+      inspectionResult: workOrder.inspectionResult,
+      // Report Fields - MAINTENANCE
+      systemsMaintained: workOrder.systemsMaintained,
+      maintenancePerformed: workOrder.maintenancePerformed,
+      partsServiced: workOrder.partsServiced,
+      testResult: workOrder.testResult,
+      nextMaintenanceDate: workOrder.nextMaintenanceDate?.toISOString() || null,
+      // Legacy report data (for backward compatibility)
       reportData: workOrder.reportData,
+      // Signatures
       technicianName: technicianSignedByName || technicianName,
       technicianSignature: workOrder.technicianSignature,
       technicianSignedAt: workOrder.technicianSignedAt?.toISOString() || null,

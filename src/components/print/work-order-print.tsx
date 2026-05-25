@@ -126,12 +126,34 @@ interface WorkOrderPrintData {
   branchName: string
   branchAddress: string
   branchPhone: string | null
+  // Report Fields - Universal
   inspectionDate: string | null
-  systemsChecked: string | null
+  problemScope: string | null
   findings: string | null
+  actionTaken: string | null
+  systemStatus: 'WORKING' | 'NEEDS_ATTENTION' | 'CRITICAL' | null
+  technicianNotes: string | null
+  // Report Fields - SERVICE
+  partsReplaced: string | null
+  // Report Fields - INSTALLATION
+  equipmentInstalled: string | null
+  installQuantity: string | null
+  completionStatus: 'COMPLETED' | 'PARTIAL' | 'PENDING' | null
+  // Report Fields - INSPECTION
+  areasInspected: string | null
+  systemsChecked: string | null
   deficiencies: string | null
   recommendations: string | null
+  inspectionResult: string | null
+  // Report Fields - MAINTENANCE
+  systemsMaintained: string | null
+  maintenancePerformed: string | null
+  partsServiced: string | null
+  testResult: 'PASSED' | 'FAILED' | 'PARTIAL' | null
+  nextMaintenanceDate: string | null
+  // Legacy
   reportData: ReportData
+  // Signatures
   technicianName: string | null
   technicianSignature: string | null
   technicianSignedAt: string | null
@@ -388,6 +410,207 @@ export function WorkOrderPrint({ workOrderId }: WorkOrderPrintProps) {
             </div>
           )}
         </div>
+
+        {/* NEW STRUCTURED REPORT - Uses new database fields */}
+        {(data.problemScope || data.findings || data.actionTaken || data.systemStatus ||
+          data.partsReplaced || data.equipmentInstalled || data.areasInspected ||
+          data.systemsMaintained || data.maintenancePerformed) && (
+            <div className="mb-6 print-section">
+              <h3 className="text-lg font-bold mb-3 text-primary border-b pb-2">
+                {data.workOrderType === 'SERVICE' ? 'SERVICE REPORT' :
+                  data.workOrderType === 'INSTALLATION' ? 'INSTALLATION REPORT' :
+                    data.workOrderType === 'MAINTENANCE' ? 'MAINTENANCE REPORT' :
+                      data.workOrderType === 'INSPECTION' ? 'INSPECTION REPORT' : 'WORK REPORT'}
+              </h3>
+              <div className="space-y-3">
+                {/* SERVICE Report Fields */}
+                {data.workOrderType === 'SERVICE' && (
+                  <>
+                    {data.problemScope && (
+                      <div>
+                        <p className="text-sm font-semibold mb-1">Issue Reported:</p>
+                        <p className="text-sm whitespace-pre-wrap">{data.problemScope}</p>
+                      </div>
+                    )}
+                    {data.findings && (
+                      <div>
+                        <p className="text-sm font-semibold mb-1">Findings:</p>
+                        <p className="text-sm whitespace-pre-wrap">{data.findings}</p>
+                      </div>
+                    )}
+                    {data.actionTaken && (
+                      <div>
+                        <p className="text-sm font-semibold mb-1">Action Taken:</p>
+                        <p className="text-sm whitespace-pre-wrap">{data.actionTaken}</p>
+                      </div>
+                    )}
+                    {data.partsReplaced && (
+                      <div>
+                        <p className="text-sm font-semibold mb-1">Parts Replaced:</p>
+                        <p className="text-sm">{data.partsReplaced}</p>
+                      </div>
+                    )}
+                    {data.systemStatus && (
+                      <div>
+                        <p className="text-sm font-semibold mb-1">System Status:</p>
+                        <p className={`text-sm font-semibold ${data.systemStatus === 'WORKING' ? 'text-green-600' :
+                            data.systemStatus === 'NEEDS_ATTENTION' ? 'text-yellow-600' : 'text-red-600'
+                          }`}>
+                          {data.systemStatus === 'WORKING' ? '✅ Working Normally' :
+                            data.systemStatus === 'NEEDS_ATTENTION' ? '⚠️ Needs Attention' : '❌ Critical'}
+                        </p>
+                      </div>
+                    )}
+                  </>
+                )}
+
+                {/* INSTALLATION Report Fields */}
+                {data.workOrderType === 'INSTALLATION' && (
+                  <>
+                    {data.problemScope && (
+                      <div>
+                        <p className="text-sm font-semibold mb-1">Scope of Installation:</p>
+                        <p className="text-sm whitespace-pre-wrap">{data.problemScope}</p>
+                      </div>
+                    )}
+                    {(data.equipmentInstalled || data.installQuantity) && (
+                      <div className="grid grid-cols-2 gap-4">
+                        {data.equipmentInstalled && (
+                          <div>
+                            <p className="text-sm font-semibold mb-1">Equipment Installed:</p>
+                            <p className="text-sm">{data.equipmentInstalled}</p>
+                          </div>
+                        )}
+                        {data.installQuantity && (
+                          <div>
+                            <p className="text-sm font-semibold mb-1">Quantity:</p>
+                            <p className="text-sm">{data.installQuantity}</p>
+                          </div>
+                        )}
+                      </div>
+                    )}
+                    {data.findings && (
+                      <div>
+                        <p className="text-sm font-semibold mb-1">Testing Result:</p>
+                        <p className="text-sm whitespace-pre-wrap">{data.findings}</p>
+                      </div>
+                    )}
+                    {data.completionStatus && (
+                      <div>
+                        <p className="text-sm font-semibold mb-1">Completion Status:</p>
+                        <p className={`text-sm font-semibold ${data.completionStatus === 'COMPLETED' ? 'text-green-600' :
+                            data.completionStatus === 'PARTIAL' ? 'text-yellow-600' : 'text-gray-600'
+                          }`}>
+                          {data.completionStatus === 'COMPLETED' ? '✅ Completed' :
+                            data.completionStatus === 'PARTIAL' ? '⚠️ Partial' : '⏳ Pending'}
+                        </p>
+                      </div>
+                    )}
+                  </>
+                )}
+
+                {/* INSPECTION Report Fields */}
+                {(data.workOrderType === 'INSPECTION' || data.workOrderType === 'STICKER_INSPECTION' || !data.workOrderType) && (
+                  <>
+                    {(data.areasInspected || data.systemsChecked) && (
+                      <div className="grid grid-cols-2 gap-4">
+                        {data.areasInspected && (
+                          <div>
+                            <p className="text-sm font-semibold mb-1">Areas Inspected:</p>
+                            <p className="text-sm">{data.areasInspected}</p>
+                          </div>
+                        )}
+                        {data.systemsChecked && (
+                          <div>
+                            <p className="text-sm font-semibold mb-1">Systems Checked:</p>
+                            <p className="text-sm">{data.systemsChecked}</p>
+                          </div>
+                        )}
+                      </div>
+                    )}
+                    {data.findings && (
+                      <div>
+                        <p className="text-sm font-semibold mb-1">Findings:</p>
+                        <p className="text-sm whitespace-pre-wrap">{data.findings}</p>
+                      </div>
+                    )}
+                    {data.deficiencies && (
+                      <div>
+                        <p className="text-sm font-semibold mb-1">Deficiencies:</p>
+                        <p className="text-sm whitespace-pre-wrap text-orange-700">{data.deficiencies}</p>
+                      </div>
+                    )}
+                    {data.recommendations && (
+                      <div>
+                        <p className="text-sm font-semibold mb-1">Recommendations:</p>
+                        <p className="text-sm whitespace-pre-wrap">{data.recommendations}</p>
+                      </div>
+                    )}
+                    {data.inspectionResult && (
+                      <div>
+                        <p className="text-sm font-semibold mb-1">Inspection Result:</p>
+                        <p className={`text-sm font-semibold ${data.inspectionResult === 'PASSED' || data.inspectionResult === 'PASS' ? 'text-green-600' :
+                            data.inspectionResult === 'ATTENTION_REQUIRED' ? 'text-yellow-600' : 'text-red-600'
+                          }`}>
+                          {data.inspectionResult === 'PASSED' || data.inspectionResult === 'PASS' ? '✅ Passed' :
+                            data.inspectionResult === 'ATTENTION_REQUIRED' ? '⚠️ Attention Required' : '❌ Failed'}
+                        </p>
+                      </div>
+                    )}
+                  </>
+                )}
+
+                {/* MAINTENANCE Report Fields */}
+                {data.workOrderType === 'MAINTENANCE' && (
+                  <>
+                    {data.systemsMaintained && (
+                      <div>
+                        <p className="text-sm font-semibold mb-1">Systems Maintained:</p>
+                        <p className="text-sm">{data.systemsMaintained}</p>
+                      </div>
+                    )}
+                    {data.maintenancePerformed && (
+                      <div>
+                        <p className="text-sm font-semibold mb-1">Maintenance Performed:</p>
+                        <p className="text-sm whitespace-pre-wrap">{data.maintenancePerformed}</p>
+                      </div>
+                    )}
+                    {data.partsServiced && (
+                      <div>
+                        <p className="text-sm font-semibold mb-1">Parts Serviced:</p>
+                        <p className="text-sm">{data.partsServiced}</p>
+                      </div>
+                    )}
+                    {data.testResult && (
+                      <div>
+                        <p className="text-sm font-semibold mb-1">Test Result:</p>
+                        <p className={`text-sm font-semibold ${data.testResult === 'PASSED' ? 'text-green-600' :
+                            data.testResult === 'PARTIAL' ? 'text-yellow-600' : 'text-red-600'
+                          }`}>
+                          {data.testResult === 'PASSED' ? '✅ Passed' :
+                            data.testResult === 'PARTIAL' ? '⚠️ Partial' : '❌ Failed'}
+                        </p>
+                      </div>
+                    )}
+                    {data.nextMaintenanceDate && (
+                      <div>
+                        <p className="text-sm font-semibold mb-1">Next Maintenance Date:</p>
+                        <p className="text-sm font-semibold text-blue-600">{formatDate(data.nextMaintenanceDate)}</p>
+                      </div>
+                    )}
+                  </>
+                )}
+
+                {/* Technician Notes - Universal */}
+                {data.technicianNotes && (
+                  <div className="mt-4 pt-3 border-t">
+                    <p className="text-sm font-semibold mb-1">Technician Notes:</p>
+                    <p className="text-sm whitespace-pre-wrap">{data.technicianNotes}</p>
+                  </div>
+                )}
+              </div>
+            </div>
+          )}
 
         {/* Equipment List (for inspections) */}
         {data.equipment && data.equipment.length > 0 && (
@@ -803,7 +1026,7 @@ export function WorkOrderPrint({ workOrderId }: WorkOrderPrintProps) {
                 <div>
                   <p className="text-sm text-muted-foreground">Overall Status</p>
                   <p className={`font-semibold capitalize ${(data.reportData as InspectionReportData).overallStatus === 'pass' ? 'text-green-600' :
-                      (data.reportData as InspectionReportData).overallStatus === 'fail' ? 'text-red-600' : 'text-yellow-600'
+                    (data.reportData as InspectionReportData).overallStatus === 'fail' ? 'text-red-600' : 'text-yellow-600'
                     }`}>
                     {(data.reportData as InspectionReportData).overallStatus || '-'}
                   </p>
@@ -811,8 +1034,8 @@ export function WorkOrderPrint({ workOrderId }: WorkOrderPrintProps) {
                 <div>
                   <p className="text-sm text-muted-foreground">Risk Level</p>
                   <p className={`font-semibold capitalize ${(data.reportData as InspectionReportData).riskLevel === 'critical' ? 'text-red-600' :
-                      (data.reportData as InspectionReportData).riskLevel === 'high' ? 'text-orange-600' :
-                        (data.reportData as InspectionReportData).riskLevel === 'medium' ? 'text-yellow-600' : 'text-green-600'
+                    (data.reportData as InspectionReportData).riskLevel === 'high' ? 'text-orange-600' :
+                      (data.reportData as InspectionReportData).riskLevel === 'medium' ? 'text-yellow-600' : 'text-green-600'
                     }`}>
                     {(data.reportData as InspectionReportData).riskLevel || '-'}
                   </p>
@@ -836,7 +1059,7 @@ export function WorkOrderPrint({ workOrderId }: WorkOrderPrintProps) {
                         <tr key={idx}>
                           <td className="border border-gray-300 px-3 py-2 text-sm">{item.item}</td>
                           <td className={`border border-gray-300 px-3 py-2 text-sm font-semibold text-center ${item.status === 'pass' ? 'text-green-600' :
-                              item.status === 'fail' ? 'text-red-600' : 'text-gray-500'
+                            item.status === 'fail' ? 'text-red-600' : 'text-gray-500'
                             }`}>
                             {item.status === 'pass' ? 'PASS' : item.status === 'fail' ? 'FAIL' : 'N/A'}
                           </td>
