@@ -11,6 +11,7 @@ import { ChecklistsList } from '@/components/modules/checklists-list'
 import { DocumentsList } from '@/components/modules/documents-list'
 import { EquipmentList } from '@/components/modules/equipment-list'
 import { ActivityPanel } from '@/components/modules/activity-panel'
+import { BranchDashboard } from '@/components/modules/branch-dashboard'
 import { Badge } from '@/components/ui/badge'
 import {
   LayoutDashboard,
@@ -148,9 +149,7 @@ export function BranchWorkspace({ branchId, branch, userRole, teamMemberRole }: 
 
         <div className="mt-6">
           <TabsContent value="dashboard" className="mt-0">
-            <div className="text-center py-8 text-muted-foreground">
-              <p>Use the Contracts tab to manage work orders for this branch.</p>
-            </div>
+            <BranchDashboard branchId={branchId} />
           </TabsContent>
 
           <TabsContent value="checklists" className="mt-0">
