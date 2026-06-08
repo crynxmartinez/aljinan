@@ -65,6 +65,7 @@ export async function POST(
       issuedBy,
       contractId,
       workOrderId,
+      equipmentId,
       notes
     } = body
 
@@ -85,24 +86,57 @@ export async function POST(
       return NextResponse.json({ error: 'Only contractors can create certificates' }, { status: 403 })
     }
 
-    const certificate = await prisma.certificate.create({
-      data: {
-        branchId,
-        type,
-        title,
-        description: description || null,
-        fileUrl,
-        issueDate: new Date(issueDate),
-        expiryDate: expiryDate ? new Date(expiryDate) : null,
-        issuedBy: issuedBy || null,
-        issuedById: session.user.id,
-        contractId: contractId || null,
-        workOrderId: workOrderId || null,
-        notes: notes || null,
-      },
-      include: {
-        contract: { select: { id: true, title: true } }
+    // Use transaction to create certificate and update equipment if needed
+    const certificate = await prisma.$transaction(async (tx) => {
+      // If linking to equipment, first unlink any existing certificate
+      if (equipmentId) {
+        // Check if equipment exists and belongs to this branch
+        const equipment = await tx.equipment.findFirst({
+          where: { id: equipmentId, branchId }
+        })
+
+        if (!equipment) {
+          throw new Error('Equipment not found')
+        }
+
+        // If equipment already has a certificate, we'll create a new one (old one stays in system)
       }
+
+      // Create the certificate
+      const newCert = await tx.certificate.create({
+        data: {
+          branchId,
+          type,
+          title,
+          description: description || null,
+          fileUrl,
+          issueDate: new Date(issueDate),
+          expiryDate: expiryDate ? new Date(expiryDate) : null,
+          issuedBy: issuedBy || null,
+          issuedById: session.user.id,
+          contractId: contractId || null,
+          workOrderId: workOrderId || null,
+          equipmentId: equipmentId || null,
+          notes: notes || null,
+        },
+        include: {
+          contract: { select: { id: true, title: true } },
+          equipment: { select: { id: true, equipmentNumber: true } }
+        }
+      })
+
+      // If linking to equipment, update the equipment's certificateId
+      if (equipmentId) {
+        await tx.equipment.update({
+          where: { id: equipmentId },
+          data: {
+            certificateId: newCert.id,
+            certificateIssued: true
+          }
+        })
+      }
+
+      return newCert
     })
 
     return NextResponse.json(certificate, { status: 201 })

@@ -125,6 +125,7 @@ export async function PATCH(
     // Link fields
     if (body.requestId !== undefined) updateData.requestId = body.requestId || null
     if (body.workOrderId !== undefined) updateData.workOrderId = body.workOrderId || null
+    if (body.certificateId !== undefined) updateData.certificateId = body.certificateId || null
 
     // If marking as inspected, update lastInspected date
     if (body.isInspected === true && !body.lastInspected) {

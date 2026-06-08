@@ -46,6 +46,9 @@ import {
   Award,
   Download,
   Eye,
+  Upload,
+  FileText,
+  Link2,
 } from 'lucide-react'
 import { Checkbox } from '@/components/ui/checkbox'
 import { Textarea } from '@/components/ui/textarea'
@@ -83,6 +86,7 @@ interface Equipment {
     title: string
     status: string
   } | null
+  workOrderId?: string | null
 }
 
 interface EquipmentListProps {
@@ -120,13 +124,13 @@ export function EquipmentList({ branchId, userRole = 'CONTRACTOR' }: EquipmentLi
   const [searchQuery, setSearchQuery] = useState('')
   const [statusFilter, setStatusFilter] = useState<string>('all')
   const [typeFilter, setTypeFilter] = useState<string>('all')
-  
+
   // Dialog states
   const [addDialogOpen, setAddDialogOpen] = useState(false)
   const [editDialogOpen, setEditDialogOpen] = useState(false)
   const [selectedEquipment, setSelectedEquipment] = useState<Equipment | null>(null)
   const [saving, setSaving] = useState(false)
-  
+
   // Form state
   const [formData, setFormData] = useState({
     equipmentNumber: '',
@@ -139,6 +143,21 @@ export function EquipmentList({ branchId, userRole = 'CONTRACTOR' }: EquipmentLi
     expectedExpiry: '',
     notes: '',
   })
+
+  // Extended form state for edit (inspection + certificate)
+  const [inspectionData, setInspectionData] = useState({
+    isInspected: false,
+    inspectionResult: 'PENDING' as 'PASS' | 'FAIL' | 'NEEDS_REPAIR' | 'PENDING',
+    certificateIssued: false,
+    stickerApplied: false,
+    deficiencies: '',
+    lastInspected: '',
+  })
+
+  // Certificate upload state
+  const [certificateFile, setCertificateFile] = useState<File | null>(null)
+  const [certificateExpiry, setCertificateExpiry] = useState('')
+  const [uploadingCertificate, setUploadingCertificate] = useState(false)
 
   const fetchEquipment = async () => {
     try {
@@ -206,16 +225,67 @@ export function EquipmentList({ branchId, userRole = 'CONTRACTOR' }: EquipmentLi
     setError('')
 
     try {
+      // Step 1: Upload certificate file if provided
+      let newCertificateId: string | null = null
+      if (certificateFile) {
+        setUploadingCertificate(true)
+
+        // Upload file first
+        const uploadFormData = new FormData()
+        uploadFormData.append('file', certificateFile)
+
+        const uploadResponse = await fetch('/api/upload', {
+          method: 'POST',
+          body: uploadFormData,
+        })
+
+        if (!uploadResponse.ok) {
+          throw new Error('Failed to upload certificate file')
+        }
+
+        const uploadResult = await uploadResponse.json()
+        const fileUrl = uploadResult.url
+
+        // Create new certificate record
+        const certResponse = await fetch(`/api/branches/${branchId}/certificates`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            title: `${formData.equipmentNumber} - ${formData.equipmentType.replace(/_/g, ' ')} Certificate`,
+            type: 'EQUIPMENT_CERTIFICATE',
+            issueDate: new Date().toISOString(),
+            expiryDate: certificateExpiry ? new Date(certificateExpiry).toISOString() : null,
+            fileUrl: fileUrl,
+            equipmentId: selectedEquipment.id,
+          }),
+        })
+
+        if (certResponse.ok) {
+          const certData = await certResponse.json()
+          newCertificateId = certData.id
+        }
+
+        setUploadingCertificate(false)
+      }
+
+      // Step 2: Update equipment with all data
+      const updatePayload = {
+        ...formData,
+        ...inspectionData,
+        ...(newCertificateId && { certificateId: newCertificateId }),
+      }
+
       const response = await fetch(`/api/branches/${branchId}/equipment/${selectedEquipment.id}`, {
         method: 'PATCH',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(formData),
+        body: JSON.stringify(updatePayload),
       })
 
       if (response.ok) {
         setEditDialogOpen(false)
         setSelectedEquipment(null)
         resetForm()
+        resetInspectionData()
         fetchEquipment()
       } else {
         const errorData = await response.json()
@@ -225,7 +295,21 @@ export function EquipmentList({ branchId, userRole = 'CONTRACTOR' }: EquipmentLi
       setError('Failed to update equipment')
     } finally {
       setSaving(false)
+      setUploadingCertificate(false)
     }
+  }
+
+  const resetInspectionData = () => {
+    setInspectionData({
+      isInspected: false,
+      inspectionResult: 'PENDING',
+      certificateIssued: false,
+      stickerApplied: false,
+      deficiencies: '',
+      lastInspected: '',
+    })
+    setCertificateFile(null)
+    setCertificateExpiry('')
   }
 
   const handleDeleteEquipment = async (equipmentId: string) => {
@@ -260,6 +344,16 @@ export function EquipmentList({ branchId, userRole = 'CONTRACTOR' }: EquipmentLi
       expectedExpiry: eq.expectedExpiry ? eq.expectedExpiry.split('T')[0] : '',
       notes: eq.notes || '',
     })
+    setInspectionData({
+      isInspected: eq.isInspected,
+      inspectionResult: eq.inspectionResult,
+      certificateIssued: eq.certificateIssued,
+      stickerApplied: eq.stickerApplied,
+      deficiencies: eq.deficiencies || '',
+      lastInspected: eq.lastInspected ? eq.lastInspected.split('T')[0] : '',
+    })
+    setCertificateExpiry(eq.certificate?.expiryDate ? eq.certificate.expiryDate.split('T')[0] : '')
+    setCertificateFile(null)
     setEditDialogOpen(true)
   }
 
@@ -279,16 +373,16 @@ export function EquipmentList({ branchId, userRole = 'CONTRACTOR' }: EquipmentLi
 
   // Filter equipment
   const filteredEquipment = equipment.filter(eq => {
-    const matchesSearch = 
+    const matchesSearch =
       eq.equipmentNumber.toLowerCase().includes(searchQuery.toLowerCase()) ||
       eq.location?.toLowerCase().includes(searchQuery.toLowerCase()) ||
       eq.equipmentType.toLowerCase().includes(searchQuery.toLowerCase()) ||
       eq.customEquipmentType?.toLowerCase().includes(searchQuery.toLowerCase())
-    
-    const matchesStatus = statusFilter === 'all' || 
-      eq.status === statusFilter || 
+
+    const matchesStatus = statusFilter === 'all' ||
+      eq.status === statusFilter ||
       eq.calculatedStatus === statusFilter
-    
+
     const matchesType = typeFilter === 'all' || eq.equipmentType === typeFilter
 
     return matchesSearch && matchesStatus && matchesType
@@ -423,7 +517,7 @@ export function EquipmentList({ branchId, userRole = 'CONTRACTOR' }: EquipmentLi
               <Tag className="h-12 w-12 text-muted-foreground/50 mx-auto mb-4" />
               <p className="text-muted-foreground mb-2">No equipment found</p>
               <p className="text-sm text-muted-foreground">
-                {equipment.length === 0 
+                {equipment.length === 0
                   ? 'Add equipment to start tracking inspections'
                   : 'Try adjusting your filters'}
               </p>
@@ -612,8 +706,8 @@ export function EquipmentList({ branchId, userRole = 'CONTRACTOR' }: EquipmentLi
                 <Label htmlFor="equipmentType">Type *</Label>
                 <Select
                   value={formData.equipmentType}
-                  onValueChange={(value) => setFormData({ 
-                    ...formData, 
+                  onValueChange={(value) => setFormData({
+                    ...formData,
                     equipmentType: value,
                     customEquipmentType: value !== 'OTHER' ? '' : formData.customEquipmentType
                   })}
@@ -713,119 +807,323 @@ export function EquipmentList({ branchId, userRole = 'CONTRACTOR' }: EquipmentLi
 
       {/* Edit Equipment Dialog */}
       <Dialog open={editDialogOpen} onOpenChange={setEditDialogOpen}>
-        <DialogContent className="sm:max-w-[500px]">
+        <DialogContent className="sm:max-w-[600px] max-h-[90vh] overflow-y-auto">
           <DialogHeader>
             <DialogTitle className="flex items-center gap-2">
               <Edit className="h-5 w-5" />
               Edit Equipment
             </DialogTitle>
             <DialogDescription>
-              Update equipment details
+              Update equipment details, inspection status, and certificate
             </DialogDescription>
           </DialogHeader>
-          <div className="space-y-4">
-            <div className="grid grid-cols-2 gap-4">
-              <div className="space-y-2">
-                <Label htmlFor="edit-equipmentNumber">Equipment # *</Label>
-                <Input
-                  id="edit-equipmentNumber"
-                  value={formData.equipmentNumber}
-                  onChange={(e) => setFormData({ ...formData, equipmentNumber: e.target.value })}
-                />
+          <div className="space-y-6">
+            {/* Basic Info Section */}
+            <div className="space-y-4">
+              <h4 className="text-sm font-semibold text-muted-foreground uppercase tracking-wide">
+                Basic Information
+              </h4>
+              <div className="grid grid-cols-2 gap-4">
+                <div className="space-y-2">
+                  <Label htmlFor="edit-equipmentNumber">Equipment # *</Label>
+                  <Input
+                    id="edit-equipmentNumber"
+                    value={formData.equipmentNumber}
+                    onChange={(e) => setFormData({ ...formData, equipmentNumber: e.target.value })}
+                  />
+                </div>
+                <div className="space-y-2">
+                  <Label htmlFor="edit-equipmentType">Type *</Label>
+                  <Select
+                    value={formData.equipmentType}
+                    onValueChange={(value) => setFormData({
+                      ...formData,
+                      equipmentType: value,
+                      customEquipmentType: value !== 'OTHER' ? '' : formData.customEquipmentType
+                    })}
+                  >
+                    <SelectTrigger>
+                      <SelectValue />
+                    </SelectTrigger>
+                    <SelectContent>
+                      {EQUIPMENT_TYPES.map(type => (
+                        <SelectItem key={type.value} value={type.value}>{type.label}</SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                </div>
+              </div>
+              {formData.equipmentType === 'OTHER' && (
+                <div className="space-y-2">
+                  <Label htmlFor="edit-customEquipmentType">Specify Equipment Type *</Label>
+                  <Input
+                    id="edit-customEquipmentType"
+                    value={formData.customEquipmentType}
+                    onChange={(e) => setFormData({ ...formData, customEquipmentType: e.target.value })}
+                    placeholder="e.g., CO2 Detector, Water Sprayer, etc."
+                  />
+                </div>
+              )}
+              <div className="grid grid-cols-2 gap-4">
+                <div className="space-y-2">
+                  <Label htmlFor="edit-brand">Brand</Label>
+                  <Input
+                    id="edit-brand"
+                    value={formData.brand}
+                    onChange={(e) => setFormData({ ...formData, brand: e.target.value })}
+                  />
+                </div>
+                <div className="space-y-2">
+                  <Label htmlFor="edit-model">Model</Label>
+                  <Input
+                    id="edit-model"
+                    value={formData.model}
+                    onChange={(e) => setFormData({ ...formData, model: e.target.value })}
+                  />
+                </div>
+              </div>
+              <div className="grid grid-cols-2 gap-4">
+                <div className="space-y-2">
+                  <Label htmlFor="edit-serialNumber">Serial Number</Label>
+                  <Input
+                    id="edit-serialNumber"
+                    value={formData.serialNumber}
+                    onChange={(e) => setFormData({ ...formData, serialNumber: e.target.value })}
+                  />
+                </div>
+                <div className="space-y-2">
+                  <Label htmlFor="edit-location">Location</Label>
+                  <Input
+                    id="edit-location"
+                    value={formData.location}
+                    onChange={(e) => setFormData({ ...formData, location: e.target.value })}
+                  />
+                </div>
+              </div>
+              <div className="grid grid-cols-2 gap-4">
+                <div className="space-y-2">
+                  <Label htmlFor="edit-expectedExpiry">Next Inspection Due</Label>
+                  <Input
+                    id="edit-expectedExpiry"
+                    type="date"
+                    value={formData.expectedExpiry}
+                    onChange={(e) => setFormData({ ...formData, expectedExpiry: e.target.value })}
+                  />
+                </div>
               </div>
               <div className="space-y-2">
-                <Label htmlFor="edit-equipmentType">Type *</Label>
-                <Select
-                  value={formData.equipmentType}
-                  onValueChange={(value) => setFormData({ 
-                    ...formData, 
-                    equipmentType: value,
-                    customEquipmentType: value !== 'OTHER' ? '' : formData.customEquipmentType
-                  })}
-                >
-                  <SelectTrigger>
-                    <SelectValue />
-                  </SelectTrigger>
-                  <SelectContent>
-                    {EQUIPMENT_TYPES.map(type => (
-                      <SelectItem key={type.value} value={type.value}>{type.label}</SelectItem>
-                    ))}
-                  </SelectContent>
-                </Select>
+                <Label htmlFor="edit-notes">Notes</Label>
+                <Textarea
+                  id="edit-notes"
+                  value={formData.notes}
+                  onChange={(e) => setFormData({ ...formData, notes: e.target.value })}
+                  rows={2}
+                />
               </div>
             </div>
-            {/* Custom Equipment Type - Show when OTHER is selected */}
-            {formData.equipmentType === 'OTHER' && (
+
+            {/* Inspection Status Section */}
+            <div className="space-y-4 pt-4 border-t">
+              <h4 className="text-sm font-semibold text-muted-foreground uppercase tracking-wide">
+                Inspection Status
+              </h4>
+              <div className="grid grid-cols-2 gap-4">
+                <div className="space-y-2">
+                  <Label htmlFor="edit-inspectionResult">Inspection Result</Label>
+                  <Select
+                    value={inspectionData.inspectionResult}
+                    onValueChange={(value: 'PASS' | 'FAIL' | 'NEEDS_REPAIR' | 'PENDING') =>
+                      setInspectionData({ ...inspectionData, inspectionResult: value })
+                    }
+                  >
+                    <SelectTrigger>
+                      <SelectValue />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="PENDING">Pending</SelectItem>
+                      <SelectItem value="PASS">Pass</SelectItem>
+                      <SelectItem value="FAIL">Fail</SelectItem>
+                      <SelectItem value="NEEDS_REPAIR">Needs Repair</SelectItem>
+                    </SelectContent>
+                  </Select>
+                </div>
+                <div className="space-y-2">
+                  <Label htmlFor="edit-lastInspected">Last Inspected</Label>
+                  <Input
+                    id="edit-lastInspected"
+                    type="date"
+                    value={inspectionData.lastInspected}
+                    onChange={(e) => setInspectionData({ ...inspectionData, lastInspected: e.target.value })}
+                  />
+                </div>
+              </div>
+              <div className="flex flex-wrap gap-6">
+                <div className="flex items-center space-x-2">
+                  <Checkbox
+                    id="edit-isInspected"
+                    checked={inspectionData.isInspected}
+                    onCheckedChange={(checked) =>
+                      setInspectionData({ ...inspectionData, isInspected: checked as boolean })
+                    }
+                  />
+                  <Label htmlFor="edit-isInspected" className="text-sm font-normal">
+                    Inspected
+                  </Label>
+                </div>
+                <div className="flex items-center space-x-2">
+                  <Checkbox
+                    id="edit-certificateIssued"
+                    checked={inspectionData.certificateIssued}
+                    onCheckedChange={(checked) =>
+                      setInspectionData({ ...inspectionData, certificateIssued: checked as boolean })
+                    }
+                  />
+                  <Label htmlFor="edit-certificateIssued" className="text-sm font-normal">
+                    Certificate Issued
+                  </Label>
+                </div>
+                <div className="flex items-center space-x-2">
+                  <Checkbox
+                    id="edit-stickerApplied"
+                    checked={inspectionData.stickerApplied}
+                    onCheckedChange={(checked) =>
+                      setInspectionData({ ...inspectionData, stickerApplied: checked as boolean })
+                    }
+                  />
+                  <Label htmlFor="edit-stickerApplied" className="text-sm font-normal">
+                    Sticker Applied
+                  </Label>
+                </div>
+              </div>
               <div className="space-y-2">
-                <Label htmlFor="edit-customEquipmentType">Specify Equipment Type *</Label>
-                <Input
-                  id="edit-customEquipmentType"
-                  value={formData.customEquipmentType}
-                  onChange={(e) => setFormData({ ...formData, customEquipmentType: e.target.value })}
-                  placeholder="e.g., CO2 Detector, Water Sprayer, etc."
+                <Label htmlFor="edit-deficiencies">Deficiencies / Issues Found</Label>
+                <Textarea
+                  id="edit-deficiencies"
+                  value={inspectionData.deficiencies}
+                  onChange={(e) => setInspectionData({ ...inspectionData, deficiencies: e.target.value })}
+                  placeholder="Any issues or deficiencies found during inspection..."
+                  rows={2}
                 />
+              </div>
+            </div>
+
+            {/* Certificate Section */}
+            <div className="space-y-4 pt-4 border-t">
+              <h4 className="text-sm font-semibold text-muted-foreground uppercase tracking-wide">
+                Certificate
+              </h4>
+
+              {/* Current Certificate */}
+              {selectedEquipment?.certificate && (
+                <div className="p-3 bg-muted/50 rounded-lg">
+                  <div className="flex items-center justify-between">
+                    <div className="flex items-center gap-2">
+                      <FileText className="h-4 w-4 text-muted-foreground" />
+                      <span className="text-sm font-medium">Current Certificate</span>
+                    </div>
+                    <div className="flex items-center gap-2">
+                      {selectedEquipment.certificate.fileUrl && (
+                        <>
+                          <Button
+                            variant="ghost"
+                            size="sm"
+                            onClick={() => window.open(selectedEquipment.certificate!.fileUrl!, '_blank')}
+                          >
+                            <Eye className="h-4 w-4 mr-1" />
+                            View
+                          </Button>
+                          <Button
+                            variant="ghost"
+                            size="sm"
+                            onClick={() => window.open(selectedEquipment.certificate!.fileUrl!, '_blank')}
+                          >
+                            <Download className="h-4 w-4 mr-1" />
+                            Download
+                          </Button>
+                        </>
+                      )}
+                    </div>
+                  </div>
+                  {selectedEquipment.certificate.expiryDate && (
+                    <p className="text-xs text-muted-foreground mt-1">
+                      Expires: {new Date(selectedEquipment.certificate.expiryDate).toLocaleDateString()}
+                    </p>
+                  )}
+                </div>
+              )}
+
+              {/* Upload New Certificate */}
+              <div className="space-y-3">
+                <Label>Upload New Certificate</Label>
+                <div className="flex items-center gap-4">
+                  <div className="flex-1">
+                    <Input
+                      type="file"
+                      accept=".pdf,.jpg,.jpeg,.png"
+                      onChange={(e) => setCertificateFile(e.target.files?.[0] || null)}
+                      className="cursor-pointer"
+                    />
+                  </div>
+                </div>
+                {certificateFile && (
+                  <div className="flex items-center gap-2 text-sm text-green-600">
+                    <CheckCircle className="h-4 w-4" />
+                    <span>{certificateFile.name}</span>
+                    <Button
+                      variant="ghost"
+                      size="sm"
+                      className="h-6 px-2 text-destructive"
+                      onClick={() => setCertificateFile(null)}
+                    >
+                      Remove
+                    </Button>
+                  </div>
+                )}
+                <div className="space-y-2">
+                  <Label htmlFor="edit-certificateExpiry">Certificate Expiry Date</Label>
+                  <Input
+                    id="edit-certificateExpiry"
+                    type="date"
+                    value={certificateExpiry}
+                    onChange={(e) => setCertificateExpiry(e.target.value)}
+                  />
+                </div>
+              </div>
+            </div>
+
+            {/* Linked Work Order Info */}
+            {(selectedEquipment?.workOrderId || selectedEquipment?.request) && (
+              <div className="p-3 bg-blue-50 border border-blue-200 rounded-lg">
+                <div className="flex items-center gap-2 text-blue-700">
+                  <Link2 className="h-4 w-4" />
+                  <span className="text-sm font-medium">Linked to Work Order</span>
+                </div>
+                {selectedEquipment?.request && (
+                  <p className="text-xs text-blue-600 mt-1">
+                    {selectedEquipment.request.title} - {selectedEquipment.request.status}
+                  </p>
+                )}
+                <p className="text-xs text-blue-600 mt-1">
+                  Changes will update the work order record
+                </p>
               </div>
             )}
-            <div className="grid grid-cols-2 gap-4">
-              <div className="space-y-2">
-                <Label htmlFor="edit-brand">Brand</Label>
-                <Input
-                  id="edit-brand"
-                  value={formData.brand}
-                  onChange={(e) => setFormData({ ...formData, brand: e.target.value })}
-                />
-              </div>
-              <div className="space-y-2">
-                <Label htmlFor="edit-model">Model</Label>
-                <Input
-                  id="edit-model"
-                  value={formData.model}
-                  onChange={(e) => setFormData({ ...formData, model: e.target.value })}
-                />
-              </div>
-            </div>
-            <div className="space-y-2">
-              <Label htmlFor="edit-serialNumber">Serial Number</Label>
-              <Input
-                id="edit-serialNumber"
-                value={formData.serialNumber}
-                onChange={(e) => setFormData({ ...formData, serialNumber: e.target.value })}
-              />
-            </div>
-            <div className="space-y-2">
-              <Label htmlFor="edit-location">Location</Label>
-              <Input
-                id="edit-location"
-                value={formData.location}
-                onChange={(e) => setFormData({ ...formData, location: e.target.value })}
-              />
-            </div>
-            <div className="space-y-2">
-              <Label htmlFor="edit-expectedExpiry">Next Inspection Due</Label>
-              <Input
-                id="edit-expectedExpiry"
-                type="date"
-                value={formData.expectedExpiry}
-                onChange={(e) => setFormData({ ...formData, expectedExpiry: e.target.value })}
-              />
-            </div>
-            <div className="space-y-2">
-              <Label htmlFor="edit-notes">Notes</Label>
-              <Textarea
-                id="edit-notes"
-                value={formData.notes}
-                onChange={(e) => setFormData({ ...formData, notes: e.target.value })}
-                rows={2}
-              />
-            </div>
           </div>
           <DialogFooter>
-            <Button variant="outline" onClick={() => { setEditDialogOpen(false); setSelectedEquipment(null); resetForm(); }}>
+            <Button
+              variant="outline"
+              onClick={() => {
+                setEditDialogOpen(false);
+                setSelectedEquipment(null);
+                resetForm();
+                resetInspectionData();
+              }}
+            >
               Cancel
             </Button>
-            <Button onClick={handleUpdateEquipment} disabled={saving}>
-              {saving && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
-              Save Changes
+            <Button onClick={handleUpdateEquipment} disabled={saving || uploadingCertificate}>
+              {(saving || uploadingCertificate) && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
+              {uploadingCertificate ? 'Uploading...' : 'Save Changes'}
             </Button>
           </DialogFooter>
         </DialogContent>
