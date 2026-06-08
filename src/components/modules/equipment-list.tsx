@@ -233,6 +233,8 @@ export function EquipmentList({ branchId, userRole = 'CONTRACTOR' }: EquipmentLi
         // Upload file first
         const uploadFormData = new FormData()
         uploadFormData.append('file', certificateFile)
+        uploadFormData.append('type', 'document')
+        uploadFormData.append('folder', 'certificates')
 
         const uploadResponse = await fetch('/api/upload', {
           method: 'POST',
