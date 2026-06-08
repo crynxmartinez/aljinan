@@ -35,25 +35,14 @@ export default async function CompanyProfilePage() {
 
   return (
     <div className="p-8">
-      <div className="mb-8">
-        <h1 className="text-3xl font-bold">Company Profile</h1>
-        <p className="text-muted-foreground mt-1">
-          Manage your company information
-        </p>
-      </div>
-
-      <div className="flex justify-center">
-        <div className="w-full max-w-2xl">
-          <ContractorProfileCard 
-            contractor={{
-              ...contractor,
-              licenseExpiry: contractor.licenseExpiry?.toISOString() || null,
-              insuranceExpiry: contractor.insuranceExpiry?.toISOString() || null,
-              serviceAreas: contractor.serviceAreas as string[] | null,
-            }} 
-          />
-        </div>
-      </div>
+      <ContractorProfileCard
+        contractor={{
+          ...contractor,
+          licenseExpiry: contractor.licenseExpiry?.toISOString() || null,
+          insuranceExpiry: contractor.insuranceExpiry?.toISOString() || null,
+          serviceAreas: contractor.serviceAreas as string[] | null,
+        }}
+      />
     </div>
   )
 }
