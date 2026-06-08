@@ -803,6 +803,63 @@ export async function PATCH(
       return NextResponse.json(updatedWorkOrder)
     }
 
+    // Handle reschedule
+    if (action === 'reschedule') {
+      const { itemId, newDate, reason } = body
+
+      if (!itemId || !newDate) {
+        return NextResponse.json({ error: 'Item ID and new date required' }, { status: 400 })
+      }
+
+      // Only contractors can reschedule
+      if (session.user.role === 'CLIENT') {
+        return NextResponse.json({ error: 'Only contractors can reschedule work orders' }, { status: 403 })
+      }
+
+      // Verify work order belongs to this branch
+      const workOrder = await prisma.checklistItem.findFirst({
+        where: {
+          id: itemId,
+          checklist: { branchId }
+        }
+      })
+
+      if (!workOrder) {
+        return NextResponse.json({ error: 'Work order not found' }, { status: 404 })
+      }
+
+      // Only SCHEDULED stage can be rescheduled
+      if (workOrder.stage !== 'SCHEDULED') {
+        return NextResponse.json({ error: 'Only scheduled work orders can be rescheduled' }, { status: 400 })
+      }
+
+      // Update the work order with reschedule info
+      const updatedWorkOrder = await prisma.checklistItem.update({
+        where: { id: itemId },
+        data: {
+          previousScheduledDate: workOrder.scheduledDate,
+          scheduledDate: new Date(newDate),
+          rescheduledAt: new Date(),
+          rescheduledBy: session.user.id,
+          rescheduledReason: reason || null,
+          rescheduledNotifiedAt: null, // Reset notification - client hasn't seen it yet
+        },
+        include: {
+          checklist: {
+            include: {
+              branch: {
+                include: {
+                  client: true
+                }
+              }
+            }
+          }
+        }
+      })
+
+      return NextResponse.json(updatedWorkOrder)
+    }
+
     // For bulk payment actions, require workOrderIds array
     if (!workOrderIds || !Array.isArray(workOrderIds) || workOrderIds.length === 0) {
       return NextResponse.json({ error: 'Work order IDs required' }, { status: 400 })

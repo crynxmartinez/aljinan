@@ -18,6 +18,7 @@ import {
 import {
   ClipboardList,
   Calendar,
+  CalendarClock,
   Clock,
   CheckCircle,
   AlertCircle,
@@ -645,6 +646,14 @@ export function ChecklistKanban({ branchId, readOnly = false, userRole }: Checkl
     teamMemberMap[tm.userId] = tm.user.name || tm.user.email
   }
 
+  // Reschedule dialog state
+  const [rescheduleDialogOpen, setRescheduleDialogOpen] = useState(false)
+  const [rescheduleData, setRescheduleData] = useState({
+    newDate: '',
+    reason: '',
+  })
+  const [rescheduling, setRescheduling] = useState(false)
+
   // DnD sensors
   const sensors = useSensors(
     useSensor(PointerSensor, {
@@ -1033,6 +1042,41 @@ export function ChecklistKanban({ branchId, readOnly = false, userRole }: Checkl
     }
   }
 
+  // Handle reschedule work order
+  const handleReschedule = async () => {
+    if (!selectedItem || !rescheduleData.newDate) return
+    setRescheduling(true)
+
+    try {
+      const response = await fetch(`/api/branches/${branchId}/checklist-items`, {
+        method: 'PATCH',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          action: 'reschedule',
+          itemId: selectedItem.id,
+          newDate: rescheduleData.newDate,
+          reason: rescheduleData.reason || null,
+        }),
+      })
+
+      if (response.ok) {
+        toast.success('Work order rescheduled successfully')
+        fetchItems()
+        setRescheduleDialogOpen(false)
+        setRescheduleData({ newDate: '', reason: '' })
+        setDetailsOpen(false)
+        router.refresh()
+      } else {
+        const error = await response.json()
+        toast.error(error.error || 'Failed to reschedule')
+      }
+    } catch (error) {
+      toast.error('Failed to reschedule work order')
+    } finally {
+      setRescheduling(false)
+    }
+  }
+
   // Handle confirmation of drag-to-complete - open signature dialog instead of auto-completing
   const handleConfirmMove = () => {
     if (!pendingMove || !selectedItem) return
@@ -1336,6 +1380,24 @@ export function ChecklistKanban({ branchId, readOnly = false, userRole }: Checkl
                       <Calendar className="h-4 w-4" />
                       {new Date(selectedItem.scheduledDate).toLocaleDateString()}
                     </p>
+                    {/* Reschedule button - only for SCHEDULED stage and contractors */}
+                    {!readOnly && userRole !== 'CLIENT' && selectedItem.stage === 'SCHEDULED' && (
+                      <Button
+                        size="sm"
+                        variant="outline"
+                        onClick={() => {
+                          setRescheduleData({
+                            newDate: selectedItem.scheduledDate ? selectedItem.scheduledDate.split('T')[0] : '',
+                            reason: '',
+                          })
+                          setRescheduleDialogOpen(true)
+                        }}
+                        className="h-7 text-xs mt-2 text-blue-700 border-blue-300 hover:bg-blue-50"
+                      >
+                        <CalendarClock className="h-3 w-3 mr-1" />
+                        Reschedule
+                      </Button>
+                    )}
                   </div>
                 )}
                 <div>
@@ -2297,6 +2359,76 @@ export function ChecklistKanban({ branchId, readOnly = false, userRole }: Checkl
         open={technicianModalOpen}
         onOpenChange={setTechnicianModalOpen}
       />
+
+      {/* Reschedule Dialog */}
+      <Dialog open={rescheduleDialogOpen} onOpenChange={setRescheduleDialogOpen}>
+        <DialogContent className="sm:max-w-[425px]">
+          <DialogHeader>
+            <DialogTitle className="flex items-center gap-2">
+              <CalendarClock className="h-5 w-5 text-blue-600" />
+              Reschedule Work Order
+            </DialogTitle>
+            <DialogDescription>
+              Change the scheduled date for this work order. The client will be notified.
+            </DialogDescription>
+          </DialogHeader>
+          <div className="space-y-4 py-4">
+            {selectedItem?.scheduledDate && (
+              <div className="p-3 bg-muted/50 rounded-lg">
+                <p className="text-sm text-muted-foreground">Current Schedule</p>
+                <p className="font-medium">
+                  {new Date(selectedItem.scheduledDate).toLocaleDateString('en-US', {
+                    weekday: 'long',
+                    year: 'numeric',
+                    month: 'long',
+                    day: 'numeric'
+                  })}
+                </p>
+              </div>
+            )}
+            <div className="space-y-2">
+              <Label htmlFor="newDate">New Date *</Label>
+              <Input
+                id="newDate"
+                type="date"
+                value={rescheduleData.newDate}
+                onChange={(e) => setRescheduleData({ ...rescheduleData, newDate: e.target.value })}
+                min={new Date().toISOString().split('T')[0]}
+              />
+            </div>
+            <div className="space-y-2">
+              <Label htmlFor="reason">Reason for Rescheduling</Label>
+              <Textarea
+                id="reason"
+                value={rescheduleData.reason}
+                onChange={(e) => setRescheduleData({ ...rescheduleData, reason: e.target.value })}
+                placeholder="e.g., Client requested different date, Technician unavailable..."
+                rows={3}
+              />
+            </div>
+          </div>
+          <DialogFooter>
+            <Button
+              variant="outline"
+              onClick={() => {
+                setRescheduleDialogOpen(false)
+                setRescheduleData({ newDate: '', reason: '' })
+              }}
+            >
+              Cancel
+            </Button>
+            <Button
+              onClick={handleReschedule}
+              disabled={rescheduling || !rescheduleData.newDate}
+              className="bg-blue-600 hover:bg-blue-700"
+            >
+              {rescheduling && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
+              <CalendarClock className="mr-2 h-4 w-4" />
+              Confirm Reschedule
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
     </>
   )
 }

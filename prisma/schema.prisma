@@ -961,6 +961,13 @@ model ChecklistItem {
   deletedBy       String?            // User ID who archived it
   deletedReason   String?            // Optional reason for archiving
   
+  // Reschedule tracking
+  rescheduledAt       DateTime?      // When work order was rescheduled
+  rescheduledBy       String?        // User ID who rescheduled
+  rescheduledReason   String?        // Reason for rescheduling
+  previousScheduledDate DateTime?    // Previous scheduled date before reschedule
+  rescheduledNotifiedAt DateTime?    // When client was notified about reschedule (null = not seen)
+  
   createdAt       DateTime           @default(now())
   updatedAt       DateTime           @updatedAt
   
