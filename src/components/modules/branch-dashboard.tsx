@@ -169,9 +169,8 @@ export function BranchDashboard({ branchId }: BranchDashboardProps) {
     color: string
   ) => (
     <Card
-      className={`cursor-pointer transition-all hover:shadow-md ${
-        isActive ? `ring-2 ring-${color}-500 shadow-md` : ''
-      } ${viewMode !== 'split' && !isActive ? 'opacity-60' : ''}`}
+      className={`cursor-pointer transition-all hover:shadow-md ${isActive ? `ring-2 ring-${color}-500 shadow-md` : ''
+        } ${viewMode !== 'split' && !isActive ? 'opacity-60' : ''}`}
       onClick={onClick}
     >
       <CardHeader className="pb-2">
@@ -465,56 +464,40 @@ export function BranchDashboard({ branchId }: BranchDashboardProps) {
 
       {/* Split View / Detail View */}
       <div className="flex gap-6">
-        {viewMode === 'split' ? (
-          <>
-            <div className="flex-1">
-              {renderStatsCard(
-                'Contract Work Orders',
-                <FileText className="h-5 w-5 text-blue-600" />,
-                contractStats,
-                false,
-                () => setViewMode('contracts'),
-                'blue'
-              )}
-            </div>
-            <div className="flex-1">
-              {renderStatsCard(
-                'Ad-hoc Services',
-                <Wrench className="h-5 w-5 text-purple-600" />,
-                adhocStats,
-                false,
-                () => setViewMode('adhoc'),
-                'purple'
-              )}
-            </div>
-          </>
+        {/* LEFT SIDE - Contract Work Orders */}
+        {viewMode === 'contracts' ? (
+          // Contract expanded (left side)
+          renderDetailPanel()
         ) : (
-          <>
-            {/* Collapsed card */}
-            <div className="w-[280px] shrink-0">
-              {viewMode === 'contracts' ? (
-                renderStatsCard(
-                  'Ad-hoc Services',
-                  <Wrench className="h-5 w-5 text-purple-600" />,
-                  adhocStats,
-                  false,
-                  () => setViewMode('adhoc'),
-                  'purple'
-                )
-              ) : (
-                renderStatsCard(
-                  'Contract Work Orders',
-                  <FileText className="h-5 w-5 text-blue-600" />,
-                  contractStats,
-                  false,
-                  () => setViewMode('contracts'),
-                  'blue'
-                )
-              )}
-            </div>
-            {/* Expanded detail panel */}
-            {renderDetailPanel()}
-          </>
+          // Contract collapsed or split
+          <div className={viewMode === 'split' ? 'flex-1' : 'w-[280px] shrink-0'}>
+            {renderStatsCard(
+              'Contract Work Orders',
+              <FileText className="h-5 w-5 text-blue-600" />,
+              contractStats,
+              false,
+              () => setViewMode('contracts'),
+              'blue'
+            )}
+          </div>
+        )}
+
+        {/* RIGHT SIDE - Ad-hoc Services */}
+        {viewMode === 'adhoc' ? (
+          // Ad-hoc expanded (right side)
+          renderDetailPanel()
+        ) : (
+          // Ad-hoc collapsed or split
+          <div className={viewMode === 'split' ? 'flex-1' : 'w-[280px] shrink-0'}>
+            {renderStatsCard(
+              'Ad-hoc Services',
+              <Wrench className="h-5 w-5 text-purple-600" />,
+              adhocStats,
+              false,
+              () => setViewMode('adhoc'),
+              'purple'
+            )}
+          </div>
         )}
       </div>
     </div>
