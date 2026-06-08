@@ -13,7 +13,15 @@ const MAX_SIGNATURE_SIZE = 500 * 1024 // 500KB for signatures
 
 // Allowed file types
 const ALLOWED_IMAGE_TYPES = ['image/jpeg', 'image/png', 'image/webp', 'image/gif']
-const ALLOWED_DOCUMENT_TYPES = ['application/pdf', 'image/jpeg', 'image/png']
+const ALLOWED_DOCUMENT_TYPES = [
+  'application/pdf',
+  'application/msword', // .doc
+  'application/vnd.openxmlformats-officedocument.wordprocessingml.document', // .docx
+  'image/jpeg',
+  'image/png',
+  'image/webp',
+  'image/gif'
+]
 
 export async function POST(request: Request) {
   try {

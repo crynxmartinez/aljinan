@@ -1357,12 +1357,12 @@ export function RequestsList({ branchId, userRole, userId }: RequestsListProps) 
                 <Label>Upload Document <span className="text-xs text-muted-foreground">(optional)</span></Label>
                 <FileUploadDropzone
                   onFilesSelected={handleQuotationUpload}
-                  accept=".pdf,.jpg,.jpeg,.png"
+                  accept=".pdf,.doc,.docx,.jpg,.jpeg,.png,.gif,.webp"
                   multiple={false}
                   uploading={uploadingQuotation}
                   uploadedFiles={quotationFile ? [quotationFile] : []}
                   onRemoveFile={() => setQuotationFile(null)}
-                  label="Upload document (PDF or image)"
+                  label="Upload document (PDF, DOC, images)"
                   maxFiles={1}
                 />
               </div>
@@ -2043,12 +2043,12 @@ export function RequestsList({ branchId, userRole, userId }: RequestsListProps) 
                     <Label>Upload Quotation <span className="text-xs text-muted-foreground">(optional)</span></Label>
                     <FileUploadDropzone
                       onFilesSelected={handleQuoteQuotationUpload}
-                      accept=".pdf,.jpg,.jpeg,.png"
+                      accept=".pdf,.doc,.docx,.jpg,.jpeg,.png,.gif,.webp"
                       multiple={false}
                       uploading={uploadingQuoteQuotation}
                       uploadedFiles={quoteQuotationFile ? [quoteQuotationFile] : []}
                       onRemoveFile={() => setQuoteQuotationFile(null)}
-                      label="Upload quotation (PDF or image)"
+                      label="Upload quotation (PDF, DOC, images)"
                       maxFiles={1}
                     />
                   </div>

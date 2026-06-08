@@ -1523,7 +1523,7 @@ export function ContractsList({ branchId }: ContractsListProps) {
                 <Label>Upload Contract (optional)</Label>
                 <FileUploadDropzone
                   onFilesSelected={handleContractFileUpload}
-                  accept=".pdf,.jpg,.jpeg,.png"
+                  accept=".pdf,.doc,.docx,.jpg,.jpeg,.png,.gif,.webp"
                   multiple={false}
                   uploading={uploadingContract}
                   uploadedFiles={contractFile ? [contractFile] : []}
@@ -1531,7 +1531,7 @@ export function ContractsList({ branchId }: ContractsListProps) {
                     setContractFile(null)
                     setNewContract({ ...newContract, fileName: '', fileUrl: '' })
                   }}
-                  label="Click to upload or drag and drop contract file"
+                  label="Upload contract (PDF, DOC, images)"
                 />
               </div>
             </div>
@@ -1809,7 +1809,7 @@ export function ContractsList({ branchId }: ContractsListProps) {
                   <Label>Contract Document (optional)</Label>
                   <FileUploadDropzone
                     onFilesSelected={handleEditContractFileUpload}
-                    accept=".pdf,.jpg,.jpeg,.png"
+                    accept=".pdf,.doc,.docx,.jpg,.jpeg,.png,.gif,.webp"
                     multiple={false}
                     uploading={uploadingEditContract}
                     uploadedFiles={editContractFile ? [editContractFile] : []}
@@ -1817,7 +1817,7 @@ export function ContractsList({ branchId }: ContractsListProps) {
                       setEditContractFile(null)
                       setEditContract({ ...editContract, fileName: '', fileUrl: '' })
                     }}
-                    label="Click to upload or drag and drop contract file"
+                    label="Upload contract (PDF, DOC, images)"
                   />
                 </div>
               </div>

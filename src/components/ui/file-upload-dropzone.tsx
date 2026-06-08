@@ -19,16 +19,19 @@ interface FileUploadDropzoneProps {
   showPreview?: boolean
 }
 
+// Common accept string for documents and images
+export const ACCEPT_ALL_FILES = '.pdf,.doc,.docx,.jpg,.jpeg,.png,.gif,.webp'
+
 export function FileUploadDropzone({
   onFilesSelected,
-  accept = 'image/*',
+  accept = ACCEPT_ALL_FILES,
   multiple = false,
   disabled = false,
   uploading = false,
   uploadedFiles = [],
   onRemoveFile,
   maxFiles,
-  label = 'Click to upload or drag and drop',
+  label = 'Upload files (PDF, DOC, images)',
   showPreview = true,
 }: FileUploadDropzoneProps) {
   const [isDragging, setIsDragging] = useState(false)
@@ -65,7 +68,7 @@ export function FileUploadDropzone({
     if (disabled || uploading) return
 
     const files = Array.from(e.dataTransfer.files)
-    
+
     // Filter files by accept type
     const acceptedFiles = files.filter((file) => {
       if (accept === 'image/*') {
@@ -86,13 +89,13 @@ export function FileUploadDropzone({
 
     if (acceptedFiles.length > 0) {
       const filesToUpload = multiple ? acceptedFiles : [acceptedFiles[0]]
-      
+
       // Check max files limit
       if (maxFiles && uploadedFiles.length + filesToUpload.length > maxFiles) {
         alert(`Maximum ${maxFiles} files allowed`)
         return
       }
-      
+
       onFilesSelected(filesToUpload)
     }
   }
@@ -102,15 +105,15 @@ export function FileUploadDropzone({
     if (!files || files.length === 0) return
 
     const fileArray = Array.from(files)
-    
+
     // Check max files limit
     if (maxFiles && uploadedFiles.length + fileArray.length > maxFiles) {
       alert(`Maximum ${maxFiles} files allowed`)
       return
     }
-    
+
     onFilesSelected(fileArray)
-    
+
     // Reset input
     if (inputRef.current) {
       inputRef.current.value = ''
@@ -147,7 +150,7 @@ export function FileUploadDropzone({
           className="hidden"
           disabled={disabled || uploading}
         />
-        
+
         <div className="flex flex-col items-center justify-center text-center">
           {uploading ? (
             <>
@@ -164,7 +167,13 @@ export function FileUploadDropzone({
               <Upload className="h-8 w-8 text-muted-foreground mb-2" />
               <span className="text-sm text-muted-foreground font-medium">{label}</span>
               <span className="text-xs text-muted-foreground mt-1">
-                {accept === 'image/*' ? 'Images only' : accept.includes('.pdf') ? 'PDF, JPG, PNG' : 'All files'}
+                {accept === 'image/*'
+                  ? 'Images only'
+                  : accept.includes('.doc')
+                    ? 'PDF, DOC, JPG, PNG & more'
+                    : accept.includes('.pdf')
+                      ? 'PDF, JPG, PNG'
+                      : 'All files'}
                 {maxFiles && ` (max ${maxFiles})`}
               </span>
             </>
@@ -179,7 +188,7 @@ export function FileUploadDropzone({
             if (!file?.url) return null
             const isImage = file.url.match(/\.(jpg|jpeg|png|gif|webp)$/i)
             const isPdf = file.url.match(/\.pdf$/i)
-            
+
             return (
               <div key={index} className="relative group">
                 <div
@@ -209,14 +218,14 @@ export function FileUploadDropzone({
                     </div>
                   )}
                 </div>
-                
+
                 {/* View icon overlay */}
                 <div className="absolute inset-0 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity pointer-events-none">
                   <div className="bg-black/50 rounded-full p-2">
                     <Eye className="h-4 w-4 text-white" />
                   </div>
                 </div>
-                
+
                 {onRemoveFile && (
                   <button
                     type="button"
@@ -234,7 +243,7 @@ export function FileUploadDropzone({
           })}
         </div>
       )}
-      
+
       {/* Image Lightbox */}
       <ImageLightbox
         images={uploadedFiles.filter(f => f.url.match(/\.(jpg|jpeg|png|gif|webp)$/i))}
@@ -242,7 +251,7 @@ export function FileUploadDropzone({
         open={lightboxOpen}
         onOpenChange={setLightboxOpen}
       />
-      
+
       {/* PDF Viewer */}
       {selectedPdf && (
         <PDFViewer

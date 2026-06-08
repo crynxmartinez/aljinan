@@ -1496,8 +1496,8 @@ export function ChecklistKanban({ branchId, readOnly = false, userRole }: Checkl
                                   type="button"
                                   onClick={() => setInspectionData({ ...inspectionData, systemStatus: status.value as 'WORKING' | 'NEEDS_ATTENTION' | 'CRITICAL' })}
                                   className={`flex-1 py-2 px-3 rounded-lg border-2 text-sm font-medium transition-all ${inspectionData.systemStatus === status.value
-                                      ? status.color + ' border-2'
-                                      : 'bg-gray-50 border-gray-200 text-gray-600 hover:bg-gray-100'
+                                    ? status.color + ' border-2'
+                                    : 'bg-gray-50 border-gray-200 text-gray-600 hover:bg-gray-100'
                                     }`}
                                 >
                                   {status.label}
@@ -1564,8 +1564,8 @@ export function ChecklistKanban({ branchId, readOnly = false, userRole }: Checkl
                                   type="button"
                                   onClick={() => setInspectionData({ ...inspectionData, completionStatus: status.value as 'COMPLETED' | 'PARTIAL' | 'PENDING' })}
                                   className={`flex-1 py-2 px-3 rounded-lg border-2 text-sm font-medium transition-all ${inspectionData.completionStatus === status.value
-                                      ? status.color + ' border-2'
-                                      : 'bg-gray-50 border-gray-200 text-gray-600 hover:bg-gray-100'
+                                    ? status.color + ' border-2'
+                                    : 'bg-gray-50 border-gray-200 text-gray-600 hover:bg-gray-100'
                                     }`}
                                 >
                                   {status.label}
@@ -1642,8 +1642,8 @@ export function ChecklistKanban({ branchId, readOnly = false, userRole }: Checkl
                                   type="button"
                                   onClick={() => setInspectionData({ ...inspectionData, inspectionResult: status.value as 'PASSED' | 'ATTENTION_REQUIRED' | 'FAILED' })}
                                   className={`flex-1 py-2 px-3 rounded-lg border-2 text-sm font-medium transition-all ${inspectionData.inspectionResult === status.value
-                                      ? status.color + ' border-2'
-                                      : 'bg-gray-50 border-gray-200 text-gray-600 hover:bg-gray-100'
+                                    ? status.color + ' border-2'
+                                    : 'bg-gray-50 border-gray-200 text-gray-600 hover:bg-gray-100'
                                     }`}
                                 >
                                   {status.label}
@@ -1698,8 +1698,8 @@ export function ChecklistKanban({ branchId, readOnly = false, userRole }: Checkl
                                   type="button"
                                   onClick={() => setInspectionData({ ...inspectionData, testResult: status.value as 'PASSED' | 'PARTIAL' | 'FAILED' })}
                                   className={`flex-1 py-2 px-3 rounded-lg border-2 text-sm font-medium transition-all ${inspectionData.testResult === status.value
-                                      ? status.color + ' border-2'
-                                      : 'bg-gray-50 border-gray-200 text-gray-600 hover:bg-gray-100'
+                                    ? status.color + ' border-2'
+                                    : 'bg-gray-50 border-gray-200 text-gray-600 hover:bg-gray-100'
                                     }`}
                                 >
                                   {status.label}
@@ -1754,9 +1754,9 @@ export function ChecklistKanban({ branchId, readOnly = false, userRole }: Checkl
                         />
                       </div>
 
-                      {/* Photo Upload - Common for all report types */}
+                      {/* File Upload - Common for all report types */}
                       <div className="space-y-2">
-                        <Label>Photos</Label>
+                        <Label>Attachments</Label>
                         <FileUploadDropzone
                           onFilesSelected={(files) => {
                             const event = {
@@ -1764,13 +1764,13 @@ export function ChecklistKanban({ branchId, readOnly = false, userRole }: Checkl
                             } as any
                             handleInspectionPhotoUpload(event, 'INSPECTION')
                           }}
-                          accept="image/*"
+                          accept=".pdf,.doc,.docx,.jpg,.jpeg,.png,.gif,.webp"
                           multiple={true}
                           disabled={uploadingPhoto}
                           uploading={uploadingPhoto}
                           uploadedFiles={inspectionPhotos}
                           onRemoveFile={removeInspectionPhoto}
-                          label="Click to upload or drag and drop photos"
+                          label="Upload files (PDF, DOC, images)"
                           showPreview={true}
                         />
                       </div>

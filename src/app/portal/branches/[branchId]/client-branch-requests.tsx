@@ -1245,9 +1245,9 @@ export function ClientBranchRequests({ branchId, onDataChange, userId }: ClientB
 
               {/* Photo Upload */}
               <div className="space-y-2">
-                <Label>Photos (Optional)</Label>
+                <Label>Attachments (Optional)</Label>
                 <p className="text-xs text-muted-foreground mb-2">
-                  Upload photos of the issue to help the technician understand the problem
+                  Upload files to help the technician understand the problem
                 </p>
                 <FileUploadDropzone
                   onFilesSelected={(files) => {
@@ -1256,13 +1256,13 @@ export function ClientBranchRequests({ branchId, onDataChange, userId }: ClientB
                     } as any
                     handlePhotoUpload(event)
                   }}
-                  accept="image/*"
+                  accept=".pdf,.doc,.docx,.jpg,.jpeg,.png,.gif,.webp"
                   multiple={true}
                   disabled={uploading}
                   uploading={uploading}
                   uploadedFiles={uploadedPhotos}
                   onRemoveFile={removePhoto}
-                  label="Click to upload or drag and drop photos"
+                  label="Upload files (PDF, DOC, images)"
                   showPreview={true}
                 />
               </div>

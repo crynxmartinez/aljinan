@@ -527,7 +527,7 @@ export function CertificatesList({ branchId, userRole }: CertificatesListProps) 
               </div>
 
               <div className="space-y-2">
-                <Label>Certificate File (PDF)</Label>
+                <Label>Certificate File</Label>
                 <FileUploadDropzone
                   onFilesSelected={(files) => {
                     const event = {
@@ -535,12 +535,12 @@ export function CertificatesList({ branchId, userRole }: CertificatesListProps) 
                     } as any
                     handleFileUpload(event)
                   }}
-                  accept=".pdf,.jpg,.jpeg,.png"
+                  accept=".pdf,.doc,.docx,.jpg,.jpeg,.png,.gif,.webp"
                   multiple={false}
                   disabled={uploading}
                   uploading={uploading}
                   uploadedFiles={uploadedFileUrl ? [{ url: uploadedFileUrl, name: 'Certificate' }] : []}
-                  label="Click to upload or drag and drop"
+                  label="Upload certificate (PDF, DOC, images)"
                   showPreview={true}
                 />
               </div>
