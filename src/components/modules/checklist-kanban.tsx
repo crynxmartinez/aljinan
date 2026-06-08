@@ -1888,7 +1888,13 @@ export function ChecklistKanban({ branchId, readOnly = false, userRole }: Checkl
 
                     {selectedItem.inspectionDate && (
                       <div>
-                        <p className="text-sm text-muted-foreground">Inspection Date</p>
+                        <p className="text-sm text-muted-foreground">
+                          {selectedItem.workOrderType === 'INSTALLATION' ? 'Installation Date' :
+                            selectedItem.workOrderType === 'SERVICE' ? 'Service Date' :
+                              selectedItem.workOrderType === 'MAINTENANCE' ? 'Maintenance Date' :
+                                selectedItem.workOrderType === 'INSPECTION' || selectedItem.workOrderType === 'STICKER_INSPECTION' ? 'Inspection Date' :
+                                  'Date'}
+                        </p>
                         <p className="text-sm">{new Date(selectedItem.inspectionDate).toLocaleDateString()}</p>
                       </div>
                     )}
