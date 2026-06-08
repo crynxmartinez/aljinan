@@ -52,7 +52,7 @@ import {
   XCircle,
   AlertCircle,
   Calendar,
-  DollarSign,
+  Banknote,
   Send,
   MessageSquare,
   ChevronDown,
@@ -863,7 +863,7 @@ export function ClientBranchRequests({ branchId, onDataChange, userId }: ClientB
                       <div className="flex items-center justify-between">
                         <div className="flex items-center gap-4 text-sm">
                           <div className="flex items-center gap-1">
-                            <DollarSign className="h-4 w-4 text-purple-600" />
+                            <Banknote className="h-4 w-4 text-purple-600" />
                             <span className="font-semibold text-purple-700">
                               SAR {request.quotedPrice.toLocaleString('en-US', { minimumFractionDigits: 2 })}
                             </span>

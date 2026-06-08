@@ -3,14 +3,14 @@
 import Link from 'next/link'
 import Image from 'next/image'
 import { Button } from '@/components/ui/button'
-import { ClipboardList, Wrench, FileCheck, Users, BarChart3, DollarSign, Bell, Shield, Smartphone, CheckCircle, ArrowRight } from 'lucide-react'
+import { ClipboardList, Wrench, FileCheck, Users, BarChart3, Banknote, Bell, Shield, Smartphone, CheckCircle, ArrowRight } from 'lucide-react'
 import { ServiceSchema } from '@/components/seo/service-schema'
 import { useTranslation } from '@/lib/i18n/use-translation'
 
 export function FeaturesContent() {
   const { t } = useTranslation()
-  
-  const icons = [ClipboardList, Wrench, FileCheck, Users, BarChart3, DollarSign, Bell, Shield, Smartphone]
+
+  const icons = [ClipboardList, Wrench, FileCheck, Users, BarChart3, Banknote, Bell, Shield, Smartphone]
   const images = [
     '/images/marketing/feature-work-orders.jpg',
     '/images/marketing/feature-equipment.jpg',
@@ -22,7 +22,7 @@ export function FeaturesContent() {
     '/images/marketing/feature-security.jpg',
     '/images/marketing/feature-mobile.jpg',
   ]
-  
+
   const features = t.features.list.map((feature, index) => ({
     icon: icons[index],
     title: feature.title,

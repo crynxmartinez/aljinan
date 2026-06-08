@@ -5,7 +5,7 @@ import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, D
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
-import { DollarSign } from 'lucide-react'
+import { Banknote } from 'lucide-react'
 
 interface PriceDialogProps {
   open: boolean
@@ -56,7 +56,7 @@ export function PriceDialog({ open, onOpenChange, onConfirm, currentPrice }: Pri
       <DialogContent className="sm:max-w-[425px]">
         <DialogHeader>
           <DialogTitle className="flex items-center gap-2">
-            <DollarSign className="h-5 w-5 text-green-600" />
+            <Banknote className="h-5 w-5 text-green-600" />
             Set Work Order Price
           </DialogTitle>
           <DialogDescription>

@@ -23,7 +23,7 @@ import {
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu'
 import {
-  DollarSign,
+  Banknote,
   Plus,
   Loader2,
   MoreHorizontal,
@@ -274,7 +274,7 @@ export function InvoicesList({ branchId }: InvoicesListProps) {
         <CardContent>
           {invoices.length === 0 ? (
             <div className="flex flex-col items-center justify-center py-12 text-center">
-              <DollarSign className="h-12 w-12 text-muted-foreground/30 mb-4" />
+              <Banknote className="h-12 w-12 text-muted-foreground/30 mb-4" />
               <h3 className="text-lg font-semibold mb-2">No invoices yet</h3>
               <p className="text-muted-foreground max-w-md mb-4">
                 Create your first invoice for this branch.

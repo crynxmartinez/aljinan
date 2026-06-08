@@ -3,7 +3,7 @@
 import { useState, useEffect } from 'react'
 import { useRouter } from 'next/navigation'
 import { useSession } from 'next-auth/react'
-import { Bell, CheckCircle, Clock, DollarSign, FileText, AlertCircle } from 'lucide-react'
+import { Bell, CheckCircle, Clock, Banknote, FileText, AlertCircle } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import {
   DropdownMenu,
@@ -28,7 +28,7 @@ interface Notification {
 }
 
 const iconMap = {
-  quote: DollarSign,
+  quote: Banknote,
   work_order: FileText,
   payment: CheckCircle,
   certificate: FileText,
@@ -93,7 +93,7 @@ export function NotificationCenter() {
     try {
       // TODO: API call to mark as read
       // await fetch(`/api/notifications/${notificationId}/read`, { method: 'POST' })
-      
+
       setNotifications(prev =>
         prev.map(n => (n.id === notificationId ? { ...n, read: true } : n))
       )
@@ -106,7 +106,7 @@ export function NotificationCenter() {
     try {
       // TODO: API call to mark all as read
       // await fetch('/api/notifications/mark-all-read', { method: 'POST' })
-      
+
       setNotifications(prev => prev.map(n => ({ ...n, read: true })))
     } catch (error) {
       console.error('Failed to mark all as read:', error)
@@ -237,11 +237,11 @@ export function NotificationCenter() {
         {notifications.length > 0 && (
           <>
             <DropdownMenuSeparator />
-            <DropdownMenuItem 
+            <DropdownMenuItem
               className="justify-center text-sm text-primary cursor-pointer font-medium"
               onClick={() => {
-                const notificationsPath = session?.user?.role === 'CLIENT' 
-                  ? '/portal/notifications' 
+                const notificationsPath = session?.user?.role === 'CLIENT'
+                  ? '/portal/notifications'
                   : '/dashboard/notifications'
                 router.push(notificationsPath)
                 setOpen(false)

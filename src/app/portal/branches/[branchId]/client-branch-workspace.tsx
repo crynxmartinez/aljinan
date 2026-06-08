@@ -16,7 +16,7 @@ import {
   LayoutDashboard,
   FileText,
   Calendar,
-  DollarSign,
+  Banknote,
   FileCheck,
   MessageSquare,
   ClipboardList,
@@ -118,7 +118,7 @@ export function ClientBranchWorkspace({ branchId, branch }: ClientBranchWorkspac
             Calendar
           </TabsTrigger>
           <TabsTrigger value="billing" className="flex items-center gap-2">
-            <DollarSign className="h-4 w-4" />
+            <Banknote className="h-4 w-4" />
             Billing
           </TabsTrigger>
           <TabsTrigger value="contracts" className="flex items-center gap-2">

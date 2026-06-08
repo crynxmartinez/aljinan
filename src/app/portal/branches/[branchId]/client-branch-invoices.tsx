@@ -4,7 +4,7 @@ import { useState, useEffect } from 'react'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
 import { Badge } from '@/components/ui/badge'
 import {
-  DollarSign,
+  Banknote,
   Loader2,
   CheckCircle,
   Clock,
@@ -109,7 +109,7 @@ export function ClientBranchInvoices({ branchId }: ClientBranchInvoicesProps) {
         <Card className="border-amber-200 bg-amber-50/50">
           <CardHeader>
             <CardTitle className="flex items-center gap-2 text-amber-800">
-              <DollarSign className="h-5 w-5" />
+              <Banknote className="h-5 w-5" />
               Outstanding Balance
             </CardTitle>
           </CardHeader>
@@ -229,7 +229,7 @@ export function ClientBranchInvoices({ branchId }: ClientBranchInvoicesProps) {
         <CardContent>
           {invoices.length === 0 ? (
             <div className="flex flex-col items-center justify-center py-12 text-center">
-              <DollarSign className="h-12 w-12 text-muted-foreground/30 mb-4" />
+              <Banknote className="h-12 w-12 text-muted-foreground/30 mb-4" />
               <h3 className="text-lg font-semibold mb-2">No invoices yet</h3>
               <p className="text-muted-foreground max-w-md">
                 Invoices from your contractor will appear here.

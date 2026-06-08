@@ -2,7 +2,7 @@
 
 import { useEffect, useState } from 'react'
 import { useSession } from 'next-auth/react'
-import { DollarSign, ClipboardList, AlertCircle, TrendingUp } from 'lucide-react'
+import { Banknote, ClipboardList, AlertCircle, TrendingUp } from 'lucide-react'
 import { StatsCard } from '@/components/analytics/stats-card'
 import { RevenueChart } from '@/components/analytics/revenue-chart'
 import { StatusBarChart } from '@/components/analytics/status-bar-chart'
@@ -107,7 +107,7 @@ export default function AnalyticsPage() {
               label: data.stats.revenue.label,
               isPositive: data.stats.revenue.change >= 0,
             }}
-            icon={DollarSign}
+            icon={Banknote}
             iconColor="text-green-600"
             iconBgColor="bg-green-100"
           />

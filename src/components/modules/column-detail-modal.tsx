@@ -37,7 +37,7 @@ import {
   Download,
   ArrowUpDown,
   AlertCircle,
-  DollarSign,
+  Banknote,
   Tag,
   User,
 } from 'lucide-react'
@@ -341,7 +341,7 @@ export function ColumnDetailModal({
               </div>
             </div>
             <div className="flex items-center gap-2">
-              <DollarSign className="h-4 w-4 text-green-500" />
+              <Banknote className="h-4 w-4 text-green-500" />
               <div>
                 <p className="text-xs text-muted-foreground">Total Value</p>
                 <p className="text-lg font-semibold text-green-600">{formatCurrency(stats.totalValue)}</p>

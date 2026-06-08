@@ -1,13 +1,13 @@
 'use client'
 
-import { ClipboardList, Wrench, FileCheck, Users, BarChart3, DollarSign } from 'lucide-react'
+import { ClipboardList, Wrench, FileCheck, Users, BarChart3, Banknote } from 'lucide-react'
 import Image from 'next/image'
 import { useTranslation } from '@/lib/i18n/use-translation'
 
 export function FeaturesGrid() {
   const { t } = useTranslation()
-  
-  const icons = [ClipboardList, Wrench, FileCheck, Users, BarChart3, DollarSign]
+
+  const icons = [ClipboardList, Wrench, FileCheck, Users, BarChart3, Banknote]
   const images = [
     '/images/marketing/feature-work-orders.jpg',
     '/images/marketing/feature-equipment.jpg',

@@ -9,7 +9,7 @@ import {
   CollapsibleContent,
   CollapsibleTrigger,
 } from '@/components/ui/collapsible'
-import { Loader2, FileText, DollarSign, ChevronDown, ChevronRight, ClipboardList } from 'lucide-react'
+import { Loader2, FileText, Banknote, ChevronDown, ChevronRight, ClipboardList } from 'lucide-react'
 import { BillingWorkOrdersDisplay, BillingWorkOrder } from './billing-work-orders-display'
 import { PaymentSubmitDialog } from './payment-submit-dialog'
 import { PaymentVerifyDialog } from './payment-verify-dialog'
@@ -355,7 +355,7 @@ export function BillingView({ branchId, userRole }: BillingViewProps) {
                   <div className="flex items-center gap-2">
                     {contractPaymentsExpanded ? <ChevronDown className="h-5 w-5 text-purple-600" /> : <ChevronRight className="h-5 w-5 text-purple-600" />}
                     <CardTitle className="flex items-center gap-2 text-purple-700">
-                      <DollarSign className="h-5 w-5" />
+                      <Banknote className="h-5 w-5" />
                       Contract Payments
                     </CardTitle>
                     <Badge className="bg-purple-100 text-purple-700">Scheduled</Badge>
@@ -494,7 +494,7 @@ export function BillingView({ branchId, userRole }: BillingViewProps) {
       {contractWorkOrders.length === 0 && standaloneWorkOrders.length === 0 && stickerInspectionWorkOrders.length === 0 && (
         <Card>
           <CardContent className="flex flex-col items-center justify-center py-12 text-center">
-            <DollarSign className="h-12 w-12 text-muted-foreground/30 mb-4" />
+            <Banknote className="h-12 w-12 text-muted-foreground/30 mb-4" />
             <p className="text-muted-foreground">No work orders yet</p>
             <p className="text-sm text-muted-foreground mt-1">
               Work orders will appear here once created

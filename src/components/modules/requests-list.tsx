@@ -47,7 +47,7 @@ import {
   XCircle,
   AlertCircle,
   Calendar,
-  DollarSign,
+  Banknote,
   Pencil,
   Save,
   Eye,
@@ -301,7 +301,7 @@ function WorkOrdersGroupedViewContractor({
                       />
                     </div>
                     <div className="flex items-center">
-                      <span className="text-sm text-muted-foreground mr-1">$</span>
+                      <span className="text-sm text-muted-foreground mr-1">SAR</span>
                       <Input
                         type="number"
                         step="0.01"
@@ -1752,7 +1752,7 @@ export function RequestsList({ branchId, userRole, userId }: RequestsListProps) 
                         }}
                         className="flex-1"
                       >
-                        <DollarSign className="mr-2 h-4 w-4" />
+                        <Banknote className="mr-2 h-4 w-4" />
                         Send Quote
                       </Button>
                       <Button
@@ -1950,7 +1950,7 @@ export function RequestsList({ branchId, userRole, userId }: RequestsListProps) 
                           : 'Price (SAR) *'}
                       </Label>
                       <div className="relative">
-                        <DollarSign className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+                        <Banknote className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
                         <Input
                           id="quotedPrice"
                           type="number"

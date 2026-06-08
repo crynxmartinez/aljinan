@@ -3,7 +3,7 @@ import { redirect } from 'next/navigation'
 import { authOptions } from '@/lib/auth'
 import { prisma } from '@/lib/prisma'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
-import { Users, MapPin, FileText, Calendar, AlertCircle, DollarSign, Wrench, Eye, CheckCircle, AlertTriangle } from 'lucide-react'
+import { Users, MapPin, FileText, Calendar, AlertCircle, Banknote, Wrench, Eye, CheckCircle, AlertTriangle } from 'lucide-react'
 import { PendingBranchRequests } from './pending-branch-requests'
 import { ActionCenterTable } from '@/components/dashboard/action-center-table'
 
@@ -366,7 +366,7 @@ export default async function DashboardPage() {
       title: 'Overdue Invoices',
       value: stats.overdueInvoices,
       description: 'Requires follow-up',
-      icon: DollarSign,
+      icon: Banknote,
       color: 'text-red-600',
       bgColor: 'bg-red-100',
       showForTechnician: false,

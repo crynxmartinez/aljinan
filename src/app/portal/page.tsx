@@ -6,7 +6,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/com
 import { Button } from '@/components/ui/button'
 import { Badge } from '@/components/ui/badge'
 import {
-  MapPin, Calendar, DollarSign, Receipt, Building2, Phone, Mail,
+  MapPin, Calendar, Banknote, Receipt, Building2, Phone, Mail,
   ChevronRight, Edit, Wrench, Eye, CheckCircle, AlertTriangle
 } from 'lucide-react'
 import Link from 'next/link'
@@ -238,7 +238,7 @@ export default async function PortalDashboardPage() {
                 <p className="text-3xl font-bold">{stats.unpaidInvoices}</p>
               </div>
               <div className="p-3 rounded-full bg-red-100">
-                <DollarSign className="h-5 w-5 text-red-600" />
+                <Banknote className="h-5 w-5 text-red-600" />
               </div>
             </div>
           </CardContent>
