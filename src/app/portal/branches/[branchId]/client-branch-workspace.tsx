@@ -5,6 +5,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
 import { Button } from '@/components/ui/button'
 import { Badge } from '@/components/ui/badge'
 import { ActivityPanel } from '@/components/modules/activity-panel'
+import { BranchDashboard } from '@/components/modules/branch-dashboard'
 import { ClientBranchRequests } from './client-branch-requests'
 import { ClientBranchContracts } from './client-branch-contracts'
 import { BillingView } from '@/components/modules/billing-view'
@@ -142,9 +143,7 @@ export function ClientBranchWorkspace({ branchId, branch }: ClientBranchWorkspac
         <div className="mt-6">
           {/* Dashboard Tab */}
           <TabsContent value="dashboard" className="mt-0">
-            <div className="text-center py-8 text-muted-foreground">
-              <p>Use the Contracts tab to view your work orders.</p>
-            </div>
+            <BranchDashboard branchId={branchId} />
           </TabsContent>
 
           {/* Kanban Board Tab */}
