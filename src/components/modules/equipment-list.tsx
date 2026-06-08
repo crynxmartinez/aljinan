@@ -390,13 +390,14 @@ export function EquipmentList({ branchId, userRole = 'CONTRACTOR' }: EquipmentLi
     return matchesSearch && matchesStatus && matchesType
   })
 
-  // Stats
+  // Stats - use calculatedStatus if available, otherwise fall back to status
+  const getEffectiveStatus = (eq: Equipment) => eq.calculatedStatus || eq.status
   const stats = {
     total: equipment.length,
-    active: equipment.filter(eq => eq.status === 'ACTIVE' || eq.calculatedStatus === 'ACTIVE').length,
-    expiringSoon: equipment.filter(eq => eq.status === 'EXPIRING_SOON' || eq.calculatedStatus === 'EXPIRING_SOON').length,
-    expired: equipment.filter(eq => eq.status === 'EXPIRED' || eq.calculatedStatus === 'EXPIRED').length,
-    needsAttention: equipment.filter(eq => eq.status === 'NEEDS_ATTENTION' || eq.calculatedStatus === 'NEEDS_ATTENTION').length,
+    active: equipment.filter(eq => getEffectiveStatus(eq) === 'ACTIVE').length,
+    expiringSoon: equipment.filter(eq => getEffectiveStatus(eq) === 'EXPIRING_SOON').length,
+    expired: equipment.filter(eq => getEffectiveStatus(eq) === 'EXPIRED').length,
+    needsAttention: equipment.filter(eq => getEffectiveStatus(eq) === 'NEEDS_ATTENTION').length,
   }
 
   const getStatusDisplay = (eq: Equipment) => {
