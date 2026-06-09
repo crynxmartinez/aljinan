@@ -6,7 +6,7 @@ import { Button } from '@/components/ui/button'
 import { Badge } from '@/components/ui/badge'
 import {
   Mail, Phone, Building2, FileText, Users, Edit,
-  AlertTriangle
+  AlertTriangle, MapPin, MessageCircle
 } from 'lucide-react'
 import { ClientProfileForm } from './client-profile-form'
 
@@ -42,159 +42,183 @@ export function ClientProfileCard({ client, canEdit }: ClientProfileCardProps) {
   const [editOpen, setEditOpen] = useState(false)
 
   const contacts = client.contacts as ContactPerson[] | null
+  const isProfileIncomplete = !client.crNumber || !client.vatNumber || !client.billingAddress || !client.contactPersonName || !client.contactPersonPhone || !client.contactPersonEmail
 
   return (
     <>
-      <Card>
-        <CardHeader className="flex flex-row items-center justify-between">
-          <CardTitle>Company Profile</CardTitle>
-          {canEdit && (
-            <Button variant="outline" size="sm" onClick={() => setEditOpen(true)}>
-              <Edit className="h-4 w-4 mr-1" />
-              Edit
-            </Button>
-          )}
-        </CardHeader>
-        <CardContent className="space-y-6">
-          {/* Basic Info */}
-          <div className="grid gap-4 sm:grid-cols-2">
-            <div className="flex items-start gap-3">
-              <Mail className="h-4 w-4 text-muted-foreground mt-0.5" />
-              <div>
-                <p className="text-xs text-muted-foreground">Email</p>
-                <p className="text-sm font-medium">{client.user.email}</p>
+      {/* Header Banner */}
+      <Card className="mb-6 overflow-hidden">
+        <div className="bg-gradient-to-r from-primary/10 via-primary/5 to-transparent p-6">
+          <div className="flex items-start justify-between">
+            <div className="flex items-center gap-4">
+              <div className="h-20 w-20 rounded-xl bg-white shadow-sm border flex items-center justify-center">
+                <Building2 className="h-10 w-10 text-muted-foreground" />
               </div>
-            </div>
-
-            <div className="flex items-start gap-3">
-              <Phone className="h-4 w-4 text-muted-foreground mt-0.5" />
               <div>
-                <p className="text-xs text-muted-foreground">Phone</p>
-                <p className={`text-sm ${client.companyPhone ? 'font-medium' : 'text-muted-foreground italic'}`}>
-                  {client.companyPhone || 'Not set'}
-                </p>
-              </div>
-            </div>
-
-            <div className="flex items-start gap-3">
-              <FileText className="h-4 w-4 text-muted-foreground mt-0.5" />
-              <div>
-                <p className="text-xs text-muted-foreground">CR Number</p>
-                <p className={`text-sm ${client.crNumber ? 'font-medium' : 'text-muted-foreground italic'}`}>
-                  {client.crNumber || 'Not set'}
-                </p>
-              </div>
-            </div>
-
-            <div className="flex items-start gap-3">
-              <FileText className="h-4 w-4 text-muted-foreground mt-0.5" />
-              <div>
-                <p className="text-xs text-muted-foreground">VAT Number</p>
-                <p className={`text-sm ${client.vatNumber ? 'font-medium' : 'text-muted-foreground italic'}`}>
-                  {client.vatNumber || 'Not set'}
-                </p>
-              </div>
-            </div>
-          </div>
-
-          {/* Billing Address */}
-          <div className="flex items-start gap-3">
-            <Building2 className="h-4 w-4 text-muted-foreground mt-0.5" />
-            <div className="flex-1">
-              <p className="text-xs text-muted-foreground">Billing Address</p>
-              <p className={`text-sm ${client.billingAddress ? 'font-medium whitespace-pre-line' : 'text-muted-foreground italic'}`}>
-                {client.billingAddress || 'Not set'}
-              </p>
-            </div>
-          </div>
-
-          {/* Primary Contact Person */}
-          <div className="pt-4 border-t space-y-4">
-            <h4 className="text-sm font-semibold text-muted-foreground uppercase tracking-wide">
-              Primary Contact Person
-            </h4>
-            <div className="grid gap-4 sm:grid-cols-2">
-              <div className="flex items-start gap-3">
-                <Users className="h-4 w-4 text-muted-foreground mt-0.5" />
-                <div>
-                  <p className="text-xs text-muted-foreground">Name</p>
-                  <p className={`text-sm ${client.contactPersonName ? 'font-medium' : 'text-muted-foreground italic'}`}>
-                    {client.contactPersonName || 'Not set'}
-                  </p>
+                <h1 className="text-2xl font-bold">
+                  {client.companyName || 'Company Name'}
+                </h1>
+                <div className="flex items-center gap-4 mt-3 text-sm">
+                  {client.billingAddress && (
+                    <span className="flex items-center gap-1 text-muted-foreground">
+                      <MapPin className="h-3.5 w-3.5" />
+                      {client.billingAddress}
+                    </span>
+                  )}
                 </div>
-              </div>
-
-              <div className="flex items-start gap-3">
-                <Phone className="h-4 w-4 text-muted-foreground mt-0.5" />
-                <div>
-                  <p className="text-xs text-muted-foreground">Phone</p>
-                  <p className={`text-sm ${client.contactPersonPhone ? 'font-medium' : 'text-muted-foreground italic'}`}>
-                    {client.contactPersonPhone || 'Not set'}
-                  </p>
-                </div>
-              </div>
-
-              <div className="flex items-start gap-3 sm:col-span-2">
-                <Mail className="h-4 w-4 text-muted-foreground mt-0.5" />
-                <div>
-                  <p className="text-xs text-muted-foreground">Email</p>
-                  <p className={`text-sm ${client.contactPersonEmail ? 'font-medium' : 'text-muted-foreground italic'}`}>
-                    {client.contactPersonEmail || 'Not set'}
-                  </p>
+                <div className="flex items-center gap-4 mt-2 text-sm">
+                  <span className="flex items-center gap-1">
+                    <Mail className="h-3.5 w-3.5 text-muted-foreground" />
+                    {client.user.email}
+                  </span>
+                  {client.companyPhone && (
+                    <span className="flex items-center gap-1">
+                      <Phone className="h-3.5 w-3.5 text-muted-foreground" />
+                      {client.companyPhone}
+                    </span>
+                  )}
                 </div>
               </div>
             </div>
-          </div>
-
-          {/* Additional Contact Persons */}
-          <div className="pt-4 border-t space-y-3">
-            <h4 className="text-sm font-semibold text-muted-foreground uppercase tracking-wide flex items-center gap-2">
-              <Users className="h-4 w-4" />
-              Additional Contact Persons
-            </h4>
-            {contacts && contacts.length > 0 ? (
-              <div className="space-y-3">
-                {contacts.map((contact, index) => (
-                  <div key={index} className="p-3 bg-muted/50 rounded-lg">
-                    <p className="font-medium text-sm">{contact.name || `Contact ${index + 1}`}</p>
-                    <div className="text-xs text-muted-foreground mt-1 space-y-0.5">
-                      {contact.phone && <p>📞 {contact.phone}</p>}
-                      {contact.email && <p>✉️ {contact.email}</p>}
-                      {contact.whatsapp && <p>💬 {contact.whatsapp}</p>}
-                    </div>
-                  </div>
-                ))}
-              </div>
-            ) : (
-              <p className="text-sm text-muted-foreground italic">No contacts added</p>
+            {canEdit && (
+              <Button variant="outline" size="sm" onClick={() => setEditOpen(true)}>
+                <Edit className="h-4 w-4 mr-1" />
+                Edit Profile
+              </Button>
             )}
           </div>
+        </div>
+      </Card>
 
-          {/* Edit prompt if profile is incomplete */}
-          {canEdit && (!client.crNumber || !client.vatNumber || !client.billingAddress || !client.contactPersonName || !client.contactPersonPhone || !client.contactPersonEmail) && (
-            <div className="pt-4 border-t">
-              <div className="bg-amber-50 border border-amber-200 rounded-lg p-4 flex items-start gap-3">
-                <AlertTriangle className="h-5 w-5 text-amber-600 flex-shrink-0 mt-0.5" />
-                <div>
-                  <p className="font-medium text-amber-800 text-sm">Profile Incomplete</p>
-                  <p className="text-xs text-amber-600 mt-1">
-                    Complete your company profile to ensure smooth operations and compliance.
-                  </p>
-                  <Button
-                    variant="outline"
-                    size="sm"
-                    className="mt-3 bg-white"
-                    onClick={() => setEditOpen(true)}
-                  >
-                    <Edit className="h-4 w-4 mr-1" />
-                    Complete Profile
-                  </Button>
-                </div>
+      {/* Main Content Grid */}
+      <div className="grid gap-6 lg:grid-cols-2">
+        {/* Primary Contact Person Card */}
+        <Card>
+          <CardHeader className="pb-3">
+            <CardTitle className="text-base flex items-center gap-2">
+              <Users className="h-4 w-4 text-muted-foreground" />
+              Primary Contact Person
+            </CardTitle>
+          </CardHeader>
+          <CardContent className="space-y-4">
+            <div className="grid gap-4">
+              <div className="flex items-center justify-between py-2 border-b">
+                <span className="text-sm text-muted-foreground">Name</span>
+                <span className="text-sm font-medium">
+                  {client.contactPersonName || <span className="text-muted-foreground italic">Not set</span>}
+                </span>
+              </div>
+              <div className="flex items-center justify-between py-2 border-b">
+                <span className="text-sm text-muted-foreground">Phone</span>
+                <span className="text-sm font-medium">
+                  {client.contactPersonPhone || <span className="text-muted-foreground italic">Not set</span>}
+                </span>
+              </div>
+              <div className="flex items-center justify-between py-2">
+                <span className="text-sm text-muted-foreground">Email</span>
+                <span className="text-sm font-medium">
+                  {client.contactPersonEmail || <span className="text-muted-foreground italic">Not set</span>}
+                </span>
               </div>
             </div>
+          </CardContent>
+        </Card>
+
+        {/* Registration & Tax Card */}
+        <Card>
+          <CardHeader className="pb-3">
+            <CardTitle className="text-base flex items-center gap-2">
+              <FileText className="h-4 w-4 text-muted-foreground" />
+              Registration & Tax
+            </CardTitle>
+          </CardHeader>
+          <CardContent className="space-y-4">
+            <div className="grid gap-4">
+              <div className="flex items-center justify-between py-2 border-b">
+                <span className="text-sm text-muted-foreground">CR / Business License</span>
+                <span className="text-sm font-medium">
+                  {client.crNumber || <span className="text-muted-foreground italic">Not set</span>}
+                </span>
+              </div>
+              <div className="flex items-center justify-between py-2">
+                <span className="text-sm text-muted-foreground">VAT / Tax ID</span>
+                <span className="text-sm font-medium">
+                  {client.vatNumber || <span className="text-muted-foreground italic">Not set</span>}
+                </span>
+              </div>
+            </div>
+          </CardContent>
+        </Card>
+      </div>
+
+      {/* Additional Contact Persons - Full Width */}
+      <Card className="mt-6">
+        <CardHeader className="pb-3">
+          <CardTitle className="text-base flex items-center gap-2">
+            <Users className="h-4 w-4 text-muted-foreground" />
+            Additional Contact Persons
+          </CardTitle>
+        </CardHeader>
+        <CardContent>
+          {contacts && contacts.length > 0 ? (
+            <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
+              {contacts.map((contact, index) => (
+                <div key={index} className="p-4 bg-muted/50 rounded-lg border">
+                  <p className="font-medium text-sm mb-2">{contact.name || `Contact ${index + 1}`}</p>
+                  <div className="space-y-1.5">
+                    {contact.phone && (
+                      <div className="flex items-center gap-2 text-sm text-muted-foreground">
+                        <Phone className="h-3.5 w-3.5" />
+                        {contact.phone}
+                      </div>
+                    )}
+                    {contact.email && (
+                      <div className="flex items-center gap-2 text-sm text-muted-foreground">
+                        <Mail className="h-3.5 w-3.5" />
+                        {contact.email}
+                      </div>
+                    )}
+                    {contact.whatsapp && (
+                      <div className="flex items-center gap-2 text-sm text-muted-foreground">
+                        <MessageCircle className="h-3.5 w-3.5" />
+                        {contact.whatsapp}
+                      </div>
+                    )}
+                  </div>
+                </div>
+              ))}
+            </div>
+          ) : (
+            <p className="text-sm text-muted-foreground italic">No additional contacts added</p>
           )}
         </CardContent>
       </Card>
+
+      {/* Profile Incomplete Warning */}
+      {canEdit && isProfileIncomplete && (
+        <Card className="mt-6 border-amber-200 bg-amber-50">
+          <CardContent className="p-4">
+            <div className="flex items-start gap-3">
+              <AlertTriangle className="h-5 w-5 text-amber-600 flex-shrink-0 mt-0.5" />
+              <div className="flex-1">
+                <p className="font-medium text-amber-800">Profile Incomplete</p>
+                <p className="text-sm text-amber-600 mt-1">
+                  Complete your company profile to ensure smooth operations and compliance.
+                </p>
+              </div>
+              <Button
+                variant="outline"
+                size="sm"
+                className="bg-white"
+                onClick={() => setEditOpen(true)}
+              >
+                <Edit className="h-4 w-4 mr-1" />
+                Complete Profile
+              </Button>
+            </div>
+          </CardContent>
+        </Card>
+      )}
 
       <ClientProfileForm
         client={client}

@@ -41,17 +41,13 @@ export default async function ClientSettingsPage() {
         </p>
       </div>
 
-      <div className="flex justify-center">
-        <div className="w-full max-w-2xl">
-          <ClientProfileCard 
-            client={{
-              ...client,
-              contacts: client.contacts as { name: string; phone: string; email: string; whatsapp: string }[] | null,
-            }} 
-            canEdit={true} 
-          />
-        </div>
-      </div>
+      <ClientProfileCard
+        client={{
+          ...client,
+          contacts: client.contacts as { name: string; phone: string; email: string; whatsapp: string }[] | null,
+        }}
+        canEdit={true}
+      />
     </div>
   )
 }
