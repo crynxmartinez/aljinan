@@ -894,6 +894,12 @@ export async function PATCH(
         return NextResponse.json({ error: 'Payment proof URL required' }, { status: 400 })
       }
 
+      // Guard: all work orders must have a price set
+      const unpricedOrders = workOrders.filter(wo => !wo.price || wo.price <= 0)
+      if (unpricedOrders.length > 0) {
+        return NextResponse.json({ error: 'All work orders must have a price before payment can be submitted' }, { status: 400 })
+      }
+
       // Update all work orders with payment proof
       await prisma.checklistItem.updateMany({
         where: { id: { in: workOrderIds } },
@@ -999,12 +1005,12 @@ export async function PATCH(
           const allPaid = contractChecklist.items.every(wo => wo.paymentStatus === 'PAID')
           const allCompleted = contractChecklist.items.every(wo => wo.stage === 'COMPLETED')
 
-          if (allPaid && allCompleted && verifyContract.status !== 'SIGNED') {
+          if (allPaid && allCompleted && verifyContract.status !== 'COMPLETED') {
             // Auto-complete the contract
             await prisma.contract.update({
               where: { id: verifyContract.id },
               data: {
-                status: 'SIGNED',
+                status: 'COMPLETED',
                 endSignedAt: new Date()
               }
             })

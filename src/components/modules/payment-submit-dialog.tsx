@@ -92,12 +92,20 @@ export function PaymentSubmitDialog({
           setSubmitting(false)
           return
         }
-        // Convert file to base64 data URL
-        const reader = new FileReader()
-        proofUrl = await new Promise((resolve) => {
-          reader.onloadend = () => resolve(reader.result as string)
-          reader.readAsDataURL(paymentFile)
+        // Upload file to S3 via upload endpoint
+        const uploadForm = new FormData()
+        uploadForm.append('file', paymentFile)
+        uploadForm.append('folder', 'payment-proofs')
+        const uploadResponse = await fetch('/api/upload', {
+          method: 'POST',
+          body: uploadForm,
         })
+        if (!uploadResponse.ok) {
+          const uploadData = await uploadResponse.json()
+          throw new Error(uploadData.error || 'Failed to upload payment proof')
+        }
+        const uploadData = await uploadResponse.json()
+        proofUrl = uploadData.url
         proofFileName = paymentFile.name
       }
 
