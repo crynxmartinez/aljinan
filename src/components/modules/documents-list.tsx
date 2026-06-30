@@ -136,9 +136,7 @@ function getFileIcon(fileType: string) {
 export function DocumentsList({ branchId }: DocumentsListProps) {
   const [documents, setDocuments] = useState<UnifiedDocument[]>([])
   const [loading, setLoading] = useState(true)
-  const [expandedSections, setExpandedSections] = useState<Set<SourceType>>(
-    new Set(['payment_proof', 'certificate', 'contract', 'quote', 'report', 'request', 'generated'])
-  )
+  const [expandedSections, setExpandedSections] = useState<Set<SourceType>>(new Set())
   const [previewOpen, setPreviewOpen] = useState(false)
   const [previewFile, setPreviewFile] = useState<{ url: string; name: string; type: 'image' | 'pdf' } | null>(null)
 
