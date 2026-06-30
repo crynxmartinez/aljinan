@@ -6,7 +6,7 @@ import { Button } from '@/components/ui/button'
 import { Badge } from '@/components/ui/badge'
 import {
   MapPin, Phone, Building2, FileText, Calendar, Edit,
-  AlertTriangle, Layers, Ruler
+  AlertTriangle, Layers, Ruler, User, Mail
 } from 'lucide-react'
 import { BranchProfileForm } from './branch-profile-form'
 
@@ -49,6 +49,9 @@ interface BranchProfileCardProps {
     cdCertificateNumber: string | null
     cdCertificateExpiry: string | null
     cdCertificateUrl: string | null
+    contactPersonName: string | null
+    contactPersonPhone: string | null
+    contactPersonEmail: string | null
   }
   canEdit: boolean
 }
@@ -228,6 +231,44 @@ export function BranchProfileCard({ branch, canEdit }: BranchProfileCardProps) {
             )}
           </div>
 
+
+          {/* Contact Person */}
+          <div className="pt-4 border-t space-y-4">
+            <h4 className="text-sm font-semibold text-muted-foreground uppercase tracking-wide">
+              Contact Person
+            </h4>
+            <div className="grid gap-4 sm:grid-cols-2">
+              <div className="flex items-start gap-3">
+                <User className="h-4 w-4 text-muted-foreground mt-0.5" />
+                <div>
+                  <p className="text-xs text-muted-foreground">Name</p>
+                  <p className={`text-sm ${branch.contactPersonName ? 'font-medium' : 'text-muted-foreground italic'}`}>
+                    {branch.contactPersonName || 'Not set'}
+                  </p>
+                </div>
+              </div>
+
+              <div className="flex items-start gap-3">
+                <Phone className="h-4 w-4 text-muted-foreground mt-0.5" />
+                <div>
+                  <p className="text-xs text-muted-foreground">Phone</p>
+                  <p className={`text-sm ${branch.contactPersonPhone ? 'font-medium' : 'text-muted-foreground italic'}`}>
+                    {branch.contactPersonPhone || 'Not set'}
+                  </p>
+                </div>
+              </div>
+
+              <div className="flex items-start gap-3col-span-2">
+                <Mail className="h-4 w-4 text-muted-foreground mt-0.5" />
+                <div>
+                  <p className="text-xs text-muted-foreground">Email</p>
+                  <p className={`text-sm ${branch.contactPersonEmail ? 'font-medium' : 'text-muted-foreground italic'}`}>
+                    {branch.contactPersonEmail || 'Not set'}
+                  </p>
+                </div>
+              </div>
+            </div>
+          </div>
 
           {/* Notes */}
           <div className="pt-4 border-t">

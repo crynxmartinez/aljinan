@@ -62,6 +62,9 @@ interface BranchProfileFormProps {
     cdCertificateNumber: string | null
     cdCertificateExpiry: string | null
     cdCertificateUrl: string | null
+    contactPersonName: string | null
+    contactPersonPhone: string | null
+    contactPersonEmail: string | null
   }
   open: boolean
   onOpenChange: (open: boolean) => void
@@ -86,6 +89,9 @@ export function BranchProfileForm({ branch, open, onOpenChange }: BranchProfileF
     cdCertificateNumber: branch.cdCertificateNumber || '',
     cdCertificateExpiry: branch.cdCertificateExpiry ? branch.cdCertificateExpiry.split('T')[0] : '',
     cdCertificateUrl: branch.cdCertificateUrl || '',
+    contactPersonName: branch.contactPersonName || '',
+    contactPersonPhone: branch.contactPersonPhone || '',
+    contactPersonEmail: branch.contactPersonEmail || '',
   })
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -134,7 +140,7 @@ export function BranchProfileForm({ branch, open, onOpenChange }: BranchProfileF
             <h3 className="font-semibold text-sm text-muted-foreground uppercase tracking-wide">
               Basic Information
             </h3>
-            
+
             <div className="grid grid-cols-2 gap-4">
               <div className="space-y-2">
                 <Label htmlFor="name">Facility Name *</Label>
@@ -281,6 +287,44 @@ export function BranchProfileForm({ branch, open, onOpenChange }: BranchProfileF
                 value={formData.cdCertificateUrl}
                 onChange={(e) => setFormData({ ...formData, cdCertificateUrl: e.target.value })}
                 placeholder="Link to uploaded certificate"
+              />
+            </div>
+          </div>
+
+          <div className="space-y-4">
+            <h3 className="font-semibold text-sm text-muted-foreground uppercase tracking-wide">
+              Contact Person
+            </h3>
+
+            <div className="grid grid-cols-2 gap-4">
+              <div className="space-y-2">
+                <Label htmlFor="contactPersonName">Contact Person Name</Label>
+                <Input
+                  id="contactPersonName"
+                  value={formData.contactPersonName}
+                  onChange={(e) => setFormData({ ...formData, contactPersonName: e.target.value })}
+                  placeholder="Full name"
+                />
+              </div>
+              <div className="space-y-2">
+                <Label htmlFor="contactPersonPhone">Contact Person Phone</Label>
+                <Input
+                  id="contactPersonPhone"
+                  value={formData.contactPersonPhone}
+                  onChange={(e) => setFormData({ ...formData, contactPersonPhone: e.target.value })}
+                  placeholder="+966 5X XXX XXXX"
+                />
+              </div>
+            </div>
+
+            <div className="space-y-2">
+              <Label htmlFor="contactPersonEmail">Contact Person Email</Label>
+              <Input
+                id="contactPersonEmail"
+                type="email"
+                value={formData.contactPersonEmail}
+                onChange={(e) => setFormData({ ...formData, contactPersonEmail: e.target.value })}
+                placeholder="contact@example.com"
               />
             </div>
           </div>

@@ -46,6 +46,9 @@ interface Branch {
   cdCertificateNumber: string | null
   cdCertificateExpiry: string | null
   cdCertificateUrl: string | null
+  contactPersonName: string | null
+  contactPersonPhone: string | null
+  contactPersonEmail: string | null
 }
 
 interface BranchWorkspaceProps {

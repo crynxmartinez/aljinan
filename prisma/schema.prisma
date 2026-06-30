@@ -314,6 +314,11 @@ model Branch {
   cdCertificateNumber   String?       // Civil Defense certificate number
   cdCertificateExpiry   DateTime?     // When CD certificate expires
   cdCertificateUrl      String?       // Uploaded certificate file URL
+
+  // Contact Person
+  contactPersonName     String?       // Branch contact person name
+  contactPersonPhone    String?       // Branch contact person phone
+  contactPersonEmail    String?       // Branch contact person email
   
   createdAt   DateTime @default(now())
   updatedAt   DateTime @updatedAt

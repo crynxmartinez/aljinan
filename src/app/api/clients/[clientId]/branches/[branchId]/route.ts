@@ -93,7 +93,10 @@ export async function PATCH(
       cdCertificateNumber,
       cdCertificateExpiry,
       cdCertificateUrl,
-      isActive
+      isActive,
+      contactPersonName,
+      contactPersonPhone,
+      contactPersonEmail,
     } = body
 
     // Build update data
@@ -117,6 +120,9 @@ export async function PATCH(
     if (cdCertificateExpiry !== undefined) updateData.cdCertificateExpiry = cdCertificateExpiry ? new Date(cdCertificateExpiry) : null
     if (cdCertificateUrl !== undefined) updateData.cdCertificateUrl = cdCertificateUrl
     if (isActive !== undefined) updateData.isActive = isActive
+    if (contactPersonName !== undefined) updateData.contactPersonName = contactPersonName
+    if (contactPersonPhone !== undefined) updateData.contactPersonPhone = contactPersonPhone
+    if (contactPersonEmail !== undefined) updateData.contactPersonEmail = contactPersonEmail
 
     const updated = await prisma.branch.update({
       where: { id: branchId, clientId },
