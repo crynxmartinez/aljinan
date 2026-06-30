@@ -8,7 +8,7 @@ interface UnifiedDocument {
   id: string
   fileName: string
   fileUrl: string
-  source: 'quote' | 'request' | 'report' | 'contract' | 'certificate' | 'generated'
+  source: 'quote' | 'request' | 'report' | 'contract' | 'certificate' | 'generated' | 'payment_proof'
   sourceLabel: string
   relatedTo: string
   relatedToId: string
@@ -290,6 +290,72 @@ export async function GET(
           uploadedAt: (wo.reportGeneratedAt || new Date()).toISOString(),
           expiryDate: null,
           fileType: 'pdf'
+        })
+      }
+    }
+
+    // 7. Fetch payment proofs from work orders
+    const workOrdersWithPayment = await prisma.checklistItem.findMany({
+      where: {
+        checklist: { branchId },
+        paymentProofUrl: { not: null },
+      },
+      include: {
+        checklist: {
+          include: { contract: { select: { title: true } } }
+        }
+      }
+    })
+
+    for (const wo of workOrdersWithPayment) {
+      if (wo.paymentProofUrl) {
+        const uploaderName = await getUserName(wo.paymentSubmittedById)
+        const label = wo.workOrderNumber
+          ? `WO-${String(wo.workOrderNumber).padStart(4, '0')} ${wo.description}`
+          : wo.description
+        documents.push({
+          id: `payment-proof-wo-${wo.id}`,
+          fileName: wo.paymentProofFileName || 'Payment Proof',
+          fileUrl: wo.paymentProofUrl,
+          source: 'payment_proof',
+          sourceLabel: 'Proof of Payment',
+          relatedTo: label,
+          relatedToId: wo.id,
+          uploadedBy: uploaderName,
+          uploadedById: wo.paymentSubmittedById || '',
+          uploadedAt: wo.paymentSubmittedAt?.toISOString() || wo.updatedAt.toISOString(),
+          expiryDate: null,
+          fileType: getFileType(wo.paymentProofUrl)
+        })
+      }
+    }
+
+    // 8. Fetch payment proofs from contract payments
+    const contractPaymentsWithProof = await prisma.contractPayment.findMany({
+      where: {
+        contract: { branchId },
+        paymentProofUrl: { not: null },
+      },
+      include: {
+        contract: { select: { title: true } }
+      }
+    })
+
+    for (const cp of contractPaymentsWithProof) {
+      if (cp.paymentProofUrl) {
+        documents.push({
+          id: `payment-proof-cp-${cp.id}`,
+          fileName: cp.paymentProofFileName || `Payment ${cp.paymentNo}`,
+          fileUrl: cp.paymentProofUrl,
+          source: 'payment_proof',
+          sourceLabel: 'Proof of Payment',
+          relatedTo: `${cp.contract.title} — Payment #${cp.paymentNo}`,
+          relatedToId: cp.id,
+          uploadedBy: 'Client',
+          uploadedById: '',
+          uploadedAt: cp.paymentSubmittedAt?.toISOString() || cp.updatedAt.toISOString(),
+          expiryDate: null,
+          fileType: getFileType(cp.paymentProofUrl)
         })
       }
     }
