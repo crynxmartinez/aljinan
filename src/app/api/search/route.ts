@@ -256,10 +256,10 @@ export async function GET(request: Request) {
             branch: { client: { contractorId } },
             OR: [
               { title: { contains: query, mode: 'insensitive' } },
-              { certificateNumber: { contains: query, mode: 'insensitive' } },
+              { description: { contains: query, mode: 'insensitive' } },
             ],
           },
-          select: { id: true, title: true, type: true, certificateNumber: true, branchId: true, branch: { select: { slug: true, client: { select: { id: true, slug: true, companyName: true } } } } },
+          select: { id: true, title: true, type: true, branchId: true, branch: { select: { slug: true, client: { select: { id: true, slug: true, companyName: true } } } } },
           take: LIMIT,
         })
         : clientBranchIds.length > 0
@@ -268,10 +268,10 @@ export async function GET(request: Request) {
               branchId: { in: clientBranchIds },
               OR: [
                 { title: { contains: query, mode: 'insensitive' } },
-                { certificateNumber: { contains: query, mode: 'insensitive' } },
+                { description: { contains: query, mode: 'insensitive' } },
               ],
             },
-            select: { id: true, title: true, type: true, certificateNumber: true, branchId: true, branch: { select: { id: true, slug: true } } },
+            select: { id: true, title: true, type: true, branchId: true, branch: { select: { id: true, slug: true } } },
             take: LIMIT,
           })
           : Promise.resolve([]),
@@ -378,7 +378,7 @@ export async function GET(request: Request) {
       ...(certificates as any[]).map(cert => ({
         id: cert.id,
         type: 'certificate' as const,
-        title: cert.certificateNumber ? `${cert.title} #${cert.certificateNumber}` : cert.title,
+        title: cert.title,
         subtitle: isContractor
           ? `${cert.branch?.client?.companyName} · ${cert.type.replace(/_/g, ' ')}`
           : cert.type.replace(/_/g, ' '),
