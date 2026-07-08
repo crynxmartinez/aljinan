@@ -22,6 +22,11 @@ export async function GET(request: Request) {
     const role = session.user.role
     const userId = session.user.id
 
+    // Extract numeric portion for matching Int fields like workOrderNumber/requestNumber
+    // Handles formats like "WO-0001", "REQ-42", "0007", "7"
+    const numericMatch = query.match(/\d+/)
+    const numericValue = numericMatch ? parseInt(numericMatch[0], 10) : null
+
     // --- Resolve scope ---
     // Contractor: scoped by their contractorId
     // Client: scoped by their clientId (only their own branches)
@@ -72,6 +77,8 @@ export async function GET(request: Request) {
               { displayName: { contains: query, mode: 'insensitive' } },
               { contactPersonName: { contains: query, mode: 'insensitive' } },
               { companyEmail: { contains: query, mode: 'insensitive' } },
+              { companyPhone: { contains: query, mode: 'insensitive' } },
+              { contactPersonPhone: { contains: query, mode: 'insensitive' } },
             ],
           },
           select: { id: true, slug: true, companyName: true, displayName: true },
@@ -90,6 +97,7 @@ export async function GET(request: Request) {
               { clientNickname: { contains: query, mode: 'insensitive' } },
               { address: { contains: query, mode: 'insensitive' } },
               { city: { contains: query, mode: 'insensitive' } },
+              { contactPersonPhone: { contains: query, mode: 'insensitive' } },
             ],
           },
           select: { id: true, slug: true, name: true, displayName: true, address: true, client: { select: { id: true, slug: true, companyName: true } } },
@@ -119,6 +127,7 @@ export async function GET(request: Request) {
             stage: { not: 'ARCHIVED' },
             OR: [
               { description: { contains: query, mode: 'insensitive' } },
+              ...(numericValue !== null ? [{ workOrderNumber: numericValue }] : []),
             ],
           },
           select: { id: true, description: true, workOrderNumber: true, stage: true, checklist: { select: { branchId: true, branch: { select: { slug: true, client: { select: { id: true, slug: true, companyName: true } } } } } } },
@@ -131,6 +140,7 @@ export async function GET(request: Request) {
               stage: { not: 'ARCHIVED' },
               OR: [
                 { description: { contains: query, mode: 'insensitive' } },
+                ...(numericValue !== null ? [{ workOrderNumber: numericValue }] : []),
               ],
             },
             select: { id: true, description: true, workOrderNumber: true, stage: true, checklist: { select: { branchId: true, branch: { select: { id: true, slug: true } } } } },
@@ -146,6 +156,7 @@ export async function GET(request: Request) {
             OR: [
               { title: { contains: query, mode: 'insensitive' } },
               { description: { contains: query, mode: 'insensitive' } },
+              ...(numericValue !== null ? [{ requestNumber: numericValue }] : []),
             ],
           },
           select: { id: true, title: true, status: true, requestNumber: true, branchId: true, branch: { select: { slug: true, client: { select: { id: true, slug: true, companyName: true } } } } },
@@ -158,6 +169,7 @@ export async function GET(request: Request) {
               OR: [
                 { title: { contains: query, mode: 'insensitive' } },
                 { description: { contains: query, mode: 'insensitive' } },
+                ...(numericValue !== null ? [{ requestNumber: numericValue }] : []),
               ],
             },
             select: { id: true, title: true, status: true, requestNumber: true, branchId: true, branch: { select: { id: true, slug: true } } },
