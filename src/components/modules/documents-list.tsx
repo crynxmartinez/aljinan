@@ -77,7 +77,7 @@ const SECTION_CONFIG: {
     },
     {
       source: 'certificate',
-      label: 'Certificates',
+      label: 'Equipment Certification',
       icon: <Award className="h-4 w-4" />,
       badgeClass: 'bg-amber-100 text-amber-700',
     },
@@ -95,7 +95,7 @@ const SECTION_CONFIG: {
     },
     {
       source: 'report',
-      label: 'Report Photos',
+      label: 'Reports',
       icon: <Camera className="h-4 w-4" />,
       badgeClass: 'bg-green-100 text-green-700',
     },
