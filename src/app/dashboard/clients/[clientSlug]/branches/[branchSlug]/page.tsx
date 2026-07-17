@@ -131,7 +131,12 @@ export default async function BranchPage({
           <MapPin className="h-6 w-6 text-primary" />
         </div>
         <div>
-          <h1 className="text-2xl font-bold">{branch.name}</h1>
+          <h1 className="text-2xl font-bold">
+            {branch.displayName || branch.name}
+            {branch.clientNickname && branch.clientNickname !== (branch.displayName || branch.name) && (
+              <span className="text-muted-foreground font-normal"> ({branch.clientNickname})</span>
+            )}
+          </h1>
           <p className="text-muted-foreground">
             {branch.address}
             {branch.city ? `, ${branch.city}` : ''}
