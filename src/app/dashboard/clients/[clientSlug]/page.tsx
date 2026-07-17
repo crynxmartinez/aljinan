@@ -190,10 +190,10 @@ export default async function ClientDetailPage({
                           <MapPin className="h-5 w-5 text-muted-foreground" />
                         </div>
                         <div>
-                          <p className="font-medium">{branch.address}</p>
-                          {branch.city && (
-                            <p className="text-sm text-muted-foreground">{branch.city}</p>
-                          )}
+                          <p className="font-medium">{branch.displayName || branch.clientNickname || branch.name}</p>
+                          <p className="text-sm text-muted-foreground">
+                            {branch.address}{branch.city ? `, ${branch.city}` : ''}
+                          </p>
                         </div>
                       </div>
                       {!branch.isActive && (
