@@ -71,7 +71,7 @@ const SECTION_CONFIG: {
 }[] = [
     {
       source: 'payment_proof',
-      label: 'Proof of Payment',
+      label: 'Payment Uploads',
       icon: <CreditCard className="h-4 w-4" />,
       badgeClass: 'bg-emerald-100 text-emerald-700',
     },
@@ -228,132 +228,129 @@ export function DocumentsList({ branchId }: DocumentsListProps) {
           </div>
         </CardHeader>
         <CardContent className="space-y-3">
-          {documents.length === 0 ? (
-            <div className="flex flex-col items-center justify-center py-12 text-center">
-              <FileText className="h-12 w-12 text-muted-foreground/30 mb-4" />
-              <h3 className="text-lg font-semibold mb-2">No documents yet</h3>
-              <p className="text-muted-foreground max-w-md">
-                Documents uploaded from requests, quotes, reports, contracts, and payments will appear here.
-              </p>
-            </div>
-          ) : (
-            SECTION_CONFIG.map(({ source, label, icon, badgeClass }) => {
-              const sectionDocs = docsBySource(source)
-              if (sectionDocs.length === 0) return null
-              const isOpen = expandedSections.has(source)
+          {SECTION_CONFIG.map(({ source, label, icon, badgeClass }) => {
+            const sectionDocs = docsBySource(source)
+            if (sectionDocs.length === 0 && source !== 'payment_proof') return null
+            const isOpen = expandedSections.has(source)
 
-              return (
-                <Collapsible key={source} open={isOpen} onOpenChange={() => toggleSection(source)}>
-                  <CollapsibleTrigger asChild>
-                    <button className="w-full flex items-center justify-between px-4 py-3 rounded-lg bg-muted/50 hover:bg-muted transition-colors">
-                      <div className="flex items-center gap-2">
-                        {isOpen
-                          ? <ChevronDown className="h-4 w-4 text-muted-foreground" />
-                          : <ChevronRight className="h-4 w-4 text-muted-foreground" />
-                        }
-                        <span className={`inline-flex items-center gap-1.5 px-2 py-0.5 rounded text-xs font-medium ${badgeClass}`}>
-                          {icon}
-                          {label}
-                        </span>
-                      </div>
-                      <Badge variant="secondary" className="text-xs">
-                        {sectionDocs.length} {sectionDocs.length === 1 ? 'file' : 'files'}
-                      </Badge>
-                    </button>
-                  </CollapsibleTrigger>
-                  <CollapsibleContent>
-                    <div className="mt-1 border rounded-lg overflow-hidden">
-                      <Table>
-                        <TableHeader>
-                          <TableRow className="bg-muted/30">
-                            <TableHead className="w-[36px]"></TableHead>
-                            <TableHead>File Name</TableHead>
-                            <TableHead>Related To</TableHead>
-                            <TableHead>Uploaded By</TableHead>
-                            <TableHead>Date</TableHead>
-                            <TableHead>Expiry</TableHead>
-                            <TableHead className="w-[90px]"></TableHead>
+            return (
+              <Collapsible key={source} open={isOpen} onOpenChange={() => toggleSection(source)}>
+                <CollapsibleTrigger asChild>
+                  <button className="w-full flex items-center justify-between px-4 py-3 rounded-lg bg-muted/50 hover:bg-muted transition-colors">
+                    <div className="flex items-center gap-2">
+                      {isOpen
+                        ? <ChevronDown className="h-4 w-4 text-muted-foreground" />
+                        : <ChevronRight className="h-4 w-4 text-muted-foreground" />
+                      }
+                      <span className={`inline-flex items-center gap-1.5 px-2 py-0.5 rounded text-xs font-medium ${badgeClass}`}>
+                        {icon}
+                        {label}
+                      </span>
+                    </div>
+                    <Badge variant="secondary" className="text-xs">
+                      {sectionDocs.length} {sectionDocs.length === 1 ? 'file' : 'files'}
+                    </Badge>
+                  </button>
+                </CollapsibleTrigger>
+                <CollapsibleContent>
+                  <div className="mt-1 border rounded-lg overflow-hidden">
+                    <Table>
+                      <TableHeader>
+                        <TableRow className="bg-muted/30">
+                          <TableHead className="w-[36px]"></TableHead>
+                          <TableHead>File Name</TableHead>
+                          <TableHead>Related To</TableHead>
+                          <TableHead>Uploaded By</TableHead>
+                          <TableHead>Date</TableHead>
+                          <TableHead>Expiry</TableHead>
+                          <TableHead className="w-[90px]"></TableHead>
+                        </TableRow>
+                      </TableHeader>
+                      <TableBody>
+                        {sectionDocs.length === 0 && (
+                          <TableRow>
+                            <TableCell colSpan={7} className="text-center text-sm text-muted-foreground py-6">
+                              No {label.toLowerCase()} yet
+                            </TableCell>
                           </TableRow>
-                        </TableHeader>
-                        <TableBody>
-                          {sectionDocs.map((doc) => {
-                            const expiryInfo = getExpiryStatus(doc.expiryDate)
-                            return (
-                              <TableRow
-                                key={doc.id}
-                                className="cursor-pointer hover:bg-muted/50"
-                                onClick={() => openPreview(doc)}
-                              >
-                                <TableCell>{getFileIcon(doc.fileType)}</TableCell>
-                                <TableCell>
-                                  <p className="font-medium truncate max-w-[200px]" title={doc.fileName}>
-                                    {doc.fileName}
-                                  </p>
-                                </TableCell>
-                                <TableCell>
-                                  <p className="text-sm truncate max-w-[200px]" title={doc.relatedTo}>
-                                    {doc.relatedTo}
-                                  </p>
-                                </TableCell>
-                                <TableCell>
-                                  <p className="text-sm text-muted-foreground">{doc.uploadedBy}</p>
-                                </TableCell>
-                                <TableCell>
-                                  <p className="text-sm">{new Date(doc.uploadedAt).toLocaleDateString()}</p>
-                                </TableCell>
-                                <TableCell>
-                                  {expiryInfo.status === 'expired' && (
-                                    <Badge variant="destructive" className="flex items-center gap-1 w-fit">
-                                      <AlertTriangle className="h-3 w-3" />Expired
-                                    </Badge>
-                                  )}
-                                  {expiryInfo.status === 'expiring' && (
-                                    <Badge className="bg-orange-100 text-orange-700 flex items-center gap-1 w-fit">
-                                      <Clock className="h-3 w-3" />{expiryInfo.daysLeft}d
-                                    </Badge>
-                                  )}
-                                  {expiryInfo.status === 'valid' && (
-                                    <Badge className="bg-green-100 text-green-700 flex items-center gap-1 w-fit">
-                                      <CheckCircle className="h-3 w-3" />Valid
-                                    </Badge>
-                                  )}
-                                  {expiryInfo.status === 'none' && (
-                                    <span className="text-muted-foreground text-sm">—</span>
-                                  )}
-                                </TableCell>
-                                <TableCell>
-                                  <div className="flex items-center gap-1">
+                        )}
+                        {sectionDocs.map((doc) => {
+                          const expiryInfo = getExpiryStatus(doc.expiryDate)
+                          return (
+                            <TableRow
+                              key={doc.id}
+                              className="cursor-pointer hover:bg-muted/50"
+                              onClick={() => openPreview(doc)}
+                            >
+                              <TableCell>{getFileIcon(doc.fileType)}</TableCell>
+                              <TableCell>
+                                <p className="font-medium truncate max-w-[200px]" title={doc.fileName}>
+                                  {doc.fileName}
+                                </p>
+                              </TableCell>
+                              <TableCell>
+                                <p className="text-sm truncate max-w-[200px]" title={doc.relatedTo}>
+                                  {doc.relatedTo}
+                                </p>
+                              </TableCell>
+                              <TableCell>
+                                <p className="text-sm text-muted-foreground">{doc.uploadedBy}</p>
+                              </TableCell>
+                              <TableCell>
+                                <p className="text-sm">{new Date(doc.uploadedAt).toLocaleDateString()}</p>
+                              </TableCell>
+                              <TableCell>
+                                {expiryInfo.status === 'expired' && (
+                                  <Badge variant="destructive" className="flex items-center gap-1 w-fit">
+                                    <AlertTriangle className="h-3 w-3" />Expired
+                                  </Badge>
+                                )}
+                                {expiryInfo.status === 'expiring' && (
+                                  <Badge className="bg-orange-100 text-orange-700 flex items-center gap-1 w-fit">
+                                    <Clock className="h-3 w-3" />{expiryInfo.daysLeft}d
+                                  </Badge>
+                                )}
+                                {expiryInfo.status === 'valid' && (
+                                  <Badge className="bg-green-100 text-green-700 flex items-center gap-1 w-fit">
+                                    <CheckCircle className="h-3 w-3" />Valid
+                                  </Badge>
+                                )}
+                                {expiryInfo.status === 'none' && (
+                                  <span className="text-muted-foreground text-sm">—</span>
+                                )}
+                              </TableCell>
+                              <TableCell>
+                                <div className="flex items-center gap-1">
+                                  <Button
+                                    variant="ghost"
+                                    size="icon"
+                                    onClick={(e) => { e.stopPropagation(); openPreview(doc) }}
+                                    title="View"
+                                  >
+                                    <Eye className="h-4 w-4" />
+                                  </Button>
+                                  {doc.fileUrl && (
                                     <Button
                                       variant="ghost"
                                       size="icon"
-                                      onClick={(e) => { e.stopPropagation(); openPreview(doc) }}
-                                      title="View"
+                                      onClick={(e) => { e.stopPropagation(); window.open(doc.fileUrl, '_blank') }}
+                                      title="Download"
                                     >
-                                      <Eye className="h-4 w-4" />
+                                      <Download className="h-4 w-4" />
                                     </Button>
-                                    {doc.fileUrl && (
-                                      <Button
-                                        variant="ghost"
-                                        size="icon"
-                                        onClick={(e) => { e.stopPropagation(); window.open(doc.fileUrl, '_blank') }}
-                                        title="Download"
-                                      >
-                                        <Download className="h-4 w-4" />
-                                      </Button>
-                                    )}
-                                  </div>
-                                </TableCell>
-                              </TableRow>
-                            )
-                          })}
-                        </TableBody>
-                      </Table>
-                    </div>
-                  </CollapsibleContent>
-                </Collapsible>
-              )
-            })
-          )}
+                                  )}
+                                </div>
+                              </TableCell>
+                            </TableRow>
+                          )
+                        })}
+                      </TableBody>
+                    </Table>
+                  </div>
+                </CollapsibleContent>
+              </Collapsible>
+            )
+          })}
         </CardContent>
       </Card>
 
