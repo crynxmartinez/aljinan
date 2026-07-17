@@ -131,7 +131,7 @@ export function RescheduleNotificationModal({
             disabled={acknowledging}
             className="w-full bg-orange-600 hover:bg-orange-700"
           >
-            {acknowledging ? 'Acknowledging...' : 'I Understand'}
+            {acknowledging ? 'Acknowledging...' : 'Acknowledge'}
           </Button>
         </DialogFooter>
       </DialogContent>
