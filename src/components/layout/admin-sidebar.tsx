@@ -22,6 +22,7 @@ import { ScrollArea } from '@/components/ui/scroll-area'
 import { Separator } from '@/components/ui/separator'
 import { Badge } from '@/components/ui/badge'
 import { useState, useEffect } from 'react'
+import { useTranslation } from '@/lib/i18n/use-translation'
 
 interface AdminSidebarProps {
   adminRole?: string
@@ -29,22 +30,22 @@ interface AdminSidebarProps {
 
 const mainNavItems = [
   {
-    title: 'Dashboard',
+    titleKey: 'dashboard' as const,
     href: '/admin',
     icon: LayoutDashboard,
   },
   {
-    title: 'Contractors',
+    titleKey: 'contractors' as const,
     href: '/admin/contractors',
     icon: Users,
   },
   {
-    title: 'Messages',
+    titleKey: 'messages' as const,
     href: '/admin/messages',
     icon: MessageSquare,
   },
   {
-    title: 'Analytics',
+    titleKey: 'analytics' as const,
     href: '/admin/analytics',
     icon: BarChart3,
   },
@@ -52,12 +53,12 @@ const mainNavItems = [
 
 const bottomNavItems = [
   {
-    title: 'Admin Users',
+    titleKey: 'adminUsers' as const,
     href: '/admin/settings/admins',
     icon: UserCog,
   },
   {
-    title: 'Platform Settings',
+    titleKey: 'platformSettings' as const,
     href: '/admin/settings',
     icon: Settings,
   },
@@ -67,6 +68,7 @@ export function AdminSidebar({ adminRole }: AdminSidebarProps) {
   const pathname = usePathname()
   const router = useRouter()
   const { data: session } = useSession()
+  const { t } = useTranslation()
   const [loadingHref, setLoadingHref] = useState<string | null>(null)
   const [unreadCount, setUnreadCount] = useState(0)
 
@@ -150,7 +152,7 @@ export function AdminSidebar({ adminRole }: AdminSidebarProps) {
               ) : (
                 <item.icon className="h-4 w-4" />
               )}
-              <span className="flex-1">{item.title}</span>
+              <span className="flex-1">{t.dashboard.admin[item.titleKey]}</span>
               {item.href === '/admin/messages' && unreadCount > 0 && (
                 <Badge variant="destructive" className="h-5 px-1.5 text-xs">
                   {unreadCount > 99 ? '99+' : unreadCount}
@@ -166,7 +168,7 @@ export function AdminSidebar({ adminRole }: AdminSidebarProps) {
         <div className="space-y-1">
           <div className="px-3 py-2">
             <span className="text-xs font-semibold uppercase text-sidebar-foreground/50">
-              Settings
+              {t.dashboard.admin.settings}
             </span>
           </div>
           {bottomNavItems.map((item) => (
@@ -186,7 +188,7 @@ export function AdminSidebar({ adminRole }: AdminSidebarProps) {
               ) : (
                 <item.icon className="h-4 w-4" />
               )}
-              {item.title}
+              {t.dashboard.admin[item.titleKey]}
             </Link>
           ))}
         </div>
@@ -205,7 +207,7 @@ export function AdminSidebar({ adminRole }: AdminSidebarProps) {
               {session?.user?.name || session?.user?.email}
             </p>
             <p className="text-xs text-sidebar-foreground/50 truncate">
-              {adminRole === 'SUPER_ADMIN' ? 'Super Admin' : adminRole === 'SUPPORT_ADMIN' ? 'Support Admin' : 'Admin'}
+              {adminRole === 'SUPER_ADMIN' ? t.dashboard.admin.superAdmin : adminRole === 'SUPPORT_ADMIN' ? t.dashboard.admin.supportAdmin : t.dashboard.admin.admin}
             </p>
           </div>
           <Button

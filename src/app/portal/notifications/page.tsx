@@ -5,6 +5,7 @@ import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/com
 import { Bell, Eye, Wrench, CheckCircle, AlertTriangle } from 'lucide-react'
 import { NotificationsList } from './notifications-list'
 import { prisma } from '@/lib/prisma'
+import { getTranslations } from '@/lib/i18n/server'
 
 async function getClientStats(userId: string) {
   const client = await prisma.client.findUnique({
@@ -85,30 +86,33 @@ export default async function ClientNotificationsPage() {
 
   const stats = await getClientStats(session.user.id)
 
+  const t = await getTranslations()
+  const tn = t.dashboard.portalNotificationsPage
+
   const statCards = [
     {
-      label: 'Awaiting My Review',
+      label: tn.awaitingReview,
       value: stats.workOrdersForReview,
       icon: Eye,
       color: 'text-purple-600',
       bgColor: 'bg-purple-100',
-      description: 'Work orders ready for your approval'
+      description: tn.awaitingReviewDesc
     },
     {
-      label: 'Work In Progress',
+      label: tn.workInProgress,
       value: stats.workOrdersInProgress,
       icon: Wrench,
       color: 'text-orange-600',
       bgColor: 'bg-orange-100',
-      description: 'Currently being worked on'
+      description: tn.workInProgressDesc
     },
     {
-      label: 'Completed This Month',
+      label: tn.completedThisMonth,
       value: stats.workOrdersCompleted,
       icon: CheckCircle,
       color: 'text-green-600',
       bgColor: 'bg-green-100',
-      description: 'Work orders finished'
+      description: tn.completedThisMonthDesc
     },
   ]
 
@@ -119,8 +123,8 @@ export default async function ClientNotificationsPage() {
           <Bell className="h-6 w-6 text-primary" />
         </div>
         <div>
-          <h1 className="text-2xl font-bold">Notifications</h1>
-          <p className="text-muted-foreground">Stay updated on work orders and contractor activity</p>
+          <h1 className="text-2xl font-bold">{tn.title}</h1>
+          <p className="text-muted-foreground">{tn.subtitle}</p>
         </div>
       </div>
 
@@ -143,8 +147,8 @@ export default async function ClientNotificationsPage() {
 
       <Card>
         <CardHeader>
-          <CardTitle>All Notifications</CardTitle>
-          <CardDescription>View and manage all your notifications</CardDescription>
+          <CardTitle>{tn.allNotifications}</CardTitle>
+          <CardDescription>{tn.allNotificationsDesc}</CardDescription>
         </CardHeader>
         <CardContent>
           <NotificationsList />

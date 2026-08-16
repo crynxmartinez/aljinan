@@ -23,6 +23,8 @@ import {
   SelectValue,
 } from '@/components/ui/select'
 
+import { useTranslation } from '@/lib/i18n/use-translation'
+
 interface Inquiry {
   id: string
   name: string
@@ -37,15 +39,16 @@ interface Inquiry {
   updatedAt: string
 }
 
-const statusConfig: Record<string, { label: string; color: string; bg: string }> = {
-  NEW: { label: 'New', color: 'text-blue-700', bg: 'bg-blue-100' },
-  CONTACTED: { label: 'Contacted', color: 'text-amber-700', bg: 'bg-amber-100' },
-  IN_PROGRESS: { label: 'In Progress', color: 'text-purple-700', bg: 'bg-purple-100' },
-  CONVERTED: { label: 'Converted', color: 'text-green-700', bg: 'bg-green-100' },
-  DECLINED: { label: 'Declined', color: 'text-gray-700', bg: 'bg-gray-100' },
-}
-
 export default function MessagesPage() {
+  const { t } = useTranslation()
+  const tm = t.dashboard.adminMessagesPage
+  const statusConfig: Record<string, { label: string; color: string; bg: string }> = {
+    NEW: { label: tm.statusNew, color: 'text-blue-700', bg: 'bg-blue-100' },
+    CONTACTED: { label: tm.statusContacted, color: 'text-amber-700', bg: 'bg-amber-100' },
+    IN_PROGRESS: { label: tm.statusInProgress, color: 'text-purple-700', bg: 'bg-purple-100' },
+    CONVERTED: { label: tm.statusConverted, color: 'text-green-700', bg: 'bg-green-100' },
+    DECLINED: { label: tm.statusDeclined, color: 'text-gray-700', bg: 'bg-gray-100' },
+  }
   const [inquiries, setInquiries] = useState<Inquiry[]>([])
   const [loading, setLoading] = useState(true)
   const [selectedId, setSelectedId] = useState<string | null>(null)
@@ -106,10 +109,10 @@ export default function MessagesPage() {
     const diffMins = Math.floor(diffMs / 60000)
     const diffHours = Math.floor(diffMins / 60)
     const diffDays = Math.floor(diffHours / 24)
-    if (diffMins < 1) return 'Just now'
-    if (diffMins < 60) return `${diffMins}m ago`
-    if (diffHours < 24) return `${diffHours}h ago`
-    if (diffDays < 7) return `${diffDays}d ago`
+    if (diffMins < 1) return tm.justNow
+    if (diffMins < 60) return `${diffMins}${tm.mAgo}`
+    if (diffHours < 24) return `${diffHours}${tm.hAgo}`
+    if (diffDays < 7) return `${diffDays}${tm.dAgo}`
     return date.toLocaleDateString('en-US', { month: 'short', day: 'numeric' })
   }
 
@@ -125,14 +128,14 @@ export default function MessagesPage() {
     <div className="p-8">
       <div className="flex items-center justify-between mb-6">
         <div>
-          <h1 className="text-3xl font-bold">Messages</h1>
+          <h1 className="text-3xl font-bold">{tm.title}</h1>
           <p className="text-muted-foreground mt-1">
-            Contact form inquiries from potential contractors
+            {tm.subtitle}
           </p>
         </div>
         {newCount > 0 && (
           <Badge variant="destructive" className="text-sm px-3 py-1">
-            {newCount} new
+            {newCount} {tm.new}
           </Badge>
         )}
       </div>
@@ -146,7 +149,7 @@ export default function MessagesPage() {
             size="sm"
             onClick={() => setFilter(s)}
           >
-            {s === 'ALL' ? 'All' : statusConfig[s]?.label || s}
+            {s === 'ALL' ? tm.all : statusConfig[s]?.label || s}
             {s !== 'ALL' && (
               <span className="ml-1.5 text-xs">
                 ({inquiries.filter((i) => i.status === s).length})
@@ -163,7 +166,7 @@ export default function MessagesPage() {
             <Card>
               <CardContent className="py-12 text-center text-muted-foreground">
                 <MessageSquare className="h-8 w-8 mx-auto mb-3 opacity-50" />
-                <p>No inquiries {filter !== 'ALL' ? `with status "${statusConfig[filter]?.label}"` : 'yet'}</p>
+                <p>{filter !== 'ALL' ? `${tm.noInquiries} ${tm.noInquiriesWithStatus} "${statusConfig[filter]?.label}"` : tm.noInquiriesYet}</p>
               </CardContent>
             </Card>
           ) : (
@@ -207,7 +210,7 @@ export default function MessagesPage() {
                   <div>
                     <CardTitle>{selectedInquiry.name}</CardTitle>
                     <p className="text-sm text-muted-foreground mt-1">
-                      Submitted {new Date(selectedInquiry.createdAt).toLocaleDateString('en-US', {
+                      {tm.submitted} {new Date(selectedInquiry.createdAt).toLocaleDateString('en-US', {
                         month: 'long', day: 'numeric', year: 'numeric', hour: '2-digit', minute: '2-digit',
                       })}
                     </p>
@@ -220,11 +223,11 @@ export default function MessagesPage() {
                       <SelectValue />
                     </SelectTrigger>
                     <SelectContent>
-                      <SelectItem value="NEW">New</SelectItem>
-                      <SelectItem value="CONTACTED">Contacted</SelectItem>
-                      <SelectItem value="IN_PROGRESS">In Progress</SelectItem>
-                      <SelectItem value="CONVERTED">Converted</SelectItem>
-                      <SelectItem value="DECLINED">Declined</SelectItem>
+                      <SelectItem value="NEW">{tm.statusNew}</SelectItem>
+                      <SelectItem value="CONTACTED">{tm.statusContacted}</SelectItem>
+                      <SelectItem value="IN_PROGRESS">{tm.statusInProgress}</SelectItem>
+                      <SelectItem value="CONVERTED">{tm.statusConverted}</SelectItem>
+                      <SelectItem value="DECLINED">{tm.statusDeclined}</SelectItem>
                     </SelectContent>
                   </Select>
                 </div>
@@ -256,7 +259,7 @@ export default function MessagesPage() {
 
                 {/* Message */}
                 <div>
-                  <h3 className="text-sm font-medium mb-2">Message</h3>
+                  <h3 className="text-sm font-medium mb-2">{tm.message}</h3>
                   <div className="bg-muted/50 p-4 rounded-lg text-sm whitespace-pre-wrap">
                     {selectedInquiry.message}
                   </div>
@@ -264,11 +267,11 @@ export default function MessagesPage() {
 
                 {/* Admin Notes */}
                 <div>
-                  <h3 className="text-sm font-medium mb-2">Admin Notes</h3>
+                  <h3 className="text-sm font-medium mb-2">{tm.adminNotes}</h3>
                   <Textarea
                     value={editingNotes}
                     onChange={(e) => setEditingNotes(e.target.value)}
-                    placeholder="Add internal notes about this inquiry..."
+                    placeholder={tm.adminNotesPlaceholder}
                     rows={3}
                   />
                   <Button
@@ -278,14 +281,14 @@ export default function MessagesPage() {
                     disabled={saving || editingNotes === (selectedInquiry.adminNotes || '')}
                   >
                     {saving ? <Loader2 className="h-3 w-3 animate-spin mr-1" /> : null}
-                    Save Notes
+                    {tm.saveNotes}
                   </Button>
                 </div>
 
                 {/* Quick Actions */}
                 {selectedInquiry.status !== 'CONVERTED' && selectedInquiry.status !== 'DECLINED' && (
                   <div className="border-t pt-4">
-                    <h3 className="text-sm font-medium mb-3">Quick Actions</h3>
+                    <h3 className="text-sm font-medium mb-3">{tm.quickActions}</h3>
                     <div className="flex gap-2">
                       <Button
                         variant="outline"
@@ -304,7 +307,7 @@ export default function MessagesPage() {
                         }}
                       >
                         <UserPlus className="h-3.5 w-3.5 mr-1" />
-                        Create Account
+                        {tm.createAccount}
                       </Button>
                     </div>
                   </div>
@@ -315,8 +318,8 @@ export default function MessagesPage() {
             <Card>
               <CardContent className="py-20 text-center text-muted-foreground">
                 <MessageSquare className="h-12 w-12 mx-auto mb-4 opacity-30" />
-                <p className="text-lg font-medium">Select an inquiry</p>
-                <p className="text-sm">Click on an inquiry from the list to view details</p>
+                <p className="text-lg font-medium">{tm.selectInquiry}</p>
+                <p className="text-sm">{tm.selectInquiryDesc}</p>
               </CardContent>
             </Card>
           )}

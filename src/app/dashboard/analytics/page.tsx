@@ -9,6 +9,7 @@ import { StatusBarChart } from '@/components/analytics/status-bar-chart'
 import { TypePieChart } from '@/components/analytics/type-pie-chart'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
 import { Skeleton } from '@/components/ui/skeleton'
+import { useTranslation } from '@/lib/i18n/use-translation'
 
 interface AnalyticsData {
   stats: {
@@ -26,6 +27,8 @@ interface AnalyticsData {
 }
 
 export default function AnalyticsPage() {
+  const { t } = useTranslation()
+  const ta = t.dashboard.analyticsPage
   const { data: session } = useSession()
   const [data, setData] = useState<AnalyticsData | null>(null)
   const [loading, setLoading] = useState(true)
@@ -56,8 +59,8 @@ export default function AnalyticsPage() {
     return (
       <div className="p-6 space-y-6">
         <div>
-          <h1 className="text-3xl font-bold">Analytics</h1>
-          <p className="text-muted-foreground">Business insights and performance metrics</p>
+          <h1 className="text-3xl font-bold">{ta.title}</h1>
+          <p className="text-muted-foreground">{ta.subtitle}</p>
         </div>
 
         <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
@@ -80,7 +83,7 @@ export default function AnalyticsPage() {
         <Card>
           <CardContent className="flex flex-col items-center justify-center py-12">
             <AlertCircle className="h-12 w-12 text-destructive mb-4" />
-            <p className="text-lg font-medium">Failed to load analytics</p>
+            <p className="text-lg font-medium">{ta.failedToLoad}</p>
             <p className="text-sm text-muted-foreground">{error}</p>
           </CardContent>
         </Card>
@@ -92,15 +95,15 @@ export default function AnalyticsPage() {
     <div className="p-6 space-y-6">
       {/* Header */}
       <div>
-        <h1 className="text-3xl font-bold">Analytics</h1>
-        <p className="text-muted-foreground">Business insights and performance metrics</p>
+        <h1 className="text-3xl font-bold">{ta.title}</h1>
+        <p className="text-muted-foreground">{ta.subtitle}</p>
       </div>
 
       {/* Stats Cards */}
       <div className={`grid gap-4 md:grid-cols-2 ${isTechnician ? 'lg:grid-cols-3' : 'lg:grid-cols-4'}`}>
         {!isTechnician && (
           <StatsCard
-            title="Total Revenue"
+            title={ta.totalRevenue}
             value={`SAR ${data.stats.revenue.current.toLocaleString()}`}
             change={{
               value: data.stats.revenue.change,
@@ -113,21 +116,21 @@ export default function AnalyticsPage() {
           />
         )}
         <StatsCard
-          title="Active Work Orders"
+          title={ta.activeWorkOrders}
           value={data.stats.activeWorkOrders.count}
           icon={ClipboardList}
           iconColor="text-blue-600"
           iconBgColor="bg-blue-100"
         />
         <StatsCard
-          title="Overdue"
+          title={ta.overdue}
           value={data.stats.overdueWorkOrders.count}
           icon={AlertCircle}
           iconColor="text-red-600"
           iconBgColor="bg-red-100"
         />
         <StatsCard
-          title="Completion Rate"
+          title={ta.completionRate}
           value={`${data.stats.completionRate.rate.toFixed(1)}%`}
           icon={TrendingUp}
           iconColor="text-purple-600"
@@ -140,14 +143,14 @@ export default function AnalyticsPage() {
         {!isTechnician && (
           <RevenueChart
             data={data.charts.revenueByMonth}
-            title="Revenue Trend"
-            description="Monthly revenue over the last 6 months"
+            title={ta.revenueTrend}
+            description={ta.revenueTrendDesc}
           />
         )}
         <StatusBarChart
           data={data.charts.workOrdersByStatus}
-          title="Work Orders by Status"
-          description="Distribution across different stages"
+          title={ta.workOrdersByStatus}
+          description={ta.workOrdersByStatusDesc}
         />
       </div>
 
@@ -155,21 +158,21 @@ export default function AnalyticsPage() {
       <div className="grid gap-4 md:grid-cols-2">
         <TypePieChart
           data={data.charts.workOrdersByType}
-          title="Work Orders by Type"
-          description="Breakdown by service type"
+          title={ta.workOrdersByType}
+          description={ta.workOrdersByTypeDesc}
         />
 
         {/* Top Clients - Hide for technicians */}
         {!isTechnician && (
           <Card>
             <CardHeader>
-              <CardTitle>Top Clients</CardTitle>
-              <CardDescription>Highest revenue contributors</CardDescription>
+              <CardTitle>{ta.topClients}</CardTitle>
+              <CardDescription>{ta.topClientsDesc}</CardDescription>
             </CardHeader>
             <CardContent>
               {data.topClients.length === 0 ? (
                 <p className="text-sm text-muted-foreground text-center py-8">
-                  No client data available
+                  {ta.noClientData}
                 </p>
               ) : (
                 <div className="space-y-4">

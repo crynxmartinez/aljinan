@@ -34,6 +34,7 @@ import {
   Trash2,
 } from 'lucide-react'
 import { CalendarView } from './calendar-view'
+import { useTranslation } from '@/lib/i18n/use-translation'
 
 interface Appointment {
   id: string
@@ -58,6 +59,8 @@ interface AppointmentsListProps {
 }
 
 export function AppointmentsList({ branchId }: AppointmentsListProps) {
+  const { t } = useTranslation()
+  const ta = t.dashboard.appointmentsList
   const router = useRouter()
   const [appointments, setAppointments] = useState<Appointment[]>([])
   const [loading, setLoading] = useState(true)
@@ -162,7 +165,7 @@ export function AppointmentsList({ branchId }: AppointmentsListProps) {
   }
 
   const handleDeleteAppointment = async (appointmentId: string) => {
-    if (!confirm('Are you sure you want to delete this appointment?')) return
+    if (!confirm(ta.deleteConfirm)) return
 
     try {
       await fetch(`/api/branches/${branchId}/appointments/${appointmentId}`, {
@@ -177,12 +180,12 @@ export function AppointmentsList({ branchId }: AppointmentsListProps) {
 
   const getStatusBadge = (status: Appointment['status']) => {
     const config = {
-      SCHEDULED: { style: 'bg-blue-100 text-blue-700', icon: Clock, label: 'Scheduled' },
-      CONFIRMED: { style: 'bg-green-100 text-green-700', icon: CalendarCheck, label: 'Confirmed' },
-      IN_PROGRESS: { style: 'bg-yellow-100 text-yellow-700', icon: AlertCircle, label: 'In Progress' },
-      COMPLETED: { style: 'bg-gray-100 text-gray-700', icon: CheckCircle, label: 'Completed' },
-      CANCELLED: { style: 'bg-red-100 text-red-700', icon: XCircle, label: 'Cancelled' },
-      RESCHEDULED: { style: 'bg-orange-100 text-orange-700', icon: Clock, label: 'Reschedule Requested' },
+      SCHEDULED: { style: 'bg-blue-100 text-blue-700', icon: Clock, label: ta.statusScheduled },
+      CONFIRMED: { style: 'bg-green-100 text-green-700', icon: CalendarCheck, label: ta.statusConfirmed },
+      IN_PROGRESS: { style: 'bg-yellow-100 text-yellow-700', icon: AlertCircle, label: ta.statusInProgress },
+      COMPLETED: { style: 'bg-gray-100 text-gray-700', icon: CheckCircle, label: ta.statusCompleted },
+      CANCELLED: { style: 'bg-red-100 text-red-700', icon: XCircle, label: ta.statusCancelled },
+      RESCHEDULED: { style: 'bg-orange-100 text-orange-700', icon: Clock, label: ta.statusRescheduled },
     }
     const { style, icon: Icon, label } = config[status]
     return (
@@ -233,8 +236,8 @@ export function AppointmentsList({ branchId }: AppointmentsListProps) {
       <div className="space-y-4">
         <div className="flex items-center justify-between">
           <div>
-            <h2 className="text-xl font-semibold">Calendar</h2>
-            <p className="text-sm text-muted-foreground">View and manage scheduled tasks</p>
+            <h2 className="text-xl font-semibold">{ta.calendar}</h2>
+            <p className="text-sm text-muted-foreground">{ta.calendarDesc}</p>
           </div>
         </div>
 
@@ -245,9 +248,9 @@ export function AppointmentsList({ branchId }: AppointmentsListProps) {
       <Dialog open={createDialogOpen} onOpenChange={setCreateDialogOpen}>
         <DialogContent>
           <DialogHeader>
-            <DialogTitle>Schedule Appointment</DialogTitle>
+            <DialogTitle>{ta.scheduleAppointment}</DialogTitle>
             <DialogDescription>
-              Schedule a visit or inspection for this branch.
+              {ta.scheduleAppointmentDesc}
             </DialogDescription>
           </DialogHeader>
           <form onSubmit={handleCreateAppointment}>
@@ -258,28 +261,28 @@ export function AppointmentsList({ branchId }: AppointmentsListProps) {
             )}
             <div className="space-y-4">
               <div className="space-y-2">
-                <Label htmlFor="title">Title *</Label>
+                <Label htmlFor="title">{ta.titleLabel}</Label>
                 <Input
                   id="title"
                   value={newAppointment.title}
                   onChange={(e) => setNewAppointment({ ...newAppointment, title: e.target.value })}
-                  placeholder="e.g., Monthly Inspection"
+                  placeholder={ta.titlePlaceholder}
                   required
                 />
               </div>
               <div className="space-y-2">
-                <Label htmlFor="description">Description</Label>
+                <Label htmlFor="description">{ta.description}</Label>
                 <Textarea
                   id="description"
                   value={newAppointment.description}
                   onChange={(e) => setNewAppointment({ ...newAppointment, description: e.target.value })}
-                  placeholder="Additional details about this appointment"
+                  placeholder={ta.descriptionPlaceholder}
                   rows={2}
                 />
               </div>
               <div className="grid grid-cols-3 gap-4">
                 <div className="space-y-2">
-                  <Label htmlFor="date">Date *</Label>
+                  <Label htmlFor="date">{ta.dateLabel}</Label>
                   <Input
                     id="date"
                     type="date"
@@ -289,7 +292,7 @@ export function AppointmentsList({ branchId }: AppointmentsListProps) {
                   />
                 </div>
                 <div className="space-y-2">
-                  <Label htmlFor="startTime">Start Time *</Label>
+                  <Label htmlFor="startTime">{ta.startTimeLabel}</Label>
                   <Input
                     id="startTime"
                     type="time"
@@ -299,7 +302,7 @@ export function AppointmentsList({ branchId }: AppointmentsListProps) {
                   />
                 </div>
                 <div className="space-y-2">
-                  <Label htmlFor="endTime">End Time</Label>
+                  <Label htmlFor="endTime">{ta.endTimeLabel}</Label>
                   <Input
                     id="endTime"
                     type="time"
@@ -309,18 +312,18 @@ export function AppointmentsList({ branchId }: AppointmentsListProps) {
                 </div>
               </div>
               <div className="space-y-2">
-                <Label htmlFor="assignedTo">Assigned To</Label>
+                <Label htmlFor="assignedTo">{ta.assignedTo}</Label>
                 <Input
                   id="assignedTo"
                   value={newAppointment.assignedTo}
                   onChange={(e) => setNewAppointment({ ...newAppointment, assignedTo: e.target.value })}
-                  placeholder="Technician name (optional)"
+                  placeholder={ta.assignedToPlaceholder}
                 />
               </div>
             </div>
             <DialogFooter className="mt-6">
               <Button type="button" variant="outline" onClick={() => setCreateDialogOpen(false)}>
-                Cancel
+                {ta.cancel}
               </Button>
               <Button
                 type="button"
@@ -329,7 +332,7 @@ export function AppointmentsList({ branchId }: AppointmentsListProps) {
                 onClick={(e) => handleCreateAppointment(e, false)}
               >
                 {creating && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
-                Schedule (Pending)
+                {ta.schedulePending}
               </Button>
               <Button
                 type="submit"
@@ -341,7 +344,7 @@ export function AppointmentsList({ branchId }: AppointmentsListProps) {
               >
                 {creating && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
                 <CalendarCheck className="mr-2 h-4 w-4" />
-                Schedule & Confirm
+                {ta.scheduleAndConfirm}
               </Button>
             </DialogFooter>
           </form>
@@ -353,7 +356,7 @@ export function AppointmentsList({ branchId }: AppointmentsListProps) {
         <DialogContent className="max-w-lg">
           <DialogHeader>
             <DialogTitle>{selectedAppointment?.title}</DialogTitle>
-            <DialogDescription>Appointment Details</DialogDescription>
+            <DialogDescription>{ta.appointmentDetails}</DialogDescription>
           </DialogHeader>
           {selectedAppointment && (
             <div className="space-y-4">
@@ -363,11 +366,11 @@ export function AppointmentsList({ branchId }: AppointmentsListProps) {
 
               <div className="grid grid-cols-2 gap-4 text-sm">
                 <div>
-                  <p className="font-medium text-muted-foreground">Date</p>
+                  <p className="font-medium text-muted-foreground">{ta.date}</p>
                   <p>{formatDate(selectedAppointment.date.split('T')[0])}</p>
                 </div>
                 <div>
-                  <p className="font-medium text-muted-foreground">Time</p>
+                  <p className="font-medium text-muted-foreground">{ta.time}</p>
                   <p>
                     {formatTime(selectedAppointment.startTime)}
                     {selectedAppointment.endTime && ` - ${formatTime(selectedAppointment.endTime)}`}
@@ -375,7 +378,7 @@ export function AppointmentsList({ branchId }: AppointmentsListProps) {
                 </div>
                 {selectedAppointment.assignedTo && (
                   <div>
-                    <p className="font-medium text-muted-foreground">Assigned To</p>
+                    <p className="font-medium text-muted-foreground">{ta.assignedTo}</p>
                     <p>{selectedAppointment.assignedTo}</p>
                   </div>
                 )}
@@ -383,21 +386,21 @@ export function AppointmentsList({ branchId }: AppointmentsListProps) {
 
               {selectedAppointment.description && (
                 <div>
-                  <p className="text-sm font-medium text-muted-foreground mb-1">Description</p>
+                  <p className="text-sm font-medium text-muted-foreground mb-1">{ta.description}</p>
                   <p className="text-sm">{selectedAppointment.description}</p>
                 </div>
               )}
 
               {selectedAppointment.rescheduleNote && (
                 <div className="p-3 bg-orange-50 border border-orange-200 rounded-lg">
-                  <p className="text-sm font-medium text-orange-700">Reschedule Requested</p>
+                  <p className="text-sm font-medium text-orange-700">{ta.rescheduleRequested}</p>
                   <p className="text-sm text-orange-600">{selectedAppointment.rescheduleNote}</p>
                 </div>
               )}
 
               {selectedAppointment.cancellationNote && (
                 <div className="p-3 bg-red-50 border border-red-200 rounded-lg">
-                  <p className="text-sm font-medium text-red-700">Cancellation Note</p>
+                  <p className="text-sm font-medium text-red-700">{ta.cancellationNote}</p>
                   <p className="text-sm text-red-600">{selectedAppointment.cancellationNote}</p>
                 </div>
               )}
@@ -411,7 +414,7 @@ export function AppointmentsList({ branchId }: AppointmentsListProps) {
                     }}
                     className="flex-1"
                   >
-                    Start Appointment
+                    {ta.startAppointment}
                   </Button>
                 )}
                 {selectedAppointment.status === 'IN_PROGRESS' && (
@@ -423,7 +426,7 @@ export function AppointmentsList({ branchId }: AppointmentsListProps) {
                     className="flex-1"
                   >
                     <CheckCircle className="mr-2 h-4 w-4" />
-                    Mark Complete
+                    {ta.markComplete}
                   </Button>
                 )}
                 {(selectedAppointment.status === 'SCHEDULED' || selectedAppointment.status === 'RESCHEDULED') && (
@@ -435,7 +438,7 @@ export function AppointmentsList({ branchId }: AppointmentsListProps) {
                     }}
                   >
                     <XCircle className="mr-2 h-4 w-4" />
-                    Cancel
+                    {ta.cancel}
                   </Button>
                 )}
               </div>

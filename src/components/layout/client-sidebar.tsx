@@ -30,6 +30,7 @@ import {
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
 import { toast } from 'sonner'
+import { useTranslation } from '@/lib/i18n/use-translation'
 
 interface Branch {
   id: string
@@ -57,6 +58,7 @@ export function ClientSidebar({ client }: ClientSidebarProps) {
   const pathname = usePathname()
   const router = useRouter()
   const { data: session } = useSession()
+  const { t } = useTranslation()
   const [loadingHref, setLoadingHref] = useState<string | null>(null)
   const [nicknameDialogOpen, setNicknameDialogOpen] = useState(false)
   const [editingBranch, setEditingBranch] = useState<Branch | null>(null)
@@ -115,13 +117,13 @@ export function ClientSidebar({ client }: ClientSidebarProps) {
       // Force a page refresh to update the sidebar
       router.refresh()
 
-      toast.success('Branch nickname updated successfully')
+      toast.success(t.dashboard.portal.nicknameUpdatedSuccess)
       setNicknameDialogOpen(false)
       setEditingBranch(null)
       setNickname('')
     } catch (error) {
       console.error('Error updating nickname:', error)
-      toast.error(error instanceof Error ? error.message : 'Failed to update nickname')
+      toast.error(error instanceof Error ? error.message : t.dashboard.portal.nicknameUpdateFailed)
     } finally {
       setSaving(false)
     }
@@ -149,7 +151,7 @@ export function ClientSidebar({ client }: ClientSidebarProps) {
             <div className="flex-1 min-w-0">
               <p className="font-medium text-sm truncate">{client.companyName}</p>
               <p className="text-xs text-sidebar-foreground/50 truncate">
-                via {client.contractor.companyName || 'Contractor'}
+                {t.dashboard.portal.via} {client.contractor.companyName || 'Contractor'}
               </p>
             </div>
           </div>
@@ -174,7 +176,7 @@ export function ClientSidebar({ client }: ClientSidebarProps) {
             ) : (
               <LayoutDashboard className="h-4 w-4" />
             )}
-            Dashboard
+            {t.dashboard.portal.dashboard}
           </Link>
 
           <Link
@@ -192,7 +194,7 @@ export function ClientSidebar({ client }: ClientSidebarProps) {
             ) : (
               <ClipboardList className="h-4 w-4" />
             )}
-            Work Orders
+            {t.dashboard.portal.workOrders}
           </Link>
         </div>
 
@@ -202,16 +204,16 @@ export function ClientSidebar({ client }: ClientSidebarProps) {
         <div className="space-y-1">
           <div className="px-3 py-2">
             <span className="text-xs font-semibold uppercase text-sidebar-foreground/50">
-              Your Branches
+              {t.dashboard.portal.yourBranches}
             </span>
           </div>
 
           {client.branches.length === 0 ? (
             <div className="px-3 py-4 text-center">
               <MapPin className="h-8 w-8 text-sidebar-foreground/30 mx-auto mb-2" />
-              <p className="text-sm text-sidebar-foreground/50">No branches yet</p>
+              <p className="text-sm text-sidebar-foreground/50">{t.dashboard.portal.noBranchesYet}</p>
               <p className="text-xs text-sidebar-foreground/40 mt-1">
-                Your contractor will add branches
+                {t.dashboard.portal.contractorWillAddBranches}
               </p>
             </div>
           ) : (
@@ -231,7 +233,7 @@ export function ClientSidebar({ client }: ClientSidebarProps) {
                   <button
                     onClick={(e) => handleEditNickname(e, branch)}
                     className="opacity-0 group-hover:opacity-100 transition-all p-1 hover:bg-primary/20 rounded flex-shrink-0"
-                    title="Edit branch nickname"
+                    title={t.dashboard.portal.editBranchNicknameTooltip}
                   >
                     <Pencil className="h-4 w-4 text-primary" />
                   </button>
@@ -286,7 +288,7 @@ export function ClientSidebar({ client }: ClientSidebarProps) {
             ) : (
               <Settings className="h-4 w-4" />
             )}
-            Account Settings
+            {t.dashboard.portal.accountSettings}
           </Link>
         </div>
       </ScrollArea>
@@ -304,7 +306,7 @@ export function ClientSidebar({ client }: ClientSidebarProps) {
               {session?.user?.name || session?.user?.email}
             </p>
             <p className="text-xs text-sidebar-foreground/50">
-              Client
+              {t.dashboard.portal.client}
             </p>
           </div>
           <Button
@@ -322,16 +324,16 @@ export function ClientSidebar({ client }: ClientSidebarProps) {
       <Dialog open={nicknameDialogOpen} onOpenChange={setNicknameDialogOpen}>
         <DialogContent>
           <DialogHeader>
-            <DialogTitle>Edit Branch Nickname</DialogTitle>
+            <DialogTitle>{t.dashboard.portal.editBranchNickname}</DialogTitle>
             <DialogDescription>
-              Give this branch a custom name for easier identification
+              {t.dashboard.portal.nicknameDialogDesc}
             </DialogDescription>
           </DialogHeader>
 
           {editingBranch && (
             <div className="space-y-4 py-4">
               <div className="space-y-2">
-                <Label className="text-sm font-medium">Branch Address</Label>
+                <Label className="text-sm font-medium">{t.dashboard.portal.branchAddress}</Label>
                 <p className="text-sm text-muted-foreground">
                   {editingBranch.address}
                   {editingBranch.city && `, ${editingBranch.city}`}
@@ -339,17 +341,17 @@ export function ClientSidebar({ client }: ClientSidebarProps) {
               </div>
 
               <div className="space-y-2">
-                <Label htmlFor="nickname">Custom Nickname</Label>
+                <Label htmlFor="nickname">{t.dashboard.portal.customNickname}</Label>
                 <Input
                   id="nickname"
                   value={nickname}
                   onChange={(e) => setNickname(e.target.value)}
-                  placeholder="e.g., Head Office, Main Branch, Downtown Location"
+                  placeholder={t.dashboard.portal.nicknamePlaceholder}
                   maxLength={50}
                   disabled={saving}
                 />
                 <p className="text-xs text-muted-foreground">
-                  {nickname.length}/50 characters
+                  {nickname.length}/50 {t.dashboard.portal.characters}
                 </p>
               </div>
             </div>
@@ -361,16 +363,16 @@ export function ClientSidebar({ client }: ClientSidebarProps) {
               onClick={() => setNicknameDialogOpen(false)}
               disabled={saving}
             >
-              Cancel
+              {t.dashboard.portal.cancel}
             </Button>
             <Button onClick={handleSaveNickname} disabled={saving}>
               {saving ? (
                 <>
                   <Loader2 className="h-4 w-4 mr-2 animate-spin" />
-                  Saving...
+                  {t.dashboard.portal.saving}
                 </>
               ) : (
-                'Save Nickname'
+                t.dashboard.portal.saveNickname
               )}
             </Button>
           </DialogFooter>

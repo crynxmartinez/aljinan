@@ -26,6 +26,7 @@ import {
   Tag,
 } from 'lucide-react'
 import { BranchProfileCard } from '@/components/branches/branch-profile-card'
+import { useTranslation } from '@/lib/i18n/use-translation'
 
 interface Branch {
   id: string
@@ -60,6 +61,8 @@ interface BranchWorkspaceProps {
 }
 
 export function BranchWorkspace({ branchId, branch, userRole, teamMemberRole }: BranchWorkspaceProps) {
+  const { t } = useTranslation()
+  const tw = t.dashboard.branchWorkspace
   const isTechnician = userRole === 'TEAM_MEMBER' && teamMemberRole === 'TECHNICIAN'
   const [activeTab, setActiveTab] = useState('dashboard')
   const [activityPanelOpen, setActivityPanelOpen] = useState(false)
@@ -97,15 +100,15 @@ export function BranchWorkspace({ branchId, branch, userRole, teamMemberRole }: 
 
   // Filter modules based on role - technicians can only see dashboard, kanban, calendar, equipment
   const allModules = [
-    { id: 'dashboard', label: 'Dashboard', icon: LayoutDashboard },
-    { id: 'requests', label: 'Requests', icon: FileText, restrictedForTechnician: true },
-    { id: 'checklists', label: 'Kanban Board', icon: ClipboardList },
-    { id: 'calendar', label: 'Calendar', icon: Calendar },
-    { id: 'billing', label: 'Billing', icon: Banknote, restrictedForTechnician: true },
-    { id: 'contracts', label: 'Contracts', icon: FileCheck, restrictedForTechnician: true },
-    { id: 'certificates', label: 'Documents', icon: Award, restrictedForTechnician: true },
-    { id: 'settings', label: 'Settings', icon: Settings, restrictedForTechnician: true },
-    { id: 'equipment', label: 'Equipment', icon: Tag },
+    { id: 'dashboard', label: tw.dashboard, icon: LayoutDashboard },
+    { id: 'requests', label: tw.requests, icon: FileText, restrictedForTechnician: true },
+    { id: 'checklists', label: tw.kanbanBoard, icon: ClipboardList },
+    { id: 'calendar', label: tw.calendar, icon: Calendar },
+    { id: 'billing', label: tw.billing, icon: Banknote, restrictedForTechnician: true },
+    { id: 'contracts', label: tw.contracts, icon: FileCheck, restrictedForTechnician: true },
+    { id: 'certificates', label: tw.documents, icon: Award, restrictedForTechnician: true },
+    { id: 'settings', label: tw.settings, icon: Settings, restrictedForTechnician: true },
+    { id: 'equipment', label: tw.equipment, icon: Tag },
   ]
 
   const modules = isTechnician
@@ -123,7 +126,7 @@ export function BranchWorkspace({ branchId, branch, userRole, teamMemberRole }: 
             onClick={() => setActivityPanelOpen(!activityPanelOpen)}
           >
             <MessageSquare className="h-4 w-4 mr-2" />
-            Activity
+            {tw.activity}
           </Button>
         </div>
 

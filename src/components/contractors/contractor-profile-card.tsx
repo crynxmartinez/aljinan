@@ -10,17 +10,7 @@ import {
   Clock, ExternalLink
 } from 'lucide-react'
 import { ContractorProfileForm } from './contractor-profile-form'
-
-const BUSINESS_TYPE_LABELS: Record<string, string> = {
-  LLC: 'LLC',
-  CORPORATION: 'Corporation',
-  SOLE_PROPRIETOR: 'Sole Proprietor',
-  PARTNERSHIP: 'Partnership',
-  JOINT_VENTURE: 'Joint Venture',
-  GOVERNMENT: 'Government',
-  NON_PROFIT: 'Non-Profit',
-  OTHER: 'Other',
-}
+import { useTranslation } from '@/lib/i18n/use-translation'
 
 interface ContractorProfileCardProps {
   contractor: {
@@ -51,7 +41,20 @@ interface ContractorProfileCardProps {
 }
 
 export function ContractorProfileCard({ contractor }: ContractorProfileCardProps) {
+  const { t } = useTranslation()
+  const tc = t.dashboard.contractorProfileCard
   const [editOpen, setEditOpen] = useState(false)
+
+  const BUSINESS_TYPE_LABELS: Record<string, string> = {
+    LLC: tc.businessTypeLLC,
+    CORPORATION: tc.businessTypeCorporation,
+    SOLE_PROPRIETOR: tc.businessTypeSoleProprietor,
+    PARTNERSHIP: tc.businessTypePartnership,
+    JOINT_VENTURE: tc.businessTypeJointVenture,
+    GOVERNMENT: tc.businessTypeGovernment,
+    NON_PROFIT: tc.businessTypeNonProfit,
+    OTHER: tc.businessTypeOther,
+  }
 
   const formatDate = (dateString: string | null) => {
     if (!dateString) return null
@@ -81,12 +84,12 @@ export function ContractorProfileCard({ contractor }: ContractorProfileCardProps
     const now = new Date()
     const diffTime = expiry.getTime() - now.getTime()
     const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24))
-    if (diffDays < 0) return 'Expired'
-    if (diffDays === 0) return 'Expires today'
-    if (diffDays === 1) return '1 day left'
-    if (diffDays < 30) return `${diffDays} days left`
-    if (diffDays < 365) return `${Math.floor(diffDays / 30)} months left`
-    return `${Math.floor(diffDays / 365)} years left`
+    if (diffDays < 0) return tc.expired
+    if (diffDays === 0) return tc.expiresToday
+    if (diffDays === 1) return `1 ${tc.dayLeft}`
+    if (diffDays < 30) return `${diffDays} ${tc.daysLeft}`
+    if (diffDays < 365) return `${Math.floor(diffDays / 30)} ${tc.monthsLeft}`
+    return `${Math.floor(diffDays / 365)} ${tc.yearsLeft}`
   }
 
   const isProfileIncomplete = !contractor.crNumber || !contractor.vatNumber || !contractor.licenseNumber
@@ -107,7 +110,7 @@ export function ContractorProfileCard({ contractor }: ContractorProfileCardProps
               </div>
               <div>
                 <h1 className="text-2xl font-bold">
-                  {contractor.companyName || 'Company Name'}
+                  {contractor.companyName || tc.companyName}
                 </h1>
                 <div className="flex items-center gap-3 mt-1 text-sm text-muted-foreground">
                   {contractor.businessType && (
@@ -116,7 +119,7 @@ export function ContractorProfileCard({ contractor }: ContractorProfileCardProps
                   {contractor.yearEstablished && (
                     <>
                       <span>•</span>
-                      <span>Est. {contractor.yearEstablished}</span>
+                      <span>{tc.est} {contractor.yearEstablished}</span>
                     </>
                   )}
                 </div>
@@ -157,7 +160,7 @@ export function ContractorProfileCard({ contractor }: ContractorProfileCardProps
             </div>
             <Button variant="outline" size="sm" onClick={() => setEditOpen(true)}>
               <Edit className="h-4 w-4 mr-1" />
-              Edit Profile
+              {tc.editProfile}
             </Button>
           </div>
         </div>
@@ -173,25 +176,25 @@ export function ContractorProfileCard({ contractor }: ContractorProfileCardProps
               </div>
               <div>
                 <div className="flex items-center gap-2">
-                  <h3 className="font-semibold text-lg">Subscription</h3>
+                  <h3 className="font-semibold text-lg">{tc.subscription}</h3>
                   <Badge className="bg-green-100 text-green-700 hover:bg-green-100">
                     <CheckCircle className="h-3 w-3 mr-1" />
-                    Active
+                    {tc.active}
                   </Badge>
                 </div>
                 <p className="text-sm text-muted-foreground mt-1">
-                  Professional Plan • Next billing: Jul 15, 2026
+                  {tc.professionalPlan} • {tc.nextBilling}: Jul 15, 2026
                 </p>
               </div>
             </div>
             <div className="flex items-center gap-3">
               <Button variant="outline" size="sm">
                 <Clock className="h-4 w-4 mr-1" />
-                View History
+                {tc.viewHistory}
               </Button>
               <Button size="sm">
                 <CreditCard className="h-4 w-4 mr-1" />
-                Pay My Subscription
+                {tc.paySubscription}
               </Button>
             </div>
           </div>
@@ -205,27 +208,27 @@ export function ContractorProfileCard({ contractor }: ContractorProfileCardProps
           <CardHeader className="pb-3">
             <CardTitle className="text-base flex items-center gap-2">
               <Users className="h-4 w-4 text-muted-foreground" />
-              Contact Person
+              {tc.contactPerson}
             </CardTitle>
           </CardHeader>
           <CardContent className="space-y-4">
             <div className="grid gap-4">
               <div className="flex items-center justify-between py-2 border-b">
-                <span className="text-sm text-muted-foreground">Name</span>
+                <span className="text-sm text-muted-foreground">{tc.name}</span>
                 <span className="text-sm font-medium">
-                  {contractor.contactPersonName || <span className="text-muted-foreground italic">Not set</span>}
+                  {contractor.contactPersonName || <span className="text-muted-foreground italic">{tc.notSet}</span>}
                 </span>
               </div>
               <div className="flex items-center justify-between py-2 border-b">
-                <span className="text-sm text-muted-foreground">Phone</span>
+                <span className="text-sm text-muted-foreground">{tc.phone}</span>
                 <span className="text-sm font-medium">
-                  {contractor.contactPersonPhone || <span className="text-muted-foreground italic">Not set</span>}
+                  {contractor.contactPersonPhone || <span className="text-muted-foreground italic">{tc.notSet}</span>}
                 </span>
               </div>
               <div className="flex items-center justify-between py-2">
-                <span className="text-sm text-muted-foreground">Email</span>
+                <span className="text-sm text-muted-foreground">{tc.email}</span>
                 <span className="text-sm font-medium">
-                  {contractor.contactPersonEmail || <span className="text-muted-foreground italic">Not set</span>}
+                  {contractor.contactPersonEmail || <span className="text-muted-foreground italic">{tc.notSet}</span>}
                 </span>
               </div>
             </div>
@@ -237,21 +240,21 @@ export function ContractorProfileCard({ contractor }: ContractorProfileCardProps
           <CardHeader className="pb-3">
             <CardTitle className="text-base flex items-center gap-2">
               <FileText className="h-4 w-4 text-muted-foreground" />
-              Registration & Tax
+              {tc.registrationTax}
             </CardTitle>
           </CardHeader>
           <CardContent className="space-y-4">
             <div className="grid gap-4">
               <div className="flex items-center justify-between py-2 border-b">
-                <span className="text-sm text-muted-foreground">CR / Business License</span>
+                <span className="text-sm text-muted-foreground">{tc.crBusinessLicense}</span>
                 <span className="text-sm font-medium">
-                  {contractor.crNumber || <span className="text-muted-foreground italic">Not set</span>}
+                  {contractor.crNumber || <span className="text-muted-foreground italic">{tc.notSet}</span>}
                 </span>
               </div>
               <div className="flex items-center justify-between py-2">
-                <span className="text-sm text-muted-foreground">VAT / Tax ID</span>
+                <span className="text-sm text-muted-foreground">{tc.vatTaxId}</span>
                 <span className="text-sm font-medium">
-                  {contractor.vatNumber || <span className="text-muted-foreground italic">Not set</span>}
+                  {contractor.vatNumber || <span className="text-muted-foreground italic">{tc.notSet}</span>}
                 </span>
               </div>
             </div>
@@ -263,28 +266,28 @@ export function ContractorProfileCard({ contractor }: ContractorProfileCardProps
           <CardHeader className="pb-3">
             <CardTitle className="text-base flex items-center gap-2">
               <Shield className="h-4 w-4 text-muted-foreground" />
-              Contractor License
+              {tc.contractorLicense}
             </CardTitle>
           </CardHeader>
           <CardContent className="space-y-4">
             <div className="grid gap-4">
               <div className="flex items-center justify-between py-2 border-b">
-                <span className="text-sm text-muted-foreground">License Number</span>
+                <span className="text-sm text-muted-foreground">{tc.licenseNumber}</span>
                 <span className="text-sm font-medium">
-                  {contractor.licenseNumber || <span className="text-muted-foreground italic">Not set</span>}
+                  {contractor.licenseNumber || <span className="text-muted-foreground italic">{tc.notSet}</span>}
                 </span>
               </div>
               <div className="flex items-center justify-between py-2">
-                <span className="text-sm text-muted-foreground">Expiry Date</span>
+                <span className="text-sm text-muted-foreground">{tc.expiryDate}</span>
                 <div className="flex items-center gap-2">
                   <span className="text-sm font-medium">
-                    {formatDate(contractor.licenseExpiry) || <span className="text-muted-foreground italic">Not set</span>}
+                    {formatDate(contractor.licenseExpiry) || <span className="text-muted-foreground italic">{tc.notSet}</span>}
                   </span>
                   {contractor.licenseExpiry && (
                     <>
                       {isExpired(contractor.licenseExpiry) ? (
                         <Badge variant="destructive" className="text-xs">
-                          Expired
+                          {tc.expired}
                         </Badge>
                       ) : isExpiringSoon(contractor.licenseExpiry) ? (
                         <Badge className="bg-yellow-100 text-yellow-700 hover:bg-yellow-100 text-xs">
@@ -308,13 +311,13 @@ export function ContractorProfileCard({ contractor }: ContractorProfileCardProps
           <CardHeader className="pb-3">
             <CardTitle className="text-base flex items-center gap-2">
               <Shield className="h-4 w-4 text-muted-foreground" />
-              Insurance
+              {tc.insurance}
             </CardTitle>
           </CardHeader>
           <CardContent className="space-y-4">
             <div className="grid gap-4">
               <div className="flex items-center justify-between py-2 border-b">
-                <span className="text-sm text-muted-foreground">Certificate</span>
+                <span className="text-sm text-muted-foreground">{tc.certificate}</span>
                 {contractor.insuranceCertUrl ? (
                   <a
                     href={contractor.insuranceCertUrl}
@@ -322,24 +325,24 @@ export function ContractorProfileCard({ contractor }: ContractorProfileCardProps
                     rel="noopener noreferrer"
                     className="text-sm text-primary hover:underline font-medium flex items-center gap-1"
                   >
-                    View Certificate
+                    {tc.viewCertificate}
                     <ExternalLink className="h-3 w-3" />
                   </a>
                 ) : (
-                  <span className="text-sm text-muted-foreground italic">Not uploaded</span>
+                  <span className="text-sm text-muted-foreground italic">{tc.notUploaded}</span>
                 )}
               </div>
               <div className="flex items-center justify-between py-2">
-                <span className="text-sm text-muted-foreground">Expiry Date</span>
+                <span className="text-sm text-muted-foreground">{tc.expiryDate}</span>
                 <div className="flex items-center gap-2">
                   <span className="text-sm font-medium">
-                    {formatDate(contractor.insuranceExpiry) || <span className="text-muted-foreground italic">Not set</span>}
+                    {formatDate(contractor.insuranceExpiry) || <span className="text-muted-foreground italic">{tc.notSet}</span>}
                   </span>
                   {contractor.insuranceExpiry && (
                     <>
                       {isExpired(contractor.insuranceExpiry) ? (
                         <Badge variant="destructive" className="text-xs">
-                          Expired
+                          {tc.expired}
                         </Badge>
                       ) : isExpiringSoon(contractor.insuranceExpiry) ? (
                         <Badge className="bg-yellow-100 text-yellow-700 hover:bg-yellow-100 text-xs">
@@ -364,7 +367,7 @@ export function ContractorProfileCard({ contractor }: ContractorProfileCardProps
         <CardHeader className="pb-3">
           <CardTitle className="text-base flex items-center gap-2">
             <MapPin className="h-4 w-4 text-muted-foreground" />
-            Service Areas
+            {tc.serviceAreas}
           </CardTitle>
         </CardHeader>
         <CardContent>
@@ -377,7 +380,7 @@ export function ContractorProfileCard({ contractor }: ContractorProfileCardProps
               ))}
             </div>
           ) : (
-            <p className="text-sm text-muted-foreground italic">No service areas defined</p>
+            <p className="text-sm text-muted-foreground italic">{tc.noServiceAreas}</p>
           )}
         </CardContent>
       </Card>
@@ -389,9 +392,9 @@ export function ContractorProfileCard({ contractor }: ContractorProfileCardProps
             <div className="flex items-start gap-3">
               <AlertTriangle className="h-5 w-5 text-amber-600 flex-shrink-0 mt-0.5" />
               <div className="flex-1">
-                <p className="font-medium text-amber-800">Profile Incomplete</p>
+                <p className="font-medium text-amber-800">{tc.profileIncomplete}</p>
                 <p className="text-sm text-amber-600 mt-1">
-                  Complete your company profile for compliance and credibility.
+                  {tc.completeProfileDesc}
                 </p>
               </div>
               <Button
@@ -401,7 +404,7 @@ export function ContractorProfileCard({ contractor }: ContractorProfileCardProps
                 onClick={() => setEditOpen(true)}
               >
                 <Edit className="h-4 w-4 mr-1" />
-                Complete Profile
+                {tc.completeProfile}
               </Button>
             </div>
           </CardContent>

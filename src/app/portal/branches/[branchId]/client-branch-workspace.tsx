@@ -26,6 +26,7 @@ import {
   Tag,
 } from 'lucide-react'
 import { BranchProfileCard } from '@/components/branches/branch-profile-card'
+import { useTranslation } from '@/lib/i18n/use-translation'
 
 interface Branch {
   id: string
@@ -56,6 +57,8 @@ interface ClientBranchWorkspaceProps {
 }
 
 export function ClientBranchWorkspace({ branchId, branch }: ClientBranchWorkspaceProps) {
+  const { t } = useTranslation()
+  const tw = t.dashboard.branchWorkspace
   const [activityPanelOpen, setActivityPanelOpen] = useState(false)
   const [openRequestsCount, setOpenRequestsCount] = useState(0)
   const [activeTab, setActiveTab] = useState('dashboard')
@@ -95,18 +98,18 @@ export function ClientBranchWorkspace({ branchId, branch }: ClientBranchWorkspac
             onClick={() => setActivityPanelOpen(!activityPanelOpen)}
           >
             <MessageSquare className="h-4 w-4 mr-2" />
-            Activity
+            {tw.activity}
           </Button>
         </div>
 
         <TabsList className="w-full justify-start h-auto flex-wrap gap-1 bg-muted/50 p-1">
           <TabsTrigger value="dashboard" className="flex items-center gap-2">
             <LayoutDashboard className="h-4 w-4" />
-            Dashboard
+            {tw.dashboard}
           </TabsTrigger>
           <TabsTrigger value="requests" className="flex items-center gap-2">
             <FileText className="h-4 w-4" />
-            Requests
+            {tw.requests}
             {openRequestsCount > 0 && (
               <Badge variant="destructive" className="ml-1 h-5 w-5 p-0 flex items-center justify-center text-xs">
                 {openRequestsCount}
@@ -115,31 +118,31 @@ export function ClientBranchWorkspace({ branchId, branch }: ClientBranchWorkspac
           </TabsTrigger>
           <TabsTrigger value="checklist" className="flex items-center gap-2">
             <ClipboardList className="h-4 w-4" />
-            Kanban Board
+            {tw.kanbanBoard}
           </TabsTrigger>
           <TabsTrigger value="calendar" className="flex items-center gap-2">
             <Calendar className="h-4 w-4" />
-            Calendar
+            {tw.calendar}
           </TabsTrigger>
           <TabsTrigger value="billing" className="flex items-center gap-2">
             <Banknote className="h-4 w-4" />
-            Billing
+            {tw.billing}
           </TabsTrigger>
           <TabsTrigger value="contracts" className="flex items-center gap-2">
             <FileCheck className="h-4 w-4" />
-            Contracts
+            {tw.contracts}
           </TabsTrigger>
           <TabsTrigger value="equipment" className="flex items-center gap-2">
             <Tag className="h-4 w-4" />
-            Equipment
+            {tw.equipment}
           </TabsTrigger>
           <TabsTrigger value="certificates" className="flex items-center gap-2">
             <Award className="h-4 w-4" />
-            Documents
+            {tw.documents}
           </TabsTrigger>
           <TabsTrigger value="settings" className="flex items-center gap-2">
             <Settings className="h-4 w-4" />
-            Settings
+            {tw.settings}
           </TabsTrigger>
         </TabsList>
 

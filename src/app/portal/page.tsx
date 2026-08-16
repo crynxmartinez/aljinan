@@ -12,6 +12,7 @@ import {
 import Link from 'next/link'
 import { BranchRequestForm } from './branch-request-form'
 import { ActionCenterTable } from '@/components/dashboard/action-center-table'
+import { getTranslations } from '@/lib/i18n/server'
 
 async function getClientDashboardData(userId: string) {
   const client = await prisma.client.findUnique({
@@ -171,6 +172,8 @@ export default async function PortalDashboardPage() {
   }
 
   const stats = await getClientDashboardStats(session.user.id)
+  const t = await getTranslations()
+  const tp = t.dashboard.portalPage
 
   return (
     <div className="p-8 max-w-7xl mx-auto">
@@ -183,7 +186,7 @@ export default async function PortalDashboardPage() {
           <div>
             <h1 className="text-2xl font-bold">{client.companyName}</h1>
             <p className="text-muted-foreground">
-              Managed by {client.contractor.companyName || 'your contractor'}
+              {tp.managedBy} {client.contractor.companyName || tp.yourContractor}
             </p>
           </div>
         </div>
@@ -195,7 +198,7 @@ export default async function PortalDashboardPage() {
           <CardContent className="pt-6">
             <div className="flex items-center justify-between">
               <div>
-                <p className="text-sm text-muted-foreground">Branches</p>
+                <p className="text-sm text-muted-foreground">{tp.branches}</p>
                 <p className="text-3xl font-bold">{client.branches.length}</p>
               </div>
               <div className="p-3 rounded-full bg-blue-100">
@@ -208,7 +211,7 @@ export default async function PortalDashboardPage() {
           <CardContent className="pt-6">
             <div className="flex items-center justify-between">
               <div>
-                <p className="text-sm text-muted-foreground">Pending Quotes</p>
+                <p className="text-sm text-muted-foreground">{tp.pendingQuotes}</p>
                 <p className="text-3xl font-bold">{stats.pendingQuotes}</p>
               </div>
               <div className="p-3 rounded-full bg-amber-100">
@@ -221,7 +224,7 @@ export default async function PortalDashboardPage() {
           <CardContent className="pt-6">
             <div className="flex items-center justify-between">
               <div>
-                <p className="text-sm text-muted-foreground">Appointments</p>
+                <p className="text-sm text-muted-foreground">{tp.appointments}</p>
                 <p className="text-3xl font-bold">{stats.upcomingAppointments}</p>
               </div>
               <div className="p-3 rounded-full bg-green-100">
@@ -234,7 +237,7 @@ export default async function PortalDashboardPage() {
           <CardContent className="pt-6">
             <div className="flex items-center justify-between">
               <div>
-                <p className="text-sm text-muted-foreground">Unpaid</p>
+                <p className="text-sm text-muted-foreground">{tp.unpaid}</p>
                 <p className="text-3xl font-bold">{stats.unpaidInvoices}</p>
               </div>
               <div className="p-3 rounded-full bg-red-100">
@@ -251,7 +254,7 @@ export default async function PortalDashboardPage() {
           <CardContent className="pt-6">
             <div className="flex items-center justify-between">
               <div>
-                <p className="text-sm text-muted-foreground">Awaiting My Review</p>
+                <p className="text-sm text-muted-foreground">{tp.awaitingMyReview}</p>
                 <p className="text-3xl font-bold">{stats.workOrdersForReview}</p>
               </div>
               <div className="p-3 rounded-full bg-purple-100">
@@ -264,7 +267,7 @@ export default async function PortalDashboardPage() {
           <CardContent className="pt-6">
             <div className="flex items-center justify-between">
               <div>
-                <p className="text-sm text-muted-foreground">Work In Progress</p>
+                <p className="text-sm text-muted-foreground">{tp.workInProgress}</p>
                 <p className="text-3xl font-bold">{stats.workOrdersInProgress}</p>
               </div>
               <div className="p-3 rounded-full bg-orange-100">
@@ -277,7 +280,7 @@ export default async function PortalDashboardPage() {
           <CardContent className="pt-6">
             <div className="flex items-center justify-between">
               <div>
-                <p className="text-sm text-muted-foreground">Completed This Month</p>
+                <p className="text-sm text-muted-foreground">{tp.completedThisMonth}</p>
                 <p className="text-3xl font-bold">{stats.workOrdersCompletedThisMonth}</p>
               </div>
               <div className="p-3 rounded-full bg-green-100">
@@ -290,7 +293,7 @@ export default async function PortalDashboardPage() {
           <CardContent className="pt-6">
             <div className="flex items-center justify-between">
               <div>
-                <p className="text-sm text-muted-foreground">Overdue Work</p>
+                <p className="text-sm text-muted-foreground">{tp.overdueWork}</p>
                 <p className="text-3xl font-bold">{stats.overdueWorkOrders}</p>
               </div>
               <div className="p-3 rounded-full bg-red-100">
@@ -307,8 +310,8 @@ export default async function PortalDashboardPage() {
           <Card>
             <CardHeader className="flex flex-row items-center justify-between">
               <div>
-                <CardTitle>Your Branches</CardTitle>
-                <CardDescription>Manage your facility locations</CardDescription>
+                <CardTitle>{tp.yourBranches}</CardTitle>
+                <CardDescription>{tp.manageFacilityLocations}</CardDescription>
               </div>
               <BranchRequestForm />
             </CardHeader>
@@ -316,9 +319,9 @@ export default async function PortalDashboardPage() {
               {client.branches.length === 0 ? (
                 <div className="text-center py-8 bg-muted/30 rounded-lg">
                   <MapPin className="h-10 w-10 text-muted-foreground/30 mx-auto mb-3" />
-                  <p className="text-muted-foreground mb-2">No branches yet</p>
+                  <p className="text-muted-foreground mb-2">{tp.noBranchesYet}</p>
                   <p className="text-sm text-muted-foreground">
-                    Request a new branch to get started
+                    {tp.requestNewBranch}
                   </p>
                 </div>
               ) : (
@@ -342,7 +345,7 @@ export default async function PortalDashboardPage() {
                       </div>
                       <div className="flex items-center gap-2">
                         {!branch.isActive && (
-                          <Badge variant="secondary">Inactive</Badge>
+                          <Badge variant="secondary">{tp.inactive}</Badge>
                         )}
                         <ChevronRight className="h-5 w-5 text-muted-foreground group-hover:text-primary transition-colors" />
                       </div>
@@ -359,7 +362,7 @@ export default async function PortalDashboardPage() {
           {/* Company Profile Card */}
           <Card>
             <CardHeader className="flex flex-row items-center justify-between pb-3">
-              <CardTitle className="text-base">Company Profile</CardTitle>
+              <CardTitle className="text-base">{tp.companyProfile}</CardTitle>
               <Link href="/portal/settings">
                 <Button variant="ghost" size="sm">
                   <Edit className="h-4 w-4" />
@@ -368,12 +371,12 @@ export default async function PortalDashboardPage() {
             </CardHeader>
             <CardContent className="space-y-3">
               <p className="text-sm text-muted-foreground">
-                View and manage your company information
+                {tp.viewManageCompanyInfo}
               </p>
               <Link href="/portal/settings">
                 <Button variant="outline" size="sm" className="w-full">
                   <Edit className="h-4 w-4 mr-1" />
-                  View Profile
+                  {tp.viewProfile}
                 </Button>
               </Link>
             </CardContent>
@@ -382,7 +385,7 @@ export default async function PortalDashboardPage() {
           {/* Contractor Card */}
           <Card>
             <CardHeader className="pb-3">
-              <CardTitle className="text-base">Your Contractor</CardTitle>
+              <CardTitle className="text-base">{tp.yourContractorCard}</CardTitle>
             </CardHeader>
             <CardContent className="space-y-3">
               <div className="flex items-center gap-3">
@@ -390,8 +393,8 @@ export default async function PortalDashboardPage() {
                   <Building2 className="h-5 w-5 text-muted-foreground" />
                 </div>
                 <div>
-                  <p className="font-medium">{client.contractor.companyName || 'Not specified'}</p>
-                  <p className="text-xs text-muted-foreground">Service Provider</p>
+                  <p className="font-medium">{client.contractor.companyName || tp.notSpecified}</p>
+                  <p className="text-xs text-muted-foreground">{tp.serviceProvider}</p>
                 </div>
               </div>
               {client.contractor.companyEmail && (

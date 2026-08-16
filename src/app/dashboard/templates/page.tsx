@@ -3,6 +3,7 @@ import { redirect } from 'next/navigation'
 import { authOptions } from '@/lib/auth'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
 import { FileText, Construction } from 'lucide-react'
+import { getTranslations } from '@/lib/i18n/server'
 
 export default async function TemplatesPage() {
   const session = await getServerSession(authOptions)
@@ -11,12 +12,15 @@ export default async function TemplatesPage() {
     redirect('/login')
   }
 
+  const t = await getTranslations()
+  const tp = t.dashboard.templatesPage
+
   return (
     <div className="p-8">
       <div className="mb-8">
-        <h1 className="text-3xl font-bold">Templates</h1>
+        <h1 className="text-3xl font-bold">{tp.title}</h1>
         <p className="text-muted-foreground mt-1">
-          Manage reusable templates for contracts, checklists, and more
+          {tp.subtitle}
         </p>
       </div>
 
@@ -24,20 +28,20 @@ export default async function TemplatesPage() {
         <CardHeader>
           <CardTitle className="flex items-center gap-2">
             <Construction className="h-5 w-5 text-yellow-600" />
-            Coming Soon
+            {tp.comingSoon}
           </CardTitle>
           <CardDescription>
-            This page is under construction
+            {tp.underConstruction}
           </CardDescription>
         </CardHeader>
         <CardContent>
           <div className="flex flex-col items-center justify-center py-12 text-center">
             <FileText className="h-16 w-16 text-muted-foreground/30 mb-4" />
             <p className="text-muted-foreground">
-              Templates functionality will be available in a future update.
+              {tp.futureUpdate}
             </p>
             <p className="text-sm text-muted-foreground mt-2">
-              You&apos;ll be able to create and manage reusable templates for projects, checklists, and contracts here.
+              {tp.futureDesc}
             </p>
           </div>
         </CardContent>

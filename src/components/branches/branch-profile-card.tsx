@@ -9,26 +9,7 @@ import {
   AlertTriangle, Layers, Ruler, User, Mail
 } from 'lucide-react'
 import { BranchProfileForm } from './branch-profile-form'
-
-const BUILDING_TYPE_LABELS: Record<string, string> = {
-  OFFICE: 'Office',
-  RETAIL: 'Retail',
-  WAREHOUSE: 'Warehouse',
-  INDUSTRIAL: 'Industrial',
-  RESIDENTIAL: 'Residential',
-  HOSPITAL: 'Hospital',
-  EDUCATIONAL: 'Educational',
-  HOTEL: 'Hotel',
-  RESTAURANT: 'Restaurant',
-  MALL: 'Mall',
-  MIXED_USE: 'Mixed Use',
-  PARKING: 'Parking',
-  MOSQUE: 'Mosque',
-  GOVERNMENT: 'Government',
-  SPORTS: 'Sports',
-  DATA_CENTER: 'Data Center',
-  OTHER: 'Other',
-}
+import { useTranslation } from '@/lib/i18n/use-translation'
 
 interface BranchProfileCardProps {
   branch: {
@@ -57,7 +38,29 @@ interface BranchProfileCardProps {
 }
 
 export function BranchProfileCard({ branch, canEdit }: BranchProfileCardProps) {
+  const { t } = useTranslation()
+  const tb = t.dashboard.branchProfileCard
   const [editOpen, setEditOpen] = useState(false)
+
+  const BUILDING_TYPE_LABELS: Record<string, string> = {
+    OFFICE: tb.buildingTypeOffice,
+    RETAIL: tb.buildingTypeRetail,
+    WAREHOUSE: tb.buildingTypeWarehouse,
+    INDUSTRIAL: tb.buildingTypeIndustrial,
+    RESIDENTIAL: tb.buildingTypeResidential,
+    HOSPITAL: tb.buildingTypeHospital,
+    EDUCATIONAL: tb.buildingTypeEducational,
+    HOTEL: tb.buildingTypeHotel,
+    RESTAURANT: tb.buildingTypeRestaurant,
+    MALL: tb.buildingTypeMall,
+    MIXED_USE: tb.buildingTypeMixedUse,
+    PARKING: tb.buildingTypeParking,
+    MOSQUE: tb.buildingTypeMosque,
+    GOVERNMENT: tb.buildingTypeGovernment,
+    SPORTS: tb.buildingTypeSports,
+    DATA_CENTER: tb.buildingTypeDataCenter,
+    OTHER: tb.buildingTypeOther,
+  }
 
   const formatDate = (dateString: string | null) => {
     if (!dateString) return null
@@ -94,11 +97,11 @@ export function BranchProfileCard({ branch, canEdit }: BranchProfileCardProps) {
     <>
       <Card>
         <CardHeader className="flex flex-row items-center justify-between">
-          <CardTitle>Facility Profile</CardTitle>
+          <CardTitle>{tb.facilityProfile}</CardTitle>
           {canEdit && (
             <Button variant="outline" size="sm" onClick={() => setEditOpen(true)}>
               <Edit className="h-4 w-4 mr-1" />
-              Edit
+              {tb.edit}
             </Button>
           )}
         </CardHeader>
@@ -108,7 +111,7 @@ export function BranchProfileCard({ branch, canEdit }: BranchProfileCardProps) {
             <div className="flex items-start gap-3">
               <MapPin className="h-4 w-4 text-muted-foreground mt-0.5" />
               <div>
-                <p className="text-xs text-muted-foreground">Address</p>
+                <p className="text-xs text-muted-foreground">{tb.address}</p>
                 <p className="text-sm font-medium">{getFullAddress()}</p>
               </div>
             </div>
@@ -116,9 +119,9 @@ export function BranchProfileCard({ branch, canEdit }: BranchProfileCardProps) {
             <div className="flex items-start gap-3">
               <Phone className="h-4 w-4 text-muted-foreground mt-0.5" />
               <div>
-                <p className="text-xs text-muted-foreground">Phone</p>
+                <p className="text-xs text-muted-foreground">{tb.phone}</p>
                 <p className={`text-sm ${branch.phone ? 'font-medium' : 'text-muted-foreground italic'}`}>
-                  {branch.phone || 'Not set'}
+                  {branch.phone || tb.notSet}
                 </p>
               </div>
             </div>
@@ -126,9 +129,9 @@ export function BranchProfileCard({ branch, canEdit }: BranchProfileCardProps) {
             <div className="flex items-start gap-3">
               <MapPin className="h-4 w-4 text-muted-foreground mt-0.5" />
               <div>
-                <p className="text-xs text-muted-foreground">Municipality / CD Region</p>
+                <p className="text-xs text-muted-foreground">{tb.municipality}</p>
                 <p className={`text-sm ${branch.municipality ? 'font-medium' : 'text-muted-foreground italic'}`}>
-                  {branch.municipality || 'Not set'}
+                  {branch.municipality || tb.notSet}
                 </p>
               </div>
             </div>
@@ -136,9 +139,9 @@ export function BranchProfileCard({ branch, canEdit }: BranchProfileCardProps) {
             <div className="flex items-start gap-3">
               <Building2 className="h-4 w-4 text-muted-foreground mt-0.5" />
               <div>
-                <p className="text-xs text-muted-foreground">Building Type</p>
+                <p className="text-xs text-muted-foreground">{tb.buildingType}</p>
                 <p className={`text-sm ${branch.buildingType ? 'font-medium' : 'text-muted-foreground italic'}`}>
-                  {branch.buildingType ? (BUILDING_TYPE_LABELS[branch.buildingType] || branch.buildingType) : 'Not set'}
+                  {branch.buildingType ? (BUILDING_TYPE_LABELS[branch.buildingType] || branch.buildingType) : tb.notSet}
                 </p>
               </div>
             </div>
@@ -147,15 +150,15 @@ export function BranchProfileCard({ branch, canEdit }: BranchProfileCardProps) {
           {/* Facility Details */}
           <div className="pt-4 border-t space-y-4">
             <h4 className="text-sm font-semibold text-muted-foreground uppercase tracking-wide">
-              Facility Details
+              {tb.facilityDetails}
             </h4>
             <div className="grid gap-4 sm:grid-cols-2">
               <div className="flex items-start gap-3">
                 <Layers className="h-4 w-4 text-muted-foreground mt-0.5" />
                 <div>
-                  <p className="text-xs text-muted-foreground">Floor Count</p>
+                  <p className="text-xs text-muted-foreground">{tb.floorCount}</p>
                   <p className={`text-sm ${branch.floorCount ? 'font-medium' : 'text-muted-foreground italic'}`}>
-                    {branch.floorCount || 'Not set'}
+                    {branch.floorCount || tb.notSet}
                   </p>
                 </div>
               </div>
@@ -163,9 +166,9 @@ export function BranchProfileCard({ branch, canEdit }: BranchProfileCardProps) {
               <div className="flex items-start gap-3">
                 <Ruler className="h-4 w-4 text-muted-foreground mt-0.5" />
                 <div>
-                  <p className="text-xs text-muted-foreground">Area Size</p>
+                  <p className="text-xs text-muted-foreground">{tb.areaSize}</p>
                   <p className={`text-sm ${branch.areaSize ? 'font-medium' : 'text-muted-foreground italic'}`}>
-                    {branch.areaSize ? `${branch.areaSize.toLocaleString()} sqm` : 'Not set'}
+                    {branch.areaSize ? `${branch.areaSize.toLocaleString()} ${tb.sqm}` : tb.notSet}
                   </p>
                 </div>
               </div>
@@ -175,15 +178,15 @@ export function BranchProfileCard({ branch, canEdit }: BranchProfileCardProps) {
           {/* Civil Defense Certificate */}
           <div className="pt-4 border-t space-y-4">
             <h4 className="text-sm font-semibold text-muted-foreground uppercase tracking-wide">
-              Civil Defense Certificate
+              {tb.civilDefenseCertificate}
             </h4>
             <div className="grid gap-4 sm:grid-cols-2">
               <div className="flex items-start gap-3">
                 <FileText className="h-4 w-4 text-muted-foreground mt-0.5" />
                 <div>
-                  <p className="text-xs text-muted-foreground">Certificate Number</p>
+                  <p className="text-xs text-muted-foreground">{tb.certificateNumber}</p>
                   <p className={`text-sm ${branch.cdCertificateNumber ? 'font-medium' : 'text-muted-foreground italic'}`}>
-                    {branch.cdCertificateNumber || 'Not set'}
+                    {branch.cdCertificateNumber || tb.notSet}
                   </p>
                 </div>
               </div>
@@ -191,21 +194,21 @@ export function BranchProfileCard({ branch, canEdit }: BranchProfileCardProps) {
               <div className="flex items-start gap-3">
                 <Calendar className="h-4 w-4 text-muted-foreground mt-0.5" />
                 <div>
-                  <p className="text-xs text-muted-foreground">Expiry Date</p>
+                  <p className="text-xs text-muted-foreground">{tb.expiryDate}</p>
                   <div className="flex items-center gap-2 flex-wrap">
                     <span className={`text-sm ${branch.cdCertificateExpiry ? 'font-medium' : 'text-muted-foreground italic'}`}>
-                      {formatDate(branch.cdCertificateExpiry) || 'Not set'}
+                      {formatDate(branch.cdCertificateExpiry) || tb.notSet}
                     </span>
                     {isCertificateExpired() && (
                       <Badge variant="destructive" className="text-xs">
                         <AlertTriangle className="h-3 w-3 mr-1" />
-                        Expired
+                        {tb.expired}
                       </Badge>
                     )}
                     {isCertificateExpiringSoon() && (
                       <Badge className="bg-yellow-100 text-yellow-700 hover:bg-yellow-100 text-xs">
                         <AlertTriangle className="h-3 w-3 mr-1" />
-                        Expiring Soon
+                        {tb.expiringSoon}
                       </Badge>
                     )}
                   </div>
@@ -217,14 +220,14 @@ export function BranchProfileCard({ branch, canEdit }: BranchProfileCardProps) {
               <div className="flex items-start gap-3">
                 <FileText className="h-4 w-4 text-muted-foreground mt-0.5" />
                 <div>
-                  <p className="text-xs text-muted-foreground">Certificate Document</p>
+                  <p className="text-xs text-muted-foreground">{tb.certificateDocument}</p>
                   <a
                     href={branch.cdCertificateUrl}
                     target="_blank"
                     rel="noopener noreferrer"
                     className="text-sm text-primary hover:underline font-medium"
                   >
-                    View Certificate
+                    {tb.viewCertificate}
                   </a>
                 </div>
               </div>
@@ -235,15 +238,15 @@ export function BranchProfileCard({ branch, canEdit }: BranchProfileCardProps) {
           {/* Contact Person */}
           <div className="pt-4 border-t space-y-4">
             <h4 className="text-sm font-semibold text-muted-foreground uppercase tracking-wide">
-              Contact Person
+              {tb.contactPerson}
             </h4>
             <div className="grid gap-4 sm:grid-cols-2">
               <div className="flex items-start gap-3">
                 <User className="h-4 w-4 text-muted-foreground mt-0.5" />
                 <div>
-                  <p className="text-xs text-muted-foreground">Name</p>
+                  <p className="text-xs text-muted-foreground">{tb.name}</p>
                   <p className={`text-sm ${branch.contactPersonName ? 'font-medium' : 'text-muted-foreground italic'}`}>
-                    {branch.contactPersonName || 'Not set'}
+                    {branch.contactPersonName || tb.notSet}
                   </p>
                 </div>
               </div>
@@ -251,9 +254,9 @@ export function BranchProfileCard({ branch, canEdit }: BranchProfileCardProps) {
               <div className="flex items-start gap-3">
                 <Phone className="h-4 w-4 text-muted-foreground mt-0.5" />
                 <div>
-                  <p className="text-xs text-muted-foreground">Phone</p>
+                  <p className="text-xs text-muted-foreground">{tb.phone}</p>
                   <p className={`text-sm ${branch.contactPersonPhone ? 'font-medium' : 'text-muted-foreground italic'}`}>
-                    {branch.contactPersonPhone || 'Not set'}
+                    {branch.contactPersonPhone || tb.notSet}
                   </p>
                 </div>
               </div>
@@ -261,9 +264,9 @@ export function BranchProfileCard({ branch, canEdit }: BranchProfileCardProps) {
               <div className="flex items-start gap-3col-span-2">
                 <Mail className="h-4 w-4 text-muted-foreground mt-0.5" />
                 <div>
-                  <p className="text-xs text-muted-foreground">Email</p>
+                  <p className="text-xs text-muted-foreground">{tb.email}</p>
                   <p className={`text-sm ${branch.contactPersonEmail ? 'font-medium' : 'text-muted-foreground italic'}`}>
-                    {branch.contactPersonEmail || 'Not set'}
+                    {branch.contactPersonEmail || tb.notSet}
                   </p>
                 </div>
               </div>
@@ -273,10 +276,10 @@ export function BranchProfileCard({ branch, canEdit }: BranchProfileCardProps) {
           {/* Notes */}
           <div className="pt-4 border-t">
             <h4 className="text-sm font-semibold text-muted-foreground uppercase tracking-wide mb-2">
-              Notes
+              {tb.notes}
             </h4>
             <p className={`text-sm ${branch.notes ? 'whitespace-pre-line' : 'text-muted-foreground italic'}`}>
-              {branch.notes || 'No notes'}
+              {branch.notes || tb.noNotes}
             </p>
           </div>
 
@@ -286,9 +289,9 @@ export function BranchProfileCard({ branch, canEdit }: BranchProfileCardProps) {
               <div className="bg-amber-50 border border-amber-200 rounded-lg p-4 flex items-start gap-3">
                 <AlertTriangle className="h-5 w-5 text-amber-600 flex-shrink-0 mt-0.5" />
                 <div>
-                  <p className="font-medium text-amber-800 text-sm">Profile Incomplete</p>
+                  <p className="font-medium text-amber-800 text-sm">{tb.profileIncomplete}</p>
                   <p className="text-xs text-amber-600 mt-1">
-                    Complete your facility profile for Civil Defense compliance.
+                    {tb.completeProfileDesc}
                   </p>
                   <Button
                     variant="outline"
@@ -297,7 +300,7 @@ export function BranchProfileCard({ branch, canEdit }: BranchProfileCardProps) {
                     onClick={() => setEditOpen(true)}
                   >
                     <Edit className="h-4 w-4 mr-1" />
-                    Complete Profile
+                    {tb.completeProfile}
                   </Button>
                 </div>
               </div>

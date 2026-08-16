@@ -6,6 +6,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/com
 import { Users, MapPin, FileText, Calendar, AlertCircle, Banknote, Wrench, Eye, CheckCircle, AlertTriangle } from 'lucide-react'
 import { PendingBranchRequests } from './pending-branch-requests'
 import { ActionCenterTable } from '@/components/dashboard/action-center-table'
+import { getTranslations } from '@/lib/i18n/server'
 
 async function getDashboardStats(userId: string) {
   const contractor = await prisma.contractor.findUnique({
@@ -315,93 +316,95 @@ export default async function DashboardPage() {
 
   const isTeamMember = session.user.role === 'TEAM_MEMBER'
   const isTechnician = session.user.teamMemberRole === 'TECHNICIAN'
+  const t = await getTranslations()
+  const ts = t.dashboard.page.stats
 
   const allStatCards = [
     {
-      title: isTeamMember ? 'Assigned Clients' : 'Total Clients',
+      title: isTeamMember ? ts.assignedClients : ts.totalClients,
       value: stats.totalClients,
-      description: isTeamMember ? 'Clients you work with' : 'Active clients',
+      description: isTeamMember ? ts.clientsYouWorkWith : ts.activeClients,
       icon: Users,
       color: 'text-blue-600',
       bgColor: 'bg-blue-100',
       showForTechnician: true,
     },
     {
-      title: isTeamMember ? 'Assigned Branches' : 'Total Branches',
+      title: isTeamMember ? ts.assignedBranches : ts.totalBranches,
       value: stats.totalBranches,
-      description: isTeamMember ? 'Your locations' : 'Across all clients',
+      description: isTeamMember ? ts.yourLocations : ts.acrossAllClients,
       icon: MapPin,
       color: 'text-green-600',
       bgColor: 'bg-green-100',
       showForTechnician: true,
     },
     {
-      title: 'Pending Requests',
+      title: ts.pendingRequests,
       value: stats.pendingRequests,
-      description: 'Needs attention',
+      description: ts.needsAttention,
       icon: FileText,
       color: 'text-orange-600',
       bgColor: 'bg-orange-100',
       showForTechnician: false,
     },
     {
-      title: 'Pending Quotes',
+      title: ts.pendingQuotes,
       value: stats.pendingQuotes,
-      description: 'Awaiting approval',
+      description: ts.awaitingApproval,
       icon: AlertCircle,
       color: 'text-purple-600',
       bgColor: 'bg-purple-100',
       showForTechnician: false,
     },
     {
-      title: 'Appointments This Month',
+      title: ts.appointmentsThisMonth,
       value: stats.upcomingAppointments,
-      description: 'Scheduled this month',
+      description: ts.scheduledThisMonth,
       icon: Calendar,
       color: 'text-cyan-600',
       bgColor: 'bg-cyan-100',
       showForTechnician: true,
     },
     {
-      title: 'Overdue Invoices',
+      title: ts.overdueInvoices,
       value: stats.overdueInvoices,
-      description: 'Requires follow-up',
+      description: ts.requiresFollowUp,
       icon: Banknote,
       color: 'text-red-600',
       bgColor: 'bg-red-100',
       showForTechnician: false,
     },
     {
-      title: 'Active Work Orders',
+      title: ts.activeWorkOrders,
       value: stats.workOrdersInProgress,
-      description: 'Currently in progress',
+      description: ts.currentlyInProgress,
       icon: Wrench,
       color: 'text-orange-600',
       bgColor: 'bg-orange-100',
       showForTechnician: true,
     },
     {
-      title: 'Awaiting Review',
+      title: ts.awaitingReview,
       value: stats.workOrdersForReview,
-      description: 'Ready for client approval',
+      description: ts.readyForClientApproval,
       icon: Eye,
       color: 'text-purple-600',
       bgColor: 'bg-purple-100',
       showForTechnician: true,
     },
     {
-      title: 'Completed This Month',
+      title: ts.completedThisMonth,
       value: stats.workOrdersCompletedThisMonth,
-      description: 'Work orders finished',
+      description: ts.workOrdersFinished,
       icon: CheckCircle,
       color: 'text-green-600',
       bgColor: 'bg-green-100',
       showForTechnician: true,
     },
     {
-      title: 'Overdue Work',
+      title: ts.overdueWork,
       value: stats.overdueWorkOrders,
-      description: 'Past scheduled date',
+      description: ts.pastScheduledDate,
       icon: AlertTriangle,
       color: 'text-red-600',
       bgColor: 'bg-red-100',
@@ -417,9 +420,9 @@ export default async function DashboardPage() {
   return (
     <div className="p-8">
       <div className="mb-8">
-        <h1 className="text-3xl font-bold">Dashboard</h1>
+        <h1 className="text-3xl font-bold">{t.dashboard.page.title}</h1>
         <p className="text-muted-foreground mt-1">
-          Welcome back, {session.user?.name || session.user?.email}
+          {t.dashboard.page.welcomeBack}, {session.user?.name || session.user?.email}
         </p>
       </div>
 
@@ -457,9 +460,9 @@ export default async function DashboardPage() {
       {stats.totalClients === 0 && (
         <Card className="mt-8">
           <CardHeader>
-            <CardTitle>Get Started</CardTitle>
+            <CardTitle>{t.dashboard.page.getStarted.title}</CardTitle>
             <CardDescription>
-              You haven&apos;t added any clients yet. Start by creating your first client.
+              {t.dashboard.page.getStarted.description}
             </CardDescription>
           </CardHeader>
           <CardContent>
@@ -468,7 +471,7 @@ export default async function DashboardPage() {
               className="inline-flex items-center justify-center rounded-md bg-primary px-4 py-2 text-sm font-medium text-primary-foreground hover:bg-primary/90"
             >
               <Users className="mr-2 h-4 w-4" />
-              Add Your First Client
+              {t.dashboard.page.getStarted.button}
             </a>
           </CardContent>
         </Card>

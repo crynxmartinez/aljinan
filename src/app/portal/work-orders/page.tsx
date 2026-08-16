@@ -14,6 +14,7 @@ import {
   exportWorkOrdersToPdf,
   type ExportOptions,
 } from '@/lib/export/export-utils'
+import { useTranslation } from '@/lib/i18n/use-translation'
 
 interface WorkOrder {
   id: string
@@ -29,6 +30,8 @@ interface WorkOrder {
 }
 
 export default function ClientWorkOrdersPage() {
+  const { t } = useTranslation()
+  const tw = t.dashboard.portalWorkOrdersPage
   const [workOrders, setWorkOrders] = useState<WorkOrder[]>([])
   const [filteredWorkOrders, setFilteredWorkOrders] = useState<WorkOrder[]>([])
   const [loading, setLoading] = useState(true)
@@ -38,33 +41,33 @@ export default function ClientWorkOrdersPage() {
   const [dateRange, setDateRange] = useState({ from: '', to: '' })
   const [selectedBranches, setSelectedBranches] = useState<string[]>([])
   const [availableBranches, setAvailableBranches] = useState<{ id: string; name: string }[]>([])
-  const [filters, setFilters] = useState([
+  const [filters, setFilters] = useState<{ id: string; label: string; options: { value: string; label: string; checked: boolean }[] }[]>([
     {
       id: 'status',
-      label: 'Status',
+      label: tw.status,
       options: [
-        { value: 'SCHEDULED', label: 'Scheduled', checked: false },
-        { value: 'IN_PROGRESS', label: 'In Progress', checked: false },
-        { value: 'FOR_REVIEW', label: 'For Review', checked: false },
-        { value: 'COMPLETED', label: 'Completed', checked: false },
+        { value: 'SCHEDULED', label: tw.statusScheduled, checked: false },
+        { value: 'IN_PROGRESS', label: tw.statusInProgress, checked: false },
+        { value: 'FOR_REVIEW', label: tw.statusForReview, checked: false },
+        { value: 'COMPLETED', label: tw.statusCompleted, checked: false },
       ]
     },
     {
       id: 'type',
-      label: 'Type',
+      label: tw.type,
       options: [
-        { value: 'SERVICE', label: 'Service', checked: false },
-        { value: 'INSPECTION', label: 'Inspection', checked: false },
-        { value: 'MAINTENANCE', label: 'Maintenance', checked: false },
-        { value: 'INSTALLATION', label: 'Installation', checked: false },
+        { value: 'SERVICE', label: tw.typeService, checked: false },
+        { value: 'INSPECTION', label: tw.typeInspection, checked: false },
+        { value: 'MAINTENANCE', label: tw.typeMaintenance, checked: false },
+        { value: 'INSTALLATION', label: tw.typeInstallation, checked: false },
       ]
     }
   ])
-  const [quickFilters, setQuickFilters] = useState([
-    { label: 'Due Today', value: 'due_today', active: false },
-    { label: 'Overdue', value: 'overdue', active: false },
-    { label: 'In Progress', value: 'in_progress', active: false },
-    { label: 'This Week', value: 'this_week', active: false },
+  const [quickFilters, setQuickFilters] = useState<{ label: string; value: string; active: boolean }[]>([
+    { label: tw.quickDueToday, value: 'due_today', active: false },
+    { label: tw.quickOverdue, value: 'overdue', active: false },
+    { label: tw.quickInProgress, value: 'in_progress', active: false },
+    { label: tw.quickThisWeek, value: 'this_week', active: false },
   ])
 
   useEffect(() => {
@@ -276,12 +279,12 @@ export default function ClientWorkOrdersPage() {
       {/* Header */}
       <div className="flex items-center justify-between">
         <div>
-          <h1 className="text-3xl font-bold">Work Orders</h1>
-          <p className="text-muted-foreground">View and track all your work orders</p>
+          <h1 className="text-3xl font-bold">{tw.title}</h1>
+          <p className="text-muted-foreground">{tw.subtitle}</p>
         </div>
         <ExportDialog
-          title="Export Work Orders"
-          description="Choose format and options for export"
+          title={tw.exportTitle}
+          description={tw.exportDesc}
           itemCount={filteredWorkOrders.length}
           onExport={handleExport}
         />
@@ -307,7 +310,7 @@ export default function ClientWorkOrdersPage() {
         />
         <div className="flex items-center gap-4 ml-auto">
           <div className="flex items-center gap-2">
-            <span className="text-sm text-muted-foreground">Show:</span>
+            <span className="text-sm text-muted-foreground">{tw.show}:</span>
             <Select value={itemsPerPage.toString()} onValueChange={handleItemsPerPageChange}>
               <SelectTrigger className="w-[80px]">
                 <SelectValue />
@@ -322,7 +325,7 @@ export default function ClientWorkOrdersPage() {
             </Select>
           </div>
           <div className="text-sm text-muted-foreground">
-            {filteredWorkOrders.length} of {workOrders.length} work orders
+            {filteredWorkOrders.length} {tw.of} {workOrders.length} {tw.workOrders}
           </div>
         </div>
       </div>
@@ -332,10 +335,10 @@ export default function ClientWorkOrdersPage() {
         <CardHeader>
           <CardTitle className="flex items-center gap-2">
             <ClipboardList className="h-5 w-5" />
-            All Work Orders
+            {tw.allWorkOrders}
           </CardTitle>
           <CardDescription>
-            View and manage work orders across all your branches
+            {tw.allWorkOrdersDesc}
           </CardDescription>
         </CardHeader>
         <CardContent>
@@ -346,9 +349,9 @@ export default function ClientWorkOrdersPage() {
           ) : workOrders.length === 0 ? (
             <div className="text-center py-12">
               <ClipboardList className="h-12 w-12 text-muted-foreground/30 mx-auto mb-4" />
-              <p className="text-lg font-medium">No work orders found</p>
+              <p className="text-lg font-medium">{tw.noWorkOrders}</p>
               <p className="text-sm text-muted-foreground">
-                Work orders will appear here once created
+                {tw.noWorkOrdersDesc}
               </p>
             </div>
           ) : (
@@ -361,12 +364,12 @@ export default function ClientWorkOrdersPage() {
                     onCheckedChange={handleSelectAll}
                   />
                 </div>
-                <div className="col-span-4">Description</div>
-                <div className="col-span-2">Branch</div>
-                <div className="col-span-2">Status</div>
-                <div className="col-span-1">Type</div>
-                <div className="col-span-1">Date</div>
-                <div className="col-span-1 text-right">Price</div>
+                <div className="col-span-4">{tw.description}</div>
+                <div className="col-span-2">{tw.branch}</div>
+                <div className="col-span-2">{tw.status}</div>
+                <div className="col-span-1">{tw.type}</div>
+                <div className="col-span-1">{tw.date}</div>
+                <div className="col-span-1 text-right">{tw.price}</div>
               </div>
 
               {/* Table Rows */}
@@ -416,9 +419,9 @@ export default function ClientWorkOrdersPage() {
           {!loading && filteredWorkOrders.length > 0 && (
             <div className="flex items-center justify-between px-4 py-4 border-t">
               <div className="text-sm text-muted-foreground">
-                Showing {startIndex + 1} to {Math.min(endIndex, filteredWorkOrders.length)} of {filteredWorkOrders.length} work orders
+                {tw.showing} {startIndex + 1} {tw.to} {Math.min(endIndex, filteredWorkOrders.length)} {tw.of} {filteredWorkOrders.length} {tw.workOrders}
                 {filteredWorkOrders.length < workOrders.length && (
-                  <span className="text-muted-foreground/70"> (filtered from {workOrders.length})</span>
+                  <span className="text-muted-foreground/70"> ({tw.filteredFrom} {workOrders.length})</span>
                 )}
               </div>
               <div className="flex items-center gap-2">
@@ -429,7 +432,7 @@ export default function ClientWorkOrdersPage() {
                   disabled={currentPage === 1}
                 >
                   <ChevronLeft className="h-4 w-4 mr-1" />
-                  Previous
+                  {tw.previous}
                 </Button>
                 <div className="flex items-center gap-1">
                   {Array.from({ length: totalPages }, (_, i) => i + 1)
@@ -463,7 +466,7 @@ export default function ClientWorkOrdersPage() {
                   onClick={handleNextPage}
                   disabled={currentPage === totalPages}
                 >
-                  Next
+                  {tw.next}
                   <ChevronRight className="h-4 w-4 ml-1" />
                 </Button>
               </div>

@@ -57,6 +57,7 @@ import {
 } from '@/components/ui/dialog'
 import { Label } from '@/components/ui/label'
 import { Plus, Copy, Check } from 'lucide-react'
+import { useTranslation } from '@/lib/i18n/use-translation'
 
 interface ClientInfo {
   id: string
@@ -91,6 +92,8 @@ interface ContractorData {
 }
 
 export default function ContractorsPage() {
+  const { t } = useTranslation()
+  const tc = t.dashboard.adminContractorsPage
   const router = useRouter()
   const searchParams = useSearchParams()
   const [contractors, setContractors] = useState<ContractorData[]>([])
@@ -189,12 +192,12 @@ export default function ContractorsPage() {
           // Redirect to appropriate dashboard
           window.location.href = data.redirectUrl
         } else {
-          toast.error('Failed to start impersonation')
+          toast.error(tc.failedImpersonation)
         }
       }
     } catch (err) {
       console.error('Failed to impersonate:', err)
-      toast.error('Failed to start impersonation')
+      toast.error(tc.failedImpersonation)
     } finally {
       setImpersonating(false)
       setImpersonateTarget(null)
@@ -213,17 +216,17 @@ export default function ContractorsPage() {
       const data = await response.json()
       if (!response.ok) throw new Error(data.error)
 
-      toast.success('Contractor account created!', {
+      toast.success(tc.contractorCreated, {
         description: inquiryId
-          ? 'Contact inquiry marked as converted'
-          : `Verification email sent to ${data.user.email}`,
+          ? tc.inquiryConverted
+          : `${tc.verificationSent} ${data.user.email}`,
       })
 
       resetCreateDialog()
       fetchContractors()
     } catch (err) {
-      const errorMsg = err instanceof Error ? err.message : 'Failed to create contractor'
-      toast.error('Failed to create account', { description: errorMsg })
+      const errorMsg = err instanceof Error ? err.message : tc.failedToCreateContractor
+      toast.error(tc.failedToCreate, { description: errorMsg })
     } finally {
       setCreating(false)
     }
@@ -237,12 +240,12 @@ export default function ContractorsPage() {
       const data = await response.json()
       if (!response.ok) throw new Error(data.error)
 
-      toast.success('Verification email resent!', {
-        description: `Sent to ${email}`,
+      toast.success(tc.verificationResent, {
+        description: `${tc.sentTo} ${email}`,
       })
     } catch (err) {
-      const errorMsg = err instanceof Error ? err.message : 'Failed to resend email'
-      toast.error('Failed to resend verification', { description: errorMsg })
+      const errorMsg = err instanceof Error ? err.message : tc.failedToResendEmail
+      toast.error(tc.failedToResend, { description: errorMsg })
     }
   }
 
@@ -254,11 +257,11 @@ export default function ContractorsPage() {
       const data = await response.json()
       if (!response.ok) throw new Error(data.error)
 
-      toast.success('Verification email resent!', {
-        description: `Sent to ${email}`
+      toast.success(tc.verificationResent, {
+        description: `${tc.sentTo} ${email}`
       })
     } catch (err) {
-      toast.error('Failed to resend email', {
+      toast.error(tc.failedToResendEmail, {
         description: err instanceof Error ? err.message : 'Unknown error'
       })
     }
@@ -272,12 +275,12 @@ export default function ContractorsPage() {
       const data = await response.json()
       if (!response.ok) throw new Error(data.error)
 
-      toast.success('Account activated!', {
+      toast.success(tc.accountActivated, {
         description: `Password: ${data.tempPassword} (sent to ${email})`
       })
       fetchContractors()
     } catch (err) {
-      toast.error('Failed to activate account', {
+      toast.error(tc.failedToActivate, {
         description: err instanceof Error ? err.message : 'Unknown error'
       })
     }
@@ -302,11 +305,11 @@ export default function ContractorsPage() {
   const statusBadge = (status: string) => {
     switch (status) {
       case 'ACTIVE':
-        return <Badge className="bg-green-100 text-green-800 hover:bg-green-100">Verified</Badge>
+        return <Badge className="bg-green-100 text-green-800 hover:bg-green-100">{tc.verified}</Badge>
       case 'PENDING':
-        return <Badge className="bg-amber-100 text-amber-800 hover:bg-amber-100">Pending Verification</Badge>
+        return <Badge className="bg-amber-100 text-amber-800 hover:bg-amber-100">{tc.pendingVerification}</Badge>
       case 'ARCHIVED':
-        return <Badge className="bg-gray-100 text-gray-800 hover:bg-gray-100">Archived</Badge>
+        return <Badge className="bg-gray-100 text-gray-800 hover:bg-gray-100">{tc.archived}</Badge>
       default:
         return <Badge variant="outline">{status}</Badge>
     }
@@ -324,16 +327,16 @@ export default function ContractorsPage() {
     <div className="p-8">
       <div className="flex items-center justify-between mb-6">
         <div>
-          <h1 className="text-3xl font-bold">Contractors</h1>
+          <h1 className="text-3xl font-bold">{tc.title}</h1>
           <p className="text-muted-foreground mt-1">
-            Manage all contractors and their clients
+            {tc.subtitle}
           </p>
         </div>
         <div className="flex items-center gap-3">
           <div className="relative">
             <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
             <Input
-              placeholder="Search contractors..."
+              placeholder={tc.search}
               value={search}
               onChange={(e) => setSearch(e.target.value)}
               className="pl-9 w-64"
@@ -341,7 +344,7 @@ export default function ContractorsPage() {
           </div>
           <Button onClick={() => setCreateDialogOpen(true)}>
             <Plus className="h-4 w-4 mr-2" />
-            Add Contractor
+            {tc.addContractor}
           </Button>
         </div>
       </div>
@@ -356,7 +359,7 @@ export default function ContractorsPage() {
               </div>
               <div>
                 <p className="text-2xl font-bold">{contractors.length}</p>
-                <p className="text-xs text-muted-foreground">Contractors</p>
+                <p className="text-xs text-muted-foreground">{tc.contractors}</p>
               </div>
             </div>
           </CardContent>
@@ -371,7 +374,7 @@ export default function ContractorsPage() {
                 <p className="text-2xl font-bold">
                   {contractors.reduce((sum, c) => sum + c.stats.clientCount, 0)}
                 </p>
-                <p className="text-xs text-muted-foreground">Total Clients</p>
+                <p className="text-xs text-muted-foreground">{tc.totalClients}</p>
               </div>
             </div>
           </CardContent>
@@ -386,7 +389,7 @@ export default function ContractorsPage() {
                 <p className="text-2xl font-bold">
                   {contractors.reduce((sum, c) => sum + c.stats.openRequests, 0)}
                 </p>
-                <p className="text-xs text-muted-foreground">Open Requests</p>
+                <p className="text-xs text-muted-foreground">{tc.openRequests}</p>
               </div>
             </div>
           </CardContent>
@@ -401,7 +404,7 @@ export default function ContractorsPage() {
                 <p className="text-2xl font-bold">
                   {contractors.reduce((sum, c) => sum + c.stats.activeWorkOrders, 0)}
                 </p>
-                <p className="text-xs text-muted-foreground">Active Work Orders</p>
+                <p className="text-xs text-muted-foreground">{tc.activeWorkOrders}</p>
               </div>
             </div>
           </CardContent>
@@ -416,21 +419,21 @@ export default function ContractorsPage() {
               <TableRow>
                 <TableHead className="w-8"></TableHead>
                 <TableHead>Contractor</TableHead>
-                <TableHead>Status</TableHead>
-                <TableHead className="text-center">Clients</TableHead>
-                <TableHead className="text-center">Branches</TableHead>
-                <TableHead className="text-center">Open Req.</TableHead>
-                <TableHead className="text-center">Active WOs</TableHead>
-                <TableHead className="text-center">Total Req.</TableHead>
-                <TableHead className="text-center">Total WOs</TableHead>
-                <TableHead className="text-right">Actions</TableHead>
+                <TableHead>{tc.status}</TableHead>
+                <TableHead className="text-center">{tc.clients}</TableHead>
+                <TableHead className="text-center">{tc.branches}</TableHead>
+                <TableHead className="text-center">{tc.openReq}</TableHead>
+                <TableHead className="text-center">{tc.activeWOs}</TableHead>
+                <TableHead className="text-center">{tc.totalReq}</TableHead>
+                <TableHead className="text-center">{tc.totalWOs}</TableHead>
+                <TableHead className="text-right">{tc.actions}</TableHead>
               </TableRow>
             </TableHeader>
             <TableBody>
               {filteredContractors.length === 0 ? (
                 <TableRow>
                   <TableCell colSpan={10} className="text-center py-8 text-muted-foreground">
-                    {search ? 'No contractors match your search' : 'No contractors registered yet'}
+                    {search ? tc.noMatch : tc.noContractors}
                   </TableCell>
                 </TableRow>
               ) : (
@@ -458,7 +461,7 @@ export default function ContractorsPage() {
                         <TableCell>
                           <div>
                             <p className="font-medium">
-                              {contractor.companyName || contractor.name || 'Unnamed'}
+                              {contractor.companyName || contractor.name || tc.unnamed}
                             </p>
                             <p className="text-xs text-muted-foreground">{contractor.email}</p>
                           </div>
@@ -504,7 +507,7 @@ export default function ContractorsPage() {
                                   onClick={() => handleResendVerificationAdmin(contractor.userId, contractor.email)}
                                 >
                                   <Mail className="h-4 w-4 mr-1" />
-                                  Resend Email
+                                  {tc.resendEmail}
                                 </Button>
                                 <Button
                                   variant="outline"
@@ -512,7 +515,7 @@ export default function ContractorsPage() {
                                   onClick={() => handleManualActivate(contractor.userId, contractor.email)}
                                 >
                                   <Key className="h-4 w-4 mr-1" />
-                                  Activate
+                                  {tc.activate}
                                 </Button>
                               </>
                             ) : (
@@ -527,10 +530,10 @@ export default function ContractorsPage() {
                                     role: 'CONTRACTOR',
                                   })
                                 }}
-                                title="Login as this contractor"
+                                title={tc.loginAsContractor}
                               >
                                 <LogIn className="h-4 w-4 mr-1" />
-                                Login As
+                                {tc.loginAs}
                               </Button>
                             )}
                           </div>
@@ -546,7 +549,7 @@ export default function ContractorsPage() {
                               <TableCell colSpan={9} className="py-3">
                                 <div className="flex items-center gap-2 text-sm text-muted-foreground pl-4">
                                   <AlertCircle className="h-4 w-4" />
-                                  No clients added yet
+                                  {tc.noClientsAdded}
                                 </div>
                               </TableCell>
                             </TableRow>
@@ -562,7 +565,7 @@ export default function ContractorsPage() {
                                     <div className="flex items-center gap-2">
                                       <Users className="h-3.5 w-3.5 text-muted-foreground" />
                                       <p className="font-medium text-sm">
-                                        {client.companyName || client.name || 'Unnamed Client'}
+                                        {client.companyName || client.name || tc.unnamedClient}
                                       </p>
                                     </div>
                                     <p className="text-xs text-muted-foreground pl-5.5 ml-0.5">
@@ -590,7 +593,7 @@ export default function ContractorsPage() {
                                           onClick={() => handleResendVerificationAdmin(client.userId, client.email)}
                                         >
                                           <Mail className="h-3.5 w-3.5 mr-1" />
-                                          Resend Email
+                                          {tc.resendEmail}
                                         </Button>
                                         <Button
                                           variant="outline"
@@ -599,7 +602,7 @@ export default function ContractorsPage() {
                                           onClick={() => handleManualActivate(client.userId, client.email)}
                                         >
                                           <Key className="h-3.5 w-3.5 mr-1" />
-                                          Activate
+                                          {tc.activate}
                                         </Button>
                                       </>
                                     ) : (
@@ -614,10 +617,10 @@ export default function ContractorsPage() {
                                             role: 'CLIENT',
                                           })
                                         }
-                                        title="Login as this client"
+                                        title={tc.loginAsClient}
                                       >
                                         <LogIn className="h-3.5 w-3.5 mr-1" />
-                                        Login As
+                                        {tc.loginAs}
                                       </Button>
                                     )}
                                   </div>
@@ -643,27 +646,27 @@ export default function ContractorsPage() {
       >
         <AlertDialogContent>
           <AlertDialogHeader>
-            <AlertDialogTitle>Login as User</AlertDialogTitle>
+            <AlertDialogTitle>{tc.loginAsUser}</AlertDialogTitle>
             <AlertDialogDescription>
-              You are about to view the platform as{' '}
+              {tc.loginAsUserDesc}{' '}
               <span className="font-semibold text-foreground">
                 {impersonateTarget?.name}
               </span>{' '}
-              ({impersonateTarget?.role}). You will see exactly what they see. An impersonation banner will be shown at the top.
+              ({impersonateTarget?.role}). {tc.loginAsUserDesc2}
             </AlertDialogDescription>
           </AlertDialogHeader>
           <AlertDialogFooter>
-            <AlertDialogCancel>Cancel</AlertDialogCancel>
+            <AlertDialogCancel>{tc.cancel}</AlertDialogCancel>
             <AlertDialogAction onClick={handleImpersonate} disabled={impersonating}>
               {impersonating ? (
                 <>
                   <Loader2 className="h-4 w-4 mr-2 animate-spin" />
-                  Switching...
+                  {tc.switching}
                 </>
               ) : (
                 <>
                   <LogIn className="h-4 w-4 mr-2" />
-                  Login as {impersonateTarget?.role === 'CLIENT' ? 'Client' : 'Contractor'}
+                  {impersonateTarget?.role === 'CLIENT' ? tc.loginAsClient : tc.loginAsContractor}
                 </>
               )}
             </AlertDialogAction>
@@ -675,15 +678,15 @@ export default function ContractorsPage() {
       <Dialog open={createDialogOpen} onOpenChange={(open) => !open && resetCreateDialog()}>
         <DialogContent className="sm:max-w-[480px]">
           <DialogHeader>
-            <DialogTitle>Add New Contractor</DialogTitle>
+            <DialogTitle>{tc.addNewContractor}</DialogTitle>
             <DialogDescription>
-              Create a new contractor account. They will receive a verification email to activate their account.
+              {tc.addNewContractorDesc}
             </DialogDescription>
           </DialogHeader>
 
           <form onSubmit={handleCreateContractor} className="space-y-4 py-2">
             <div className="space-y-2">
-              <Label htmlFor="create-name">Contact Name *</Label>
+              <Label htmlFor="create-name">{tc.contactName}</Label>
               <Input
                 id="create-name"
                 value={newContractor.name}
@@ -693,7 +696,7 @@ export default function ContractorsPage() {
               />
             </div>
             <div className="space-y-2">
-              <Label htmlFor="create-email">Email *</Label>
+              <Label htmlFor="create-email">{tc.email}</Label>
               <Input
                 id="create-email"
                 type="email"
@@ -704,7 +707,7 @@ export default function ContractorsPage() {
               />
             </div>
             <div className="space-y-2">
-              <Label htmlFor="create-phone">Phone</Label>
+              <Label htmlFor="create-phone">{tc.phone}</Label>
               <Input
                 id="create-phone"
                 value={newContractor.phone}
@@ -713,7 +716,7 @@ export default function ContractorsPage() {
               />
             </div>
             <div className="space-y-2">
-              <Label htmlFor="create-company">Company Name</Label>
+              <Label htmlFor="create-company">{tc.companyName}</Label>
               <Input
                 id="create-company"
                 value={newContractor.companyName}
@@ -723,18 +726,18 @@ export default function ContractorsPage() {
             </div>
             <DialogFooter>
               <Button type="button" variant="outline" onClick={resetCreateDialog}>
-                Cancel
+                {tc.cancel}
               </Button>
               <Button type="submit" disabled={creating}>
                 {creating ? (
                   <>
                     <Loader2 className="h-4 w-4 mr-2 animate-spin" />
-                    Creating...
+                    {tc.creating}
                   </>
                 ) : (
                   <>
                     <Plus className="h-4 w-4 mr-2" />
-                    Create Account
+                    {tc.createAccount}
                   </>
                 )}
               </Button>

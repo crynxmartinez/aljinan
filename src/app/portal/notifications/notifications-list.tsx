@@ -18,6 +18,7 @@ import {
   AlertTriangle
 } from 'lucide-react'
 import { cn } from '@/lib/utils'
+import { useTranslation } from '@/lib/i18n/use-translation'
 
 interface Notification {
   id: string
@@ -33,6 +34,8 @@ interface Notification {
 }
 
 export function NotificationsList() {
+  const { t } = useTranslation()
+  const tn = t.dashboard.notificationsList
   const router = useRouter()
   const [notifications, setNotifications] = useState<Notification[]>([])
   const [loading, setLoading] = useState(true)
@@ -114,10 +117,10 @@ export function NotificationsList() {
     const diffHours = Math.floor(diffMs / 3600000)
     const diffDays = Math.floor(diffMs / 86400000)
 
-    if (diffMins < 1) return 'Just now'
-    if (diffMins < 60) return `${diffMins}m ago`
-    if (diffHours < 24) return `${diffHours}h ago`
-    if (diffDays < 7) return `${diffDays}d ago`
+    if (diffMins < 1) return tn.justNow
+    if (diffMins < 60) return `${diffMins}${tn.mAgo}`
+    if (diffHours < 24) return `${diffHours}${tn.hAgo}`
+    if (diffDays < 7) return `${diffDays}${tn.dAgo}`
     return date.toLocaleDateString()
   }
 
@@ -133,9 +136,9 @@ export function NotificationsList() {
     return (
       <div className="flex flex-col items-center justify-center py-12 text-center">
         <Bell className="h-12 w-12 text-muted-foreground/30 mb-4" />
-        <p className="text-muted-foreground">No notifications</p>
+        <p className="text-muted-foreground">{tn.noNotifications}</p>
         <p className="text-sm text-muted-foreground mt-1">
-          You're all caught up!
+          {tn.noNotificationsDesc}
         </p>
       </div>
     )
@@ -147,7 +150,7 @@ export function NotificationsList() {
       {unreadCount > 0 && (
         <div className="flex items-center justify-between pb-4 border-b">
           <p className="text-sm text-muted-foreground">
-            {unreadCount} unread notification{unreadCount !== 1 ? 's' : ''}
+            {unreadCount} {tn.unread}
           </p>
           <Button
             variant="ghost"
@@ -156,7 +159,7 @@ export function NotificationsList() {
             className="text-sm"
           >
             <CheckCheck className="h-4 w-4 mr-2" />
-            Mark all as read
+            {tn.markAllAsRead}
           </Button>
         </div>
       )}

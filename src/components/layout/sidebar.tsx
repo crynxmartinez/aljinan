@@ -31,6 +31,7 @@ import {
 } from '@/components/ui/collapsible'
 import { Separator } from '@/components/ui/separator'
 import { useState, useEffect } from 'react'
+import { useTranslation } from '@/lib/i18n/use-translation'
 
 interface Client {
   id: string
@@ -54,27 +55,27 @@ interface SidebarProps {
 
 const mainNavItems = [
   {
-    title: 'Dashboard',
+    titleKey: 'dashboard' as const,
     href: '/dashboard',
     icon: LayoutDashboard,
   },
   {
-    title: 'Work Orders',
+    titleKey: 'workOrders' as const,
     href: '/dashboard/work-orders',
     icon: ClipboardList,
   },
   {
-    title: 'Analytics',
+    titleKey: 'analytics' as const,
     href: '/dashboard/analytics',
     icon: BarChart3,
   },
   {
-    title: 'Company Profile',
+    titleKey: 'companyProfile' as const,
     href: '/dashboard/company',
     icon: Building2,
   },
   {
-    title: 'Team',
+    titleKey: 'team' as const,
     href: '/dashboard/team',
     icon: UserCog,
   },
@@ -82,7 +83,7 @@ const mainNavItems = [
 
 const bottomNavItems = [
   {
-    title: 'Templates',
+    titleKey: 'templates' as const,
     href: '/dashboard/templates',
     icon: FileText,
   },
@@ -90,7 +91,7 @@ const bottomNavItems = [
 
 const contractorBottomNavItems = [
   {
-    title: 'Settings',
+    titleKey: 'settings' as const,
     href: '/dashboard/settings',
     icon: Settings,
   },
@@ -98,7 +99,7 @@ const contractorBottomNavItems = [
 
 const teamMemberBottomNavItems = [
   {
-    title: 'Profile',
+    titleKey: 'profile' as const,
     href: '/dashboard/profile',
     icon: UserCircle,
   },
@@ -110,6 +111,7 @@ export function Sidebar({ clients = [], userRole, teamMemberRole }: SidebarProps
   const pathname = usePathname()
   const router = useRouter()
   const { data: session } = useSession()
+  const { t } = useTranslation()
   const [expandedClients, setExpandedClients] = useState<string[]>([])
   const [loadingHref, setLoadingHref] = useState<string | null>(null)
   const [unreadNotifications, setUnreadNotifications] = useState(0)
@@ -203,7 +205,7 @@ export function Sidebar({ clients = [], userRole, teamMemberRole }: SidebarProps
                 ) : (
                   <item.icon className="h-4 w-4" />
                 )}
-                {item.title}
+                {t.dashboard.nav[item.titleKey]}
                 {item.href === '/dashboard/notifications' && unreadNotifications > 0 && (
                   <span className="ml-auto flex h-5 w-5 items-center justify-center rounded-full bg-red-600 text-xs font-medium text-white">
                     {unreadNotifications > 9 ? '9+' : unreadNotifications}
@@ -219,12 +221,12 @@ export function Sidebar({ clients = [], userRole, teamMemberRole }: SidebarProps
         <div className="space-y-1">
           <div className="flex items-center justify-between px-3 py-2">
             <span className="text-xs font-semibold uppercase text-sidebar-foreground/50">
-              {isTeamMember ? 'Assigned Branches' : 'Clients'}
+              {isTeamMember ? t.dashboard.nav.assignedBranches : t.dashboard.nav.clients}
             </span>
             {!isTeamMember && (
               <Link href="/dashboard/clients">
                 <Button variant="ghost" size="sm" className="h-6 px-2 text-xs">
-                  View All
+                  {t.dashboard.nav.viewAll}
                 </Button>
               </Link>
             )}
@@ -233,13 +235,13 @@ export function Sidebar({ clients = [], userRole, teamMemberRole }: SidebarProps
           {clients.length === 0 ? (
             <div className="px-3 py-4 text-center">
               <p className="text-sm text-sidebar-foreground/50">
-                {isTeamMember ? 'No branches assigned' : 'No clients yet'}
+                {isTeamMember ? t.dashboard.nav.noBranchesAssigned : t.dashboard.nav.noClientsYet}
               </p>
               {!isTeamMember && (
                 <Link href="/dashboard/clients">
                   <Button variant="outline" size="sm" className="mt-2">
                     <Users className="mr-2 h-4 w-4" />
-                    Add Client
+                    {t.dashboard.nav.addClient}
                   </Button>
                 </Link>
               )}
@@ -309,7 +311,7 @@ export function Sidebar({ clients = [], userRole, teamMemberRole }: SidebarProps
                   <Link href="/dashboard/clients">
                     <Button variant="outline" size="sm" className="w-full">
                       <Users className="mr-2 h-4 w-4" />
-                      Add Client
+                      {t.dashboard.nav.addClient}
                     </Button>
                   </Link>
                 </div>
@@ -339,7 +341,7 @@ export function Sidebar({ clients = [], userRole, teamMemberRole }: SidebarProps
               ) : (
                 <item.icon className="h-4 w-4" />
               )}
-              {item.title}
+              {t.dashboard.nav[item.titleKey]}
             </Link>
           ))}
           {(isTeamMember ? teamMemberBottomNavItems : contractorBottomNavItems).map((item) => (
@@ -359,7 +361,7 @@ export function Sidebar({ clients = [], userRole, teamMemberRole }: SidebarProps
               ) : (
                 <item.icon className="h-4 w-4" />
               )}
-              {item.title}
+              {t.dashboard.nav[item.titleKey]}
             </Link>
           ))}
         </div>

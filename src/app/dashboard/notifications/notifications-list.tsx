@@ -17,6 +17,7 @@ import {
   CheckCheck
 } from 'lucide-react'
 import Link from 'next/link'
+import { useTranslation } from '@/lib/i18n/use-translation'
 
 interface Notification {
   id: string
@@ -32,6 +33,8 @@ interface Notification {
 }
 
 export function NotificationsList() {
+  const { t } = useTranslation()
+  const tn = t.dashboard.notificationsList
   const router = useRouter()
   const [notifications, setNotifications] = useState<Notification[]>([])
   const [loading, setLoading] = useState(true)
@@ -104,14 +107,14 @@ export function NotificationsList() {
 
   const getTypeBadge = (type: string) => {
     const config: Record<string, { style: string; label: string }> = {
-      WORK_ORDER_REMINDER: { style: 'bg-amber-100 text-amber-700', label: 'Reminder' },
-      WORK_ORDER_STARTED: { style: 'bg-blue-100 text-blue-700', label: 'Started' },
-      WORK_ORDER_FOR_REVIEW: { style: 'bg-purple-100 text-purple-700', label: 'Review' },
-      WORK_ORDER_COMPLETED: { style: 'bg-green-100 text-green-700', label: 'Completed' },
-      CONTRACT_SIGNED: { style: 'bg-green-100 text-green-700', label: 'Signed' },
-      PROJECT_APPROVED: { style: 'bg-green-100 text-green-700', label: 'Approved' },
-      REQUEST_RECEIVED: { style: 'bg-blue-100 text-blue-700', label: 'Request' },
-      GENERAL: { style: 'bg-gray-100 text-gray-700', label: 'General' },
+      WORK_ORDER_REMINDER: { style: 'bg-amber-100 text-amber-700', label: tn.typeReminder },
+      WORK_ORDER_STARTED: { style: 'bg-blue-100 text-blue-700', label: tn.typeStarted },
+      WORK_ORDER_FOR_REVIEW: { style: 'bg-purple-100 text-purple-700', label: tn.typeReview },
+      WORK_ORDER_COMPLETED: { style: 'bg-green-100 text-green-700', label: tn.typeCompleted },
+      CONTRACT_SIGNED: { style: 'bg-green-100 text-green-700', label: tn.typeSigned },
+      PROJECT_APPROVED: { style: 'bg-green-100 text-green-700', label: tn.typeApproved },
+      REQUEST_RECEIVED: { style: 'bg-blue-100 text-blue-700', label: tn.typeRequest },
+      GENERAL: { style: 'bg-gray-100 text-gray-700', label: tn.typeGeneral },
     }
     const { style, label } = config[type] || config.GENERAL
     return <Badge className={style}>{label}</Badge>
@@ -125,10 +128,10 @@ export function NotificationsList() {
     const diffHours = Math.floor(diffMs / 3600000)
     const diffDays = Math.floor(diffMs / 86400000)
 
-    if (diffMins < 1) return 'Just now'
-    if (diffMins < 60) return `${diffMins}m ago`
-    if (diffHours < 24) return `${diffHours}h ago`
-    if (diffDays < 7) return `${diffDays}d ago`
+    if (diffMins < 1) return tn.justNow
+    if (diffMins < 60) return `${diffMins}${tn.mAgo}`
+    if (diffHours < 24) return `${diffHours}${tn.hAgo}`
+    if (diffDays < 7) return `${diffDays}${tn.dAgo}`
     return date.toLocaleDateString()
   }
 
@@ -146,15 +149,15 @@ export function NotificationsList() {
     <Card>
       <div className="flex items-center justify-between p-4 border-b">
         <div className="flex items-center gap-2">
-          <h3 className="font-semibold">Notifications</h3>
+          <h3 className="font-semibold">{tn.notifications}</h3>
           {unreadCount > 0 && (
-            <Badge variant="destructive">{unreadCount} unread</Badge>
+            <Badge variant="destructive">{unreadCount} {tn.unread}</Badge>
           )}
         </div>
         {unreadCount > 0 && (
           <Button variant="outline" size="sm" onClick={markAllAsRead}>
             <CheckCheck className="mr-2 h-4 w-4" />
-            Mark all as read
+            {tn.markAllAsRead}
           </Button>
         )}
       </div>
@@ -162,9 +165,9 @@ export function NotificationsList() {
         {notifications.length === 0 ? (
           <div className="text-center py-12">
             <Bell className="h-12 w-12 text-muted-foreground/50 mx-auto mb-4" />
-            <p className="text-muted-foreground">No notifications yet</p>
+            <p className="text-muted-foreground">{tn.noNotifications}</p>
             <p className="text-sm text-muted-foreground mt-1">
-              You&apos;ll receive notifications about work orders and updates here
+              {tn.noNotificationsDesc}
             </p>
           </div>
         ) : (
@@ -173,9 +176,8 @@ export function NotificationsList() {
               {notifications.map((notification) => (
                 <div
                   key={notification.id}
-                  className={`flex items-start gap-4 p-4 hover:bg-muted/50 transition-colors ${
-                    !notification.isRead ? 'bg-primary/5' : ''
-                  }`}
+                  className={`flex items-start gap-4 p-4 hover:bg-muted/50 transition-colors ${!notification.isRead ? 'bg-primary/5' : ''
+                    }`}
                 >
                   <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-muted">
                     {getNotificationIcon(notification.type)}
@@ -201,7 +203,7 @@ export function NotificationsList() {
                           className="text-xs text-primary hover:underline"
                           onClick={() => !notification.isRead && markAsRead(notification.id)}
                         >
-                          View details →
+                          {tn.viewDetails} →
                         </Link>
                       )}
                       {!notification.isRead && !notification.link && (
@@ -211,7 +213,7 @@ export function NotificationsList() {
                           className="h-6 text-xs"
                           onClick={() => markAsRead(notification.id)}
                         >
-                          Mark as read
+                          {tn.markAsRead}
                         </Button>
                       )}
                     </div>

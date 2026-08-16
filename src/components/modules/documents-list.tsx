@@ -38,6 +38,7 @@ import {
   Award,
   Sparkles,
 } from 'lucide-react'
+import { useTranslation } from '@/lib/i18n/use-translation'
 
 type SourceType = 'quote' | 'request' | 'report' | 'contract' | 'certificate' | 'generated' | 'payment_proof'
 
@@ -65,49 +66,49 @@ interface DocumentsListProps {
 
 const SECTION_CONFIG: {
   source: SourceType
-  label: string
+  labelKey: keyof typeof import('@/lib/i18n/translations').translations.en.dashboard.documentsList
   icon: React.ReactNode
   badgeClass: string
 }[] = [
     {
       source: 'payment_proof',
-      label: 'Payment Uploads',
+      labelKey: 'sectionPaymentUploads',
       icon: <CreditCard className="h-4 w-4" />,
       badgeClass: 'bg-emerald-100 text-emerald-700',
     },
     {
       source: 'certificate',
-      label: 'Equipment Certification',
+      labelKey: 'sectionEquipmentCertification',
       icon: <Award className="h-4 w-4" />,
       badgeClass: 'bg-amber-100 text-amber-700',
     },
     {
       source: 'contract',
-      label: 'Contracts',
+      labelKey: 'sectionContracts',
       icon: <FileCheck className="h-4 w-4" />,
       badgeClass: 'bg-orange-100 text-orange-700',
     },
     {
       source: 'quote',
-      label: 'Quotations',
+      labelKey: 'sectionQuotations',
       icon: <ScrollText className="h-4 w-4" />,
       badgeClass: 'bg-purple-100 text-purple-700',
     },
     {
       source: 'report',
-      label: 'Reports',
+      labelKey: 'sectionReports',
       icon: <Camera className="h-4 w-4" />,
       badgeClass: 'bg-green-100 text-green-700',
     },
     {
       source: 'request',
-      label: 'Request Photos',
+      labelKey: 'sectionRequestPhotos',
       icon: <Camera className="h-4 w-4" />,
       badgeClass: 'bg-blue-100 text-blue-700',
     },
     {
       source: 'generated',
-      label: 'Generated Documents',
+      labelKey: 'sectionGeneratedDocuments',
       icon: <Sparkles className="h-4 w-4" />,
       badgeClass: 'bg-gray-100 text-gray-700',
     },
@@ -134,6 +135,8 @@ function getFileIcon(fileType: string) {
 }
 
 export function DocumentsList({ branchId }: DocumentsListProps) {
+  const { t } = useTranslation()
+  const td = t.dashboard.documentsList
   const [documents, setDocuments] = useState<UnifiedDocument[]>([])
   const [loading, setLoading] = useState(true)
   const [expandedSections, setExpandedSections] = useState<Set<SourceType>>(new Set())
@@ -205,30 +208,31 @@ export function DocumentsList({ branchId }: DocumentsListProps) {
           <div>
             <CardTitle className="flex items-center gap-2">
               <FileText className="h-5 w-5" />
-              Documents
+              {td.documents}
             </CardTitle>
             <CardDescription>
-              All uploaded files and documents for this branch
+              {td.documentsDesc}
             </CardDescription>
           </div>
           <div className="flex items-center gap-2">
             {expiredCount > 0 && (
               <Badge variant="destructive" className="flex items-center gap-1">
                 <AlertTriangle className="h-3 w-3" />
-                {expiredCount} Expired
+                {expiredCount} {td.expired}
               </Badge>
             )}
             {expiringCount > 0 && (
               <Badge className="bg-orange-100 text-orange-700 flex items-center gap-1">
                 <Clock className="h-3 w-3" />
-                {expiringCount} Expiring Soon
+                {expiringCount} {td.expiringSoon}
               </Badge>
             )}
-            <span className="text-sm text-muted-foreground">{documents.length} total</span>
+            <span className="text-sm text-muted-foreground">{documents.length} {td.total}</span>
           </div>
         </CardHeader>
         <CardContent className="space-y-3">
-          {SECTION_CONFIG.map(({ source, label, icon, badgeClass }) => {
+          {SECTION_CONFIG.map(({ source, labelKey, icon, badgeClass }) => {
+            const label = td[labelKey]
             const sectionDocs = docsBySource(source)
             if (sectionDocs.length === 0 && source !== 'payment_proof') return null
             const isOpen = expandedSections.has(source)
@@ -248,7 +252,7 @@ export function DocumentsList({ branchId }: DocumentsListProps) {
                       </span>
                     </div>
                     <Badge variant="secondary" className="text-xs">
-                      {sectionDocs.length} {sectionDocs.length === 1 ? 'file' : 'files'}
+                      {sectionDocs.length} {sectionDocs.length === 1 ? td.file : td.files}
                     </Badge>
                   </button>
                 </CollapsibleTrigger>
@@ -258,11 +262,11 @@ export function DocumentsList({ branchId }: DocumentsListProps) {
                       <TableHeader>
                         <TableRow className="bg-muted/30">
                           <TableHead className="w-[36px]"></TableHead>
-                          <TableHead>File Name</TableHead>
-                          <TableHead>Related To</TableHead>
-                          <TableHead>Uploaded By</TableHead>
-                          <TableHead>Date</TableHead>
-                          <TableHead>Expiry</TableHead>
+                          <TableHead>{td.fileName}</TableHead>
+                          <TableHead>{td.relatedTo}</TableHead>
+                          <TableHead>{td.uploadedBy}</TableHead>
+                          <TableHead>{td.date}</TableHead>
+                          <TableHead>{td.expiry}</TableHead>
                           <TableHead className="w-[90px]"></TableHead>
                         </TableRow>
                       </TableHeader>
@@ -270,7 +274,7 @@ export function DocumentsList({ branchId }: DocumentsListProps) {
                         {sectionDocs.length === 0 && (
                           <TableRow>
                             <TableCell colSpan={7} className="text-center text-sm text-muted-foreground py-6">
-                              No {label.toLowerCase()} yet
+                              {td.noFilesYet.replace('{label}', label.toLowerCase())}
                             </TableCell>
                           </TableRow>
                         )}
@@ -302,7 +306,7 @@ export function DocumentsList({ branchId }: DocumentsListProps) {
                               <TableCell>
                                 {expiryInfo.status === 'expired' && (
                                   <Badge variant="destructive" className="flex items-center gap-1 w-fit">
-                                    <AlertTriangle className="h-3 w-3" />Expired
+                                    <AlertTriangle className="h-3 w-3" />{td.expired}
                                   </Badge>
                                 )}
                                 {expiryInfo.status === 'expiring' && (
@@ -312,7 +316,7 @@ export function DocumentsList({ branchId }: DocumentsListProps) {
                                 )}
                                 {expiryInfo.status === 'valid' && (
                                   <Badge className="bg-green-100 text-green-700 flex items-center gap-1 w-fit">
-                                    <CheckCircle className="h-3 w-3" />Valid
+                                    <CheckCircle className="h-3 w-3" />{td.valid}
                                   </Badge>
                                 )}
                                 {expiryInfo.status === 'none' && (
@@ -325,7 +329,7 @@ export function DocumentsList({ branchId }: DocumentsListProps) {
                                     variant="ghost"
                                     size="icon"
                                     onClick={(e) => { e.stopPropagation(); openPreview(doc) }}
-                                    title="View"
+                                    title={td.view}
                                   >
                                     <Eye className="h-4 w-4" />
                                   </Button>
@@ -334,7 +338,7 @@ export function DocumentsList({ branchId }: DocumentsListProps) {
                                       variant="ghost"
                                       size="icon"
                                       onClick={(e) => { e.stopPropagation(); window.open(doc.fileUrl, '_blank') }}
-                                      title="Download"
+                                      title={td.download}
                                     >
                                       <Download className="h-4 w-4" />
                                     </Button>

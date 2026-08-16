@@ -13,6 +13,7 @@ import { Loader2, FileText, Banknote, ChevronDown, ChevronRight, ClipboardList }
 import { BillingWorkOrdersDisplay, BillingWorkOrder } from './billing-work-orders-display'
 import { PaymentSubmitDialog } from './payment-submit-dialog'
 import { PaymentVerifyDialog } from './payment-verify-dialog'
+import { useTranslation } from '@/lib/i18n/use-translation'
 
 interface WorkOrder {
   id: string
@@ -58,6 +59,8 @@ interface BillingViewProps {
 }
 
 export function BillingView({ branchId, userRole }: BillingViewProps) {
+  const { t } = useTranslation()
+  const tb = t.dashboard.billingView
   const router = useRouter()
   const [workOrders, setWorkOrders] = useState<WorkOrder[]>([])
   const [contractPayments, setContractPayments] = useState<ContractPayment[]>([])
@@ -232,50 +235,50 @@ export function BillingView({ branchId, userRole }: BillingViewProps) {
       <div className="grid gap-4 md:grid-cols-4">
         <Card>
           <CardHeader className="pb-2">
-            <CardTitle className="text-sm font-medium text-muted-foreground">Contract Value</CardTitle>
+            <CardTitle className="text-sm font-medium text-muted-foreground">{tb.contractValue}</CardTitle>
           </CardHeader>
           <CardContent>
             <div className="text-2xl font-bold">{formatCurrency(contractTotalValue)}</div>
             <p className="text-xs text-muted-foreground mt-1">
-              {contractWorkOrders.length} work order{contractWorkOrders.length !== 1 ? 's' : ''}
+              {contractWorkOrders.length} {contractWorkOrders.length !== 1 ? tb.workOrders : tb.workOrder}
             </p>
           </CardContent>
         </Card>
 
         <Card className="border-blue-200 bg-blue-50/30">
           <CardHeader className="pb-2">
-            <CardTitle className="text-sm font-medium text-blue-600">Service Requests</CardTitle>
+            <CardTitle className="text-sm font-medium text-blue-600">{tb.serviceRequests}</CardTitle>
           </CardHeader>
           <CardContent>
             <div className="text-2xl font-bold text-blue-700">{formatCurrency(standaloneTotalValue)}</div>
             <p className="text-xs text-blue-600 mt-1">
-              {standaloneWorkOrders.length} ad-hoc work order{standaloneWorkOrders.length !== 1 ? 's' : ''}
+              {standaloneWorkOrders.length} {standaloneWorkOrders.length !== 1 ? tb.adhocWorkOrders : tb.adhocWorkOrder}
             </p>
           </CardContent>
         </Card>
 
         <Card>
           <CardHeader className="pb-2">
-            <CardTitle className="text-sm font-medium text-muted-foreground">Total Paid</CardTitle>
+            <CardTitle className="text-sm font-medium text-muted-foreground">{tb.totalPaid}</CardTitle>
           </CardHeader>
           <CardContent>
             <div className="text-2xl font-bold text-green-600">{formatCurrency(totalPaidValue)}</div>
             <p className="text-xs text-muted-foreground mt-1">
-              {totalPendingValue > 0 ? `${formatCurrency(totalPendingValue)} pending` : 'Verified'}
+              {totalPendingValue > 0 ? `${formatCurrency(totalPendingValue)} ${tb.pending}` : tb.verified}
             </p>
           </CardContent>
         </Card>
 
         <Card className={totalUnpaidValue > 0 ? 'border-amber-200 bg-amber-50/50' : 'border-green-200 bg-green-50/50'}>
           <CardHeader className="pb-2">
-            <CardTitle className="text-sm font-medium text-muted-foreground">Outstanding</CardTitle>
+            <CardTitle className="text-sm font-medium text-muted-foreground">{tb.outstanding}</CardTitle>
           </CardHeader>
           <CardContent>
             <div className={`text-2xl font-bold ${totalUnpaidValue > 0 ? 'text-amber-600' : 'text-green-600'}`}>
               {formatCurrency(totalUnpaidValue)}
             </div>
             <p className="text-xs text-muted-foreground mt-1">
-              {totalUnpaidValue > 0 ? 'Awaiting payment' : 'All paid'}
+              {totalUnpaidValue > 0 ? tb.awaitingPayment : tb.allPaid}
             </p>
           </CardContent>
         </Card>
@@ -292,14 +295,14 @@ export function BillingView({ branchId, userRole }: BillingViewProps) {
                     {contractsExpanded ? <ChevronDown className="h-5 w-5" /> : <ChevronRight className="h-5 w-5" />}
                     <CardTitle className="flex items-center gap-2">
                       <FileText className="h-5 w-5" />
-                      Contract Work Orders
+                      {tb.contractWorkOrders}
                     </CardTitle>
                     <Badge variant="secondary">{contractWorkOrders.length}</Badge>
                   </div>
                   <div className="text-right">
                     <p className="font-semibold">{formatCurrency(contractTotalValue)}</p>
                     <p className="text-xs text-muted-foreground">
-                      {contractUnpaidValue > 0 ? `${formatCurrency(contractUnpaidValue)} unpaid` : 'All paid'}
+                      {contractUnpaidValue > 0 ? `${formatCurrency(contractUnpaidValue)} ${tb.unpaid}` : tb.allPaid}
                     </p>
                   </div>
                 </div>
@@ -318,7 +321,7 @@ export function BillingView({ branchId, userRole }: BillingViewProps) {
                         <div className="flex items-center gap-2">
                           {expandedContracts.includes(contractTitle) ? <ChevronDown className="h-4 w-4" /> : <ChevronRight className="h-4 w-4" />}
                           <span className="font-medium">{contractTitle}</span>
-                          <Badge variant="outline">{contractWOs.length} work orders</Badge>
+                          <Badge variant="outline">{contractWOs.length} {tb.workOrdersCount}</Badge>
                         </div>
                         <span className="font-semibold">
                           {formatCurrency(contractWOs.reduce((sum, wo) => sum + (wo.price || 0), 0))}
@@ -356,9 +359,9 @@ export function BillingView({ branchId, userRole }: BillingViewProps) {
                     {contractPaymentsExpanded ? <ChevronDown className="h-5 w-5 text-purple-600" /> : <ChevronRight className="h-5 w-5 text-purple-600" />}
                     <CardTitle className="flex items-center gap-2 text-purple-700">
                       <Banknote className="h-5 w-5" />
-                      Contract Payments
+                      {tb.contractPayments}
                     </CardTitle>
-                    <Badge className="bg-purple-100 text-purple-700">Scheduled</Badge>
+                    <Badge className="bg-purple-100 text-purple-700">{tb.scheduled}</Badge>
                     <Badge variant="secondary">{contractPayments.length}</Badge>
                   </div>
                   <div className="text-right">
@@ -366,7 +369,7 @@ export function BillingView({ branchId, userRole }: BillingViewProps) {
                       {formatCurrency(contractPayments.reduce((sum, p) => sum + (p.amount || 0), 0))}
                     </p>
                     <p className="text-xs text-purple-600">
-                      {contractPayments.filter(p => p.status === 'PAID').length} of {contractPayments.length} paid
+                      {contractPayments.filter(p => p.status === 'PAID').length} {tb.of} {contractPayments.length} {tb.paid}
                     </p>
                   </div>
                 </div>
@@ -383,7 +386,7 @@ export function BillingView({ branchId, userRole }: BillingViewProps) {
                       <div>
                         <p className="font-medium text-sm">{payment.contractTitle}</p>
                         <p className="text-xs text-muted-foreground">
-                          Payment {payment.paymentNo} • Due: {payment.dueDate ? new Date(payment.dueDate).toLocaleDateString() : 'Not set'}
+                          {tb.payment} {payment.paymentNo} • {tb.due}: {payment.dueDate ? new Date(payment.dueDate).toLocaleDateString() : tb.notSet}
                         </p>
                       </div>
                       <div className="flex items-center gap-3">
@@ -396,7 +399,7 @@ export function BillingView({ branchId, userRole }: BillingViewProps) {
                                 'bg-gray-100 text-gray-700'
                           }
                         >
-                          {payment.status === 'PAID' ? 'Paid' : payment.status === 'PENDING_VERIFICATION' ? 'Pending' : 'Unpaid'}
+                          {payment.status === 'PAID' ? tb.statusPaid : payment.status === 'PENDING_VERIFICATION' ? tb.statusPending : tb.statusUnpaid}
                         </Badge>
                       </div>
                     </div>
@@ -419,15 +422,15 @@ export function BillingView({ branchId, userRole }: BillingViewProps) {
                     {standaloneExpanded ? <ChevronDown className="h-5 w-5 text-blue-600" /> : <ChevronRight className="h-5 w-5 text-blue-600" />}
                     <CardTitle className="flex items-center gap-2 text-blue-700">
                       <ClipboardList className="h-5 w-5" />
-                      Service Requests
+                      {tb.serviceRequestsTitle}
                     </CardTitle>
-                    <Badge className="bg-blue-100 text-blue-700">Ad-hoc</Badge>
+                    <Badge className="bg-blue-100 text-blue-700">{tb.adhoc}</Badge>
                     <Badge variant="secondary">{standaloneWorkOrders.length}</Badge>
                   </div>
                   <div className="text-right">
                     <p className="font-semibold text-blue-700">{formatCurrency(standaloneTotalValue)}</p>
                     <p className="text-xs text-blue-600">
-                      {standaloneUnpaidValue > 0 ? `${formatCurrency(standaloneUnpaidValue)} unpaid` : 'All paid'}
+                      {standaloneUnpaidValue > 0 ? `${formatCurrency(standaloneUnpaidValue)} ${tb.unpaid}` : tb.allPaid}
                     </p>
                   </div>
                 </div>
@@ -460,15 +463,15 @@ export function BillingView({ branchId, userRole }: BillingViewProps) {
                     {stickerInspectionsExpanded ? <ChevronDown className="h-5 w-5 text-amber-600" /> : <ChevronRight className="h-5 w-5 text-amber-600" />}
                     <CardTitle className="flex items-center gap-2 text-amber-700">
                       <ClipboardList className="h-5 w-5" />
-                      Sticker Inspections
+                      {tb.stickerInspections}
                     </CardTitle>
-                    <Badge className="bg-amber-100 text-amber-700">Equipment</Badge>
+                    <Badge className="bg-amber-100 text-amber-700">{tb.equipment}</Badge>
                     <Badge variant="secondary">{stickerInspectionWorkOrders.length}</Badge>
                   </div>
                   <div className="text-right">
                     <p className="font-semibold text-amber-700">{formatCurrency(stickerTotalValue)}</p>
                     <p className="text-xs text-amber-600">
-                      {stickerUnpaidValue > 0 ? `${formatCurrency(stickerUnpaidValue)} unpaid` : 'All paid'}
+                      {stickerUnpaidValue > 0 ? `${formatCurrency(stickerUnpaidValue)} ${tb.unpaid}` : tb.allPaid}
                     </p>
                   </div>
                 </div>
@@ -495,9 +498,9 @@ export function BillingView({ branchId, userRole }: BillingViewProps) {
         <Card>
           <CardContent className="flex flex-col items-center justify-center py-12 text-center">
             <Banknote className="h-12 w-12 text-muted-foreground/30 mb-4" />
-            <p className="text-muted-foreground">No work orders yet</p>
+            <p className="text-muted-foreground">{tb.noWorkOrders}</p>
             <p className="text-sm text-muted-foreground mt-1">
-              Work orders will appear here once created
+              {tb.noWorkOrdersDesc}
             </p>
           </CardContent>
         </Card>

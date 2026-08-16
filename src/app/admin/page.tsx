@@ -5,6 +5,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/com
 import { Users, Building2, MapPin, FileText, ClipboardList, Shield } from 'lucide-react'
 import { AdminCharts } from '@/components/admin/admin-charts'
 import { RecentActivity } from '@/components/admin/recent-activity'
+import { getTranslations } from '@/lib/i18n/server'
 
 async function getAdminStats() {
   try {
@@ -177,6 +178,8 @@ async function getRecentActivity() {
 
 export default async function AdminDashboardPage() {
   const session = await getServerSession(authOptions)
+  const t = await getTranslations()
+  const ta = t.dashboard.adminPage
   const [stats, requestsByMonth, requestsByStatus, recentActivity] = await Promise.all([
     getAdminStats(),
     getRequestsByMonth(),
@@ -186,49 +189,49 @@ export default async function AdminDashboardPage() {
 
   const statCards = [
     {
-      title: 'Total Contractors',
+      title: ta.totalContractors,
       value: stats.contractors,
-      description: 'Registered contractors',
+      description: ta.registeredContractors,
       icon: Building2,
       color: 'text-blue-600',
       bgColor: 'bg-blue-100',
     },
     {
-      title: 'Total Clients',
+      title: ta.totalClients,
       value: stats.clients,
-      description: 'Across all contractors',
+      description: ta.acrossAllContractors,
       icon: Users,
       color: 'text-green-600',
       bgColor: 'bg-green-100',
     },
     {
-      title: 'Active Branches',
+      title: ta.activeBranches,
       value: stats.branches,
-      description: 'Active locations',
+      description: ta.activeLocations,
       icon: MapPin,
       color: 'text-purple-600',
       bgColor: 'bg-purple-100',
     },
     {
-      title: 'Total Requests',
+      title: ta.totalRequests,
       value: stats.requests,
-      description: 'All service requests',
+      description: ta.allServiceRequests,
       icon: FileText,
       color: 'text-orange-600',
       bgColor: 'bg-orange-100',
     },
     {
-      title: 'Total Work Orders',
+      title: ta.totalWorkOrders,
       value: stats.workOrders,
-      description: 'All work orders',
+      description: ta.allWorkOrders,
       icon: ClipboardList,
       color: 'text-cyan-600',
       bgColor: 'bg-cyan-100',
     },
     {
-      title: 'Admin Users',
+      title: ta.adminUsers,
       value: stats.admins,
-      description: 'Platform administrators',
+      description: ta.platformAdministrators,
       icon: Shield,
       color: 'text-red-600',
       bgColor: 'bg-red-100',
@@ -238,9 +241,9 @@ export default async function AdminDashboardPage() {
   return (
     <div className="p-8">
       <div className="mb-8">
-        <h1 className="text-3xl font-bold">Admin Dashboard</h1>
+        <h1 className="text-3xl font-bold">{ta.title}</h1>
         <p className="text-muted-foreground mt-1">
-          Welcome back, {session?.user?.name || session?.user?.email}
+          {ta.welcomeBack}, {session?.user?.name || session?.user?.email}
         </p>
       </div>
 

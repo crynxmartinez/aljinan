@@ -9,6 +9,7 @@ import {
   AlertTriangle, MapPin, MessageCircle
 } from 'lucide-react'
 import { ClientProfileForm } from './client-profile-form'
+import { useTranslation } from '@/lib/i18n/use-translation'
 
 interface ContactPerson {
   name: string
@@ -39,6 +40,8 @@ interface ClientProfileCardProps {
 }
 
 export function ClientProfileCard({ client, canEdit }: ClientProfileCardProps) {
+  const { t } = useTranslation()
+  const tc = t.dashboard.clientProfileCard
   const [editOpen, setEditOpen] = useState(false)
 
   const contacts = client.contacts as ContactPerson[] | null
@@ -56,7 +59,7 @@ export function ClientProfileCard({ client, canEdit }: ClientProfileCardProps) {
               </div>
               <div>
                 <h1 className="text-2xl font-bold">
-                  {client.companyName || 'Company Name'}
+                  {client.companyName || tc.companyName}
                 </h1>
                 <div className="flex items-center gap-4 mt-3 text-sm">
                   {client.billingAddress && (
@@ -83,7 +86,7 @@ export function ClientProfileCard({ client, canEdit }: ClientProfileCardProps) {
             {canEdit && (
               <Button variant="outline" size="sm" onClick={() => setEditOpen(true)}>
                 <Edit className="h-4 w-4 mr-1" />
-                Edit Profile
+                {tc.editProfile}
               </Button>
             )}
           </div>
@@ -97,27 +100,27 @@ export function ClientProfileCard({ client, canEdit }: ClientProfileCardProps) {
           <CardHeader className="pb-3">
             <CardTitle className="text-base flex items-center gap-2">
               <Users className="h-4 w-4 text-muted-foreground" />
-              Primary Contact Person
+              {tc.primaryContactPerson}
             </CardTitle>
           </CardHeader>
           <CardContent className="space-y-4">
             <div className="grid gap-4">
               <div className="flex items-center justify-between py-2 border-b">
-                <span className="text-sm text-muted-foreground">Name</span>
+                <span className="text-sm text-muted-foreground">{tc.name}</span>
                 <span className="text-sm font-medium">
-                  {client.contactPersonName || <span className="text-muted-foreground italic">Not set</span>}
+                  {client.contactPersonName || <span className="text-muted-foreground italic">{tc.notSet}</span>}
                 </span>
               </div>
               <div className="flex items-center justify-between py-2 border-b">
-                <span className="text-sm text-muted-foreground">Phone</span>
+                <span className="text-sm text-muted-foreground">{tc.phone}</span>
                 <span className="text-sm font-medium">
-                  {client.contactPersonPhone || <span className="text-muted-foreground italic">Not set</span>}
+                  {client.contactPersonPhone || <span className="text-muted-foreground italic">{tc.notSet}</span>}
                 </span>
               </div>
               <div className="flex items-center justify-between py-2">
-                <span className="text-sm text-muted-foreground">Email</span>
+                <span className="text-sm text-muted-foreground">{tc.email}</span>
                 <span className="text-sm font-medium">
-                  {client.contactPersonEmail || <span className="text-muted-foreground italic">Not set</span>}
+                  {client.contactPersonEmail || <span className="text-muted-foreground italic">{tc.notSet}</span>}
                 </span>
               </div>
             </div>
@@ -129,21 +132,21 @@ export function ClientProfileCard({ client, canEdit }: ClientProfileCardProps) {
           <CardHeader className="pb-3">
             <CardTitle className="text-base flex items-center gap-2">
               <FileText className="h-4 w-4 text-muted-foreground" />
-              Registration & Tax
+              {tc.registrationTax}
             </CardTitle>
           </CardHeader>
           <CardContent className="space-y-4">
             <div className="grid gap-4">
               <div className="flex items-center justify-between py-2 border-b">
-                <span className="text-sm text-muted-foreground">CR / Business License</span>
+                <span className="text-sm text-muted-foreground">{tc.crBusinessLicense}</span>
                 <span className="text-sm font-medium">
-                  {client.crNumber || <span className="text-muted-foreground italic">Not set</span>}
+                  {client.crNumber || <span className="text-muted-foreground italic">{tc.notSet}</span>}
                 </span>
               </div>
               <div className="flex items-center justify-between py-2">
-                <span className="text-sm text-muted-foreground">VAT / Tax ID</span>
+                <span className="text-sm text-muted-foreground">{tc.vatTaxId}</span>
                 <span className="text-sm font-medium">
-                  {client.vatNumber || <span className="text-muted-foreground italic">Not set</span>}
+                  {client.vatNumber || <span className="text-muted-foreground italic">{tc.notSet}</span>}
                 </span>
               </div>
             </div>
@@ -156,7 +159,7 @@ export function ClientProfileCard({ client, canEdit }: ClientProfileCardProps) {
         <CardHeader className="pb-3">
           <CardTitle className="text-base flex items-center gap-2">
             <Users className="h-4 w-4 text-muted-foreground" />
-            Additional Contact Persons
+            {tc.additionalContacts}
           </CardTitle>
         </CardHeader>
         <CardContent>
@@ -164,7 +167,7 @@ export function ClientProfileCard({ client, canEdit }: ClientProfileCardProps) {
             <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
               {contacts.map((contact, index) => (
                 <div key={index} className="p-4 bg-muted/50 rounded-lg border">
-                  <p className="font-medium text-sm mb-2">{contact.name || `Contact ${index + 1}`}</p>
+                  <p className="font-medium text-sm mb-2">{contact.name || `${tc.contact} ${index + 1}`}</p>
                   <div className="space-y-1.5">
                     {contact.phone && (
                       <div className="flex items-center gap-2 text-sm text-muted-foreground">
@@ -189,7 +192,7 @@ export function ClientProfileCard({ client, canEdit }: ClientProfileCardProps) {
               ))}
             </div>
           ) : (
-            <p className="text-sm text-muted-foreground italic">No additional contacts added</p>
+            <p className="text-sm text-muted-foreground italic">{tc.noAdditionalContacts}</p>
           )}
         </CardContent>
       </Card>
@@ -201,9 +204,9 @@ export function ClientProfileCard({ client, canEdit }: ClientProfileCardProps) {
             <div className="flex items-start gap-3">
               <AlertTriangle className="h-5 w-5 text-amber-600 flex-shrink-0 mt-0.5" />
               <div className="flex-1">
-                <p className="font-medium text-amber-800">Profile Incomplete</p>
+                <p className="font-medium text-amber-800">{tc.profileIncomplete}</p>
                 <p className="text-sm text-amber-600 mt-1">
-                  Complete your company profile to ensure smooth operations and compliance.
+                  {tc.completeProfileDesc}
                 </p>
               </div>
               <Button
@@ -213,7 +216,7 @@ export function ClientProfileCard({ client, canEdit }: ClientProfileCardProps) {
                 onClick={() => setEditOpen(true)}
               >
                 <Edit className="h-4 w-4 mr-1" />
-                Complete Profile
+                {tc.completeProfile}
               </Button>
             </div>
           </CardContent>

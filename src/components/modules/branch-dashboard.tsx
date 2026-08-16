@@ -27,6 +27,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from '@/components/ui/select'
+import { useTranslation } from '@/lib/i18n/use-translation'
 
 interface WorkOrder {
   id: string
@@ -88,7 +89,17 @@ const STAGE_CONFIG: Record<string, { label: string; color: string; icon: React.R
 }
 
 export function BranchDashboard({ branchId }: BranchDashboardProps) {
+  const { t } = useTranslation()
+  const td = t.dashboard.branchDashboard
   const [loading, setLoading] = useState(true)
+  const STAGE_CONFIG: Record<string, { label: string; color: string; icon: React.ReactNode }> = {
+    SCHEDULED: { label: td.scheduled, color: 'bg-blue-100 text-blue-700', icon: <Calendar className="h-3 w-3" /> },
+    IN_PROGRESS: { label: td.inProgress, color: 'bg-green-100 text-green-700', icon: <Clock className="h-3 w-3" /> },
+    FOR_REVIEW: { label: td.forReview, color: 'bg-yellow-100 text-yellow-700', icon: <AlertCircle className="h-3 w-3" /> },
+    COMPLETED: { label: td.completed, color: 'bg-gray-100 text-gray-700', icon: <CheckCircle className="h-3 w-3" /> },
+    ARCHIVED: { label: td.archived, color: 'bg-gray-100 text-gray-500', icon: <FileText className="h-3 w-3" /> },
+  }
+
   const [viewMode, setViewMode] = useState<ViewMode>('split')
   const [workOrders, setWorkOrders] = useState<WorkOrder[]>([])
   const [contracts, setContracts] = useState<Contract[]>([])
@@ -186,28 +197,28 @@ export function BranchDashboard({ branchId }: BranchDashboardProps) {
         <div className="grid grid-cols-2 gap-2 text-sm">
           <div className="flex items-center gap-2">
             <span className="w-2 h-2 rounded-full bg-green-500" />
-            <span className="text-muted-foreground">In Progress:</span>
+            <span className="text-muted-foreground">{td.inProgress}:</span>
             <span className="font-medium">{stats.inProgress}</span>
           </div>
           <div className="flex items-center gap-2">
             <span className="w-2 h-2 rounded-full bg-yellow-500" />
-            <span className="text-muted-foreground">For Review:</span>
+            <span className="text-muted-foreground">{td.forReview}:</span>
             <span className="font-medium">{stats.forReview}</span>
           </div>
           <div className="flex items-center gap-2">
             <span className="w-2 h-2 rounded-full bg-blue-500" />
-            <span className="text-muted-foreground">Scheduled:</span>
+            <span className="text-muted-foreground">{td.scheduled}:</span>
             <span className="font-medium">{stats.scheduled}</span>
           </div>
           <div className="flex items-center gap-2">
             <span className="w-2 h-2 rounded-full bg-gray-400" />
-            <span className="text-muted-foreground">Completed:</span>
+            <span className="text-muted-foreground">{td.completed}:</span>
             <span className="font-medium">{stats.completed}</span>
           </div>
         </div>
         <div className="pt-2 border-t">
           <div className="flex items-center justify-between">
-            <span className="text-sm text-muted-foreground">Total Value</span>
+            <span className="text-sm text-muted-foreground">{td.totalValue}</span>
             <span className="font-semibold text-green-600">{formatCurrency(stats.totalValue)}</span>
           </div>
         </div>
@@ -279,7 +290,7 @@ export function BranchDashboard({ branchId }: BranchDashboardProps) {
             <div>
               <h4 className="font-semibold">{contract.title}</h4>
               <p className="text-sm text-muted-foreground">
-                {formatDate(contract.startDate)} - {formatDate(contract.endDate)} • {contractWOs.length} work orders
+                {formatDate(contract.startDate)} - {formatDate(contract.endDate)} • {contractWOs.length} {td.workOrders}
               </p>
             </div>
             <span className="font-semibold text-green-600">
@@ -291,7 +302,7 @@ export function BranchDashboard({ branchId }: BranchDashboardProps) {
           {filteredWOs.slice(0, 5).map(renderWorkOrderItem)}
           {filteredWOs.length > 5 && (
             <div className="p-3 text-center text-sm text-muted-foreground">
-              +{filteredWOs.length - 5} more work orders
+              +{filteredWOs.length - 5} {td.moreWorkOrders}
             </div>
           )}
         </div>
@@ -320,19 +331,19 @@ export function BranchDashboard({ branchId }: BranchDashboardProps) {
               {isContracts ? (
                 <>
                   <FileText className="h-5 w-5" />
-                  Contract Work Orders
+                  {td.contractWorkOrders}
                 </>
               ) : (
                 <>
                   <Wrench className="h-5 w-5" />
-                  Ad-hoc Services
+                  {td.adhocServices}
                 </>
               )}
             </CardTitle>
             {!isContracts && (
               <Button size="sm">
                 <Plus className="h-4 w-4 mr-1" />
-                New Ad-hoc
+                {td.newAdhoc}
               </Button>
             )}
           </div>
@@ -340,26 +351,26 @@ export function BranchDashboard({ branchId }: BranchDashboardProps) {
             <Filter className="h-4 w-4 text-muted-foreground" />
             <Select value={statusFilter} onValueChange={setStatusFilter}>
               <SelectTrigger className="w-[140px]">
-                <SelectValue placeholder="All Status" />
+                <SelectValue placeholder={td.allStatus} />
               </SelectTrigger>
               <SelectContent>
-                <SelectItem value="all">All Status</SelectItem>
-                <SelectItem value="SCHEDULED">Scheduled</SelectItem>
-                <SelectItem value="IN_PROGRESS">In Progress</SelectItem>
-                <SelectItem value="FOR_REVIEW">For Review</SelectItem>
-                <SelectItem value="COMPLETED">Completed</SelectItem>
+                <SelectItem value="all">{td.allStatus}</SelectItem>
+                <SelectItem value="SCHEDULED">{td.scheduled}</SelectItem>
+                <SelectItem value="IN_PROGRESS">{td.inProgress}</SelectItem>
+                <SelectItem value="FOR_REVIEW">{td.forReview}</SelectItem>
+                <SelectItem value="COMPLETED">{td.completed}</SelectItem>
               </SelectContent>
             </Select>
             <Select value={typeFilter} onValueChange={setTypeFilter}>
               <SelectTrigger className="w-[140px]">
-                <SelectValue placeholder="All Types" />
+                <SelectValue placeholder={td.allTypes} />
               </SelectTrigger>
               <SelectContent>
-                <SelectItem value="all">All Types</SelectItem>
-                <SelectItem value="SERVICE">Service</SelectItem>
-                <SelectItem value="INSPECTION">Inspection</SelectItem>
-                <SelectItem value="MAINTENANCE">Maintenance</SelectItem>
-                <SelectItem value="INSTALLATION">Installation</SelectItem>
+                <SelectItem value="all">{td.allTypes}</SelectItem>
+                <SelectItem value="SERVICE">{td.service}</SelectItem>
+                <SelectItem value="INSPECTION">{td.inspection}</SelectItem>
+                <SelectItem value="MAINTENANCE">{td.maintenance}</SelectItem>
+                <SelectItem value="INSTALLATION">{td.installation}</SelectItem>
               </SelectContent>
             </Select>
           </div>
@@ -371,7 +382,7 @@ export function BranchDashboard({ branchId }: BranchDashboardProps) {
             ) : (
               <div className="text-center py-8 text-muted-foreground">
                 <FileText className="h-12 w-12 mx-auto mb-4 opacity-30" />
-                <p>No contracts found</p>
+                <p>{td.noContracts}</p>
               </div>
             )
           ) : (
@@ -382,7 +393,7 @@ export function BranchDashboard({ branchId }: BranchDashboardProps) {
             ) : (
               <div className="text-center py-8 text-muted-foreground">
                 <Wrench className="h-12 w-12 mx-auto mb-4 opacity-30" />
-                <p>No ad-hoc services found</p>
+                <p>{td.noAdhocServices}</p>
               </div>
             )
           )}
@@ -410,7 +421,7 @@ export function BranchDashboard({ branchId }: BranchDashboardProps) {
           <CardContent className="pt-6">
             <div className="flex items-center justify-between">
               <div>
-                <p className="text-sm text-muted-foreground">Active Work</p>
+                <p className="text-sm text-muted-foreground">{td.activeWork}</p>
                 <p className="text-2xl font-bold">{contractStats.inProgress + adhocStats.inProgress}</p>
               </div>
               <div className="p-3 rounded-full bg-green-100">
@@ -423,7 +434,7 @@ export function BranchDashboard({ branchId }: BranchDashboardProps) {
           <CardContent className="pt-6">
             <div className="flex items-center justify-between">
               <div>
-                <p className="text-sm text-muted-foreground">Pending Review</p>
+                <p className="text-sm text-muted-foreground">{td.pendingReview}</p>
                 <p className="text-2xl font-bold">{contractStats.forReview + adhocStats.forReview}</p>
               </div>
               <div className="p-3 rounded-full bg-yellow-100">
@@ -436,7 +447,7 @@ export function BranchDashboard({ branchId }: BranchDashboardProps) {
           <CardContent className="pt-6">
             <div className="flex items-center justify-between">
               <div>
-                <p className="text-sm text-muted-foreground">Completed</p>
+                <p className="text-sm text-muted-foreground">{td.completed}</p>
                 <p className="text-2xl font-bold">{contractStats.completed + adhocStats.completed}</p>
               </div>
               <div className="p-3 rounded-full bg-gray-100">
@@ -449,7 +460,7 @@ export function BranchDashboard({ branchId }: BranchDashboardProps) {
           <CardContent className="pt-6">
             <div className="flex items-center justify-between">
               <div>
-                <p className="text-sm text-muted-foreground">Total Value</p>
+                <p className="text-sm text-muted-foreground">{td.totalValue}</p>
                 <p className="text-2xl font-bold text-green-600">
                   {formatCurrency(contractStats.totalValue + adhocStats.totalValue)}
                 </p>
@@ -472,7 +483,7 @@ export function BranchDashboard({ branchId }: BranchDashboardProps) {
           // Contract collapsed or split
           <div className={viewMode === 'split' ? 'flex-1' : 'w-[280px] shrink-0'}>
             {renderStatsCard(
-              'Contract Work Orders',
+              td.contractWorkOrders,
               <FileText className="h-5 w-5 text-blue-600" />,
               contractStats,
               false,
@@ -490,7 +501,7 @@ export function BranchDashboard({ branchId }: BranchDashboardProps) {
           // Ad-hoc collapsed or split
           <div className={viewMode === 'split' ? 'flex-1' : 'w-[280px] shrink-0'}>
             {renderStatsCard(
-              'Ad-hoc Services',
+              td.adhocServices,
               <Wrench className="h-5 w-5 text-purple-600" />,
               adhocStats,
               false,
@@ -500,6 +511,6 @@ export function BranchDashboard({ branchId }: BranchDashboardProps) {
           </div>
         )}
       </div>
-    </div>
+    </div >
   )
 }

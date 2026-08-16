@@ -1,12 +1,16 @@
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card'
 import { Settings, UserCog, Shield } from 'lucide-react'
 import Link from 'next/link'
+import { getTranslations } from '@/lib/i18n/server'
 
-export default function AdminSettingsPage() {
+export default async function AdminSettingsPage() {
+  const t = await getTranslations()
+  const ts = t.dashboard.adminSettingsPage
+
   const settingsCards = [
     {
-      title: 'Admin Users',
-      description: 'Manage platform administrators and their permissions',
+      title: ts.adminUsers,
+      description: ts.adminUsersDesc,
       href: '/admin/settings/admins',
       icon: UserCog,
     },
@@ -15,8 +19,8 @@ export default function AdminSettingsPage() {
   return (
     <div className="p-8">
       <div className="mb-8">
-        <h1 className="text-3xl font-bold">Platform Settings</h1>
-        <p className="text-muted-foreground mt-1">Configure platform-wide settings</p>
+        <h1 className="text-3xl font-bold">{ts.title}</h1>
+        <p className="text-muted-foreground mt-1">{ts.subtitle}</p>
       </div>
 
       <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">

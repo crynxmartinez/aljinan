@@ -52,6 +52,7 @@ import {
 } from 'lucide-react'
 import { Checkbox } from '@/components/ui/checkbox'
 import { Textarea } from '@/components/ui/textarea'
+import { useTranslation } from '@/lib/i18n/use-translation'
 
 interface Equipment {
   id: string
@@ -94,20 +95,20 @@ interface EquipmentListProps {
   userRole?: 'CONTRACTOR' | 'CLIENT' | 'TEAM_MEMBER'
 }
 
-const EQUIPMENT_TYPES = [
-  { value: 'FIRE_EXTINGUISHER', label: 'Fire Extinguisher' },
-  { value: 'FIRE_ALARM_PANEL', label: 'Fire Alarm Panel' },
-  { value: 'SPRINKLER_SYSTEM', label: 'Sprinkler System' },
-  { value: 'EMERGENCY_LIGHTING', label: 'Emergency Lighting' },
-  { value: 'EXIT_SIGN', label: 'Exit Sign' },
-  { value: 'FIRE_DOOR', label: 'Fire Door' },
-  { value: 'SMOKE_DETECTOR', label: 'Smoke Detector' },
-  { value: 'HEAT_DETECTOR', label: 'Heat Detector' },
-  { value: 'GAS_DETECTOR', label: 'Gas Detector' },
-  { value: 'KITCHEN_HOOD_SUPPRESSION', label: 'Kitchen Hood Suppression' },
-  { value: 'FIRE_PUMP', label: 'Fire Pump' },
-  { value: 'FIRE_HOSE_REEL', label: 'Fire Hose Reel' },
-  { value: 'OTHER', label: 'Other' },
+const EQUIPMENT_TYPE_KEYS: { value: string; labelKey: 'fireExtinguisher' | 'fireAlarmPanel' | 'sprinklerSystem' | 'emergencyLighting' | 'exitSign' | 'fireDoor' | 'smokeDetector' | 'heatDetector' | 'gasDetector' | 'kitchenHoodSuppression' | 'firePump' | 'fireHoseReel' | 'other' }[] = [
+  { value: 'FIRE_EXTINGUISHER', labelKey: 'fireExtinguisher' },
+  { value: 'FIRE_ALARM_PANEL', labelKey: 'fireAlarmPanel' },
+  { value: 'SPRINKLER_SYSTEM', labelKey: 'sprinklerSystem' },
+  { value: 'EMERGENCY_LIGHTING', labelKey: 'emergencyLighting' },
+  { value: 'EXIT_SIGN', labelKey: 'exitSign' },
+  { value: 'FIRE_DOOR', labelKey: 'fireDoor' },
+  { value: 'SMOKE_DETECTOR', labelKey: 'smokeDetector' },
+  { value: 'HEAT_DETECTOR', labelKey: 'heatDetector' },
+  { value: 'GAS_DETECTOR', labelKey: 'gasDetector' },
+  { value: 'KITCHEN_HOOD_SUPPRESSION', labelKey: 'kitchenHoodSuppression' },
+  { value: 'FIRE_PUMP', labelKey: 'firePump' },
+  { value: 'FIRE_HOSE_REEL', labelKey: 'fireHoseReel' },
+  { value: 'OTHER', labelKey: 'other' },
 ]
 
 const STATUS_COLORS: Record<string, { bg: string; text: string; icon: typeof CheckCircle }> = {
@@ -118,6 +119,9 @@ const STATUS_COLORS: Record<string, { bg: string; text: string; icon: typeof Che
 }
 
 export function EquipmentList({ branchId, userRole = 'CONTRACTOR' }: EquipmentListProps) {
+  const { t } = useTranslation()
+  const te = t.dashboard.equipmentList
+  const EQUIPMENT_TYPES = EQUIPMENT_TYPE_KEYS.map(({ value, labelKey }) => ({ value, label: te[labelKey] }))
   const [equipment, setEquipment] = useState<Equipment[]>([])
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState('')
@@ -184,12 +188,12 @@ export function EquipmentList({ branchId, userRole = 'CONTRACTOR' }: EquipmentLi
 
   const handleAddEquipment = async () => {
     if (!formData.equipmentNumber || !formData.equipmentType) {
-      setError('Equipment number and type are required')
+      setError(te.equipmentNumberRequired)
       return
     }
 
     if (formData.equipmentType === 'OTHER' && !formData.customEquipmentType.trim()) {
-      setError('Please specify the equipment type')
+      setError(te.specifyTypeRequired)
       return
     }
 
@@ -315,7 +319,7 @@ export function EquipmentList({ branchId, userRole = 'CONTRACTOR' }: EquipmentLi
   }
 
   const handleDeleteEquipment = async (equipmentId: string) => {
-    if (!confirm('Are you sure you want to delete this equipment?')) return
+    if (!confirm(te.deleteConfirm)) return
 
     try {
       const response = await fetch(`/api/branches/${branchId}/equipment/${equipmentId}`, {
@@ -432,16 +436,16 @@ export function EquipmentList({ branchId, userRole = 'CONTRACTOR' }: EquipmentLi
             <div>
               <CardTitle className="flex items-center gap-2">
                 <Tag className="h-5 w-5 text-amber-600" />
-                Equipment Registry
+                {te.equipmentRegistry}
               </CardTitle>
               <CardDescription>
-                Track and manage equipment for sticker inspections
+                {te.equipmentRegistryDesc}
               </CardDescription>
             </div>
             {userRole !== 'CLIENT' && (
               <Button onClick={() => setAddDialogOpen(true)} className="bg-amber-600 hover:bg-amber-700">
                 <Plus className="h-4 w-4 mr-2" />
-                Add Equipment
+                {te.addEquipment}
               </Button>
             )}
           </div>
@@ -457,23 +461,23 @@ export function EquipmentList({ branchId, userRole = 'CONTRACTOR' }: EquipmentLi
           <div className="grid grid-cols-2 md:grid-cols-5 gap-4 mb-6">
             <div className="p-4 bg-muted/50 rounded-lg text-center">
               <p className="text-2xl font-bold">{stats.total}</p>
-              <p className="text-xs text-muted-foreground">Total</p>
+              <p className="text-xs text-muted-foreground">{te.total}</p>
             </div>
             <div className="p-4 bg-green-50 rounded-lg text-center">
               <p className="text-2xl font-bold text-green-700">{stats.active}</p>
-              <p className="text-xs text-green-600">Active</p>
+              <p className="text-xs text-green-600">{te.active}</p>
             </div>
             <div className="p-4 bg-amber-50 rounded-lg text-center">
               <p className="text-2xl font-bold text-amber-700">{stats.expiringSoon}</p>
-              <p className="text-xs text-amber-600">Expiring Soon</p>
+              <p className="text-xs text-amber-600">{te.expiringSoon}</p>
             </div>
             <div className="p-4 bg-red-50 rounded-lg text-center">
               <p className="text-2xl font-bold text-red-700">{stats.expired}</p>
-              <p className="text-xs text-red-600">Expired</p>
+              <p className="text-xs text-red-600">{te.expired}</p>
             </div>
             <div className="p-4 bg-orange-50 rounded-lg text-center">
               <p className="text-2xl font-bold text-orange-700">{stats.needsAttention}</p>
-              <p className="text-xs text-orange-600">Needs Attention</p>
+              <p className="text-xs text-orange-600">{te.needsAttention}</p>
             </div>
           </div>
 
@@ -482,7 +486,7 @@ export function EquipmentList({ branchId, userRole = 'CONTRACTOR' }: EquipmentLi
             <div className="relative flex-1">
               <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
               <Input
-                placeholder="Search equipment..."
+                placeholder={te.searchEquipment}
                 value={searchQuery}
                 onChange={(e) => setSearchQuery(e.target.value)}
                 className="pl-10"
@@ -494,11 +498,11 @@ export function EquipmentList({ branchId, userRole = 'CONTRACTOR' }: EquipmentLi
                 <SelectValue placeholder="Status" />
               </SelectTrigger>
               <SelectContent>
-                <SelectItem value="all">All Status</SelectItem>
-                <SelectItem value="ACTIVE">Active</SelectItem>
-                <SelectItem value="EXPIRING_SOON">Expiring Soon</SelectItem>
-                <SelectItem value="EXPIRED">Expired</SelectItem>
-                <SelectItem value="NEEDS_ATTENTION">Needs Attention</SelectItem>
+                <SelectItem value="all">{te.allStatus}</SelectItem>
+                <SelectItem value="ACTIVE">{te.active}</SelectItem>
+                <SelectItem value="EXPIRING_SOON">{te.expiringSoon}</SelectItem>
+                <SelectItem value="EXPIRED">{te.expired}</SelectItem>
+                <SelectItem value="NEEDS_ATTENTION">{te.needsAttention}</SelectItem>
               </SelectContent>
             </Select>
             <Select value={typeFilter} onValueChange={setTypeFilter}>
@@ -506,7 +510,7 @@ export function EquipmentList({ branchId, userRole = 'CONTRACTOR' }: EquipmentLi
                 <SelectValue placeholder="Type" />
               </SelectTrigger>
               <SelectContent>
-                <SelectItem value="all">All Types</SelectItem>
+                <SelectItem value="all">{te.allTypes}</SelectItem>
                 {EQUIPMENT_TYPES.map(type => (
                   <SelectItem key={type.value} value={type.value}>{type.label}</SelectItem>
                 ))}
@@ -518,11 +522,11 @@ export function EquipmentList({ branchId, userRole = 'CONTRACTOR' }: EquipmentLi
           {filteredEquipment.length === 0 ? (
             <div className="text-center py-12 bg-muted/50 rounded-lg">
               <Tag className="h-12 w-12 text-muted-foreground/50 mx-auto mb-4" />
-              <p className="text-muted-foreground mb-2">No equipment found</p>
+              <p className="text-muted-foreground mb-2">{te.noEquipmentFound}</p>
               <p className="text-sm text-muted-foreground">
                 {equipment.length === 0
-                  ? 'Add equipment to start tracking inspections'
-                  : 'Try adjusting your filters'}
+                  ? te.addEquipmentToStart
+                  : te.tryAdjustingFilters}
               </p>
             </div>
           ) : (
@@ -530,14 +534,14 @@ export function EquipmentList({ branchId, userRole = 'CONTRACTOR' }: EquipmentLi
               <Table>
                 <TableHeader>
                   <TableRow>
-                    <TableHead>Equipment #</TableHead>
-                    <TableHead>Type</TableHead>
-                    <TableHead>Location</TableHead>
-                    <TableHead>Expiry Date</TableHead>
-                    <TableHead>Last Inspected</TableHead>
-                    <TableHead>Status</TableHead>
-                    <TableHead>Certificate</TableHead>
-                    {userRole !== 'CLIENT' && <TableHead className="text-right">Actions</TableHead>}
+                    <TableHead>{te.equipmentNumber}</TableHead>
+                    <TableHead>{te.type}</TableHead>
+                    <TableHead>{te.location}</TableHead>
+                    <TableHead>{te.expiryDate}</TableHead>
+                    <TableHead>{te.lastInspected}</TableHead>
+                    <TableHead>{te.status}</TableHead>
+                    <TableHead>{te.certificate}</TableHead>
+                    {userRole !== 'CLIENT' && <TableHead className="text-right">{te.actions}</TableHead>}
                   </TableRow>
                 </TableHeader>
                 <TableBody>
@@ -577,7 +581,7 @@ export function EquipmentList({ branchId, userRole = 'CONTRACTOR' }: EquipmentLi
                             {new Date(eq.lastInspected).toLocaleDateString()}
                           </span>
                         ) : (
-                          <span className="text-muted-foreground">Never</span>
+                          <span className="text-muted-foreground">{te.never}</span>
                         )}
                       </TableCell>
                       <TableCell>{getStatusDisplay(eq)}</TableCell>
@@ -597,17 +601,17 @@ export function EquipmentList({ branchId, userRole = 'CONTRACTOR' }: EquipmentLi
                                   {isExpired ? (
                                     <Badge variant="destructive" className="text-xs">
                                       <AlertTriangle className="h-3 w-3 mr-1" />
-                                      Expired
+                                      {te.expired}
                                     </Badge>
                                   ) : isExpiring ? (
                                     <Badge className="text-xs bg-orange-100 text-orange-700 border-0">
                                       <Clock className="h-3 w-3 mr-1" />
-                                      Expiring
+                                      {te.expiring}
                                     </Badge>
                                   ) : (
                                     <Badge className="text-xs bg-green-100 text-green-700 border-0">
                                       <CheckCircle className="h-3 w-3 mr-1" />
-                                      Valid
+                                      {te.valid}
                                     </Badge>
                                   )}
                                 </div>
@@ -642,12 +646,12 @@ export function EquipmentList({ branchId, userRole = 'CONTRACTOR' }: EquipmentLi
                             )
                           })() : (
                             <Badge variant="outline" className="text-xs text-muted-foreground">
-                              No Cert
+                              {te.noCert}
                             </Badge>
                           )}
                           {eq.stickerApplied && (
                             <Badge variant="outline" className="text-xs text-blue-600 border-blue-300">
-                              Sticker
+                              {te.sticker}
                             </Badge>
                           )}
                         </div>
@@ -688,25 +692,25 @@ export function EquipmentList({ branchId, userRole = 'CONTRACTOR' }: EquipmentLi
           <DialogHeader>
             <DialogTitle className="flex items-center gap-2">
               <Tag className="h-5 w-5 text-amber-600" />
-              Add Equipment
+              {te.addEquipment}
             </DialogTitle>
             <DialogDescription>
-              Add new equipment to track for sticker inspections
+              {te.addEquipmentDesc}
             </DialogDescription>
           </DialogHeader>
           <div className="space-y-4">
             <div className="grid grid-cols-2 gap-4">
               <div className="space-y-2">
-                <Label htmlFor="equipmentNumber">Equipment # *</Label>
+                <Label htmlFor="equipmentNumber">{te.equipmentNumberLabel}</Label>
                 <Input
                   id="equipmentNumber"
                   value={formData.equipmentNumber}
                   onChange={(e) => setFormData({ ...formData, equipmentNumber: e.target.value })}
-                  placeholder="e.g., FE-001"
+                  placeholder={te.equipmentNumberPlaceholder}
                 />
               </div>
               <div className="space-y-2">
-                <Label htmlFor="equipmentType">Type *</Label>
+                <Label htmlFor="equipmentType">{te.typeLabel}</Label>
                 <Select
                   value={formData.equipmentType}
                   onValueChange={(value) => setFormData({
@@ -729,55 +733,55 @@ export function EquipmentList({ branchId, userRole = 'CONTRACTOR' }: EquipmentLi
             {/* Custom Equipment Type - Show when OTHER is selected */}
             {formData.equipmentType === 'OTHER' && (
               <div className="space-y-2">
-                <Label htmlFor="customEquipmentType">Specify Equipment Type *</Label>
+                <Label htmlFor="customEquipmentType">{te.specifyType}</Label>
                 <Input
                   id="customEquipmentType"
                   value={formData.customEquipmentType}
                   onChange={(e) => setFormData({ ...formData, customEquipmentType: e.target.value })}
-                  placeholder="e.g., CO2 Detector, Water Sprayer, etc."
+                  placeholder={te.specifyTypePlaceholder}
                 />
               </div>
             )}
             <div className="grid grid-cols-2 gap-4">
               <div className="space-y-2">
-                <Label htmlFor="brand">Brand</Label>
+                <Label htmlFor="brand">{te.brand}</Label>
                 <Input
                   id="brand"
                   value={formData.brand}
                   onChange={(e) => setFormData({ ...formData, brand: e.target.value })}
-                  placeholder="e.g., Kidde"
+                  placeholder={te.brandPlaceholder}
                 />
               </div>
               <div className="space-y-2">
-                <Label htmlFor="model">Model</Label>
+                <Label htmlFor="model">{te.model}</Label>
                 <Input
                   id="model"
                   value={formData.model}
                   onChange={(e) => setFormData({ ...formData, model: e.target.value })}
-                  placeholder="e.g., Pro 210"
+                  placeholder={te.modelPlaceholder}
                 />
               </div>
             </div>
             <div className="space-y-2">
-              <Label htmlFor="serialNumber">Serial Number</Label>
+              <Label htmlFor="serialNumber">{te.serialNumber}</Label>
               <Input
                 id="serialNumber"
                 value={formData.serialNumber}
                 onChange={(e) => setFormData({ ...formData, serialNumber: e.target.value })}
-                placeholder="Manufacturer serial number"
+                placeholder={te.serialNumberPlaceholder}
               />
             </div>
             <div className="space-y-2">
-              <Label htmlFor="location">Location</Label>
+              <Label htmlFor="location">{te.location}</Label>
               <Input
                 id="location"
                 value={formData.location}
                 onChange={(e) => setFormData({ ...formData, location: e.target.value })}
-                placeholder="e.g., Floor 2, Kitchen"
+                placeholder={te.locationPlaceholder}
               />
             </div>
             <div className="space-y-2">
-              <Label htmlFor="expectedExpiry">Next Inspection Due</Label>
+              <Label htmlFor="expectedExpiry">{te.nextInspectionDue}</Label>
               <Input
                 id="expectedExpiry"
                 type="date"
@@ -786,23 +790,23 @@ export function EquipmentList({ branchId, userRole = 'CONTRACTOR' }: EquipmentLi
               />
             </div>
             <div className="space-y-2">
-              <Label htmlFor="notes">Notes</Label>
+              <Label htmlFor="notes">{te.notes}</Label>
               <Textarea
                 id="notes"
                 value={formData.notes}
                 onChange={(e) => setFormData({ ...formData, notes: e.target.value })}
-                placeholder="Any additional notes..."
+                placeholder={te.notesPlaceholder}
                 rows={2}
               />
             </div>
           </div>
           <DialogFooter>
             <Button variant="outline" onClick={() => { setAddDialogOpen(false); resetForm(); }}>
-              Cancel
+              {te.cancel}
             </Button>
             <Button onClick={handleAddEquipment} disabled={saving} className="bg-amber-600 hover:bg-amber-700">
               {saving && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
-              Add Equipment
+              {te.addEquipment}
             </Button>
           </DialogFooter>
         </DialogContent>
@@ -814,21 +818,21 @@ export function EquipmentList({ branchId, userRole = 'CONTRACTOR' }: EquipmentLi
           <DialogHeader>
             <DialogTitle className="flex items-center gap-2">
               <Edit className="h-5 w-5" />
-              Edit Equipment
+              {te.editEquipment}
             </DialogTitle>
             <DialogDescription>
-              Update equipment details, inspection status, and certificate
+              {te.editEquipmentDesc}
             </DialogDescription>
           </DialogHeader>
           <div className="space-y-6">
             {/* Basic Info Section */}
             <div className="space-y-4">
               <h4 className="text-sm font-semibold text-muted-foreground uppercase tracking-wide">
-                Basic Information
+                {te.basicInformation}
               </h4>
               <div className="grid grid-cols-2 gap-4">
                 <div className="space-y-2">
-                  <Label htmlFor="edit-equipmentNumber">Equipment # *</Label>
+                  <Label htmlFor="edit-equipmentNumber">{te.equipmentNumberLabel}</Label>
                   <Input
                     id="edit-equipmentNumber"
                     value={formData.equipmentNumber}
@@ -836,7 +840,7 @@ export function EquipmentList({ branchId, userRole = 'CONTRACTOR' }: EquipmentLi
                   />
                 </div>
                 <div className="space-y-2">
-                  <Label htmlFor="edit-equipmentType">Type *</Label>
+                  <Label htmlFor="edit-equipmentType">{te.typeLabel}</Label>
                   <Select
                     value={formData.equipmentType}
                     onValueChange={(value) => setFormData({
@@ -858,18 +862,18 @@ export function EquipmentList({ branchId, userRole = 'CONTRACTOR' }: EquipmentLi
               </div>
               {formData.equipmentType === 'OTHER' && (
                 <div className="space-y-2">
-                  <Label htmlFor="edit-customEquipmentType">Specify Equipment Type *</Label>
+                  <Label htmlFor="edit-customEquipmentType">{te.specifyType}</Label>
                   <Input
                     id="edit-customEquipmentType"
                     value={formData.customEquipmentType}
                     onChange={(e) => setFormData({ ...formData, customEquipmentType: e.target.value })}
-                    placeholder="e.g., CO2 Detector, Water Sprayer, etc."
+                    placeholder={te.specifyTypePlaceholder}
                   />
                 </div>
               )}
               <div className="grid grid-cols-2 gap-4">
                 <div className="space-y-2">
-                  <Label htmlFor="edit-brand">Brand</Label>
+                  <Label htmlFor="edit-brand">{te.brand}</Label>
                   <Input
                     id="edit-brand"
                     value={formData.brand}
@@ -877,7 +881,7 @@ export function EquipmentList({ branchId, userRole = 'CONTRACTOR' }: EquipmentLi
                   />
                 </div>
                 <div className="space-y-2">
-                  <Label htmlFor="edit-model">Model</Label>
+                  <Label htmlFor="edit-model">{te.model}</Label>
                   <Input
                     id="edit-model"
                     value={formData.model}
@@ -887,7 +891,7 @@ export function EquipmentList({ branchId, userRole = 'CONTRACTOR' }: EquipmentLi
               </div>
               <div className="grid grid-cols-2 gap-4">
                 <div className="space-y-2">
-                  <Label htmlFor="edit-serialNumber">Serial Number</Label>
+                  <Label htmlFor="edit-serialNumber">{te.serialNumber}</Label>
                   <Input
                     id="edit-serialNumber"
                     value={formData.serialNumber}
@@ -895,7 +899,7 @@ export function EquipmentList({ branchId, userRole = 'CONTRACTOR' }: EquipmentLi
                   />
                 </div>
                 <div className="space-y-2">
-                  <Label htmlFor="edit-location">Location</Label>
+                  <Label htmlFor="edit-location">{te.location}</Label>
                   <Input
                     id="edit-location"
                     value={formData.location}
@@ -905,7 +909,7 @@ export function EquipmentList({ branchId, userRole = 'CONTRACTOR' }: EquipmentLi
               </div>
               <div className="grid grid-cols-2 gap-4">
                 <div className="space-y-2">
-                  <Label htmlFor="edit-expectedExpiry">Next Inspection Due</Label>
+                  <Label htmlFor="edit-expectedExpiry">{te.nextInspectionDue}</Label>
                   <Input
                     id="edit-expectedExpiry"
                     type="date"
@@ -915,7 +919,7 @@ export function EquipmentList({ branchId, userRole = 'CONTRACTOR' }: EquipmentLi
                 </div>
               </div>
               <div className="space-y-2">
-                <Label htmlFor="edit-notes">Notes</Label>
+                <Label htmlFor="edit-notes">{te.notes}</Label>
                 <Textarea
                   id="edit-notes"
                   value={formData.notes}
@@ -928,11 +932,11 @@ export function EquipmentList({ branchId, userRole = 'CONTRACTOR' }: EquipmentLi
             {/* Inspection Status Section */}
             <div className="space-y-4 pt-4 border-t">
               <h4 className="text-sm font-semibold text-muted-foreground uppercase tracking-wide">
-                Inspection Status
+                {te.inspectionStatus}
               </h4>
               <div className="grid grid-cols-2 gap-4">
                 <div className="space-y-2">
-                  <Label htmlFor="edit-inspectionResult">Inspection Result</Label>
+                  <Label htmlFor="edit-inspectionResult">{te.inspectionResult}</Label>
                   <Select
                     value={inspectionData.inspectionResult}
                     onValueChange={(value: 'PASS' | 'FAIL' | 'NEEDS_REPAIR' | 'PENDING') =>
@@ -943,15 +947,15 @@ export function EquipmentList({ branchId, userRole = 'CONTRACTOR' }: EquipmentLi
                       <SelectValue />
                     </SelectTrigger>
                     <SelectContent>
-                      <SelectItem value="PENDING">Pending</SelectItem>
-                      <SelectItem value="PASS">Pass</SelectItem>
-                      <SelectItem value="FAIL">Fail</SelectItem>
-                      <SelectItem value="NEEDS_REPAIR">Needs Repair</SelectItem>
+                      <SelectItem value="PENDING">{te.pending}</SelectItem>
+                      <SelectItem value="PASS">{te.pass}</SelectItem>
+                      <SelectItem value="FAIL">{te.fail}</SelectItem>
+                      <SelectItem value="NEEDS_REPAIR">{te.needsRepair}</SelectItem>
                     </SelectContent>
                   </Select>
                 </div>
                 <div className="space-y-2">
-                  <Label htmlFor="edit-lastInspected">Last Inspected</Label>
+                  <Label htmlFor="edit-lastInspected">{te.lastInspected}</Label>
                   <Input
                     id="edit-lastInspected"
                     type="date"
@@ -970,7 +974,7 @@ export function EquipmentList({ branchId, userRole = 'CONTRACTOR' }: EquipmentLi
                     }
                   />
                   <Label htmlFor="edit-isInspected" className="text-sm font-normal">
-                    Inspected
+                    {te.inspected}
                   </Label>
                 </div>
                 <div className="flex items-center space-x-2">
@@ -982,7 +986,7 @@ export function EquipmentList({ branchId, userRole = 'CONTRACTOR' }: EquipmentLi
                     }
                   />
                   <Label htmlFor="edit-certificateIssued" className="text-sm font-normal">
-                    Certificate Issued
+                    {te.certificateIssued}
                   </Label>
                 </div>
                 <div className="flex items-center space-x-2">
@@ -994,17 +998,17 @@ export function EquipmentList({ branchId, userRole = 'CONTRACTOR' }: EquipmentLi
                     }
                   />
                   <Label htmlFor="edit-stickerApplied" className="text-sm font-normal">
-                    Sticker Applied
+                    {te.stickerApplied}
                   </Label>
                 </div>
               </div>
               <div className="space-y-2">
-                <Label htmlFor="edit-deficiencies">Deficiencies / Issues Found</Label>
+                <Label htmlFor="edit-deficiencies">{te.deficiencies}</Label>
                 <Textarea
                   id="edit-deficiencies"
                   value={inspectionData.deficiencies}
                   onChange={(e) => setInspectionData({ ...inspectionData, deficiencies: e.target.value })}
-                  placeholder="Any issues or deficiencies found during inspection..."
+                  placeholder={te.deficienciesPlaceholder}
                   rows={2}
                 />
               </div>
@@ -1013,7 +1017,7 @@ export function EquipmentList({ branchId, userRole = 'CONTRACTOR' }: EquipmentLi
             {/* Certificate Section */}
             <div className="space-y-4 pt-4 border-t">
               <h4 className="text-sm font-semibold text-muted-foreground uppercase tracking-wide">
-                Certificate
+                {te.certificateSection}
               </h4>
 
               {/* Current Certificate */}
@@ -1022,7 +1026,7 @@ export function EquipmentList({ branchId, userRole = 'CONTRACTOR' }: EquipmentLi
                   <div className="flex items-center justify-between">
                     <div className="flex items-center gap-2">
                       <FileText className="h-4 w-4 text-muted-foreground" />
-                      <span className="text-sm font-medium">Current Certificate</span>
+                      <span className="text-sm font-medium">{te.currentCertificate}</span>
                     </div>
                     <div className="flex items-center gap-2">
                       {selectedEquipment.certificate.fileUrl && (
@@ -1033,7 +1037,7 @@ export function EquipmentList({ branchId, userRole = 'CONTRACTOR' }: EquipmentLi
                             onClick={() => window.open(selectedEquipment.certificate!.fileUrl!, '_blank')}
                           >
                             <Eye className="h-4 w-4 mr-1" />
-                            View
+                            {te.view}
                           </Button>
                           <Button
                             variant="ghost"
@@ -1041,7 +1045,7 @@ export function EquipmentList({ branchId, userRole = 'CONTRACTOR' }: EquipmentLi
                             onClick={() => window.open(selectedEquipment.certificate!.fileUrl!, '_blank')}
                           >
                             <Download className="h-4 w-4 mr-1" />
-                            Download
+                            {te.download}
                           </Button>
                         </>
                       )}
@@ -1049,7 +1053,7 @@ export function EquipmentList({ branchId, userRole = 'CONTRACTOR' }: EquipmentLi
                   </div>
                   {selectedEquipment.certificate.expiryDate && (
                     <p className="text-xs text-muted-foreground mt-1">
-                      Expires: {new Date(selectedEquipment.certificate.expiryDate).toLocaleDateString()}
+                      {te.expires}: {new Date(selectedEquipment.certificate.expiryDate).toLocaleDateString()}
                     </p>
                   )}
                 </div>
@@ -1057,7 +1061,7 @@ export function EquipmentList({ branchId, userRole = 'CONTRACTOR' }: EquipmentLi
 
               {/* Upload New Certificate */}
               <div className="space-y-3">
-                <Label>Upload New Certificate</Label>
+                <Label>{te.uploadNewCertificate}</Label>
                 <div className="flex items-center gap-4">
                   <div className="flex-1">
                     <Input
@@ -1078,12 +1082,12 @@ export function EquipmentList({ branchId, userRole = 'CONTRACTOR' }: EquipmentLi
                       className="h-6 px-2 text-destructive"
                       onClick={() => setCertificateFile(null)}
                     >
-                      Remove
+                      {te.remove}
                     </Button>
                   </div>
                 )}
                 <div className="space-y-2">
-                  <Label htmlFor="edit-certificateExpiry">Certificate Expiry Date</Label>
+                  <Label htmlFor="edit-certificateExpiry">{te.certificateExpiryDate}</Label>
                   <Input
                     id="edit-certificateExpiry"
                     type="date"
@@ -1099,7 +1103,7 @@ export function EquipmentList({ branchId, userRole = 'CONTRACTOR' }: EquipmentLi
               <div className="p-3 bg-blue-50 border border-blue-200 rounded-lg">
                 <div className="flex items-center gap-2 text-blue-700">
                   <Link2 className="h-4 w-4" />
-                  <span className="text-sm font-medium">Linked to Work Order</span>
+                  <span className="text-sm font-medium">{te.linkedToWorkOrder}</span>
                 </div>
                 {selectedEquipment?.request && (
                   <p className="text-xs text-blue-600 mt-1">
@@ -1107,7 +1111,7 @@ export function EquipmentList({ branchId, userRole = 'CONTRACTOR' }: EquipmentLi
                   </p>
                 )}
                 <p className="text-xs text-blue-600 mt-1">
-                  Changes will update the work order record
+                  {te.changesWillUpdate}
                 </p>
               </div>
             )}
@@ -1122,11 +1126,11 @@ export function EquipmentList({ branchId, userRole = 'CONTRACTOR' }: EquipmentLi
                 resetInspectionData();
               }}
             >
-              Cancel
+              {te.cancel}
             </Button>
             <Button onClick={handleUpdateEquipment} disabled={saving || uploadingCertificate}>
               {(saving || uploadingCertificate) && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
-              {uploadingCertificate ? 'Uploading...' : 'Save Changes'}
+              {uploadingCertificate ? te.uploading : te.saveChanges}
             </Button>
           </DialogFooter>
         </DialogContent>

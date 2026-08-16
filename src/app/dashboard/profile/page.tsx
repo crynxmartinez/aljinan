@@ -5,6 +5,7 @@ import { prisma } from '@/lib/prisma'
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
 import { CompanyInfoCard } from '@/components/team-members/company-info-card'
 import { TeamMemberProfileForm } from '@/components/team-members/team-member-profile-form'
+import { getTranslations } from '@/lib/i18n/server'
 
 async function getTeamMemberProfile(userId: string) {
   const teamMember = await prisma.teamMember.findUnique({
@@ -55,20 +56,23 @@ export default async function TeamMemberProfilePage() {
     redirect('/dashboard')
   }
 
+  const t = await getTranslations()
+  const tp = t.dashboard.profilePage
+
   return (
     <div className="p-8">
       <div className="mb-8">
-        <h1 className="text-3xl font-bold">Profile</h1>
+        <h1 className="text-3xl font-bold">{tp.title}</h1>
         <p className="text-muted-foreground mt-1">
-          Manage your profile and view company information
+          {tp.subtitle}
         </p>
       </div>
 
       <div className="max-w-4xl">
         <Tabs defaultValue="profile" className="w-full">
           <TabsList className="grid w-full grid-cols-2">
-            <TabsTrigger value="profile">My Profile</TabsTrigger>
-            <TabsTrigger value="company">Company</TabsTrigger>
+            <TabsTrigger value="profile">{tp.myProfile}</TabsTrigger>
+            <TabsTrigger value="company">{tp.company}</TabsTrigger>
           </TabsList>
 
           <TabsContent value="profile" className="mt-6">

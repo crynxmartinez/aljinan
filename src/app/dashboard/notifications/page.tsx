@@ -7,12 +7,12 @@ import { Badge } from '@/components/ui/badge'
 import { ScrollArea } from '@/components/ui/scroll-area'
 import { Button } from '@/components/ui/button'
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
-import { 
-  Bell, 
-  FileText, 
-  Receipt, 
-  Calendar, 
-  CheckCircle, 
+import {
+  Bell,
+  FileText,
+  Receipt,
+  Calendar,
+  CheckCircle,
   Clock,
   AlertCircle,
   MessageSquare,
@@ -23,6 +23,7 @@ import {
 } from 'lucide-react'
 import Link from 'next/link'
 import { NotificationsList } from './notifications-list'
+import { getTranslations } from '@/lib/i18n/server'
 
 interface ActivityItem {
   id: string
@@ -200,38 +201,38 @@ function getActivityIcon(type: string) {
   }
 }
 
-function getStatusBadge(status: string) {
+function getStatusBadge(status: string, tn?: { statusOpen: string; statusInProgress: string; statusCompleted: string; statusDraft: string; statusSent: string; statusApproved: string; statusScheduled: string }) {
   switch (status) {
     case 'OPEN':
-      return <Badge className="bg-blue-100 text-blue-700 hover:bg-blue-100">Open</Badge>
+      return <Badge className="bg-blue-100 text-blue-700 hover:bg-blue-100">{tn?.statusOpen ?? 'Open'}</Badge>
     case 'IN_PROGRESS':
-      return <Badge className="bg-yellow-100 text-yellow-700 hover:bg-yellow-100">In Progress</Badge>
+      return <Badge className="bg-yellow-100 text-yellow-700 hover:bg-yellow-100">{tn?.statusInProgress ?? 'In Progress'}</Badge>
     case 'COMPLETED':
-      return <Badge className="bg-green-100 text-green-700 hover:bg-green-100">Completed</Badge>
+      return <Badge className="bg-green-100 text-green-700 hover:bg-green-100">{tn?.statusCompleted ?? 'Completed'}</Badge>
     case 'DRAFT':
-      return <Badge className="bg-gray-100 text-gray-700 hover:bg-gray-100">Draft</Badge>
+      return <Badge className="bg-gray-100 text-gray-700 hover:bg-gray-100">{tn?.statusDraft ?? 'Draft'}</Badge>
     case 'SENT':
-      return <Badge className="bg-blue-100 text-blue-700 hover:bg-blue-100">Sent</Badge>
+      return <Badge className="bg-blue-100 text-blue-700 hover:bg-blue-100">{tn?.statusSent ?? 'Sent'}</Badge>
     case 'APPROVED':
-      return <Badge className="bg-green-100 text-green-700 hover:bg-green-100">Approved</Badge>
+      return <Badge className="bg-green-100 text-green-700 hover:bg-green-100">{tn?.statusApproved ?? 'Approved'}</Badge>
     case 'SCHEDULED':
-      return <Badge className="bg-purple-100 text-purple-700 hover:bg-purple-100">Scheduled</Badge>
+      return <Badge className="bg-purple-100 text-purple-700 hover:bg-purple-100">{tn?.statusScheduled ?? 'Scheduled'}</Badge>
     default:
       return <Badge variant="secondary">{status}</Badge>
   }
 }
 
-function formatTimeAgo(date: Date) {
+function formatTimeAgo(date: Date, tn?: { justNow: string; mAgo: string; hAgo: string; dAgo: string }) {
   const now = new Date()
   const diffMs = now.getTime() - date.getTime()
   const diffMins = Math.floor(diffMs / 60000)
   const diffHours = Math.floor(diffMs / 3600000)
   const diffDays = Math.floor(diffMs / 86400000)
 
-  if (diffMins < 1) return 'Just now'
-  if (diffMins < 60) return `${diffMins}m ago`
-  if (diffHours < 24) return `${diffHours}h ago`
-  if (diffDays < 7) return `${diffDays}d ago`
+  if (diffMins < 1) return tn?.justNow ?? 'Just now'
+  if (diffMins < 60) return `${diffMins}${tn?.mAgo ?? 'm ago'}`
+  if (diffHours < 24) return `${diffHours}${tn?.hAgo ?? 'h ago'}`
+  if (diffDays < 7) return `${diffDays}${tn?.dAgo ?? 'd ago'}`
   return date.toLocaleDateString()
 }
 
@@ -247,24 +248,27 @@ export default async function NotificationsPage() {
     getPendingCounts(session.user.id)
   ])
 
+  const t = await getTranslations()
+  const tn = t.dashboard.notificationsPage
+
   const stats = [
-    { 
-      label: 'Open Requests', 
-      value: counts.requests, 
+    {
+      label: tn.openRequests,
+      value: counts.requests,
       icon: FileText,
       color: 'text-blue-600',
       bgColor: 'bg-blue-100'
     },
-    { 
-      label: 'Pending Quotations', 
-      value: counts.quotations, 
+    {
+      label: tn.pendingQuotations,
+      value: counts.quotations,
       icon: Receipt,
       color: 'text-orange-600',
       bgColor: 'bg-orange-100'
     },
-    { 
-      label: 'Upcoming Appointments', 
-      value: counts.appointments, 
+    {
+      label: tn.upcomingAppointments,
+      value: counts.appointments,
       icon: Calendar,
       color: 'text-purple-600',
       bgColor: 'bg-purple-100'
@@ -278,8 +282,8 @@ export default async function NotificationsPage() {
           <Bell className="h-6 w-6 text-primary" />
         </div>
         <div>
-          <h1 className="text-2xl font-bold">Notifications & Activity</h1>
-          <p className="text-muted-foreground">Stay updated on work orders and client activity</p>
+          <h1 className="text-2xl font-bold">{tn.title}</h1>
+          <p className="text-muted-foreground">{tn.subtitle}</p>
         </div>
       </div>
 
@@ -303,11 +307,11 @@ export default async function NotificationsPage() {
         <TabsList>
           <TabsTrigger value="notifications" className="flex items-center gap-2">
             <Bell className="h-4 w-4" />
-            Notifications
+            {tn.notifications}
           </TabsTrigger>
           <TabsTrigger value="activity" className="flex items-center gap-2">
             <ClipboardList className="h-4 w-4" />
-            Activity Feed
+            {tn.activityFeed}
           </TabsTrigger>
         </TabsList>
 
@@ -318,16 +322,16 @@ export default async function NotificationsPage() {
         <TabsContent value="activity">
           <Card>
             <CardHeader>
-              <CardTitle>Recent Activity</CardTitle>
-              <CardDescription>Latest updates from all clients and branches</CardDescription>
+              <CardTitle>{tn.recentActivity}</CardTitle>
+              <CardDescription>{tn.recentActivityDesc}</CardDescription>
             </CardHeader>
             <CardContent>
               {activities.length === 0 ? (
                 <div className="text-center py-12">
                   <Bell className="h-12 w-12 text-muted-foreground/50 mx-auto mb-4" />
-                  <p className="text-muted-foreground">No recent activity</p>
+                  <p className="text-muted-foreground">{tn.noRecentActivity}</p>
                   <p className="text-sm text-muted-foreground mt-1">
-                    Activity from your clients will appear here
+                    {tn.noRecentActivityDesc}
                   </p>
                 </div>
               ) : (
@@ -345,9 +349,9 @@ export default async function NotificationsPage() {
                         <div className="flex-1 min-w-0">
                           <div className="flex items-center gap-2 mb-1">
                             <p className="font-medium truncate">{activity.title}</p>
-                            {activity.status && getStatusBadge(activity.status)}
+                            {activity.status && getStatusBadge(activity.status, tn)}
                           </div>
-                          <p className="text-sm text-muted-foreground">{activity.description}</p>
+                          <p className="text-sm text-muted-foreground">{activity.type === 'request' ? `${tn.newRequestFrom} ${activity.clientName}` : activity.type === 'quotation' ? `${tn.quotationFor} ${activity.clientName}` : `${tn.appointmentAt} ${activity.branchAddress}`}</p>
                           {activity.branchAddress && (
                             <p className="text-xs text-muted-foreground mt-1 flex items-center gap-1">
                               <MapPin className="h-3 w-3" />
@@ -356,7 +360,7 @@ export default async function NotificationsPage() {
                           )}
                         </div>
                         <div className="text-xs text-muted-foreground whitespace-nowrap">
-                          {formatTimeAgo(activity.timestamp)}
+                          {formatTimeAgo(activity.timestamp, tn)}
                         </div>
                       </Link>
                     ))}

@@ -73,6 +73,7 @@ import {
 } from '@/lib/export/export-utils'
 import { RequestComments } from './request-comments'
 import { toast } from 'sonner'
+import { useTranslation } from '@/lib/i18n/use-translation'
 
 // Helper function to extract base name from work order title (removes Q1, Q2, Month1, etc.)
 function getBaseWorkOrderName(title: string): string {
@@ -188,6 +189,8 @@ function WorkOrdersGroupedViewContractor({
   onEditChange,
   onSaveGroupPrice,
 }: WorkOrdersGroupedViewContractorProps) {
+  const { t } = useTranslation()
+  const tr = t.dashboard.requestsList
   const [expandedGroups, setExpandedGroups] = useState<Set<string>>(new Set())
   const [editingGroup, setEditingGroup] = useState<string | null>(null)
   const [groupPrice, setGroupPrice] = useState('')
@@ -261,18 +264,18 @@ function WorkOrdersGroupedViewContractor({
                     <span className="font-medium">{groupName}</span>
                     {!isSingleItem && (
                       <Badge variant="secondary" className="text-xs">
-                        {items.length} occurrences
+                        {items.length} {tr.occurrences}
                       </Badge>
                     )}
                     {hasAdhoc && (
                       <Badge variant="outline" className="text-purple-600 text-xs">
-                        Client Added
+                        {tr.clientAdded}
                       </Badge>
                     )}
                     {/* Show recurring type for client-added items */}
                     {hasAdhoc && items[0].recurringType && items[0].recurringType !== 'ONCE' && (
                       <Badge variant="outline" className="text-blue-600 text-xs">
-                        {items[0].recurringType === 'MONTHLY' ? 'Monthly' : 'Quarterly'}
+                        {items[0].recurringType === 'MONTHLY' ? tr.monthly : tr.quarterly}
                       </Badge>
                     )}
                   </div>
@@ -291,7 +294,7 @@ function WorkOrdersGroupedViewContractor({
                     {/* Date input - for single items it's the date, for groups it's the start date */}
                     <div className="flex items-center gap-1">
                       {!isSingleItem && (
-                        <span className="text-xs text-muted-foreground">Start:</span>
+                        <span className="text-xs text-muted-foreground">{tr.start}</span>
                       )}
                       <Input
                         type="date"
@@ -301,7 +304,7 @@ function WorkOrdersGroupedViewContractor({
                       />
                     </div>
                     <div className="flex items-center">
-                      <span className="text-sm text-muted-foreground mr-1">SAR</span>
+                      <span className="text-sm text-muted-foreground mr-1">{tr.sar}</span>
                       <Input
                         type="number"
                         step="0.01"
@@ -311,7 +314,7 @@ function WorkOrdersGroupedViewContractor({
                         className="w-[100px] text-right"
                       />
                       {!isSingleItem && (
-                        <span className="text-xs text-muted-foreground ml-1">each</span>
+                        <span className="text-xs text-muted-foreground ml-1">{tr.each}</span>
                       )}
                     </div>
                     <Button
@@ -334,7 +337,7 @@ function WorkOrdersGroupedViewContractor({
                     <div className="text-right">
                       {hasPendingPrice ? (
                         <Badge variant="outline" className="text-orange-600 border-orange-300">
-                          Needs Price
+                          {tr.needsPrice}
                         </Badge>
                       ) : (
                         <span className="font-semibold text-primary">
@@ -348,7 +351,7 @@ function WorkOrdersGroupedViewContractor({
                       onClick={() => startEditGroup(groupName, items)}
                     >
                       <Pencil className="h-3 w-3 mr-1" />
-                      Edit
+                      {tr.edit}
                     </Button>
                   </>
                 )}
@@ -366,7 +369,7 @@ function WorkOrdersGroupedViewContractor({
                       {new Date(items[0].scheduledDate).toLocaleDateString()}
                     </div>
                   ) : (
-                    <span>No date scheduled</span>
+                    <span>{tr.noDateScheduled}</span>
                   )}
                 </div>
               </div>
@@ -414,7 +417,7 @@ function WorkOrdersGroupedViewContractor({
                           {wo.price !== null ? (
                             <span className="font-medium">SAR {wo.price.toLocaleString('en-US', { minimumFractionDigits: 2 })}</span>
                           ) : (
-                            <Badge variant="outline" className="text-xs text-orange-600">Pending</Badge>
+                            <Badge variant="outline" className="text-xs text-orange-600">{tr.pending}</Badge>
                           )}
                           <Button size="sm" variant="ghost" onClick={() => onStartEdit(wo)}>
                             <Pencil className="h-3 w-3" />
@@ -434,6 +437,8 @@ function WorkOrdersGroupedViewContractor({
 }
 
 export function RequestsList({ branchId, userRole, userId }: RequestsListProps) {
+  const { t } = useTranslation()
+  const tr = t.dashboard.requestsList
   const router = useRouter()
   const [requests, setRequests] = useState<Request[]>([])
   const [loading, setLoading] = useState(true)
@@ -662,19 +667,19 @@ export function RequestsList({ branchId, userRole, userId }: RequestsListProps) 
     // Validation for recurring vs one-time
     if (contractorNewRequest.recurringType === 'ONCE') {
       if (!contractorNewRequest.quotedPrice || !contractorNewRequest.quotedDate) {
-        setError('Please provide both price and scheduled date')
+        setError(tr.providePriceAndDate)
         return
       }
     } else {
       // For recurring, check occurrences
       if (occurrences.length === 0) {
-        setError('Please set a start date to generate work orders')
+        setError(tr.setStartDate)
         return
       }
       // Check if at least one occurrence has a price
       const hasAnyPrice = occurrences.some(o => o.price && parseFloat(o.price) > 0)
       if (!hasAnyPrice) {
-        setError('Please set price for at least one work order')
+        setError(tr.setAtLeastOnePrice)
         return
       }
     }
@@ -740,7 +745,7 @@ export function RequestsList({ branchId, userRole, userId }: RequestsListProps) 
       })
       setOccurrences([])
       setScheduleType('auto')
-      setSuccessMessage('Work order request sent to client for approval')
+      setSuccessMessage(tr.workOrderSent)
       setTimeout(() => setSuccessMessage(''), 3000)
       fetchRequests()
       router.refresh()
@@ -755,7 +760,7 @@ export function RequestsList({ branchId, userRole, userId }: RequestsListProps) 
     e.preventDefault()
 
     if (!contractorNewRequest.title) {
-      setError('Title is required')
+      setError(tr.titleRequired)
       return
     }
 
@@ -867,7 +872,7 @@ export function RequestsList({ branchId, userRole, userId }: RequestsListProps) 
   }
 
   const handleDeleteRequest = async (requestId: string) => {
-    if (!confirm('Are you sure you want to delete this request?')) return
+    if (!confirm(tr.deleteConfirm)) return
 
     try {
       await fetch(`/api/branches/${branchId}/requests/${requestId}`, {
@@ -895,7 +900,7 @@ export function RequestsList({ branchId, userRole, userId }: RequestsListProps) 
   const handleSubmitQuote = async () => {
     if (!quoteRequest) return
     if (!quoteData.quotedPrice || !quoteData.quotedDate) {
-      setError('Please provide both price and scheduled date')
+      setError(tr.providePriceAndDate)
       return
     }
 
@@ -925,7 +930,7 @@ export function RequestsList({ branchId, userRole, userId }: RequestsListProps) 
       setQuoteRequest(null)
       setQuoteData({ quotedPrice: '', quotedDate: '', quotedNotes: '' })
       setQuoteQuotationFile(null)
-      setSuccessMessage('Quote sent to client for approval')
+      setSuccessMessage(tr.quoteSentSuccess)
       setTimeout(() => setSuccessMessage(''), 3000)
       fetchRequests()
       router.refresh()
@@ -938,7 +943,7 @@ export function RequestsList({ branchId, userRole, userId }: RequestsListProps) 
 
   // Format work order type for display
   const formatWorkOrderType = (type: string | null | undefined): string => {
-    if (!type) return 'Service'
+    if (!type) return tr.service
     return type.charAt(0) + type.slice(1).toLowerCase()
   }
 
@@ -1021,33 +1026,33 @@ export function RequestsList({ branchId, userRole, userId }: RequestsListProps) 
       <Card>
         <CardHeader className="flex flex-row items-center justify-between">
           <div>
-            <CardTitle>Service Requests</CardTitle>
+            <CardTitle>{tr.serviceRequests}</CardTitle>
             <CardDescription>
               {userRole === 'CONTRACTOR'
-                ? 'Manage work orders and service requests for this branch'
-                : 'View and submit service requests for this branch'}
+                ? tr.contractorDesc
+                : tr.clientDesc}
             </CardDescription>
           </div>
           <div className="flex items-center gap-2">
             {userRole === 'CONTRACTOR' && (
               <>
                 <ExportDialog
-                  title="Export Request History"
-                  description="Download your request history as Excel or CSV"
+                  title={tr.exportTitle}
+                  description={tr.exportDesc}
                   itemCount={requests.length}
                   onExport={handleExportRequests}
                   showDateRange={true}
                 />
                 <Button onClick={() => setContractorCreateDialogOpen(true)}>
                   <Plus className="mr-2 h-4 w-4" />
-                  Create Work Order Request
+                  {tr.createWorkOrderRequest}
                 </Button>
               </>
             )}
             {userRole !== 'CONTRACTOR' && (
               <Button onClick={() => setCreateDialogOpen(true)}>
                 <Plus className="mr-2 h-4 w-4" />
-                New Request
+                {tr.newRequest}
               </Button>
             )}
           </div>
@@ -1057,17 +1062,17 @@ export function RequestsList({ branchId, userRole, userId }: RequestsListProps) 
             <div className="flex flex-col items-center justify-center py-12 text-center">
               <FileText className="h-12 w-12 text-muted-foreground/30 mb-4" />
               <h3 className="text-lg font-semibold mb-2">
-                No pending requests
+                {tr.noPendingRequests}
               </h3>
               <p className="text-muted-foreground max-w-md mb-4">
                 {userRole === 'CONTRACTOR'
-                  ? 'No service requests awaiting your review. Accepted requests appear in the Checklist tab.'
-                  : 'Submit a service request to get started. Accepted requests appear in the Checklist tab.'}
+                  ? tr.noRequestsContractor
+                  : tr.noRequestsClient}
               </p>
               {userRole !== 'CONTRACTOR' && requests.length === 0 && (
                 <Button onClick={() => setCreateDialogOpen(true)}>
                   <Plus className="mr-2 h-4 w-4" />
-                  Create Request
+                  {tr.createRequest}
                 </Button>
               )}
             </div>
@@ -1120,22 +1125,22 @@ export function RequestsList({ branchId, userRole, userId }: RequestsListProps) 
                       {userRole === 'CONTRACTOR' && request.status === 'REQUESTED' && request.createdByRole === 'CLIENT' && (
                         <DropdownMenuItem onClick={(e) => { e.stopPropagation(); openQuoteDialog(request); }}>
                           <Send className="mr-2 h-4 w-4" />
-                          Review & Quote
+                          {tr.reviewAndQuote}
                         </DropdownMenuItem>
                       )}
                       {request.status === 'REQUESTED' && (
                         <DropdownMenuItem onClick={() => handleUpdateStatus(request.id, 'IN_PROGRESS')}>
-                          Mark In Progress
+                          {tr.markInProgress}
                         </DropdownMenuItem>
                       )}
                       {request.status === 'IN_PROGRESS' && (
                         <DropdownMenuItem onClick={() => handleUpdateStatus(request.id, 'COMPLETED')}>
-                          Mark Completed
+                          {tr.markCompleted}
                         </DropdownMenuItem>
                       )}
                       {request.status !== 'CANCELLED' && request.status !== 'COMPLETED' && (
                         <DropdownMenuItem onClick={() => handleUpdateStatus(request.id, 'CANCELLED')}>
-                          Cancel Request
+                          {tr.cancelRequest}
                         </DropdownMenuItem>
                       )}
                       {userRole === 'CONTRACTOR' && (
@@ -1143,7 +1148,7 @@ export function RequestsList({ branchId, userRole, userId }: RequestsListProps) 
                           onClick={() => handleDeleteRequest(request.id)}
                           className="text-destructive"
                         >
-                          Delete
+                          {tr.delete}
                         </DropdownMenuItem>
                       )}
                     </DropdownMenuContent>
@@ -1159,9 +1164,9 @@ export function RequestsList({ branchId, userRole, userId }: RequestsListProps) 
       <Dialog open={createDialogOpen} onOpenChange={setCreateDialogOpen}>
         <DialogContent>
           <DialogHeader>
-            <DialogTitle>New Service Request</DialogTitle>
+            <DialogTitle>{tr.newServiceRequest}</DialogTitle>
             <DialogDescription>
-              Create a new service request for this branch.
+              {tr.newRequestDesc}
             </DialogDescription>
           </DialogHeader>
           <form onSubmit={handleCreateRequest}>
@@ -1172,28 +1177,28 @@ export function RequestsList({ branchId, userRole, userId }: RequestsListProps) 
             )}
             <div className="space-y-4">
               <div className="space-y-2">
-                <Label htmlFor="title">Title *</Label>
+                <Label htmlFor="title">{tr.titleLabel}</Label>
                 <Input
                   id="title"
                   value={newRequest.title}
                   onChange={(e) => setNewRequest({ ...newRequest, title: e.target.value })}
-                  placeholder="Brief description of the request"
+                  placeholder={tr.titlePlaceholder}
                   required
                 />
               </div>
               <div className="space-y-2">
-                <Label htmlFor="description">Description</Label>
+                <Label htmlFor="description">{tr.description}</Label>
                 <Textarea
                   id="description"
                   value={newRequest.description}
                   onChange={(e) => setNewRequest({ ...newRequest, description: e.target.value })}
-                  placeholder="Detailed description of the work needed"
+                  placeholder={tr.descriptionPlaceholder}
                   rows={3}
                 />
               </div>
               <div className="grid grid-cols-2 gap-4">
                 <div className="space-y-2">
-                  <Label htmlFor="priority">Priority</Label>
+                  <Label htmlFor="priority">{tr.priority}</Label>
                   <Select
                     value={newRequest.priority}
                     onValueChange={(value) => setNewRequest({ ...newRequest, priority: value as Request['priority'] })}
@@ -1202,15 +1207,15 @@ export function RequestsList({ branchId, userRole, userId }: RequestsListProps) 
                       <SelectValue />
                     </SelectTrigger>
                     <SelectContent>
-                      <SelectItem value="LOW">Low</SelectItem>
-                      <SelectItem value="MEDIUM">Medium</SelectItem>
-                      <SelectItem value="HIGH">High</SelectItem>
-                      <SelectItem value="URGENT">Urgent</SelectItem>
+                      <SelectItem value="LOW">{tr.low}</SelectItem>
+                      <SelectItem value="MEDIUM">{tr.medium}</SelectItem>
+                      <SelectItem value="HIGH">{tr.high}</SelectItem>
+                      <SelectItem value="URGENT">{tr.urgent}</SelectItem>
                     </SelectContent>
                   </Select>
                 </div>
                 <div className="space-y-2">
-                  <Label htmlFor="dueDate">Due Date</Label>
+                  <Label htmlFor="dueDate">{tr.dueDate}</Label>
                   <Input
                     id="dueDate"
                     type="date"
@@ -1222,11 +1227,11 @@ export function RequestsList({ branchId, userRole, userId }: RequestsListProps) 
             </div>
             <DialogFooter className="mt-6">
               <Button type="button" variant="outline" onClick={() => setCreateDialogOpen(false)}>
-                Cancel
+                {tr.cancel}
               </Button>
               <Button type="submit" disabled={creating}>
                 {creating && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
-                Create Request
+                {tr.createRequest}
               </Button>
             </DialogFooter>
           </form>
@@ -1237,9 +1242,9 @@ export function RequestsList({ branchId, userRole, userId }: RequestsListProps) 
       <Dialog open={contractorCreateDialogOpen} onOpenChange={setContractorCreateDialogOpen}>
         <DialogContent className="sm:max-w-[600px] max-h-[90vh] overflow-y-auto">
           <DialogHeader>
-            <DialogTitle>Create Work Order Request</DialogTitle>
+            <DialogTitle>{tr.createWorkOrderRequest}</DialogTitle>
             <DialogDescription>
-              Create a work order request for the client to approve. They will need to sign to accept.
+              {tr.createWorkOrderDesc}
             </DialogDescription>
           </DialogHeader>
           <form onSubmit={handleContractorCreateRequest}>
@@ -1251,7 +1256,7 @@ export function RequestsList({ branchId, userRole, userId }: RequestsListProps) 
             <div className="space-y-4">
               {/* Service Type */}
               <div className="space-y-2">
-                <Label htmlFor="contractor-workOrderType">Service Type *</Label>
+                <Label htmlFor="contractor-workOrderType">{tr.serviceType}</Label>
                 <Select
                   value={contractorNewRequest.workOrderType}
                   onValueChange={(value: 'SERVICE' | 'INSPECTION' | 'MAINTENANCE' | 'INSTALLATION') => {
@@ -1263,41 +1268,41 @@ export function RequestsList({ branchId, userRole, userId }: RequestsListProps) 
                     <SelectValue />
                   </SelectTrigger>
                   <SelectContent>
-                    <SelectItem value="SERVICE">🔧 Repair/Service</SelectItem>
-                    <SelectItem value="INSPECTION">🔍 Inspection</SelectItem>
-                    <SelectItem value="MAINTENANCE">🛠️ Maintenance</SelectItem>
-                    <SelectItem value="INSTALLATION">📦 Installation</SelectItem>
+                    <SelectItem value="SERVICE">🔧 {tr.repairService}</SelectItem>
+                    <SelectItem value="INSPECTION">🔍 {tr.inspection}</SelectItem>
+                    <SelectItem value="MAINTENANCE">🛠️ {tr.maintenance}</SelectItem>
+                    <SelectItem value="INSTALLATION">📦 {tr.installation}</SelectItem>
                   </SelectContent>
                 </Select>
               </div>
 
               {/* Title */}
               <div className="space-y-2">
-                <Label htmlFor="contractor-title">Work Order Title *</Label>
+                <Label htmlFor="contractor-title">{tr.workOrderTitle}</Label>
                 <Input
                   id="contractor-title"
                   value={contractorNewRequest.title}
                   onChange={(e) => setContractorNewRequest({ ...contractorNewRequest, title: e.target.value })}
-                  placeholder="e.g., Annual Fire Alarm Inspection"
+                  placeholder={tr.titleExample}
                   required
                 />
               </div>
 
               {/* Description */}
               <div className="space-y-2">
-                <Label htmlFor="contractor-description">Description</Label>
+                <Label htmlFor="contractor-description">{tr.description}</Label>
                 <Textarea
                   id="contractor-description"
                   value={contractorNewRequest.description}
                   onChange={(e) => setContractorNewRequest({ ...contractorNewRequest, description: e.target.value })}
-                  placeholder="Describe the work to be performed..."
+                  placeholder={tr.descriptionPlaceholder2}
                   rows={3}
                 />
               </div>
 
               {/* Recurring Type */}
               <div className="space-y-2">
-                <Label htmlFor="contractor-recurringType">Frequency</Label>
+                <Label htmlFor="contractor-recurringType">{tr.frequency}</Label>
                 <Select
                   value={contractorNewRequest.recurringType}
                   onValueChange={(value: 'ONCE' | 'MONTHLY' | 'QUARTERLY' | 'SEMI_ANNUALLY') => setContractorNewRequest({ ...contractorNewRequest, recurringType: value })}
@@ -1306,10 +1311,10 @@ export function RequestsList({ branchId, userRole, userId }: RequestsListProps) 
                     <SelectValue />
                   </SelectTrigger>
                   <SelectContent>
-                    <SelectItem value="ONCE">One-time</SelectItem>
-                    <SelectItem value="MONTHLY">Monthly (12 work orders)</SelectItem>
-                    <SelectItem value="QUARTERLY">Quarterly (4 work orders)</SelectItem>
-                    <SelectItem value="SEMI_ANNUALLY">Semi-Annually (2 work orders)</SelectItem>
+                    <SelectItem value="ONCE">{tr.oneTime}</SelectItem>
+                    <SelectItem value="MONTHLY">{tr.monthly12}</SelectItem>
+                    <SelectItem value="QUARTERLY">{tr.quarterly4}</SelectItem>
+                    <SelectItem value="SEMI_ANNUALLY">{tr.semiAnnually2}</SelectItem>
                   </SelectContent>
                 </Select>
               </div>
@@ -1317,16 +1322,16 @@ export function RequestsList({ branchId, userRole, userId }: RequestsListProps) 
               {/* Assigned Personnel */}
               {teamMembers.length > 0 && (
                 <div className="space-y-2">
-                  <Label htmlFor="contractor-assignedTo">Assign Personnel</Label>
+                  <Label htmlFor="contractor-assignedTo">{tr.assignPersonnel}</Label>
                   <Select
                     value={contractorNewRequest.assignedTo}
                     onValueChange={(value) => setContractorNewRequest({ ...contractorNewRequest, assignedTo: value })}
                   >
                     <SelectTrigger>
-                      <SelectValue placeholder="Select team member (optional)" />
+                      <SelectValue placeholder={tr.selectTeamMember} />
                     </SelectTrigger>
                     <SelectContent>
-                      <SelectItem value="unassigned">Unassigned</SelectItem>
+                      <SelectItem value="unassigned">{tr.unassigned}</SelectItem>
                       {teamMembers.map((member) => (
                         <SelectItem key={member.id} value={member.userId}>
                           <span className="flex items-center gap-2">
@@ -1342,19 +1347,19 @@ export function RequestsList({ branchId, userRole, userId }: RequestsListProps) 
 
               {/* Work Order Notes */}
               <div className="space-y-2">
-                <Label htmlFor="contractor-workOrderNotes">Work Order Notes <span className="text-xs text-muted-foreground">(optional)</span></Label>
+                <Label htmlFor="contractor-workOrderNotes">{tr.workOrderNotes} <span className="text-xs text-muted-foreground">(optional)</span></Label>
                 <Textarea
                   id="contractor-workOrderNotes"
                   value={contractorNewRequest.workOrderNotes}
                   onChange={(e) => setContractorNewRequest({ ...contractorNewRequest, workOrderNotes: e.target.value })}
-                  placeholder="Additional notes or instructions for this work order..."
+                  placeholder={tr.workOrderNotesPlaceholder}
                   rows={3}
                 />
               </div>
 
               {/* Document Upload */}
               <div className="space-y-2">
-                <Label>Upload Document <span className="text-xs text-muted-foreground">(optional)</span></Label>
+                <Label>{tr.uploadDocument} <span className="text-xs text-muted-foreground">(optional)</span></Label>
                 <FileUploadDropzone
                   onFilesSelected={handleQuotationUpload}
                   accept=".pdf,.doc,.docx,.jpg,.jpeg,.png,.gif,.webp"
@@ -1362,7 +1367,7 @@ export function RequestsList({ branchId, userRole, userId }: RequestsListProps) 
                   uploading={uploadingQuotation}
                   uploadedFiles={quotationFile ? [quotationFile] : []}
                   onRemoveFile={() => setQuotationFile(null)}
-                  label="Upload document (PDF, DOC, images)"
+                  label={tr.uploadDocumentLabel}
                   maxFiles={1}
                 />
               </div>
@@ -1371,7 +1376,7 @@ export function RequestsList({ branchId, userRole, userId }: RequestsListProps) 
               {contractorNewRequest.recurringType === 'ONCE' && (
                 <div className="grid grid-cols-2 gap-4">
                   <div className="space-y-2">
-                    <Label htmlFor="contractor-quotedPrice">Price (SAR) *</Label>
+                    <Label htmlFor="contractor-quotedPrice">{tr.priceSar}</Label>
                     <Input
                       id="contractor-quotedPrice"
                       type="number"
@@ -1384,7 +1389,7 @@ export function RequestsList({ branchId, userRole, userId }: RequestsListProps) 
                     />
                   </div>
                   <div className="space-y-2">
-                    <Label htmlFor="contractor-quotedDate">Scheduled Date *</Label>
+                    <Label htmlFor="contractor-quotedDate">{tr.scheduledDate}</Label>
                     <Input
                       id="contractor-quotedDate"
                       type="date"
@@ -1402,7 +1407,7 @@ export function RequestsList({ branchId, userRole, userId }: RequestsListProps) 
                 <div className="space-y-4 p-4 bg-muted/30 rounded-lg border">
                   {/* Schedule Type Toggle */}
                   <div className="flex items-center gap-4">
-                    <Label className="text-sm font-medium">Schedule:</Label>
+                    <Label className="text-sm font-medium">{tr.scheduleLabel}</Label>
                     <div className="flex items-center gap-4">
                       <label className="flex items-center gap-2 cursor-pointer">
                         <input
@@ -1412,7 +1417,7 @@ export function RequestsList({ branchId, userRole, userId }: RequestsListProps) 
                           onChange={() => setScheduleType('auto')}
                           className="h-4 w-4"
                         />
-                        <span className="text-sm">Auto (set start date)</span>
+                        <span className="text-sm">{tr.autoSchedule}</span>
                       </label>
                       <label className="flex items-center gap-2 cursor-pointer">
                         <input
@@ -1422,7 +1427,7 @@ export function RequestsList({ branchId, userRole, userId }: RequestsListProps) 
                           onChange={() => setScheduleType('manual')}
                           className="h-4 w-4"
                         />
-                        <span className="text-sm">Manual (set each date)</span>
+                        <span className="text-sm">{tr.manualSchedule}</span>
                       </label>
                     </div>
                   </div>
@@ -1430,7 +1435,7 @@ export function RequestsList({ branchId, userRole, userId }: RequestsListProps) 
                   {/* Start Date for Auto */}
                   {scheduleType === 'auto' && (
                     <div className="space-y-2">
-                      <Label htmlFor="contractor-startDate">Start Date *</Label>
+                      <Label htmlFor="contractor-startDate">{tr.startDate}</Label>
                       <Input
                         id="contractor-startDate"
                         type="date"
@@ -1461,22 +1466,22 @@ export function RequestsList({ branchId, userRole, userId }: RequestsListProps) 
                         setOccurrences(emptyOccurrences)
                       }}
                     >
-                      Generate {contractorNewRequest.recurringType === 'MONTHLY' ? '12' :
-                        contractorNewRequest.recurringType === 'QUARTERLY' ? '4' : '2'} Work Orders
+                      {tr.generateWorkOrders} {contractorNewRequest.recurringType === 'MONTHLY' ? '12' :
+                        contractorNewRequest.recurringType === 'QUARTERLY' ? '4' : '2'} {tr.workOrdersCount}
                     </Button>
                   )}
 
                   {/* Occurrences Table */}
                   {occurrences.length > 0 && (
                     <div className="space-y-2">
-                      <Label className="text-sm font-medium">Work Orders:</Label>
+                      <Label className="text-sm font-medium">{tr.workOrdersLabel}</Label>
                       <div className="border rounded-lg overflow-hidden">
                         <table className="w-full text-sm">
                           <thead className="bg-muted">
                             <tr>
                               <th className="px-3 py-2 text-left font-medium w-12">#</th>
-                              <th className="px-3 py-2 text-left font-medium">Visit Date</th>
-                              <th className="px-3 py-2 text-left font-medium">Price (SAR)</th>
+                              <th className="px-3 py-2 text-left font-medium">{tr.visitDate}</th>
+                              <th className="px-3 py-2 text-left font-medium">{tr.priceSarShort}</th>
                             </tr>
                           </thead>
                           <tbody>
@@ -1513,8 +1518,8 @@ export function RequestsList({ branchId, userRole, userId }: RequestsListProps) 
                       {/* Total */}
                       <div className="p-3 bg-blue-50 border border-blue-200 rounded-lg">
                         <p className="text-sm text-blue-800">
-                          <strong>Total:</strong> SAR {occurrences.reduce((sum, o) => sum + (o.price ? parseFloat(o.price) : 0), 0).toLocaleString('en-US', { minimumFractionDigits: 2 })}
-                          {' '}({occurrences.length} work orders)
+                          <strong>{tr.totalLabel}</strong> {tr.sar} {occurrences.reduce((sum, o) => sum + (o.price ? parseFloat(o.price) : 0), 0).toLocaleString('en-US', { minimumFractionDigits: 2 })}
+                          {' '}({occurrences.length} {tr.workOrdersCount})
                         </p>
                       </div>
                     </div>
@@ -1524,7 +1529,7 @@ export function RequestsList({ branchId, userRole, userId }: RequestsListProps) 
             </div>
             <DialogFooter className="mt-6 flex-col sm:flex-row gap-2">
               <Button type="button" variant="outline" onClick={() => setContractorCreateDialogOpen(false)}>
-                Cancel
+                {tr.cancel}
               </Button>
               <Button
                 type="button"
@@ -1535,12 +1540,12 @@ export function RequestsList({ branchId, userRole, userId }: RequestsListProps) 
               >
                 {startingImmediately && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
                 <Zap className="mr-2 h-4 w-4" />
-                Start Immediately
+                {tr.startImmediately}
               </Button>
               <Button type="submit" disabled={contractorCreating || startingImmediately}>
                 {contractorCreating && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
                 <Send className="mr-2 h-4 w-4" />
-                Send to Client
+                {tr.sendToClient}
               </Button>
             </DialogFooter>
           </form>
@@ -1555,7 +1560,7 @@ export function RequestsList({ branchId, userRole, userId }: RequestsListProps) 
               {selectedRequest?.title}
             </DialogTitle>
             <DialogDescription>
-              Service Request from Client
+              {tr.serviceRequestFromClient}
             </DialogDescription>
           </DialogHeader>
           {selectedRequest && (
@@ -1568,14 +1573,14 @@ export function RequestsList({ branchId, userRole, userId }: RequestsListProps) 
                   <Badge variant="outline">{selectedRequest.workOrderType}</Badge>
                 )}
                 {selectedRequest.recurringType && selectedRequest.recurringType !== 'ONCE' && (
-                  <Badge variant="secondary">{selectedRequest.recurringType === 'MONTHLY' ? 'Monthly' : 'Quarterly'}</Badge>
+                  <Badge variant="secondary">{selectedRequest.recurringType === 'MONTHLY' ? tr.monthly : tr.quarterly}</Badge>
                 )}
               </div>
 
               {/* Description */}
               {selectedRequest.description && (
                 <div className="bg-muted/50 p-3 rounded-lg">
-                  <p className="text-sm font-medium text-muted-foreground mb-1">Description</p>
+                  <p className="text-sm font-medium text-muted-foreground mb-1">{tr.description}</p>
                   <p className="text-sm">{selectedRequest.description}</p>
                 </div>
               )}
@@ -1583,28 +1588,28 @@ export function RequestsList({ branchId, userRole, userId }: RequestsListProps) 
               {/* Request Details Grid */}
               <div className="grid grid-cols-2 md:grid-cols-3 gap-4 text-sm">
                 <div>
-                  <p className="font-medium text-muted-foreground">Created</p>
+                  <p className="font-medium text-muted-foreground">{tr.created}</p>
                   <p>{new Date(selectedRequest.createdAt).toLocaleDateString()}</p>
                 </div>
                 {selectedRequest.preferredDate && (
                   <div>
-                    <p className="font-medium text-muted-foreground">Preferred Date</p>
+                    <p className="font-medium text-muted-foreground">{tr.preferredDate}</p>
                     <p>{new Date(selectedRequest.preferredDate).toLocaleDateString()}</p>
                   </div>
                 )}
                 {selectedRequest.preferredTimeSlot && (
                   <div>
-                    <p className="font-medium text-muted-foreground">Preferred Time</p>
+                    <p className="font-medium text-muted-foreground">{tr.preferredTime}</p>
                     <p>{selectedRequest.preferredTimeSlot}</p>
                   </div>
                 )}
                 <div>
-                  <p className="font-medium text-muted-foreground">Created By</p>
+                  <p className="font-medium text-muted-foreground">{tr.createdBy}</p>
                   <p className="capitalize">{selectedRequest.createdByRole.toLowerCase()}</p>
                 </div>
                 {selectedRequest.assignedTo && (
                   <div>
-                    <p className="font-medium text-muted-foreground">Assigned Technician</p>
+                    <p className="font-medium text-muted-foreground">{tr.assignedTechnician}</p>
                     <p className="text-sm font-medium text-blue-600">
                       {teamMembers.find(m => m.userId === selectedRequest.assignedTo)?.user.name ||
                         teamMembers.find(m => m.userId === selectedRequest.assignedTo)?.user.email ||
@@ -1617,7 +1622,7 @@ export function RequestsList({ branchId, userRole, userId }: RequestsListProps) 
               {/* Photos */}
               {selectedRequest.photos && selectedRequest.photos.length > 0 && (
                 <div>
-                  <p className="text-sm font-medium text-muted-foreground mb-2">Attached Photos</p>
+                  <p className="text-sm font-medium text-muted-foreground mb-2">{tr.attachedPhotos}</p>
                   <div className="grid grid-cols-3 gap-2">
                     {selectedRequest.photos.map((photo, idx) => photo?.url ? (
                       <img
@@ -1635,15 +1640,15 @@ export function RequestsList({ branchId, userRole, userId }: RequestsListProps) 
               {/* Equipment List - For Sticker Inspections */}
               {selectedRequest.workOrderType === 'STICKER_INSPECTION' && selectedRequest.equipment && selectedRequest.equipment.length > 0 && (
                 <div className="space-y-2 p-4 bg-amber-50 border border-amber-200 rounded-lg">
-                  <p className="text-sm font-medium text-amber-800">Equipment for Inspection ({selectedRequest.equipment.length} items)</p>
+                  <p className="text-sm font-medium text-amber-800">{tr.equipmentForInspection} ({selectedRequest.equipment.length} {tr.items})</p>
                   <div className="border border-amber-200 rounded-lg overflow-hidden">
                     <table className="w-full text-sm">
                       <thead className="bg-amber-100">
                         <tr>
-                          <th className="px-3 py-2 text-left text-amber-800">Equipment #</th>
-                          <th className="px-3 py-2 text-left text-amber-800">Type</th>
-                          <th className="px-3 py-2 text-left text-amber-800">Location</th>
-                          <th className="px-3 py-2 text-left text-amber-800">Expiry</th>
+                          <th className="px-3 py-2 text-left text-amber-800">{tr.equipmentNumber}</th>
+                          <th className="px-3 py-2 text-left text-amber-800">{tr.type}</th>
+                          <th className="px-3 py-2 text-left text-amber-800">{tr.location}</th>
+                          <th className="px-3 py-2 text-left text-amber-800">{tr.expiry}</th>
                         </tr>
                       </thead>
                       <tbody className="bg-white divide-y divide-amber-100">
@@ -1668,23 +1673,23 @@ export function RequestsList({ branchId, userRole, userId }: RequestsListProps) 
               {/* Quote Info (if already quoted) */}
               {selectedRequest.quotedPrice && (
                 <div className="bg-purple-50 border border-purple-200 p-4 rounded-lg">
-                  <p className="text-sm font-medium text-purple-800 mb-2">Quote Sent</p>
+                  <p className="text-sm font-medium text-purple-800 mb-2">{tr.quoteSent}</p>
 
                   {/* For recurring requests with occurrences - show table */}
                   {selectedRequest.recurringType && selectedRequest.recurringType !== 'ONCE' && selectedRequest.occurrences && selectedRequest.occurrences.length > 0 ? (
                     <div className="space-y-3">
                       <p className="text-sm text-purple-700">
-                        {selectedRequest.recurringType === 'MONTHLY' ? '12 Monthly' :
-                          selectedRequest.recurringType === 'QUARTERLY' ? '4 Quarterly' :
-                            selectedRequest.recurringType === 'SEMI_ANNUALLY' ? '2 Semi-Annual' : ''} Work Orders
+                        {selectedRequest.recurringType === 'MONTHLY' ? `12 ${tr.monthlyWorkOrders}` :
+                          selectedRequest.recurringType === 'QUARTERLY' ? `4 ${tr.quarterlyWorkOrders}` :
+                            selectedRequest.recurringType === 'SEMI_ANNUALLY' ? `2 ${tr.semiAnnualWorkOrders}` : ''}
                       </p>
                       <div className="border border-purple-200 rounded-lg overflow-hidden bg-white">
                         <table className="w-full text-sm">
                           <thead className="bg-purple-100">
                             <tr>
                               <th className="px-3 py-2 text-left text-purple-800 font-medium">#</th>
-                              <th className="px-3 py-2 text-left text-purple-800 font-medium">Visit Date</th>
-                              <th className="px-3 py-2 text-right text-purple-800 font-medium">Price (SAR)</th>
+                              <th className="px-3 py-2 text-left text-purple-800 font-medium">{tr.visitDate}</th>
+                              <th className="px-3 py-2 text-right text-purple-800 font-medium">{tr.priceSarShort}</th>
                             </tr>
                           </thead>
                           <tbody className="divide-y divide-purple-100">
@@ -1702,7 +1707,7 @@ export function RequestsList({ branchId, userRole, userId }: RequestsListProps) 
                           </tbody>
                           <tfoot className="bg-purple-50 border-t border-purple-200">
                             <tr>
-                              <td colSpan={2} className="px-3 py-2 font-semibold text-purple-800">Total</td>
+                              <td colSpan={2} className="px-3 py-2 font-semibold text-purple-800">{tr.total}</td>
                               <td className="px-3 py-2 text-right font-bold text-purple-900">
                                 SAR {selectedRequest.quotedPrice.toLocaleString()}
                               </td>
@@ -1715,12 +1720,12 @@ export function RequestsList({ branchId, userRole, userId }: RequestsListProps) 
                     /* For one-time requests - show simple view */
                     <div className="grid grid-cols-2 gap-2 text-sm">
                       <div>
-                        <p className="text-purple-600">Price</p>
+                        <p className="text-purple-600">{tr.price}</p>
                         <p className="font-semibold">SAR {selectedRequest.quotedPrice.toLocaleString()}</p>
                       </div>
                       {selectedRequest.quotedDate && (
                         <div>
-                          <p className="text-purple-600">Scheduled Date</p>
+                          <p className="text-purple-600">{tr.scheduledDate.replace(' *', '')}</p>
                           <p className="font-semibold">{new Date(selectedRequest.quotedDate).toLocaleDateString()}</p>
                         </div>
                       )}
@@ -1729,12 +1734,12 @@ export function RequestsList({ branchId, userRole, userId }: RequestsListProps) 
 
                   {selectedRequest.quotedNotes && (
                     <div className="mt-3 pt-3 border-t border-purple-200">
-                      <p className="text-purple-600 text-sm mb-1">Notes from Contractor</p>
+                      <p className="text-purple-600 text-sm mb-1">{tr.notesFromContractor}</p>
                       <p className="text-sm text-purple-900 whitespace-pre-wrap">{selectedRequest.quotedNotes}</p>
                     </div>
                   )}
                   {selectedRequest.status === 'QUOTED' && (
-                    <p className="text-xs text-purple-600 mt-2">Waiting for client approval...</p>
+                    <p className="text-xs text-purple-600 mt-2">{tr.waitingForApproval}</p>
                   )}
                 </div>
               )}
@@ -1753,7 +1758,7 @@ export function RequestsList({ branchId, userRole, userId }: RequestsListProps) 
                         className="flex-1"
                       >
                         <Banknote className="mr-2 h-4 w-4" />
-                        Send Quote
+                        {tr.sendQuote}
                       </Button>
                       <Button
                         variant="outline"
@@ -1764,7 +1769,7 @@ export function RequestsList({ branchId, userRole, userId }: RequestsListProps) 
                         className="bg-blue-600 hover:bg-blue-700 text-white"
                       >
                         <CheckCircle className="mr-2 h-4 w-4" />
-                        Start Immediately
+                        {tr.startImmediately}
                       </Button>
                     </>
                   )}
@@ -1777,7 +1782,7 @@ export function RequestsList({ branchId, userRole, userId }: RequestsListProps) 
                       className="flex-1"
                     >
                       <CheckCircle className="mr-2 h-4 w-4" />
-                      Start Work
+                      {tr.startWork}
                     </Button>
                   )}
                   {selectedRequest.status === 'IN_PROGRESS' && (
@@ -1789,7 +1794,7 @@ export function RequestsList({ branchId, userRole, userId }: RequestsListProps) 
                       className="flex-1"
                     >
                       <CheckCircle className="mr-2 h-4 w-4" />
-                      Mark Complete
+                      {tr.markComplete}
                     </Button>
                   )}
                   {!['CANCELLED', 'COMPLETED', 'CLOSED'].includes(selectedRequest.status) && (
@@ -1801,7 +1806,7 @@ export function RequestsList({ branchId, userRole, userId }: RequestsListProps) 
                       }}
                     >
                       <XCircle className="mr-2 h-4 w-4" />
-                      Cancel
+                      {tr.cancel}
                     </Button>
                   )}
                 </div>
@@ -1816,7 +1821,7 @@ export function RequestsList({ branchId, userRole, userId }: RequestsListProps) 
                     className="w-full"
                   >
                     <Printer className="mr-2 h-4 w-4" />
-                    Print {selectedRequest.status === 'QUOTED' ? 'Quotation' : 'Work Order'}
+                    {selectedRequest.status === 'QUOTED' ? tr.printQuotation : tr.printWorkOrder}
                   </Button>
                 </div>
               )}
@@ -1838,9 +1843,9 @@ export function RequestsList({ branchId, userRole, userId }: RequestsListProps) 
       <Dialog open={quoteDialogOpen} onOpenChange={(open) => { if (!open) { setQuoteDialogOpen(false); setQuoteRequest(null); setError(''); } }}>
         <DialogContent className="sm:max-w-[600px] max-h-[90vh] overflow-y-auto">
           <DialogHeader>
-            <DialogTitle>Review & Quote Request</DialogTitle>
+            <DialogTitle>{tr.reviewAndQuoteRequest}</DialogTitle>
             <DialogDescription>
-              Review the client&apos;s request and provide a quote
+              {tr.reviewQuoteDesc}
             </DialogDescription>
           </DialogHeader>
 
@@ -1863,17 +1868,17 @@ export function RequestsList({ branchId, userRole, userId }: RequestsListProps) 
                       <Badge variant="secondary">{formatWorkOrderType(quoteRequest.workOrderType)}</Badge>
                     )}
                     {quoteRequest.recurringType && quoteRequest.recurringType !== 'ONCE' && (
-                      <Badge variant="outline">{quoteRequest.recurringType === 'MONTHLY' ? 'Monthly' : 'Quarterly'}</Badge>
+                      <Badge variant="outline">{quoteRequest.recurringType === 'MONTHLY' ? tr.monthly : tr.quarterly}</Badge>
                     )}
                     {quoteRequest.needsCertificate && (
-                      <Badge variant="outline" className="text-green-600">Certificate</Badge>
+                      <Badge variant="outline" className="text-green-600">{tr.certificate}</Badge>
                     )}
                   </div>
                 </div>
 
                 {quoteRequest.description && (
                   <div className="p-4 bg-muted/50 rounded-lg">
-                    <p className="text-sm font-medium text-muted-foreground mb-1">Description</p>
+                    <p className="text-sm font-medium text-muted-foreground mb-1">{tr.description}</p>
                     <p className="text-sm whitespace-pre-wrap">{quoteRequest.description}</p>
                   </div>
                 )}
@@ -1881,7 +1886,7 @@ export function RequestsList({ branchId, userRole, userId }: RequestsListProps) 
                 {/* Client Preferences */}
                 {(quoteRequest.preferredDate || quoteRequest.preferredTimeSlot) && (
                   <div className="p-4 bg-blue-50 border border-blue-200 rounded-lg">
-                    <p className="text-sm font-medium text-blue-800 mb-2">Client Preferences</p>
+                    <p className="text-sm font-medium text-blue-800 mb-2">{tr.clientPreferences}</p>
                     <div className="flex gap-4 text-sm">
                       {quoteRequest.preferredDate && (
                         <div className="flex items-center gap-1">
@@ -1904,7 +1909,7 @@ export function RequestsList({ branchId, userRole, userId }: RequestsListProps) 
                   <div>
                     <p className="text-sm font-medium text-muted-foreground mb-2 flex items-center gap-1">
                       <ImageIcon className="h-4 w-4" />
-                      Attached Photos ({quoteRequest.photos.length})
+                      {tr.attachedPhotos} ({quoteRequest.photos.length})
                     </p>
                     <div className="flex flex-wrap gap-2">
                       {quoteRequest.photos.map((photo) => photo?.url ? (
@@ -1928,11 +1933,11 @@ export function RequestsList({ branchId, userRole, userId }: RequestsListProps) 
 
                 <div className="grid grid-cols-2 gap-4 text-sm">
                   <div>
-                    <p className="text-muted-foreground">Submitted</p>
+                    <p className="text-muted-foreground">{tr.submitted}</p>
                     <p className="font-medium">{new Date(quoteRequest.createdAt).toLocaleDateString()}</p>
                   </div>
                   <div>
-                    <p className="text-muted-foreground">Created By</p>
+                    <p className="text-muted-foreground">{tr.createdBy}</p>
                     <p className="font-medium capitalize">{quoteRequest.createdByRole.toLowerCase()}</p>
                   </div>
                 </div>
@@ -1940,14 +1945,14 @@ export function RequestsList({ branchId, userRole, userId }: RequestsListProps) 
 
               {/* Quote Form */}
               <div className="border-t pt-6">
-                <h4 className="font-semibold mb-4">Your Quote</h4>
+                <h4 className="font-semibold mb-4">{tr.yourQuote}</h4>
                 <div className="space-y-4">
                   <div className="grid grid-cols-2 gap-4">
                     <div className="space-y-2">
                       <Label htmlFor="quotedPrice">
                         {quoteRequest.recurringType && quoteRequest.recurringType !== 'ONCE'
-                          ? 'Price per Occurrence (SAR) *'
-                          : 'Price (SAR) *'}
+                          ? tr.pricePerOccurrence
+                          : tr.priceSar}
                       </Label>
                       <div className="relative">
                         <Banknote className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
@@ -1967,8 +1972,8 @@ export function RequestsList({ branchId, userRole, userId }: RequestsListProps) 
                     <div className="space-y-2">
                       <Label htmlFor="quotedDate">
                         {quoteRequest.recurringType && quoteRequest.recurringType !== 'ONCE'
-                          ? 'First Scheduled Date *'
-                          : 'Scheduled Date *'}
+                          ? tr.firstScheduledDate
+                          : tr.scheduledDate}
                       </Label>
                       <Input
                         id="quotedDate"
@@ -1984,13 +1989,13 @@ export function RequestsList({ branchId, userRole, userId }: RequestsListProps) 
                   {/* Notes for Client */}
                   <div className="space-y-2">
                     <Label htmlFor="quotedNotes">
-                      Notes for Client <span className="text-xs text-muted-foreground">(optional)</span>
+                      {tr.notesForClient} <span className="text-xs text-muted-foreground">(optional)</span>
                     </Label>
                     <textarea
                       id="quotedNotes"
                       value={quoteData.quotedNotes}
                       onChange={(e) => setQuoteData({ ...quoteData, quotedNotes: e.target.value })}
-                      placeholder="Add any special instructions, terms, or details for the client..."
+                      placeholder={tr.notesForClientPlaceholder}
                       className="w-full min-h-[100px] px-3 py-2 text-sm border rounded-md bg-background resize-y focus:outline-none focus:ring-2 focus:ring-ring"
                       rows={4}
                     />
@@ -2000,7 +2005,7 @@ export function RequestsList({ branchId, userRole, userId }: RequestsListProps) 
                   {quoteRequest.recurringType && quoteRequest.recurringType !== 'ONCE' && quoteData.quotedDate && quoteData.quotedPrice && (
                     <div className="p-4 bg-blue-50 border border-blue-200 rounded-lg">
                       <h5 className="font-medium text-blue-800 mb-3">
-                        Work Orders Preview ({quoteRequest.recurringType === 'MONTHLY' ? 'Monthly' : 'Quarterly'})
+                        {tr.workOrdersPreview} ({quoteRequest.recurringType === 'MONTHLY' ? tr.monthly : tr.quarterly})
                       </h5>
                       <div className="space-y-2 text-sm">
                         {(() => {
@@ -2019,16 +2024,16 @@ export function RequestsList({ branchId, userRole, userId }: RequestsListProps) 
                               {dates.slice(0, 4).map((date, idx) => (
                                 <div key={idx} className="flex justify-between items-center py-1 border-b border-blue-100 last:border-0">
                                   <span className="text-blue-700">
-                                    └ {quoteRequest.recurringType === 'MONTHLY' ? `Month ${idx + 1}` : `Q${idx + 1}`}: {date.toLocaleDateString()}
+                                    └ {quoteRequest.recurringType === 'MONTHLY' ? `${tr.month} ${idx + 1}` : `Q${idx + 1}`}: {date.toLocaleDateString()}
                                   </span>
                                   <span className="font-medium text-blue-800">SAR {price.toLocaleString()}</span>
                                 </div>
                               ))}
                               {dates.length > 4 && (
-                                <p className="text-blue-600 text-xs mt-2">... and {dates.length - 4} more occurrences</p>
+                                <p className="text-blue-600 text-xs mt-2">... {tr.moreOccurrences} {dates.length - 4}</p>
                               )}
                               <div className="flex justify-between items-center pt-3 mt-2 border-t border-blue-300 font-semibold">
-                                <span className="text-blue-800">Total ({dates.length} work orders)</span>
+                                <span className="text-blue-800">{tr.total} ({dates.length} {tr.totalWorkOrders})</span>
                                 <span className="text-blue-900">SAR {(price * dates.length).toLocaleString()}</span>
                               </div>
                             </>
@@ -2040,7 +2045,7 @@ export function RequestsList({ branchId, userRole, userId }: RequestsListProps) 
 
                   {/* Quotation Upload */}
                   <div className="space-y-2">
-                    <Label>Upload Quotation <span className="text-xs text-muted-foreground">(optional)</span></Label>
+                    <Label>{tr.uploadQuotation} <span className="text-xs text-muted-foreground">(optional)</span></Label>
                     <FileUploadDropzone
                       onFilesSelected={handleQuoteQuotationUpload}
                       accept=".pdf,.doc,.docx,.jpg,.jpeg,.png,.gif,.webp"
@@ -2048,7 +2053,7 @@ export function RequestsList({ branchId, userRole, userId }: RequestsListProps) 
                       uploading={uploadingQuoteQuotation}
                       uploadedFiles={quoteQuotationFile ? [quoteQuotationFile] : []}
                       onRemoveFile={() => setQuoteQuotationFile(null)}
-                      label="Upload quotation (PDF, DOC, images)"
+                      label={tr.uploadQuotationLabel}
                       maxFiles={1}
                     />
                   </div>
@@ -2058,10 +2063,10 @@ export function RequestsList({ branchId, userRole, userId }: RequestsListProps) 
 
               <div className="p-4 bg-amber-50 border border-amber-200 rounded-lg">
                 <p className="text-sm text-amber-800">
-                  <strong>Note:</strong> Once you submit this quote, the client will be notified and can accept or reject it.
+                  <strong>{tr.quoteNote}</strong>
                   {quoteRequest.recurringType && quoteRequest.recurringType !== 'ONCE'
-                    ? ` If accepted, ${quoteRequest.recurringType === 'MONTHLY' ? '12 monthly' : '4 quarterly'} work orders will be automatically created.`
-                    : ' If accepted, a work order will be automatically created.'}
+                    ? ` ${tr.quoteNoteRecurring.replace('{count}', quoteRequest.recurringType === 'MONTHLY' ? '12' : '4')}`
+                    : ` ${tr.quoteNoteSingle}`}
                 </p>
               </div>
             </div>
@@ -2069,7 +2074,7 @@ export function RequestsList({ branchId, userRole, userId }: RequestsListProps) 
 
           <DialogFooter className="flex gap-2">
             <Button variant="outline" onClick={() => { setQuoteDialogOpen(false); setQuoteRequest(null); setError(''); }}>
-              Cancel
+              {tr.cancel}
             </Button>
             <Button
               onClick={handleSubmitQuote}
@@ -2077,7 +2082,7 @@ export function RequestsList({ branchId, userRole, userId }: RequestsListProps) 
             >
               {submittingQuote && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
               <Send className="mr-2 h-4 w-4" />
-              Send Quote to Client
+              {tr.sendQuoteToClient}
             </Button>
           </DialogFooter>
         </DialogContent>
@@ -2089,10 +2094,10 @@ export function RequestsList({ branchId, userRole, userId }: RequestsListProps) 
           <DialogHeader>
             <DialogTitle className="flex items-center gap-2">
               <CheckCircle className="h-5 w-5 text-blue-600" />
-              Start Work Immediately
+              {tr.startWorkImmediately}
             </DialogTitle>
             <DialogDescription>
-              Confirm that you want to start this work order immediately
+              {tr.startWorkImmediatelyDesc}
             </DialogDescription>
           </DialogHeader>
 
@@ -2108,12 +2113,12 @@ export function RequestsList({ branchId, userRole, userId }: RequestsListProps) 
 
               {/* Warning */}
               <div className="p-4 bg-blue-50 border border-blue-200 rounded-lg">
-                <p className="text-sm text-blue-800 font-medium mb-2">⚡ This will:</p>
+                <p className="text-sm text-blue-800 font-medium mb-2">⚡ {tr.thisWill}</p>
                 <ul className="text-sm text-blue-700 space-y-1 ml-4 list-disc">
-                  <li>Create a work order starting <strong>today</strong></li>
-                  <li>Move it immediately to <strong>IN PROGRESS</strong></li>
-                  <li>Skip the quotation process</li>
-                  <li>Appear on your Kanban board right away</li>
+                  <li>{tr.createToday}</li>
+                  <li>{tr.moveInProgress}</li>
+                  <li>{tr.skipQuotation}</li>
+                  <li>{tr.appearOnKanban}</li>
                 </ul>
               </div>
             </div>
@@ -2127,14 +2132,14 @@ export function RequestsList({ branchId, userRole, userId }: RequestsListProps) 
                 setStartImmediatelyRequest(null)
               }}
             >
-              Cancel
+              {tr.cancel}
             </Button>
             <Button
               onClick={handleStartImmediately}
               className="bg-blue-600 hover:bg-blue-700"
             >
               <CheckCircle className="mr-2 h-4 w-4" />
-              Start Immediately
+              {tr.startImmediately}
             </Button>
           </DialogFooter>
         </DialogContent>

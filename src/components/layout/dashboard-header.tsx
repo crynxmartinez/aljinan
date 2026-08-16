@@ -2,6 +2,7 @@
 
 import { GlobalSearch } from '@/components/search/global-search'
 import { NotificationCenter } from '@/components/notifications/notification-center'
+import { LanguageToggle } from '@/components/language-toggle'
 
 interface DashboardHeaderProps {
   userName: string | null | undefined
@@ -14,9 +15,10 @@ export function DashboardHeader({ userName }: DashboardHeaderProps) {
       <div className="flex-1 max-w-2xl">
         <GlobalSearch />
       </div>
-      
+
       {/* Notification Bell */}
       <div className="flex items-center gap-2">
+        <LanguageToggle />
         <NotificationCenter />
       </div>
     </header>

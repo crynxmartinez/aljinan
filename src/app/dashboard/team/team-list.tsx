@@ -34,6 +34,7 @@ import {
   AlertDialogTitle,
 } from '@/components/ui/alert-dialog'
 import { TeamMemberDialog } from './team-member-dialog'
+import { useTranslation } from '@/lib/i18n/use-translation'
 
 interface Branch {
   id: string
@@ -78,6 +79,8 @@ interface TeamListProps {
 }
 
 export function TeamList({ teamMembers: initialTeamMembers, clients }: TeamListProps) {
+  const { t } = useTranslation()
+  const tt = t.dashboard.teamListPage
   const router = useRouter()
   const [teamMembers, setTeamMembers] = useState(initialTeamMembers)
   const [dialogOpen, setDialogOpen] = useState(false)
@@ -129,13 +132,13 @@ export function TeamList({ teamMembers: initialTeamMembers, clients }: TeamListP
     if (member.tempPassword) {
       setTempPassword(member.tempPassword)
     }
-    
+
     if (editingMember) {
       setTeamMembers(prev => prev.map(m => m.id === member.id ? member : m))
     } else {
       setTeamMembers(prev => [member, ...prev])
     }
-    
+
     setDialogOpen(false)
     setEditingMember(null)
     router.refresh()
@@ -165,7 +168,7 @@ export function TeamList({ teamMembers: initialTeamMembers, clients }: TeamListP
   // Group branches by client for display
   const groupBranchesByClient = (branchAccess: BranchAccess[]) => {
     const grouped: Record<string, { clientName: string; branches: string[] }> = {}
-    
+
     branchAccess.forEach(({ branch }) => {
       if (!grouped[branch.client.id]) {
         grouped[branch.client.id] = {
@@ -175,7 +178,7 @@ export function TeamList({ teamMembers: initialTeamMembers, clients }: TeamListP
       }
       grouped[branch.client.id].branches.push(branch.name)
     })
-    
+
     return Object.values(grouped)
   }
 
@@ -184,14 +187,14 @@ export function TeamList({ teamMembers: initialTeamMembers, clients }: TeamListP
       {/* Header */}
       <div className="flex items-center justify-between">
         <div>
-          <h1 className="text-3xl font-bold tracking-tight">Team Members</h1>
+          <h1 className="text-3xl font-bold tracking-tight">{tt.title}</h1>
           <p className="text-muted-foreground">
-            Manage your supervisors and technicians
+            {tt.subtitle}
           </p>
         </div>
         <Button onClick={handleCreate}>
           <Plus className="mr-2 h-4 w-4" />
-          Add Team Member
+          {tt.addTeamMember}
         </Button>
       </div>
 
@@ -200,13 +203,13 @@ export function TeamList({ teamMembers: initialTeamMembers, clients }: TeamListP
         <Card>
           <CardContent className="flex flex-col items-center justify-center py-12">
             <UserCog className="h-12 w-12 text-muted-foreground/50" />
-            <h3 className="mt-4 text-lg font-semibold">No team members yet</h3>
+            <h3 className="mt-4 text-lg font-semibold">{tt.noTeamMembers}</h3>
             <p className="mt-2 text-sm text-muted-foreground text-center max-w-sm">
-              Add supervisors and technicians to help manage your client branches.
+              {tt.noTeamMembersDesc}
             </p>
             <Button onClick={handleCreate} className="mt-4">
               <Plus className="mr-2 h-4 w-4" />
-              Add Team Member
+              {tt.addTeamMember}
             </Button>
           </CardContent>
         </Card>
@@ -215,7 +218,7 @@ export function TeamList({ teamMembers: initialTeamMembers, clients }: TeamListP
           {teamMembers.map((member) => {
             const RoleIcon = getRoleIcon(member.teamRole)
             const groupedBranches = groupBranchesByClient(member.branchAccess)
-            
+
             return (
               <Card key={member.id}>
                 <CardHeader className="pb-3">
@@ -242,14 +245,14 @@ export function TeamList({ teamMembers: initialTeamMembers, clients }: TeamListP
                       <DropdownMenuContent align="end">
                         <DropdownMenuItem onClick={() => handleEdit(member)}>
                           <Pencil className="mr-2 h-4 w-4" />
-                          Edit
+                          {tt.edit}
                         </DropdownMenuItem>
                         <DropdownMenuItem
                           onClick={() => handleDeleteClick(member)}
                           className="text-destructive"
                         >
                           <Trash2 className="mr-2 h-4 w-4" />
-                          Delete
+                          {tt.delete}
                         </DropdownMenuItem>
                       </DropdownMenuContent>
                     </DropdownMenu>
@@ -258,7 +261,7 @@ export function TeamList({ teamMembers: initialTeamMembers, clients }: TeamListP
                 <CardContent className="space-y-3">
                   <div className="flex items-center gap-2">
                     <Badge variant={getRoleBadgeVariant(member.teamRole)}>
-                      {member.teamRole}
+                      {member.teamRole === 'SUPERVISOR' ? tt.supervisor : tt.technician}
                     </Badge>
                     {member.jobTitle && (
                       <span className="text-xs text-muted-foreground">
@@ -266,11 +269,11 @@ export function TeamList({ teamMembers: initialTeamMembers, clients }: TeamListP
                       </span>
                     )}
                   </div>
-                  
+
                   {/* Branch Access */}
                   <div className="space-y-2">
                     <p className="text-xs font-medium text-muted-foreground">
-                      Branch Access ({member.branchAccess.length})
+                      {tt.branchAccess} ({member.branchAccess.length})
                     </p>
                     <div className="space-y-1">
                       {groupedBranches.map((group, idx) => (
@@ -308,20 +311,20 @@ export function TeamList({ teamMembers: initialTeamMembers, clients }: TeamListP
       <AlertDialog open={deleteDialogOpen} onOpenChange={setDeleteDialogOpen}>
         <AlertDialogContent>
           <AlertDialogHeader>
-            <AlertDialogTitle>Delete Team Member</AlertDialogTitle>
+            <AlertDialogTitle>{tt.deleteTeamMember}</AlertDialogTitle>
             <AlertDialogDescription>
-              Are you sure you want to delete {memberToDelete?.user.name || memberToDelete?.user.email}? 
-              This action cannot be undone.
+              {tt.deleteConfirm} {memberToDelete?.user.name || memberToDelete?.user.email}?
+              {tt.deleteConfirmDesc}
             </AlertDialogDescription>
           </AlertDialogHeader>
           <AlertDialogFooter>
-            <AlertDialogCancel disabled={deleting}>Cancel</AlertDialogCancel>
+            <AlertDialogCancel disabled={deleting}>{tt.cancel}</AlertDialogCancel>
             <AlertDialogAction
               onClick={handleDelete}
               disabled={deleting}
               className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
             >
-              {deleting ? 'Deleting...' : 'Delete'}
+              {deleting ? tt.deleting : tt.deleteBtn}
             </AlertDialogAction>
           </AlertDialogFooter>
         </AlertDialogContent>
@@ -331,11 +334,11 @@ export function TeamList({ teamMembers: initialTeamMembers, clients }: TeamListP
       <AlertDialog open={!!tempPassword} onOpenChange={() => closeTempPasswordDialog()}>
         <AlertDialogContent>
           <AlertDialogHeader>
-            <AlertDialogTitle>Team Member Created</AlertDialogTitle>
+            <AlertDialogTitle>{tt.teamMemberCreated}</AlertDialogTitle>
             <AlertDialogDescription asChild>
               <div className="space-y-4">
                 <p>
-                  The team member has been created successfully. Share the following temporary password with them:
+                  {tt.teamMemberCreatedDesc}
                 </p>
                 <div className="flex items-center gap-2 p-3 bg-muted rounded-lg">
                   <code className="flex-1 font-mono text-lg">{tempPassword}</code>
@@ -352,14 +355,14 @@ export function TeamList({ teamMembers: initialTeamMembers, clients }: TeamListP
                   </Button>
                 </div>
                 <p className="text-sm text-muted-foreground">
-                  Make sure to save this password. It will not be shown again.
+                  {tt.savePasswordWarning}
                 </p>
               </div>
             </AlertDialogDescription>
           </AlertDialogHeader>
           <AlertDialogFooter>
             <AlertDialogAction onClick={closeTempPasswordDialog}>
-              Done
+              {tt.done}
             </AlertDialogAction>
           </AlertDialogFooter>
         </AlertDialogContent>

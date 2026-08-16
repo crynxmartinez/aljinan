@@ -48,6 +48,7 @@ import {
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
 import { toast } from 'sonner'
+import { useTranslation } from '@/lib/i18n/use-translation'
 
 interface Branch {
   id: string
@@ -79,6 +80,8 @@ interface ClientsListProps {
 
 export function ClientsList({ clients }: ClientsListProps) {
   const router = useRouter()
+  const { t } = useTranslation()
+  const tc = t.dashboard.clientsPage
   const [expandedClients, setExpandedClients] = useState<string[]>([])
   const [showArchived, setShowArchived] = useState(false)
   const [createDialogOpen, setCreateDialogOpen] = useState(false)
@@ -125,8 +128,8 @@ export function ClientsList({ clients }: ClientsListProps) {
         throw new Error(data.error || 'Failed to create client')
       }
 
-      toast.success('Client account created!', {
-        description: `Verification email sent to ${data.user.email}`
+      toast.success(tc.clientCreated, {
+        description: `${tc.verificationEmailSent} ${data.user.email}`
       })
       setCreateDialogOpen(false)
       setNewClient({
@@ -172,11 +175,11 @@ export function ClientsList({ clients }: ClientsListProps) {
       const data = await response.json()
       if (!response.ok) throw new Error(data.error)
 
-      toast.success('Verification email resent!', {
-        description: `Sent to ${email}`
+      toast.success(tc.verificationResent, {
+        description: `${tc.sentTo} ${email}`
       })
     } catch (err) {
-      toast.error('Failed to resend email', {
+      toast.error(tc.failedResend, {
         description: err instanceof Error ? err.message : 'Unknown error'
       })
     }
@@ -217,11 +220,11 @@ export function ClientsList({ clients }: ClientsListProps) {
         const data = await response.json()
         throw new Error(data.error || 'Failed to update')
       }
-      toast.success('Client nickname updated!')
+      toast.success(tc.clientNicknameUpdated)
       cancelEditing()
       router.refresh()
     } catch (err) {
-      toast.error(err instanceof Error ? err.message : 'Failed to update')
+      toast.error(err instanceof Error ? err.message : tc.updateFailed)
     } finally {
       setSavingId(null)
     }
@@ -240,11 +243,11 @@ export function ClientsList({ clients }: ClientsListProps) {
         const data = await response.json()
         throw new Error(data.error || 'Failed to update')
       }
-      toast.success('Branch nickname updated!')
+      toast.success(tc.branchNicknameUpdated)
       cancelEditing()
       router.refresh()
     } catch (err) {
-      toast.error(err instanceof Error ? err.message : 'Failed to update')
+      toast.error(err instanceof Error ? err.message : tc.updateFailed)
     } finally {
       setSavingId(null)
     }
@@ -262,11 +265,11 @@ export function ClientsList({ clients }: ClientsListProps) {
   const getStatusBadge = (status: string) => {
     switch (status) {
       case 'ACTIVE':
-        return <Badge className="bg-green-100 text-green-700 hover:bg-green-100">Active</Badge>
+        return <Badge className="bg-green-100 text-green-700 hover:bg-green-100">{tc.active}</Badge>
       case 'PENDING':
-        return <Badge className="bg-yellow-100 text-yellow-700 hover:bg-yellow-100">Pending</Badge>
+        return <Badge className="bg-yellow-100 text-yellow-700 hover:bg-yellow-100">{tc.pending}</Badge>
       case 'ARCHIVED':
-        return <Badge className="bg-gray-100 text-gray-700 hover:bg-gray-100">Archived</Badge>
+        return <Badge className="bg-gray-100 text-gray-700 hover:bg-gray-100">{tc.archived}</Badge>
       default:
         return null
     }
@@ -276,14 +279,14 @@ export function ClientsList({ clients }: ClientsListProps) {
     <>
       <div className="flex items-center justify-between mb-8">
         <div>
-          <h1 className="text-3xl font-bold">Clients</h1>
+          <h1 className="text-3xl font-bold">{tc.title}</h1>
           <p className="text-muted-foreground mt-1">
-            Manage your clients and their branches
+            {tc.subtitle}
           </p>
         </div>
         <Button onClick={() => setCreateDialogOpen(true)}>
           <Plus className="mr-2 h-4 w-4" />
-          Add Client
+          {tc.addClient}
         </Button>
       </div>
 
@@ -291,13 +294,13 @@ export function ClientsList({ clients }: ClientsListProps) {
         <Card>
           <CardContent className="flex flex-col items-center justify-center py-12">
             <Users className="h-12 w-12 text-muted-foreground/50 mb-4" />
-            <h3 className="text-lg font-semibold mb-2">No clients yet</h3>
+            <h3 className="text-lg font-semibold mb-2">{tc.noClientsYet}</h3>
             <p className="text-muted-foreground text-center mb-4">
-              Get started by adding your first client. They&apos;ll receive an email invitation to join.
+              {tc.noClientsDesc}
             </p>
             <Button onClick={() => setCreateDialogOpen(true)}>
               <Plus className="mr-2 h-4 w-4" />
-              Add Your First Client
+              {tc.addFirstClient}
             </Button>
           </CardContent>
         </Card>
@@ -326,7 +329,7 @@ export function ClientsList({ clients }: ClientsListProps) {
                           <CardDescription className="flex items-center gap-2">
                             <span>{client.user.email}</span>
                             <span>•</span>
-                            <span>{client.branches.length} branch{client.branches.length !== 1 ? 'es' : ''}</span>
+                            <span>{client.branches.length} {client.branches.length !== 1 ? tc.branches : tc.branch}</span>
                           </CardDescription>
                         </div>
                       </div>
@@ -338,7 +341,7 @@ export function ClientsList({ clients }: ClientsListProps) {
                             value={editingValue}
                             onChange={(e) => setEditingValue(e.target.value)}
                             onKeyDown={(e) => handleEditKeyDown(e, client.id, 'client')}
-                            placeholder="Enter nickname..."
+                            placeholder={tc.enterNickname}
                             className="h-8 w-40 text-sm"
                             autoFocus
                             disabled={savingId === client.id}
@@ -360,10 +363,10 @@ export function ClientsList({ clients }: ClientsListProps) {
                         <>
                           {client.displayName && (
                             <Badge variant="outline" className="text-xs font-normal">
-                              Nickname: {client.displayName}
+                              {tc.nickname}: {client.displayName}
                             </Badge>
                           )}
-                          <Button size="icon" variant="ghost" className="h-8 w-8" onClick={(e) => startEditingClient(client, e)} title="Set nickname">
+                          <Button size="icon" variant="ghost" className="h-8 w-8" onClick={(e) => startEditingClient(client, e)} title={tc.setNickname}>
                             <Pencil className="h-3.5 w-3.5 text-muted-foreground" />
                           </Button>
                         </>
@@ -380,19 +383,19 @@ export function ClientsList({ clients }: ClientsListProps) {
                         <DropdownMenuContent align="end">
                           <DropdownMenuItem asChild>
                             <Link href={`/dashboard/clients/${client.id}`}>
-                              View Details
+                              {tc.viewDetails}
                             </Link>
                           </DropdownMenuItem>
                           <DropdownMenuItem asChild>
                             <Link href={`/dashboard/clients/${client.slug || client.id}/branches/new`}>
                               <MapPin className="mr-2 h-4 w-4" />
-                              Add Branch
+                              {tc.addBranch}
                             </Link>
                           </DropdownMenuItem>
                           {client.user.status === 'PENDING' && (
                             <DropdownMenuItem onClick={() => handleResendInvite(client.id, client.user.email)}>
                               <Mail className="mr-2 h-4 w-4" />
-                              Resend Verification
+                              {tc.resendVerification}
                             </DropdownMenuItem>
                           )}
                           <DropdownMenuSeparator />
@@ -401,7 +404,7 @@ export function ClientsList({ clients }: ClientsListProps) {
                             onClick={() => handleArchiveClient(client.id)}
                           >
                             <Archive className="mr-2 h-4 w-4" />
-                            Archive Client
+                            {tc.archiveClient}
                           </DropdownMenuItem>
                         </DropdownMenuContent>
                       </DropdownMenu>
@@ -413,11 +416,11 @@ export function ClientsList({ clients }: ClientsListProps) {
                     {client.branches.length === 0 ? (
                       <div className="text-center py-6 bg-muted/50 rounded-lg">
                         <MapPin className="h-8 w-8 text-muted-foreground/50 mx-auto mb-2" />
-                        <p className="text-sm text-muted-foreground mb-2">No branches yet</p>
+                        <p className="text-sm text-muted-foreground mb-2">{tc.noBranchesYet}</p>
                         <Link href={`/dashboard/clients/${client.slug || client.id}/branches/new`}>
                           <Button variant="outline" size="sm">
                             <Plus className="mr-2 h-4 w-4" />
-                            Add Branch
+                            {tc.addBranch}
                           </Button>
                         </Link>
                       </div>
@@ -447,7 +450,7 @@ export function ClientsList({ clients }: ClientsListProps) {
                                     value={editingValue}
                                     onChange={(e) => setEditingValue(e.target.value)}
                                     onKeyDown={(e) => handleEditKeyDown(e, branch.id, 'branch')}
-                                    placeholder="Enter nickname..."
+                                    placeholder={tc.enterNickname}
                                     className="h-8 w-40 text-sm"
                                     autoFocus
                                     disabled={savingId === branch.id}
@@ -469,16 +472,16 @@ export function ClientsList({ clients }: ClientsListProps) {
                                 <>
                                   {branch.displayName && (
                                     <Badge variant="outline" className="text-xs font-normal">
-                                      Nickname: {branch.displayName}
+                                      {tc.nickname}: {branch.displayName}
                                     </Badge>
                                   )}
-                                  <Button size="icon" variant="ghost" className="h-8 w-8" onClick={(e) => startEditingBranch(branch, e)} title="Set nickname">
+                                  <Button size="icon" variant="ghost" className="h-8 w-8" onClick={(e) => startEditingBranch(branch, e)} title={tc.setNickname}>
                                     <Pencil className="h-3.5 w-3.5 text-muted-foreground" />
                                   </Button>
                                 </>
                               )}
                               {!branch.isActive && (
-                                <Badge variant="secondary">Inactive</Badge>
+                                <Badge variant="secondary">{tc.inactive}</Badge>
                               )}
                             </div>
                           </div>
@@ -486,7 +489,7 @@ export function ClientsList({ clients }: ClientsListProps) {
                         <Link href={`/dashboard/clients/${client.slug || client.id}/branches/new`}>
                           <Button variant="ghost" size="sm" className="w-full mt-2">
                             <Plus className="mr-2 h-4 w-4" />
-                            Add Another Branch
+                            {tc.addAnotherBranch}
                           </Button>
                         </Link>
                       </div>
@@ -509,7 +512,7 @@ export function ClientsList({ clients }: ClientsListProps) {
                 ) : (
                   <ChevronRight className="mr-2 h-4 w-4" />
                 )}
-                Archived Clients ({archivedClients.length})
+                {tc.archivedClients} ({archivedClients.length})
               </Button>
 
               {showArchived && (
@@ -535,7 +538,7 @@ export function ClientsList({ clients }: ClientsListProps) {
                               onClick={() => handleUnarchiveClient(client.id)}
                             >
                               <RotateCcw className="mr-2 h-4 w-4" />
-                              Restore
+                              {tc.restore}
                             </Button>
                           </div>
                         </div>
@@ -552,9 +555,9 @@ export function ClientsList({ clients }: ClientsListProps) {
       <Dialog open={createDialogOpen} onOpenChange={setCreateDialogOpen}>
         <DialogContent>
           <DialogHeader>
-            <DialogTitle>Add New Client</DialogTitle>
+            <DialogTitle>{tc.addNewClient}</DialogTitle>
             <DialogDescription>
-              Create a new client account. They will receive a verification email to activate their account.
+              {tc.addNewClientDesc}
             </DialogDescription>
           </DialogHeader>
           <form onSubmit={handleCreateClient}>
@@ -565,45 +568,45 @@ export function ClientsList({ clients }: ClientsListProps) {
             )}
             <div className="space-y-4">
               <div className="space-y-2">
-                <Label htmlFor="companyName">Company Name *</Label>
+                <Label htmlFor="companyName">{tc.companyName}</Label>
                 <Input
                   id="companyName"
                   value={newClient.companyName}
                   onChange={(e) => setNewClient({ ...newClient, companyName: e.target.value })}
-                  placeholder="Enter company name"
+                  placeholder={tc.companyNamePlaceholder}
                   required
                 />
               </div>
               <div className="space-y-2">
-                <Label htmlFor="companyEmail">Client Email *</Label>
+                <Label htmlFor="companyEmail">{tc.clientEmail}</Label>
                 <Input
                   id="companyEmail"
                   type="email"
                   value={newClient.companyEmail}
                   onChange={(e) => setNewClient({ ...newClient, companyEmail: e.target.value })}
-                  placeholder="client@company.com"
+                  placeholder={tc.clientEmailPlaceholder}
                   required
                 />
                 <p className="text-xs text-muted-foreground">
-                  A verification email will be sent to this address
+                  {tc.verificationEmailNote}
                 </p>
               </div>
               <div className="space-y-2">
-                <Label htmlFor="companyPhone">Company Phone</Label>
+                <Label htmlFor="companyPhone">{tc.companyPhone}</Label>
                 <Input
                   id="companyPhone"
                   value={newClient.companyPhone}
                   onChange={(e) => setNewClient({ ...newClient, companyPhone: e.target.value })}
-                  placeholder="Enter phone number"
+                  placeholder={tc.companyPhonePlaceholder}
                 />
               </div>
             </div>
             <DialogFooter className="mt-6">
               <Button type="button" variant="outline" onClick={() => setCreateDialogOpen(false)}>
-                Cancel
+                {tc.cancel}
               </Button>
               <Button type="submit" disabled={loading}>
-                {loading ? 'Creating...' : 'Create Client'}
+                {loading ? tc.creating : tc.createClient}
               </Button>
             </DialogFooter>
           </form>

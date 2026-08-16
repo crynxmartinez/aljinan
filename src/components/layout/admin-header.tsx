@@ -1,6 +1,7 @@
 'use client'
 
 import { GlobalSearch } from '@/components/search/global-search'
+import { LanguageToggle } from '@/components/language-toggle'
 
 interface AdminHeaderProps {
   userName: string | null | undefined
@@ -13,9 +14,10 @@ export function AdminHeader({ userName }: AdminHeaderProps) {
       <div className="flex-1 max-w-2xl">
         <GlobalSearch />
       </div>
-      
+
       {/* Admin Info */}
       <div className="flex items-center gap-2">
+        <LanguageToggle />
         <span className="text-sm text-muted-foreground">
           {userName}
         </span>

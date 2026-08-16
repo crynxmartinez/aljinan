@@ -5,6 +5,7 @@ import { prisma } from '@/lib/prisma'
 import Link from 'next/link'
 import { ArrowLeft, MapPin } from 'lucide-react'
 import { ClientBranchWorkspace } from './client-branch-workspace'
+import { getTranslations } from '@/lib/i18n/server'
 
 async function getBranch(branchIdOrSlug: string, userId: string) {
   const client = await prisma.client.findUnique({
@@ -53,6 +54,9 @@ export default async function ClientBranchPage({
 
   const { branch } = data
 
+  const t = await getTranslations()
+  const tb = t.dashboard.portalBranchPage
+
   return (
     <div className="p-8">
       <div className="mb-6">
@@ -61,7 +65,7 @@ export default async function ClientBranchPage({
           className="inline-flex items-center text-sm text-muted-foreground hover:text-foreground"
         >
           <ArrowLeft className="mr-2 h-4 w-4" />
-          Back to Dashboard
+          {tb.backToDashboard}
         </Link>
       </div>
 

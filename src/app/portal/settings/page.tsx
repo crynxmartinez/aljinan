@@ -3,6 +3,7 @@ import { redirect } from 'next/navigation'
 import { authOptions } from '@/lib/auth'
 import { prisma } from '@/lib/prisma'
 import { ClientProfileCard } from '@/components/clients/client-profile-card'
+import { getTranslations } from '@/lib/i18n/server'
 
 async function getClientProfile(userId: string) {
   const client = await prisma.client.findUnique({
@@ -32,12 +33,15 @@ export default async function ClientSettingsPage() {
     redirect('/portal')
   }
 
+  const t = await getTranslations()
+  const ts = t.dashboard.portalSettingsPage
+
   return (
     <div className="p-8">
       <div className="mb-8">
-        <h1 className="text-3xl font-bold">Company Profile</h1>
+        <h1 className="text-3xl font-bold">{ts.title}</h1>
         <p className="text-muted-foreground mt-1">
-          Manage your company information
+          {ts.subtitle}
         </p>
       </div>
 

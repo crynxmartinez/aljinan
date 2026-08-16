@@ -15,6 +15,7 @@ import {
   FileText,
   RefreshCw,
 } from 'lucide-react'
+import { useTranslation } from '@/lib/i18n/use-translation'
 
 interface Activity {
   id: string
@@ -43,6 +44,8 @@ const activityIcons: Record<string, React.ReactNode> = {
 }
 
 export function ActivityPanel({ branchId, isOpen, onClose }: ActivityPanelProps) {
+  const { t } = useTranslation()
+  const ta = t.dashboard.activityPanel
   const [activities, setActivities] = useState<Activity[]>([])
   const [loading, setLoading] = useState(false)
   const [comment, setComment] = useState('')
@@ -101,10 +104,10 @@ export function ActivityPanel({ branchId, isOpen, onClose }: ActivityPanelProps)
     const hours = Math.floor(diff / 3600000)
     const days = Math.floor(diff / 86400000)
 
-    if (minutes < 1) return 'Just now'
-    if (minutes < 60) return `${minutes}m ago`
-    if (hours < 24) return `${hours}h ago`
-    if (days < 7) return `${days}d ago`
+    if (minutes < 1) return ta.justNow
+    if (minutes < 60) return `${minutes}${ta.mAgo}`
+    if (hours < 24) return `${hours}${ta.hAgo}`
+    if (days < 7) return `${days}${ta.dAgo}`
     return date.toLocaleDateString()
   }
 
@@ -116,7 +119,7 @@ export function ActivityPanel({ branchId, isOpen, onClose }: ActivityPanelProps)
       <div className="flex items-center justify-between p-4 border-b">
         <div className="flex items-center gap-2">
           <MessageSquare className="h-5 w-5" />
-          <h3 className="font-semibold">Activity</h3>
+          <h3 className="font-semibold">{ta.activity}</h3>
         </div>
         <Button variant="ghost" size="icon" onClick={onClose}>
           <X className="h-4 w-4" />
@@ -135,7 +138,7 @@ export function ActivityPanel({ branchId, isOpen, onClose }: ActivityPanelProps)
             {activities.length === 0 ? (
               <div className="text-center text-muted-foreground py-8">
                 <Clock className="h-8 w-8 mx-auto mb-2 opacity-30" />
-                <p className="text-sm">No activity yet</p>
+                <p className="text-sm">{ta.noActivity}</p>
               </div>
             ) : (
               <div className="space-y-4">
@@ -176,7 +179,7 @@ export function ActivityPanel({ branchId, isOpen, onClose }: ActivityPanelProps)
               <Input
                 value={comment}
                 onChange={(e) => setComment(e.target.value)}
-                placeholder="Add a comment..."
+                placeholder={ta.addComment}
                 disabled={sending}
               />
               <Button type="submit" size="icon" disabled={sending || !comment.trim()}>
