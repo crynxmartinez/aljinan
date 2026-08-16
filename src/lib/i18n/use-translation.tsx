@@ -22,7 +22,6 @@ export function TranslationProvider({ children }: { children: ReactNode }) {
     if (savedLocale && (savedLocale === 'en' || savedLocale === 'ar')) {
       setLocaleState(savedLocale)
       document.documentElement.lang = savedLocale
-      document.documentElement.dir = savedLocale === 'ar' ? 'rtl' : 'ltr'
     }
   }, [])
 
@@ -30,7 +29,6 @@ export function TranslationProvider({ children }: { children: ReactNode }) {
     setLocaleState(newLocale)
     Cookies.set(LOCALE_COOKIE, newLocale, { expires: 365 })
     document.documentElement.lang = newLocale
-    document.documentElement.dir = newLocale === 'ar' ? 'rtl' : 'ltr'
   }
 
   const value = {
