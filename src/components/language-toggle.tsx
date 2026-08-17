@@ -1,6 +1,7 @@
 'use client'
 
 import { Globe } from 'lucide-react'
+import { useRouter } from 'next/navigation'
 import { Button } from '@/components/ui/button'
 import {
   DropdownMenu,
@@ -12,6 +13,12 @@ import { useTranslation } from '@/lib/i18n/use-translation'
 
 export function LanguageToggle() {
   const { locale, setLocale } = useTranslation()
+  const router = useRouter()
+
+  const changeLocale = (newLocale: 'en' | 'ar') => {
+    setLocale(newLocale)
+    router.refresh()
+  }
 
   return (
     <DropdownMenu>
@@ -24,14 +31,14 @@ export function LanguageToggle() {
       </DropdownMenuTrigger>
       <DropdownMenuContent align="end">
         <DropdownMenuItem
-          onClick={() => setLocale('en')}
+          onClick={() => changeLocale('en')}
           className={locale === 'en' ? 'bg-accent' : ''}
         >
           <span className="mr-2">🇬🇧</span>
           English
         </DropdownMenuItem>
         <DropdownMenuItem
-          onClick={() => setLocale('ar')}
+          onClick={() => changeLocale('ar')}
           className={locale === 'ar' ? 'bg-accent' : ''}
         >
           <span className="mr-2">🇸🇦</span>
