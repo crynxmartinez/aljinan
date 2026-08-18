@@ -6,10 +6,10 @@ const config: CapacitorConfig = {
   webDir: 'public',
   server: {
     url: 'https://www.tasheel.live',
-    cleartext: true
+    cleartext: false
   },
   android: {
-    allowMixedContent: true
+    allowMixedContent: false
   }
 };
 

@@ -40,3 +40,6 @@ dist-electron/
 
 # Capacitor/Android build output
 android/
+
+# Local development database (scripts/dev-db.mjs)
+.devdb/

@@ -1,6 +1,7 @@
 import type { Metadata, Viewport } from "next";
 import { SessionProvider } from "@/components/providers/session-provider";
 import { TranslationProvider } from "@/lib/i18n/use-translation";
+import { getLocale } from "@/lib/i18n/server";
 import { Analytics } from '@vercel/analytics/react';
 import { SpeedInsights } from '@vercel/speed-insights/next';
 import { OrganizationSchema } from "@/components/seo/organization-schema";
@@ -27,18 +28,20 @@ export const viewport: Viewport = {
   themeColor: "#0f172a",
 };
 
-export default function RootLayout({
+export default async function RootLayout({
   children,
 }: Readonly<{
   children: React.ReactNode;
 }>) {
+  const locale = await getLocale();
+
   return (
-    <html lang="en">
+    <html lang={locale}>
       <head>
         <OrganizationSchema />
       </head>
       <body className="antialiased">
-        <TranslationProvider>
+        <TranslationProvider initialLocale={locale}>
           <SessionProvider>
             <ImpersonationBanner />
             {children}

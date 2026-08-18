@@ -1,6 +1,6 @@
 'use client'
 
-import { createContext, useContext, useState, useEffect, ReactNode } from 'react'
+import { createContext, useContext, useState, ReactNode } from 'react'
 import { translations, Locale } from './translations'
 import Cookies from 'js-cookie'
 
@@ -14,20 +14,28 @@ const TranslationContext = createContext<TranslationContextType | undefined>(und
 
 const LOCALE_COOKIE = 'tasheel_locale'
 
-export function TranslationProvider({ children }: { children: ReactNode }) {
-  const [locale, setLocaleState] = useState<Locale>('en')
-
-  useEffect(() => {
-    const savedLocale = Cookies.get(LOCALE_COOKIE) as Locale
-    if (savedLocale && (savedLocale === 'en' || savedLocale === 'ar')) {
-      setLocaleState(savedLocale)
-      document.documentElement.lang = savedLocale
-    }
-  }, [])
+export function TranslationProvider({
+  children,
+  initialLocale = 'en',
+}: {
+  children: ReactNode
+  /**
+   * Resolved from the cookie on the server. Starting from the correct value is what
+   * removes the flash of English and the hydration mismatch — do not replace this with a
+   * cookie read in an effect.
+   */
+  initialLocale?: Locale
+}) {
+  const [locale, setLocaleState] = useState<Locale>(initialLocale)
 
   const setLocale = (newLocale: Locale) => {
     setLocaleState(newLocale)
-    Cookies.set(LOCALE_COOKIE, newLocale, { expires: 365 })
+    Cookies.set(LOCALE_COOKIE, newLocale, {
+      expires: 365,
+      sameSite: 'lax',
+      secure: window.location.protocol === 'https:',
+      path: '/',
+    })
     document.documentElement.lang = newLocale
   }
 

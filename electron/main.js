@@ -30,7 +30,16 @@ function createWindow() {
 
   // Handle external links
   mainWindow.webContents.setWindowOpenHandler(({ url }) => {
-    require('electron').shell.openExternal(url);
+    // Hand only ordinary web links to the OS. Without this check any protocol the page
+    // names, including file:, is opened by whatever is registered to handle it.
+    try {
+      const { protocol } = new URL(url);
+      if (protocol === 'https:' || protocol === 'http:' || protocol === 'mailto:') {
+        require('electron').shell.openExternal(url);
+      }
+    } catch {
+      // not a URL we can reason about; ignore
+    }
     return { action: 'deny' };
   });
 }
