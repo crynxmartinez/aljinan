@@ -520,7 +520,9 @@ export async function PATCH(
         data: {
           technicianSignature: signature,
           technicianSignedAt: new Date(),
-          technicianSignedById: session.user.id
+          technicianSignedById: session.user.id,
+          technicianSignedByName: session.user.name ?? null,
+          technicianSignedByEmail: session.user.email ?? null
         }
       })
 
@@ -576,7 +578,9 @@ export async function PATCH(
         data: {
           supervisorSignature: signature,
           supervisorSignedAt: new Date(),
-          supervisorSignedById: session.user.id
+          supervisorSignedById: session.user.id,
+          supervisorSignedByName: session.user.name ?? null,
+          supervisorSignedByEmail: session.user.email ?? null
         }
       })
 
@@ -652,7 +656,9 @@ export async function PATCH(
         data: {
           clientSignature: signature,
           clientSignedAt: new Date(),
-          clientSignedById: session.user.id
+          clientSignedById: session.user.id,
+          clientSignedByName: session.user.name ?? null,
+          clientSignedByEmail: session.user.email ?? null
         }
       })
 

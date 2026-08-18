@@ -463,7 +463,9 @@ model RequestComment {
   request     Request  @relation(fields: [requestId], references: [id], onDelete: Cascade)
   content     String
   createdById String
-  createdBy   User     @relation(fields: [createdById], references: [id])
+  // Without an explicit rule this defaulted to RESTRICT, so any client who had ever
+  // commented could not be deleted at all.
+  createdBy   User     @relation(fields: [createdById], references: [id], onDelete: Cascade)
   createdAt   DateTime @default(now())
   updatedAt   DateTime @updatedAt
   isEdited    Boolean  @default(false)
@@ -949,15 +951,21 @@ model ChecklistItem {
   reportData Json? // Legacy: service-type-specific fields
 
   // Signatures
-  technicianSignature  String? // URL to technician signature image
-  technicianSignedAt   DateTime? // When technician signed
-  technicianSignedById String? // Technician user ID
-  supervisorSignature  String? // URL to supervisor signature image
-  supervisorSignedAt   DateTime? // When supervisor signed
-  supervisorSignedById String? // Supervisor user ID
-  clientSignature      String? // URL to client signature image (accepting work)
-  clientSignedAt       DateTime? // When client signed
-  clientSignedById     String? // Client user ID who signed
+  technicianSignature     String? // URL to technician signature image
+  technicianSignedAt      DateTime? // When technician signed
+  technicianSignedById    String? // Technician user ID
+  technicianSignedByName  String? // Snapshot at signing time; survives user deletion
+  technicianSignedByEmail String?
+  supervisorSignature     String? // URL to supervisor signature image
+  supervisorSignedAt      DateTime? // When supervisor signed
+  supervisorSignedById    String? // Supervisor user ID
+  supervisorSignedByName  String?
+  supervisorSignedByEmail String?
+  clientSignature         String? // URL to client signature image (accepting work)
+  clientSignedAt          DateTime? // When client signed
+  clientSignedById        String? // Client user ID who signed
+  clientSignedByName      String?
+  clientSignedByEmail     String?
 
   // Report generation
   reportGeneratedAt DateTime? // When PDF report was generated
