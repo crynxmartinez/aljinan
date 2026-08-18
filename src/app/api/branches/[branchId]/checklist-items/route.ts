@@ -12,6 +12,24 @@ import {
   notifyPriceSet
 } from '@/lib/notification-service'
 
+/**
+ * Inspection outcomes that permit a certificate to be issued.
+ *
+ * The enum carries two vocabularies — PASS/PASSED for equipment and work orders
+ * respectively, and the same for failures — so both spellings are listed here until
+ * they are split into separate types.
+ */
+const PASSING_RESULTS = new Set(['PASS', 'PASSED'])
+const FAILING_RESULTS = new Set(['FAIL', 'FAILED', 'NEEDS_REPAIR', 'ATTENTION_REQUIRED'])
+
+function isPassingResult(result: string | null | undefined): boolean {
+  return !!result && PASSING_RESULTS.has(result)
+}
+
+function isFailingResult(result: string | null | undefined): boolean {
+  return !!result && FAILING_RESULTS.has(result)
+}
+
 async function generateCertificatesForWorkOrder(
   workOrderId: string,
   workOrder: {
@@ -21,6 +39,7 @@ async function generateCertificatesForWorkOrder(
     linkedRequestId: string | null
     findings: string | null
     recommendations: string | null
+    inspectionResult: string | null
     checklist: {
       branchId: string
       contractId: string | null
@@ -45,6 +64,10 @@ async function generateCertificatesForWorkOrder(
   }
 
   if (!needsCertificate) return
+
+  // A work order the technician recorded as failed, or as needing attention, has not
+  // demonstrated compliance and must not generate a certificate of any kind.
+  if (isFailingResult(workOrder.inspectionResult)) return
 
   const existingCert = await prisma.certificate.findFirst({
     where: { workOrderId }
@@ -74,6 +97,27 @@ async function generateCertificatesForWorkOrder(
     })
 
     for (const eq of equipment) {
+      // A certificate asserts that this item passed inspection. It must therefore
+      // follow the result the technician recorded on the item, and nothing else.
+      //
+      // This previously wrote inspectionResult: 'PASS' and status: 'ACTIVE'
+      // unconditionally, so a fire extinguisher recorded as FAIL was flipped to
+      // passing, had its warning status cleared, and was issued a certificate valid
+      // for a year — the document a client shows a Civil Defence inspector.
+      if (!isPassingResult(eq.inspectionResult)) {
+        // Record that it was looked at, preserve the finding, issue nothing.
+        await prisma.equipment.update({
+          where: { id: eq.id },
+          data: {
+            lastInspected: new Date(),
+            isInspected: true,
+            certificateIssued: false,
+            status: isFailingResult(eq.inspectionResult) ? 'NEEDS_ATTENTION' : eq.status,
+          }
+        })
+        continue
+      }
+
       const expiryDate = calcExpiry(workOrder.recurringType)
       const cert = await prisma.certificate.create({
         data: {
@@ -99,7 +143,6 @@ async function generateCertificatesForWorkOrder(
           lastInspected: new Date(),
           expectedExpiry: expiryDate,
           isInspected: true,
-          inspectionResult: 'PASS',
           status: 'ACTIVE',
         }
       })
