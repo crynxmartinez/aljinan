@@ -2,6 +2,8 @@ import { getServerSession } from 'next-auth'
 import { NextResponse } from 'next/server'
 import { authOptions } from '@/lib/auth'
 import { prisma } from '@/lib/prisma'
+import { logAuditEvent } from '@/lib/audit-log'
+import { roundMoney } from '@/lib/money'
 import { verifyBranchAccess } from '@/lib/permissions'
 
 // GET - Fetch a single request
@@ -112,8 +114,39 @@ export async function PATCH(
       if (!quotedPrice || !quotedDate) {
         return NextResponse.json({ error: 'Price and date are required for quote' }, { status: 400 })
       }
+
+      // Every other action here guards on the current status; this one did not, so a
+      // contractor could re-quote an already accepted or completed request and change the
+      // agreed price after the fact — with no audit trail, since none existed.
+      if (currentRequest.status !== 'REQUESTED' && currentRequest.status !== 'QUOTED') {
+        return NextResponse.json(
+          { error: 'This request can no longer be quoted' },
+          { status: 400 }
+        )
+      }
+
+      // Accepted with only a truthiness check, so a string or a negative number stored fine.
+      const price = Number(quotedPrice)
+      if (!Number.isFinite(price) || price < 0) {
+        return NextResponse.json({ error: 'Quoted price must be a positive number' }, { status: 400 })
+      }
+
+      // A re-quote of an outstanding quotation is legitimate, but worth recording.
+      if (currentRequest.status === 'QUOTED' && currentRequest.quotedPrice !== null) {
+        await logAuditEvent({
+          eventType: 'REQUEST_QUOTED',
+          userId: session.user.id,
+          userRole: session.user.role as never,
+          userEmail: session.user.email ?? undefined,
+          resourceType: 'Request',
+          resourceId: requestId,
+          action: 'Quote revised before acceptance',
+          details: { from: Number(currentRequest.quotedPrice), to: price },
+          success: true,
+        })
+      }
       updateData.status = 'QUOTED'
-      updateData.quotedPrice = quotedPrice
+      updateData.quotedPrice = roundMoney(price)
       updateData.quotedDate = new Date(quotedDate)
       updateData.quotedById = session.user.id
       updateData.quotedAt = new Date()

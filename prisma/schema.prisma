@@ -300,6 +300,10 @@ model Client {
   @@index([displayName])
 }
 
+/// Archiving a client deactivates its branches, and unarchiving used to switch *all* of
+/// them back on — including ones that had been deliberately disabled beforehand. This flag
+/// records which ones archiving itself turned off, so unarchiving restores the previous
+/// state rather than inventing a new one.
 model Branch {
   id             String  @id @default(cuid())
   clientId       String
@@ -318,6 +322,7 @@ model Branch {
   latitude       Float?
   longitude      Float?
   isActive       Boolean @default(true)
+  deactivatedByArchive Boolean @default(false)
 
   // New facility profile fields
   municipality        String? // Municipality / Civil Defense region

@@ -3,6 +3,8 @@ import { NextResponse } from 'next/server'
 import { authOptions } from '@/lib/auth'
 import { prisma } from '@/lib/prisma'
 import { verifyBranchAccess } from '@/lib/permissions'
+import { Prisma } from '@prisma/client'
+import { logAuditEvent } from '@/lib/audit-log'
 import type { EquipmentInspectionResult, WorkOrderInspectionResult } from '@prisma/client'
 import {
   notifyWorkOrderForReview,
@@ -33,6 +35,7 @@ function workOrderFailed(result: WorkOrderInspectionResult | null | undefined): 
 }
 
 async function generateCertificatesForWorkOrder(
+  tx: Prisma.TransactionClient,
   workOrderId: string,
   workOrder: {
     description: string
@@ -42,6 +45,8 @@ async function generateCertificatesForWorkOrder(
     findings: string | null
     recommendations: string | null
     inspectionResult: WorkOrderInspectionResult | null
+    inspectionDate: Date | null
+    scheduledDate: Date | null
     checklist: {
       branchId: string
       contractId: string | null
@@ -55,7 +60,7 @@ async function generateCertificatesForWorkOrder(
 
   let needsCertificate = false
   if (workOrder.linkedRequestId) {
-    const linkedRequest = await prisma.request.findUnique({
+    const linkedRequest = await tx.request.findUnique({
       where: { id: workOrder.linkedRequestId }
     })
     needsCertificate = linkedRequest?.needsCertificate || false
@@ -71,7 +76,7 @@ async function generateCertificatesForWorkOrder(
   // demonstrated compliance and must not generate a certificate of any kind.
   if (workOrderFailed(workOrder.inspectionResult)) return
 
-  const existingCert = await prisma.certificate.findFirst({
+  const existingCert = await tx.certificate.findFirst({
     where: { workOrderId }
   })
   if (existingCert) return
@@ -80,8 +85,13 @@ async function generateCertificatesForWorkOrder(
   if (workOrder.workOrderType === 'INSPECTION' || workOrder.workOrderType === 'STICKER_INSPECTION') certType = 'INSPECTION'
   else if (workOrder.workOrderType === 'MAINTENANCE') certType = 'PREVENTIVE_MAINTENANCE'
 
+  // Validity is measured from when the inspection happened, not from when someone got
+  // around to completing the work order. Dating it from now granted a certificate closed
+  // three weeks late three weeks more validity than the inspection warranted.
+  const inspectedAt = workOrder.inspectionDate ?? workOrder.scheduledDate ?? new Date()
+
   const calcExpiry = (recurringType: string) => {
-    const expiry = new Date()
+    const expiry = new Date(inspectedAt)
     if (recurringType === 'MONTHLY') expiry.setMonth(expiry.getMonth() + 1)
     else if (recurringType === 'QUARTERLY') expiry.setMonth(expiry.getMonth() + 3)
     else expiry.setFullYear(expiry.getFullYear() + 1)
@@ -89,7 +99,7 @@ async function generateCertificatesForWorkOrder(
   }
 
   if (workOrder.workOrderType === 'STICKER_INSPECTION') {
-    const equipment = await prisma.equipment.findMany({
+    const equipment = await tx.equipment.findMany({
       where: {
         OR: [
           { requestId: workOrder.linkedRequestId || undefined },
@@ -108,7 +118,7 @@ async function generateCertificatesForWorkOrder(
       // for a year — the document a client shows a Civil Defence inspector.
       if (!equipmentPassed(eq.inspectionResult)) {
         // Record that it was looked at, preserve the finding, issue nothing.
-        await prisma.equipment.update({
+        await tx.equipment.update({
           where: { id: eq.id },
           data: {
             lastInspected: new Date(),
@@ -121,7 +131,7 @@ async function generateCertificatesForWorkOrder(
       }
 
       const expiryDate = calcExpiry(workOrder.recurringType)
-      const cert = await prisma.certificate.create({
+      const cert = await tx.certificate.create({
         data: {
           branchId,
           contractId: workOrder.checklist.contractId,
@@ -130,14 +140,14 @@ async function generateCertificatesForWorkOrder(
           type: certType,
           title: `${eq.equipmentType.replace(/_/g, ' ')} ${eq.equipmentNumber} - Inspection Certificate`,
           description: `Sticker inspection certificate for ${eq.equipmentNumber}`,
-          issueDate: new Date(),
+          issueDate: inspectedAt,
           expiryDate,
           issuedBy: 'System (Auto-generated)',
           issuedById: sessionUserId,
         }
       })
 
-      await prisma.equipment.update({
+      await tx.equipment.update({
         where: { id: eq.id },
         data: {
           certificateId: cert.id,
@@ -151,7 +161,7 @@ async function generateCertificatesForWorkOrder(
     }
   } else {
     const expiryDate = calcExpiry(workOrder.recurringType)
-    await prisma.certificate.create({
+    await tx.certificate.create({
       data: {
         branchId,
         contractId: workOrder.checklist.contractId,
@@ -168,7 +178,7 @@ async function generateCertificatesForWorkOrder(
   }
 
   // Create activity for the branch
-  await prisma.activity.create({
+  await tx.activity.create({
     data: {
       branchId,
       contractId: workOrder.checklist?.contractId || null,
@@ -586,16 +596,36 @@ export async function PATCH(
 
       // Check if client already signed - auto-complete if both parties signed AND price is set
       if (currentWorkOrder.clientSignature && currentWorkOrder.price !== null) {
-        await prisma.checklistItem.update({
-          where: { id: workOrderId },
-          data: {
-            stage: 'COMPLETED',
-            isCompleted: true,
-            completedAt: new Date()
-          }
-        })
+        // Completion, certificate issue and the activity record are one fact. Previously
+        // these ran as separate statements, so a failure part-way through a twenty-item
+        // sticker inspection left some items certificated and some not, with the work order
+        // already marked complete and signed — and no way to tell afterwards.
+        await prisma.$transaction(async (tx) => {
+          await tx.checklistItem.update({
+            where: { id: workOrderId },
+            data: {
+              stage: 'COMPLETED',
+              isCompleted: true,
+              completedAt: new Date()
+            }
+          })
 
-        // Notify client of completion
+          await generateCertificatesForWorkOrder(tx, workOrderId, currentWorkOrder, session.user.id, session.user.role)
+
+          await tx.activity.create({
+            data: {
+              branchId,
+              contractId: currentWorkOrder.checklist?.contractId || null,
+              type: 'STATUS_CHANGE',
+              content: `Work order "${currentWorkOrder.description}" auto-completed after both parties signed`,
+              createdById: session.user.id,
+              createdByRole: session.user.role as 'CONTRACTOR' | 'CLIENT' | 'TEAM_MEMBER',
+            }
+          })
+        }, { timeout: 30_000, maxWait: 10_000 })
+
+        // Notification is a side effect, deliberately outside the transaction: a mail or
+        // insert failure here must not roll back a completed and certificated inspection.
         const branch = await prisma.branch.findUnique({
           where: { id: branchId },
           include: { client: true }
@@ -608,20 +638,6 @@ export async function PATCH(
             branchId
           )
         }
-
-        await generateCertificatesForWorkOrder(workOrderId, currentWorkOrder, session.user.id, session.user.role)
-
-        // Create activity for the branch
-        await prisma.activity.create({
-          data: {
-            branchId,
-            contractId: currentWorkOrder.checklist?.contractId || null,
-            type: 'STATUS_CHANGE',
-            content: `Work order "${currentWorkOrder.description}" auto-completed after both parties signed`,
-            createdById: session.user.id,
-            createdByRole: session.user.role as 'CONTRACTOR' | 'CLIENT' | 'TEAM_MEMBER',
-          }
-        })
       }
 
       return NextResponse.json(updatedWorkOrder)
@@ -666,28 +682,31 @@ export async function PATCH(
       const hasTechnicianOrSupervisorSignature = currentWorkOrder.technicianSignature || currentWorkOrder.supervisorSignature
 
       if (hasTechnicianOrSupervisorSignature && currentWorkOrder.price !== null) {
-        await prisma.checklistItem.update({
-          where: { id: workOrderId },
-          data: {
-            stage: 'COMPLETED',
-            isCompleted: true,
-            completedAt: new Date()
-          }
-        })
+        // Same invariant as the supervisor path: completion, certificates and the activity
+        // record commit together or not at all.
+        await prisma.$transaction(async (tx) => {
+          await tx.checklistItem.update({
+            where: { id: workOrderId },
+            data: {
+              stage: 'COMPLETED',
+              isCompleted: true,
+              completedAt: new Date()
+            }
+          })
 
-        await generateCertificatesForWorkOrder(workOrderId, currentWorkOrder, session.user.id, session.user.role)
+          await generateCertificatesForWorkOrder(tx, workOrderId, currentWorkOrder, session.user.id, session.user.role)
 
-        // Create activity for the branch
-        await prisma.activity.create({
-          data: {
-            branchId,
-            contractId: currentWorkOrder.checklist?.contractId || null,
-            type: 'STATUS_CHANGE',
-            content: `Work order "${currentWorkOrder.description}" auto-completed after both parties signed`,
-            createdById: session.user.id,
-            createdByRole: 'CLIENT',
-          }
-        })
+          await tx.activity.create({
+            data: {
+              branchId,
+              contractId: currentWorkOrder.checklist?.contractId || null,
+              type: 'STATUS_CHANGE',
+              content: `Work order "${currentWorkOrder.description}" auto-completed after both parties signed`,
+              createdById: session.user.id,
+              createdByRole: 'CLIENT',
+            }
+          })
+        }, { timeout: 30_000, maxWait: 10_000 })
       }
 
       return NextResponse.json(updatedWorkOrder)
@@ -821,6 +840,26 @@ export async function PATCH(
 
       if (!workOrder) {
         return NextResponse.json({ error: 'Work order not found' }, { status: 404 })
+      }
+
+      // Once either party has signed, the price is part of what they signed off. It may
+      // still be corrected, but not silently: the change is recorded.
+      const alreadySigned = !!(
+        workOrder.clientSignature || workOrder.supervisorSignature || workOrder.technicianSignature
+      )
+
+      if (alreadySigned && workOrder.price !== null && Number(workOrder.price) !== Number(price)) {
+        await logAuditEvent({
+          eventType: 'WORK_ORDER_UPDATED',
+          userId: session.user.id,
+          userRole: session.user.role as never,
+          userEmail: session.user.email ?? undefined,
+          resourceType: 'ChecklistItem',
+          resourceId: itemId,
+          action: 'Price changed after signature',
+          details: { from: Number(workOrder.price), to: Number(price) },
+          success: true,
+        })
       }
 
       // Update the price

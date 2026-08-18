@@ -47,10 +47,11 @@ export async function POST(
         where: { id: clientId },
         data: { archivedAt: null }
       }),
-      // Reactivate all branches
+      // Restore only the branches archiving deactivated. Reactivating all of them brought
+      // back branches that had been deliberately disabled before the client was archived.
       prisma.branch.updateMany({
-        where: { clientId },
-        data: { isActive: true }
+        where: { clientId, deactivatedByArchive: true },
+        data: { isActive: true, deactivatedByArchive: false }
       })
     ])
 

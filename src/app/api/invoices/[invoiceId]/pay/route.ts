@@ -44,14 +44,30 @@ export async function POST(
       )
     }
 
-    // Start a transaction
+    const { paymentProofUrl, paymentProofType, paymentProofFileName } = await request
+      .json()
+      .catch(() => ({} as Record<string, string | undefined>))
+
+    if (!paymentProofUrl) {
+      return NextResponse.json(
+        { error: 'Payment proof is required. Upload a receipt or transfer confirmation.' },
+        { status: 400 }
+      )
+    }
+
     const result = await prisma.$transaction(async (tx) => {
-      // 1. Update invoice to PAID
+      // Submitting proof does not settle the invoice. A contractor verifies it, exactly as
+      // they already do for contract payments. Marking it PAID here let a client clear their
+      // own balance, and left amountPaid at zero so the record contradicted itself.
       const updatedInvoice = await tx.invoice.update({
         where: { id: invoiceId },
         data: {
-          status: 'PAID',
-          paidAt: new Date()
+          status: 'PAYMENT_PENDING',
+          paymentProofUrl,
+          paymentProofType: paymentProofType || 'TRANSFER',
+          paymentProofFileName: paymentProofFileName || null,
+          paymentSubmittedAt: new Date(),
+          paymentSubmittedById: session.user.id,
         }
       })
 
@@ -62,7 +78,7 @@ export async function POST(
             branchId: invoice.branchId,
             contractId: invoice.contractId,
             type: 'UPDATED',
-            content: `Invoice marked as paid.`,
+            content: `Payment proof submitted for verification.`,
             createdById: session.user.id,
             createdByRole: session.user.role as 'CONTRACTOR' | 'CLIENT' | 'TEAM_MEMBER',
           }
@@ -85,7 +101,7 @@ export async function POST(
 
     return NextResponse.json({
       success: true,
-      message: 'Invoice marked as paid',
+      message: 'Payment proof submitted. Your contractor will verify it.',
       invoice: result.invoice
     })
   } catch (error) {

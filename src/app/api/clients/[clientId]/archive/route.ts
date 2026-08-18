@@ -47,10 +47,11 @@ export async function POST(
         where: { id: clientId },
         data: { archivedAt: new Date() }
       }),
-      // Deactivate all branches
+      // Only touch branches that are currently on, and mark them, so unarchiving can put
+      // things back as they were instead of switching everything on.
       prisma.branch.updateMany({
-        where: { clientId },
-        data: { isActive: false }
+        where: { clientId, isActive: true },
+        data: { isActive: false, deactivatedByArchive: true }
       })
     ])
 
