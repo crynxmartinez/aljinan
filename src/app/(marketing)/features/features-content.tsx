@@ -44,7 +44,7 @@ export function FeaturesContent() {
             {t.pages.features.subtitle}
           </p>
           <Button size="lg" asChild>
-            <Link href="/register">
+            <Link href="/contact">
               {t.pages.features.ctaButton}
               <ArrowRight className="ml-2 h-4 w-4" />
             </Link>
@@ -109,7 +109,7 @@ export function FeaturesContent() {
             {t.pages.features.ctaSubtitle}
           </p>
           <Button size="lg" className="bg-white text-orange-600 hover:bg-gray-100" asChild>
-            <Link href="/register">
+            <Link href="/contact">
               {t.cta.button}
               <ArrowRight className="ml-2 h-4 w-4" />
             </Link>

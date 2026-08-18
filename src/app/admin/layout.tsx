@@ -15,6 +15,12 @@ export default async function AdminLayout({
     redirect('/login')
   }
 
+  // Enforced here rather than only on the login page: a user who navigates directly to a
+  // dashboard URL would otherwise skip rotating a temporary password.
+  if (session.user.mustChangePassword) {
+    redirect('/change-password')
+  }
+
   // Only ADMIN role can access admin pages
   if (session.user.role !== 'ADMIN') {
     redirect('/dashboard')

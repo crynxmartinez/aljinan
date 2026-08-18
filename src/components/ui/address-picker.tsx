@@ -60,6 +60,7 @@ export function AddressPicker({ value, onChange, showManualFields = true }: Addr
   const [isSearching, setIsSearching] = useState(false)
   const [showSuggestions, setShowSuggestions] = useState(false)
   const [manualMode, setManualMode] = useState(false)
+  const [lookupNotice, setLookupNotice] = useState('')
   const searchTimeout = useRef<NodeJS.Timeout | null>(null)
   const containerRef = useRef<HTMLDivElement>(null)
 
@@ -154,9 +155,38 @@ export function AddressPicker({ value, onChange, showManualFields = true }: Addr
     return () => document.removeEventListener('mousedown', handleClickOutside)
   }, [])
 
+  /**
+   * Apply whatever the prediction itself carries.
+   *
+   * Used when Places details cannot be fetched. Previously that path did nothing at all:
+   * the search box showed the chosen address, onChange was never called, and the branch
+   * saved with no address and no coordinates. Better to fill what we know and tell the
+   * user to confirm the rest.
+   */
+  const applyPredictionFallback = (result: NominatimResult) => {
+    const parts = result.display_name.split(',').map(p => p.trim()).filter(Boolean)
+    const addr = result.address
+
+    onChange({
+      address: addr.road || parts[0] || result.display_name,
+      city: addr.city || addr.town || addr.village || parts[1] || '',
+      state: addr.state || addr.province || '',
+      zipCode: addr.postcode || '',
+      country: addr.country || parts[parts.length - 1] || '',
+      latitude: null,
+      longitude: null,
+    })
+
+    setManualMode(true)
+    setLookupNotice(
+      'We could not confirm the exact location for that address. Please check the fields below and adjust them if needed.'
+    )
+  }
+
   const selectAddress = (result: NominatimResult) => {
     setSearchQuery(result.display_name)
     setShowSuggestions(false)
+    setLookupNotice('')
 
     // If coordinates are already available (from old format), use them directly
     if (result.lat !== '0' && result.lon !== '0') {
@@ -188,7 +218,14 @@ export function AddressPicker({ value, onChange, showManualFields = true }: Addr
           fields: ['geometry', 'address_components', 'formatted_address'],
         },
         (place, status) => {
-          if (status === google.maps.places.PlacesServiceStatus.OK && place?.geometry?.location) {
+          if (status !== google.maps.places.PlacesServiceStatus.OK || !place?.geometry?.location) {
+            // Silent before: no onChange, so the address the user picked was never applied.
+            console.warn('Places details lookup failed:', status)
+            applyPredictionFallback(result)
+            return
+          }
+
+          {
             const lat = place.geometry.location.lat()
             const lng = place.geometry.location.lng()
             const addressComponents = place.address_components || []
@@ -212,6 +249,9 @@ export function AddressPicker({ value, onChange, showManualFields = true }: Addr
           }
         }
       )
+    } else {
+      // Maps JS never loaded: a restricted key, a blocker, or a network failure.
+      applyPredictionFallback(result)
     }
   }
 
@@ -347,6 +387,12 @@ export function AddressPicker({ value, onChange, showManualFields = true }: Addr
                 </button>
               ))}
             </Card>
+          )}
+
+          {lookupNotice && (
+            <p className="mt-2 text-sm text-amber-600" role="status">
+              {lookupNotice}
+            </p>
           )}
 
           {showSuggestions && searchQuery.length >= 3 && suggestions.length === 0 && !isSearching && (

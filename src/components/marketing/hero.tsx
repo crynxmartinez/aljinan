@@ -56,7 +56,7 @@ export function Hero() {
           {/* CTA Buttons */}
           <div className="flex flex-col sm:flex-row gap-4 justify-center mb-12">
             <Button size="lg" className="bg-orange-500 hover:bg-orange-600 text-white" asChild>
-              <Link href="/register">
+              <Link href="/contact">
                 {t.hero.ctaPrimary}
                 <ArrowRight className="ml-2 h-4 w-4" />
               </Link>

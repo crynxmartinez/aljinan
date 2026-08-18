@@ -45,6 +45,23 @@ const colorMap = {
   alert: 'text-red-600',
 }
 
+/**
+ * NotificationType values are enum names like WORK_ORDER_REMINDER. Lowercasing them
+ * produced keys that iconMap does not contain, so every notification fell through to the
+ * grey default and the at-a-glance signal the design relies on was lost.
+ */
+function iconKeyFor(type: unknown): Notification['type'] {
+  const raw = typeof type === 'string' ? type.toUpperCase() : ''
+
+  if (raw.startsWith('WORK_ORDER')) return 'work_order'
+  if (raw.startsWith('CONTRACT')) return 'certificate'
+  if (raw.startsWith('CERTIFICATE') || raw.startsWith('EQUIPMENT')) return 'certificate'
+  if (raw.startsWith('INVOICE') || raw.startsWith('PAYMENT')) return 'payment'
+  if (raw.startsWith('QUOT') || raw.startsWith('REQUEST')) return 'quote'
+  if (raw.includes('COMMENT')) return 'comment'
+  return 'alert'
+}
+
 export function NotificationCenter() {
   const router = useRouter()
   const { data: session } = useSession()
@@ -67,7 +84,7 @@ export function NotificationCenter() {
           .filter((n: any) => n && n.id && n.title && n.message) // Filter out invalid entries
           .map((n: any) => ({
             id: n.id,
-            type: (n.type?.toLowerCase() || 'alert') as Notification['type'],
+            type: iconKeyFor(n.type),
             title: n.title || 'Notification',
             message: n.message || '',
             link: n.link || undefined,
@@ -90,26 +107,41 @@ export function NotificationCenter() {
   }
 
   const markAsRead = async (notificationId: string) => {
-    try {
-      // TODO: API call to mark as read
-      // await fetch(`/api/notifications/${notificationId}/read`, { method: 'POST' })
+    const previous = notifications
 
-      setNotifications(prev =>
-        prev.map(n => (n.id === notificationId ? { ...n, read: true } : n))
-      )
+    // Optimistic, then reconciled: the badge should respond immediately.
+    setNotifications(prev =>
+      prev.map(n => (n.id === notificationId ? { ...n, read: true } : n))
+    )
+
+    try {
+      const response = await fetch('/api/notifications', {
+        method: 'PATCH',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ notificationIds: [notificationId] }),
+      })
+      if (!response.ok) throw new Error(`HTTP ${response.status}`)
     } catch (error) {
       console.error('Failed to mark notification as read:', error)
+      setNotifications(previous)
     }
   }
 
   const markAllAsRead = async () => {
-    try {
-      // TODO: API call to mark all as read
-      // await fetch('/api/notifications/mark-all-read', { method: 'POST' })
+    const previous = notifications
 
-      setNotifications(prev => prev.map(n => ({ ...n, read: true })))
+    setNotifications(prev => prev.map(n => ({ ...n, read: true })))
+
+    try {
+      const response = await fetch('/api/notifications', {
+        method: 'PATCH',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ markAllRead: true }),
+      })
+      if (!response.ok) throw new Error(`HTTP ${response.status}`)
     } catch (error) {
       console.error('Failed to mark all as read:', error)
+      setNotifications(previous)
     }
   }
 

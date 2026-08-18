@@ -23,7 +23,7 @@ export function CTASection() {
             className="bg-white text-orange-600 hover:bg-gray-100 text-lg px-8 py-6 h-auto"
             asChild
           >
-            <Link href="/register">
+            <Link href="/contact">
               {t.cta.button}
               <ArrowRight className="ml-2 h-5 w-5" />
             </Link>

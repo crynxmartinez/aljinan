@@ -120,6 +120,12 @@ export default async function DashboardLayout({
     redirect('/login')
   }
 
+  // Enforced here rather than only on the login page: a user who navigates directly to a
+  // dashboard URL would otherwise skip rotating a temporary password.
+  if (session.user.mustChangePassword) {
+    redirect('/change-password')
+  }
+
   // Redirect CLIENT role to portal
   if (session.user.role === 'CLIENT') {
     redirect('/portal')
