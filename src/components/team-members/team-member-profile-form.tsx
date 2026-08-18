@@ -9,6 +9,7 @@ import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
 import { Textarea } from '@/components/ui/textarea'
 import { Badge } from '@/components/ui/badge'
+import { useTranslation } from '@/lib/i18n/use-translation'
 import {
   User,
   Mail,
@@ -38,6 +39,7 @@ interface TeamMemberProfileFormProps {
 
 export function TeamMemberProfileForm({ teamMember }: TeamMemberProfileFormProps) {
   const router = useRouter()
+  const { t } = useTranslation()
   const [loading, setLoading] = useState(false)
   const [formData, setFormData] = useState({
     name: teamMember.user.name || '',
@@ -63,7 +65,7 @@ export function TeamMemberProfileForm({ teamMember }: TeamMemberProfileFormProps
         throw new Error(error.error || 'Failed to update profile')
       }
 
-      toast.success('Profile updated successfully')
+      toast.success(t.toasts.profileUpdated)
       router.refresh()
     } catch (error) {
       toast.error(error instanceof Error ? error.message : 'Failed to update profile')

@@ -864,7 +864,7 @@ export function RequestsList({ branchId, userRole, userId }: RequestsListProps) 
       fetchRequests()
       router.refresh()
     } catch (err) {
-      toast.error('Failed to create work order')
+      toast.error(t.toasts.createWorkOrderFailed)
     }
   }
 

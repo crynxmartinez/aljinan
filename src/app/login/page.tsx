@@ -132,9 +132,9 @@ export default function LoginPage() {
           </div>
 
           <div className="text-center text-sm">
-            <span className="text-muted-foreground">Need an account? </span>
+            <span className="text-muted-foreground">{t.auth.login.needAccount} </span>
             <Link href="/contact" className="text-primary font-medium hover:underline">
-              Contact our support team
+              {t.auth.login.contactSupport}
             </Link>
           </div>
         </form>

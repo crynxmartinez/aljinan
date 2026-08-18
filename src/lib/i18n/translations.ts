@@ -1,5 +1,30 @@
 export const translations = {
   en: {
+    // Messages shown after an action succeeds or fails. These were hardcoded English at
+    // 23 call sites, which meant the copy a user sees when something breaks was the one
+    // part of the interface never translated.
+    toasts: {
+      reportSaved: "Report saved successfully",
+      reportSaveFailed: "Could not save the report",
+      inspectionSigned: "Inspection signed. You can now send it for review.",
+      inspectionSignFailed: "Could not sign the inspection",
+      signedBySupervisor: "Work order signed by the supervisor",
+      signedByClient: "Work order signed by the client",
+      signFailed: "Could not add the signature",
+      workOrderCompleted: "Work order completed",
+      priceUpdated: "Price updated",
+      priceUpdateFailed: "Could not update the price",
+      rescheduled: "Work order rescheduled",
+      rescheduleFailed: "Could not reschedule the work order",
+      sentToReview: "Work order sent for review",
+      sendToReviewFailed: "Could not send the work order for review",
+      priceRequiredForReview: "Add a price before sending this for review",
+      priceRequiredToComplete: "A work order cannot be completed without a price. Add one first.",
+      priceRequiredToSign: "A work order cannot be signed without a price. Set the price first.",
+      priceRequiredAskContractor: "This cannot be signed until your contractor sets a price.",
+      createWorkOrderFailed: "Could not create the work order",
+      profileUpdated: "Profile updated",
+    },
     common: {
       appName: "Tasheel",
       tagline: "Simplifying Safety, One Transaction at a Time",
@@ -71,6 +96,8 @@ export const translations = {
         signingIn: "Signing in...",
         noAccount: "Don't have an account?",
         createAccount: "Create Account",
+        needAccount: "Need an account?",
+        contactSupport: "Contact our support team",
       },
       register: {
         title: "Create Your Account",
@@ -1625,6 +1652,28 @@ export const translations = {
     },
   },
   ar: {
+    toasts: {
+      reportSaved: "تم حفظ التقرير بنجاح",
+      reportSaveFailed: "لم نتمكن من حفظ التقرير",
+      inspectionSigned: "تم توقيع التفتيش. يمكنك الآن إرساله للمراجعة.",
+      inspectionSignFailed: "لم نتمكن من توقيع التفتيش",
+      signedBySupervisor: "تم توقيع أمر العمل من قبل المشرف",
+      signedByClient: "تم توقيع أمر العمل من قبل العميل",
+      signFailed: "لم نتمكن من إضافة التوقيع",
+      workOrderCompleted: "تم إكمال أمر العمل",
+      priceUpdated: "تم تحديث السعر",
+      priceUpdateFailed: "لم نتمكن من تحديث السعر",
+      rescheduled: "تم إعادة جدولة أمر العمل",
+      rescheduleFailed: "لم نتمكن من إعادة جدولة أمر العمل",
+      sentToReview: "تم إرسال أمر العمل للمراجعة",
+      sendToReviewFailed: "لم نتمكن من إرسال أمر العمل للمراجعة",
+      priceRequiredForReview: "أضف السعر قبل إرسال هذا للمراجعة",
+      priceRequiredToComplete: "لا يمكن إكمال أمر العمل بدون سعر. أضف السعر أولاً.",
+      priceRequiredToSign: "لا يمكن توقيع أمر العمل بدون سعر. حدد السعر أولاً.",
+      priceRequiredAskContractor: "لا يمكن التوقيع حتى يحدد المقاول السعر.",
+      createWorkOrderFailed: "لم نتمكن من إنشاء أمر العمل",
+      profileUpdated: "تم تحديث الملف الشخصي",
+    },
     common: {
       appName: "تسهيل",
       tagline: "تبسيط السلامة، معاملة واحدة في كل مرة",
@@ -1696,6 +1745,8 @@ export const translations = {
         signingIn: "جاري تسجيل الدخول...",
         noAccount: "ليس لديك حساب؟",
         createAccount: "إنشاء حساب",
+        needAccount: "تحتاج إلى حساب؟",
+        contactSupport: "تواصل مع فريق الدعم",
       },
       register: {
         title: "إنشاء حسابك",

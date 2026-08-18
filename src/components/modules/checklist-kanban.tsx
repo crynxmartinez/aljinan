@@ -74,6 +74,7 @@ import {
 import { useDraggable, useDroppable } from '@dnd-kit/core'
 import { ServiceReportForm, MaintenanceReportForm, InstallationReportForm } from '@/components/reports'
 import { api } from '@/lib/api-client'
+import { useTranslation } from '@/lib/i18n/use-translation'
 import {
   ServiceReportData,
   MaintenanceReportData,
@@ -576,6 +577,7 @@ function sortByPriority(items: ChecklistItem[]): ChecklistItem[] {
 
 export function ChecklistKanban({ branchId, readOnly = false, userRole }: ChecklistKanbanProps) {
   const router = useRouter()
+  const { t } = useTranslation()
   const [items, setItems] = useState<ChecklistItem[]>([])
   const [loading, setLoading] = useState(true)
   const [columnModalOpen, setColumnModalOpen] = useState(false)
@@ -837,14 +839,14 @@ export function ChecklistKanban({ branchId, readOnly = false, userRole }: Checkl
       })
 
       if (response.ok) {
-        toast.success('Report saved successfully')
+        toast.success(t.toasts.reportSaved)
         fetchItems()
         setInspectionMode(false)
         router.refresh()
       }
     } catch (error) {
       console.error('Failed to save report:', error)
-      toast.error('Failed to save report')
+      toast.error(t.toasts.reportSaveFailed)
     } finally {
       setSavingInspection(false)
     }
@@ -867,7 +869,7 @@ export function ChecklistKanban({ branchId, readOnly = false, userRole }: Checkl
       })
 
       if (response.ok) {
-        toast.success('Inspection signed successfully. You can now send to review.')
+        toast.success(t.toasts.inspectionSigned)
         fetchItems()
         router.refresh()
       } else {
@@ -876,7 +878,7 @@ export function ChecklistKanban({ branchId, readOnly = false, userRole }: Checkl
         throw new Error(error.error)
       }
     } catch (error) {
-      toast.error('Failed to sign inspection')
+      toast.error(t.toasts.inspectionSignFailed)
       throw error
     } finally {
       setUpdating(false)
@@ -901,7 +903,7 @@ export function ChecklistKanban({ branchId, readOnly = false, userRole }: Checkl
       })
 
       if (response.ok) {
-        toast.success('Work order signed by supervisor')
+        toast.success(t.toasts.signedBySupervisor)
         fetchItems()
         const updatedItems = await api.get<never[]>(`/api/branches/${branchId}/checklist-items`)
         const updated = updatedItems.find((i: ChecklistItem) => i.id === selectedItem.id)
@@ -913,7 +915,7 @@ export function ChecklistKanban({ branchId, readOnly = false, userRole }: Checkl
         throw new Error(error.error)
       }
     } catch (error) {
-      toast.error('Failed to sign')
+      toast.error(t.toasts.signFailed)
       throw error
     } finally {
       setUpdating(false)
@@ -937,7 +939,7 @@ export function ChecklistKanban({ branchId, readOnly = false, userRole }: Checkl
       })
 
       if (response.ok) {
-        toast.success('Work order signed by client')
+        toast.success(t.toasts.signedByClient)
 
         // If there's a pending move (from drag-and-drop), complete it now
         if (pendingMove && pendingMove.targetStage === 'COMPLETED') {
@@ -952,7 +954,7 @@ export function ChecklistKanban({ branchId, readOnly = false, userRole }: Checkl
           })
 
           if (completeResponse.ok) {
-            toast.success('Work order completed')
+            toast.success(t.toasts.workOrderCompleted)
             setPendingMove(null)
           }
         }
@@ -968,7 +970,7 @@ export function ChecklistKanban({ branchId, readOnly = false, userRole }: Checkl
         throw new Error(error.error)
       }
     } catch (error) {
-      toast.error('Failed to sign')
+      toast.error(t.toasts.signFailed)
       throw error
     } finally {
       setUpdating(false)
@@ -995,7 +997,7 @@ export function ChecklistKanban({ branchId, readOnly = false, userRole }: Checkl
       })
 
       if (response.ok) {
-        toast.success('Price updated successfully')
+        toast.success(t.toasts.priceUpdated)
         fetchItems()
         const updatedItems = await api.get<never[]>(`/api/branches/${branchId}/checklist-items`)
         const updated = updatedItems.find((i: ChecklistItem) => i.id === itemId)
@@ -1007,7 +1009,7 @@ export function ChecklistKanban({ branchId, readOnly = false, userRole }: Checkl
       }
     } catch (error) {
       console.error('Failed to update price:', error)
-      toast.error('Failed to update price')
+      toast.error(t.toasts.priceUpdateFailed)
     } finally {
       setUpdating(false)
     }
@@ -1059,7 +1061,7 @@ export function ChecklistKanban({ branchId, readOnly = false, userRole }: Checkl
       })
 
       if (response.ok) {
-        toast.success('Work order rescheduled successfully')
+        toast.success(t.toasts.rescheduled)
         fetchItems()
         setRescheduleDialogOpen(false)
         setRescheduleData({ newDate: '', reason: '' })
@@ -1070,7 +1072,7 @@ export function ChecklistKanban({ branchId, readOnly = false, userRole }: Checkl
         toast.error(error.error || 'Failed to reschedule')
       }
     } catch (error) {
-      toast.error('Failed to reschedule work order')
+      toast.error(t.toasts.rescheduleFailed)
     } finally {
       setRescheduling(false)
     }
@@ -1103,7 +1105,7 @@ export function ChecklistKanban({ branchId, readOnly = false, userRole }: Checkl
     const isClient = userRole === 'CLIENT'
     if (!canTransition(item.stage, targetStage, isClient, item)) {
       if (targetStage === 'FOR_REVIEW' && item.price === null) {
-        toast.error('Please add a price before submitting for review')
+        toast.error(t.toasts.priceRequiredForReview)
       }
       return
     }
@@ -1131,15 +1133,15 @@ export function ChecklistKanban({ branchId, readOnly = false, userRole }: Checkl
       if (!response.ok) {
         // Revert on error
         fetchItems()
-        toast.error('Failed to send to review')
+        toast.error(t.toasts.sendToReviewFailed)
       } else {
-        toast.success('Work order sent to review')
+        toast.success(t.toasts.sentToReview)
         router.refresh()
       }
     } catch (error) {
       console.error('Failed to update stage:', error)
       fetchItems()
-      toast.error('Failed to send to review')
+      toast.error(t.toasts.sendToReviewFailed)
     }
   }
 
@@ -1175,9 +1177,9 @@ export function ChecklistKanban({ branchId, readOnly = false, userRole }: Checkl
     if (!canTransition(item.stage, targetStage, isClient, item)) {
       // Show specific message if trying to move without price
       if (targetStage === 'FOR_REVIEW' && item.price === null) {
-        toast.error('Please add a price before submitting for review')
+        toast.error(t.toasts.priceRequiredForReview)
       } else if (targetStage === 'COMPLETED' && item.price === null) {
-        toast.error('Cannot complete work order without a price. Please add price first.')
+        toast.error(t.toasts.priceRequiredToComplete)
       } else {
         console.log(`Transition from ${item.stage} to ${targetStage} not allowed for ${isClient ? 'client' : 'contractor'}`)
       }
@@ -2027,7 +2029,7 @@ export function ChecklistKanban({ branchId, readOnly = false, userRole }: Checkl
                           variant="outline"
                           onClick={() => {
                             if (!selectedItem.price) {
-                              toast.error('Cannot sign without a price. Please set the price first.')
+                              toast.error(t.toasts.priceRequiredToSign)
                               return
                             }
                             setSignatureType('supervisor')
@@ -2056,7 +2058,7 @@ export function ChecklistKanban({ branchId, readOnly = false, userRole }: Checkl
                           variant="outline"
                           onClick={() => {
                             if (!selectedItem.price) {
-                              toast.error('Cannot sign without a price. Please ask contractor to set the price first.')
+                              toast.error(t.toasts.priceRequiredAskContractor)
                               return
                             }
                             setSignatureType('client')
