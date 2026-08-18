@@ -2,7 +2,7 @@ import { NextAuthOptions } from 'next-auth'
 import CredentialsProvider from 'next-auth/providers/credentials'
 import bcrypt from 'bcryptjs'
 import { prisma } from './prisma'
-import { checkLoginRateLimit } from './rate-limit'
+import { checkLoginRateLimit, recordFailedLogin } from './rate-limit'
 
 /**
  * One message for every credential failure. NextAuth surfaces the thrown message in the
@@ -91,6 +91,7 @@ export const authOptions: NextAuthOptions = {
         })
 
         if (!user) {
+          await recordFailedLogin(credentials.email)
           throw new Error(INVALID_CREDENTIALS)
         }
 
@@ -105,6 +106,7 @@ export const authOptions: NextAuthOptions = {
           )
 
           if (!isPasswordValid) {
+            await recordFailedLogin(credentials.email)
             throw new Error(INVALID_CREDENTIALS)
           }
         }

@@ -44,6 +44,13 @@ class MemoryStore {
     return { success: true, remaining: limit - item.count }
   }
 
+  /** Is this key still under its limit? Does not consume an attempt. */
+  peek(key: string, limit: number): boolean {
+    const item = this.store.get(key)
+    if (!item || Date.now() >= item.reset) return true
+    return item.count < limit
+  }
+
   /** Drop expired entries occasionally so the map cannot grow without bound. */
   private sweep(now: number) {
     if (now - this.lastSweep < 60_000) return
@@ -106,16 +113,43 @@ export function getClientIp(request: Request): string {
   return 'unknown'
 }
 
-// Helper to check login rate limit
+/**
+ * Whether this address has too many recent *failed* sign-ins.
+ *
+ * Read-only: it reports the current state without consuming an attempt. Call
+ * recordFailedLogin() when a sign-in actually fails.
+ *
+ * Counting successes as well as failures — which is what happened when the check both
+ * tested and incremented — throttles ordinary use for no security benefit: a legitimate
+ * user signing in on five devices, or a test suite, is locked out for fifteen minutes while
+ * an attacker gains nothing.
+ */
 export async function checkLoginRateLimit(identifier: string) {
+  const key = `login-failures:${identifier.toLowerCase().trim()}`
+
   if (loginRateLimit) {
-    const { success, remaining } = await loginRateLimit.limit(identifier)
-    return { success, remaining }
+    // Upstash's limiter is check-and-consume, so it is used on the failure path only.
+    const { remaining } = await loginRateLimit.getRemaining(key)
+    return { success: remaining > 0, remaining }
   }
-  
-  // Fallback: 5 attempts per 15 minutes (900 seconds)
-  return checkRateLimit(identifier, 5, 900)
+
+  return { success: memoryStore.peek(key, LOGIN_FAILURE_LIMIT), remaining: 0 }
 }
+
+/** Record a failed sign-in against this address. */
+export async function recordFailedLogin(identifier: string) {
+  const key = `login-failures:${identifier.toLowerCase().trim()}`
+
+  if (loginRateLimit) {
+    await loginRateLimit.limit(key)
+    return
+  }
+
+  memoryStore.hit(key, LOGIN_FAILURE_LIMIT, LOGIN_FAILURE_WINDOW_SECONDS)
+}
+
+const LOGIN_FAILURE_LIMIT = 5
+const LOGIN_FAILURE_WINDOW_SECONDS = 900
 
 // Helper to check API rate limit
 export async function checkApiRateLimit(identifier: string) {

@@ -7,6 +7,7 @@ import { Users, MapPin, FileText, Calendar, AlertCircle, Banknote, Wrench, Eye, 
 import { PendingBranchRequests } from './pending-branch-requests'
 import { ActionCenterTable } from '@/components/dashboard/action-center-table'
 import { getTranslations } from '@/lib/i18n/server'
+import Link from 'next/link'
 
 async function getDashboardStats(userId: string) {
   const contractor = await prisma.contractor.findUnique({
@@ -466,13 +467,13 @@ export default async function DashboardPage() {
             </CardDescription>
           </CardHeader>
           <CardContent>
-            <a
+            <Link
               href="/dashboard/clients"
               className="inline-flex items-center justify-center rounded-md bg-primary px-4 py-2 text-sm font-medium text-primary-foreground hover:bg-primary/90"
             >
               <Users className="mr-2 h-4 w-4" />
               {t.dashboard.page.getStarted.button}
-            </a>
+            </Link>
           </CardContent>
         </Card>
       )}

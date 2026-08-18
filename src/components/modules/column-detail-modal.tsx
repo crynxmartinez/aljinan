@@ -159,7 +159,7 @@ export function ColumnDetailModal({
   }
 
   const filteredAndSortedItems = useMemo(() => {
-    let filtered = items.filter((item) => {
+    const filtered = items.filter((item) => {
       const matchesSearch = item.description.toLowerCase().includes(searchQuery.toLowerCase()) ||
         item.projectTitle?.toLowerCase().includes(searchQuery.toLowerCase()) ||
         item.checklistTitle.toLowerCase().includes(searchQuery.toLowerCase())

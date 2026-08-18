@@ -378,7 +378,7 @@ export function ClientBranchRequests({ branchId, onDataChange, userId }: ClientB
         const data = await response.json()
         setAllRequests(data)
         const activeRequestStatuses = ['REQUESTED', 'QUOTED']
-        let filtered = data.filter((r: Request) => activeRequestStatuses.includes(r.status))
+        const filtered = data.filter((r: Request) => activeRequestStatuses.includes(r.status))
         setRequests(filtered)
         setError('')
       } else {

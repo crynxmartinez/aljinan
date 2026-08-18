@@ -1,0 +1,122 @@
+name: CI
+
+# Replaces the previous type-check-only workflow, which ran ESLint with
+# continue-on-error: true. Lint had been failing for months and nothing noticed, which is the
+# same as not having it. Everything here blocks.
+
+on:
+  push:
+    branches: [main, develop]
+  pull_request:
+    branches: [main, develop]
+
+jobs:
+  static:
+    name: Types, lint, unit tests
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '24'
+          cache: 'npm'
+
+      - name: Install
+        run: npm ci --legacy-peer-deps
+        env:
+          # postinstall runs prisma generate, which needs a URL but never connects.
+          DATABASE_URL: postgresql://user:password@localhost:5432/dummy
+
+      - name: Generate Prisma client
+        run: npx prisma generate
+        env:
+          DATABASE_URL: postgresql://user:password@localhost:5432/dummy
+
+      - name: Type check
+        run: npm run type-check
+
+      - name: Lint
+        run: npm run lint
+
+      - name: Unit tests
+        run: npm test
+
+      - name: Build
+        run: npm run build
+        env:
+          DATABASE_URL: postgresql://user:password@localhost:5432/dummy
+          NEXTAUTH_SECRET: dummy-secret-for-ci-build-min-32-chars-long
+          NEXTAUTH_URL: http://localhost:3000
+          NEXT_PUBLIC_GOOGLE_MAPS_API_KEY: dummy
+          RESEND_API_KEY: re_dummy
+          AWS_ACCESS_KEY_ID: dummy
+          AWS_SECRET_ACCESS_KEY: dummy
+          AWS_S3_REGION: ap-southeast-1
+          AWS_S3_BUCKET_NAME: dummy-bucket
+
+  integration:
+    name: Domain invariants, access matrix, concurrency
+    runs-on: ubuntu-latest
+
+    # A real Postgres, because every finding these cover lived in the interaction between the
+    # code and the database. Mocking Prisma would defeat the purpose.
+    services:
+      postgres:
+        image: postgres:16
+        env:
+          POSTGRES_USER: tasheel
+          POSTGRES_PASSWORD: tasheel
+          POSTGRES_DB: tasheel_test
+        ports: ['5432:5432']
+        options: >-
+          --health-cmd pg_isready
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 5
+
+    env:
+      DATABASE_URL: postgresql://tasheel:tasheel@localhost:5432/tasheel_test
+      DATABASE_URL_POOLED: ''
+      NEXTAUTH_SECRET: dummy-secret-for-ci-tests-min-32-chars-long
+      NEXTAUTH_URL: http://localhost:3000
+      NEXT_PUBLIC_APP_URL: http://localhost:3000
+      NEXT_PUBLIC_GOOGLE_MAPS_API_KEY: dummy
+      RESEND_API_KEY: re_dummy
+      AWS_ACCESS_KEY_ID: dummy
+      AWS_SECRET_ACCESS_KEY: dummy
+      AWS_S3_REGION: ap-southeast-1
+      AWS_S3_BUCKET_NAME: dummy-bucket
+      CRON_SECRET: ci-cron-secret
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '24'
+          cache: 'npm'
+
+      - name: Install
+        run: npm ci --legacy-peer-deps
+
+      - name: Apply migrations
+        run: npx prisma migrate deploy
+
+      - name: Seed
+        run: |
+          npx tsx prisma/seed-dev.ts
+          npx tsx scripts/seed-second-tenant.ts
+
+      - name: Seed a client and branch for the first tenant
+        run: node scripts/seed-test-fixtures.mjs
+
+      - name: Start the app
+        run: |
+          npm run build
+          npm run start &
+          npx wait-on http://localhost:3000/login --timeout 120000
+
+      - name: Integration tests
+        run: npm run test:integration

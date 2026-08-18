@@ -17,8 +17,8 @@ export async function GET() {
     thirtyDaysFromNow.setDate(thirtyDaysFromNow.getDate() + 30)
 
     // Get branches the user has access to
-    let branchIds: string[] = []
-    let branchMap: Map<string, { name: string; clientId: string; clientName: string }> = new Map()
+    const branchIds: string[] = []
+    const branchMap: Map<string, { name: string; clientId: string; clientName: string }> = new Map()
 
     if (session.user.role === 'CONTRACTOR') {
       const contractor = await prisma.contractor.findUnique({
