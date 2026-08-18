@@ -164,7 +164,7 @@ interface ChecklistItem {
   systemsChecked?: string | null
   deficiencies?: string | null
   recommendations?: string | null
-  inspectionResult?: 'PASS' | 'PASSED' | 'FAIL' | 'FAILED' | 'NEEDS_REPAIR' | 'ATTENTION_REQUIRED' | 'PENDING' | null
+  inspectionResult?: 'PASSED' | 'FAILED' | 'ATTENTION_REQUIRED' | null
 
   // Report Fields - MAINTENANCE
   systemsMaintained?: string | null
@@ -762,9 +762,7 @@ export function ChecklistKanban({ branchId, readOnly = false, userRole }: Checkl
       systemsChecked: item.systemsChecked || '',
       deficiencies: item.deficiencies || '',
       recommendations: item.recommendations || '',
-      inspectionResult: (item.inspectionResult === 'PASS' || item.inspectionResult === 'PASSED' ? 'PASSED' :
-        item.inspectionResult === 'FAIL' || item.inspectionResult === 'FAILED' ? 'FAILED' :
-          item.inspectionResult === 'ATTENTION_REQUIRED' ? 'ATTENTION_REQUIRED' : '') as '' | 'PASSED' | 'ATTENTION_REQUIRED' | 'FAILED',
+      inspectionResult: (item.inspectionResult ?? '') as '' | 'PASSED' | 'ATTENTION_REQUIRED' | 'FAILED',
       // MAINTENANCE fields
       systemsMaintained: item.systemsMaintained || '',
       maintenancePerformed: item.maintenancePerformed || '',

@@ -549,10 +549,10 @@ export function WorkOrderPrint({ workOrderId }: WorkOrderPrintProps) {
                     {data.inspectionResult && (
                       <div>
                         <p className="text-sm font-semibold mb-1">Inspection Result:</p>
-                        <p className={`text-sm font-semibold ${data.inspectionResult === 'PASSED' || data.inspectionResult === 'PASS' ? 'text-green-600' :
+                        <p className={`text-sm font-semibold ${data.inspectionResult === 'PASSED' ? 'text-green-600' :
                             data.inspectionResult === 'ATTENTION_REQUIRED' ? 'text-yellow-600' : 'text-red-600'
                           }`}>
-                          {data.inspectionResult === 'PASSED' || data.inspectionResult === 'PASS' ? '✅ Passed' :
+                          {data.inspectionResult === 'PASSED' ? '✅ Passed' :
                             data.inspectionResult === 'ATTENTION_REQUIRED' ? '⚠️ Attention Required' : '❌ Failed'}
                         </p>
                       </div>

@@ -3,6 +3,7 @@ import { NextResponse } from 'next/server'
 import { authOptions } from '@/lib/auth'
 import { prisma } from '@/lib/prisma'
 import { verifyBranchAccess } from '@/lib/permissions'
+import type { EquipmentInspectionResult, WorkOrderInspectionResult } from '@prisma/client'
 import {
   notifyWorkOrderForReview,
   notifyWorkOrderStarted,
@@ -13,21 +14,22 @@ import {
 } from '@/lib/notification-service'
 
 /**
- * Inspection outcomes that permit a certificate to be issued.
+ * Whether a recorded outcome permits a certificate.
  *
- * The enum carries two vocabularies — PASS/PASSED for equipment and work orders
- * respectively, and the same for failures — so both spellings are listed here until
- * they are split into separate types.
+ * Equipment and work orders have separate enums, so each has its own predicate. Anything
+ * other than an explicit pass is treated as not certifiable — including PENDING and null,
+ * because an inspection that was never recorded has not demonstrated anything.
  */
-const PASSING_RESULTS = new Set(['PASS', 'PASSED'])
-const FAILING_RESULTS = new Set(['FAIL', 'FAILED', 'NEEDS_REPAIR', 'ATTENTION_REQUIRED'])
-
-function isPassingResult(result: string | null | undefined): boolean {
-  return !!result && PASSING_RESULTS.has(result)
+function equipmentPassed(result: EquipmentInspectionResult | null | undefined): boolean {
+  return result === 'PASS'
 }
 
-function isFailingResult(result: string | null | undefined): boolean {
-  return !!result && FAILING_RESULTS.has(result)
+function equipmentFailed(result: EquipmentInspectionResult | null | undefined): boolean {
+  return result === 'FAIL' || result === 'NEEDS_REPAIR'
+}
+
+function workOrderFailed(result: WorkOrderInspectionResult | null | undefined): boolean {
+  return result === 'FAILED' || result === 'ATTENTION_REQUIRED'
 }
 
 async function generateCertificatesForWorkOrder(
@@ -39,7 +41,7 @@ async function generateCertificatesForWorkOrder(
     linkedRequestId: string | null
     findings: string | null
     recommendations: string | null
-    inspectionResult: string | null
+    inspectionResult: WorkOrderInspectionResult | null
     checklist: {
       branchId: string
       contractId: string | null
@@ -67,7 +69,7 @@ async function generateCertificatesForWorkOrder(
 
   // A work order the technician recorded as failed, or as needing attention, has not
   // demonstrated compliance and must not generate a certificate of any kind.
-  if (isFailingResult(workOrder.inspectionResult)) return
+  if (workOrderFailed(workOrder.inspectionResult)) return
 
   const existingCert = await prisma.certificate.findFirst({
     where: { workOrderId }
@@ -104,7 +106,7 @@ async function generateCertificatesForWorkOrder(
       // unconditionally, so a fire extinguisher recorded as FAIL was flipped to
       // passing, had its warning status cleared, and was issued a certificate valid
       // for a year — the document a client shows a Civil Defence inspector.
-      if (!isPassingResult(eq.inspectionResult)) {
+      if (!equipmentPassed(eq.inspectionResult)) {
         // Record that it was looked at, preserve the finding, issue nothing.
         await prisma.equipment.update({
           where: { id: eq.id },
@@ -112,7 +114,7 @@ async function generateCertificatesForWorkOrder(
             lastInspected: new Date(),
             isInspected: true,
             certificateIssued: false,
-            status: isFailingResult(eq.inspectionResult) ? 'NEEDS_ATTENTION' : eq.status,
+            status: equipmentFailed(eq.inspectionResult) ? 'NEEDS_ATTENTION' : eq.status,
           }
         })
         continue

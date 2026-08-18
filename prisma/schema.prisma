@@ -495,14 +495,21 @@ enum EquipmentStatus {
 }
 
 // Inspection result for equipment and work orders
-enum InspectionResult {
-  PASS // Equipment passed inspection
-  PASSED // Work order inspection passed
-  FAIL // Equipment failed inspection
-  FAILED // Work order inspection failed
-  NEEDS_REPAIR // Equipment needs repair before passing
-  ATTENTION_REQUIRED // Work order needs attention
-  PENDING // Not yet inspected
+// One enum previously served both equipment and work orders, carrying PASS *and* PASSED,
+// FAIL *and* FAILED. Two vocabularies for one meaning meant every comparison was a guess
+// about which half a value came from: equipment/route.ts branched on 'FAIL' only, so a
+// 'FAILED' value skipped the needs-repair path entirely and the item was treated as sound.
+enum EquipmentInspectionResult {
+  PENDING // Not yet inspected this cycle
+  PASS // Passed inspection
+  FAIL // Failed inspection
+  NEEDS_REPAIR // Needs repair before it can pass
+}
+
+enum WorkOrderInspectionResult {
+  PASSED // The inspection as a whole passed
+  FAILED // The inspection as a whole failed
+  ATTENTION_REQUIRED // Passed with findings that need action
 }
 
 // Equipment tracked for sticker inspections
@@ -533,11 +540,11 @@ model Equipment {
   lastInspected  DateTime? // When last inspected
 
   // Inspection tracking
-  status            EquipmentStatus  @default(ACTIVE)
-  inspectionResult  InspectionResult @default(PENDING)
-  isInspected       Boolean          @default(false) // Marked during current inspection cycle
-  certificateIssued Boolean          @default(false) // Certificate given for this equipment
-  stickerApplied    Boolean          @default(false) // Physical sticker placed on equipment
+  status            EquipmentStatus           @default(ACTIVE)
+  inspectionResult  EquipmentInspectionResult @default(PENDING)
+  isInspected       Boolean                   @default(false) // Marked during current inspection cycle
+  certificateIssued Boolean                   @default(false) // Certificate given for this equipment
+  stickerApplied    Boolean                   @default(false) // Physical sticker placed on equipment
 
   // Notes
   notes        String?
@@ -929,7 +936,7 @@ model ChecklistItem {
   systemsChecked   Json? // Array of systems inspected ["Fire Alarm", "Sprinklers", ...]
   deficiencies     String? // Problems found
   recommendations  String? // What should be done
-  inspectionResult InspectionResult? // Passed, AttentionRequired, Failed
+  inspectionResult WorkOrderInspectionResult? // null until the inspection is recorded
 
   // Report Fields - MAINTENANCE specific
   systemsMaintained    String? // Systems maintained
