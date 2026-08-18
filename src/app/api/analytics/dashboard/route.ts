@@ -99,14 +99,14 @@ export async function GET() {
       .filter(wo => {
         return wo.updatedAt >= firstDayThisMonth && wo.stage === 'COMPLETED' && wo.price
       })
-      .reduce((sum, wo) => sum + (wo.price || 0), 0)
+      .reduce((sum, wo) => sum + Number(wo.price || 0), 0)
 
     // Calculate total revenue last month
     const lastMonthRevenue = allWorkOrders
       .filter(wo => {
         return wo.updatedAt >= firstDayLastMonth && wo.updatedAt <= lastDayLastMonth && wo.stage === 'COMPLETED' && wo.price
       })
-      .reduce((sum, wo) => sum + (wo.price || 0), 0)
+      .reduce((sum, wo) => sum + Number(wo.price || 0), 0)
 
     // Calculate revenue change percentage
     const revenueChange = lastMonthRevenue > 0
@@ -155,7 +155,7 @@ export async function GET() {
         .filter(wo => {
           return wo.updatedAt >= monthStart && wo.updatedAt <= monthEnd && wo.stage === 'COMPLETED' && wo.price
         })
-        .reduce((sum, wo) => sum + (wo.price || 0), 0)
+        .reduce((sum, wo) => sum + Number(wo.price || 0), 0)
 
       revenueByMonth.push({
         month: monthStart.toLocaleDateString('en-US', { month: 'short' }),
@@ -170,7 +170,7 @@ export async function GET() {
       if (wo.price && wo.checklist?.branch?.client) {
         const client = wo.checklist.branch.client
         const current = clientRevenue.get(client.id) || { name: client.companyName, revenue: 0 }
-        current.revenue += wo.price
+        current.revenue += Number(wo.price)
         clientRevenue.set(client.id, current)
       }
     })

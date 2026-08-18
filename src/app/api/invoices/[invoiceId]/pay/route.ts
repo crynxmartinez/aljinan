@@ -79,7 +79,7 @@ export async function POST(
       session.user.id,
       session.user.role as any,
       invoiceId,
-      invoice.total,
+      Number(invoice.total),
       'manual'
     )
 

@@ -1,3 +1,5 @@
+import { randomInt } from 'crypto'
+
 export interface PasswordValidationResult {
   isValid: boolean
   errors: string[]
@@ -47,23 +49,33 @@ export function generateStrongPassword(length: number = 12): string {
   const lowercase = 'abcdefghijklmnopqrstuvwxyz'
   const numbers = '0123456789'
   const special = '!@#$%^&*'
-  
+
   const allChars = uppercase + lowercase + numbers + special
-  
+
+  // Math.random is not a CSPRNG: its output is predictable from observed values, and these
+  // are real account credentials.
+  const pick = (set: string) => set[randomInt(set.length)]
+
   // Ensure at least one of each required type
   let password = ''
-  password += uppercase[Math.floor(Math.random() * uppercase.length)]
-  password += lowercase[Math.floor(Math.random() * lowercase.length)]
-  password += numbers[Math.floor(Math.random() * numbers.length)]
-  password += special[Math.floor(Math.random() * special.length)]
-  
+  password += pick(uppercase)
+  password += pick(lowercase)
+  password += pick(numbers)
+  password += pick(special)
+
   // Fill the rest randomly
   for (let i = password.length; i < length; i++) {
-    password += allChars[Math.floor(Math.random() * allChars.length)]
+    password += pick(allChars)
   }
   
-  // Shuffle the password
-  return password.split('').sort(() => Math.random() - 0.5).join('')
+  // Fisher-Yates with a cryptographic RNG. Sorting by a random comparator is not a
+  // uniform shuffle and reintroduces Math.random.
+  const chars = password.split('')
+  for (let i = chars.length - 1; i > 0; i--) {
+    const j = randomInt(i + 1)
+    ;[chars[i], chars[j]] = [chars[j], chars[i]]
+  }
+  return chars.join('')
 }
 
 export function getPasswordStrength(password: string): 'weak' | 'medium' | 'strong' {

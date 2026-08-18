@@ -67,25 +67,26 @@ export interface AuditLogEntry {
  */
 export async function logAuditEvent(entry: AuditLogEntry): Promise<void> {
   try {
-    // In production, you would save this to a database table or external service
-    // For now, we'll log to console and could extend to save to DB
-    
-    const logEntry = {
-      timestamp: new Date().toISOString(),
-      ...entry,
-      // Sanitize sensitive data
-      details: entry.details ? sanitizeAuditDetails(entry.details) : undefined
-    }
-    
-    // Log to console (in production, save to database or external service)
-    console.log('[AUDIT]', JSON.stringify(logEntry))
-    
-    // TODO: Save to database table or external logging service
-    // await prisma.auditLog.create({ data: logEntry })
-    
+    await prisma.auditLog.create({
+      data: {
+        eventType: entry.eventType,
+        userId: entry.userId ?? null,
+        userRole: entry.userRole ?? null,
+        userEmail: entry.userEmail ?? null,
+        resourceType: entry.resourceType ?? null,
+        resourceId: entry.resourceId ?? null,
+        action: entry.action,
+        details: entry.details ? sanitizeAuditDetails(entry.details) : undefined,
+        ipAddress: entry.ipAddress ?? null,
+        userAgent: entry.userAgent ?? null,
+        success: entry.success,
+        errorMessage: entry.errorMessage ?? null,
+      },
+    })
   } catch (error) {
-    // Never let audit logging break the application
-    console.error('[AUDIT ERROR]', error)
+    // An audit write must never break the request it is describing. Log loudly instead —
+    // a silent failure here is how the trail went missing in the first place.
+    console.error('[AUDIT WRITE FAILED]', entry.eventType, entry.action, error)
   }
 }
 

@@ -25,6 +25,7 @@ export async function GET() {
 
       workOrders = await prisma.checklistItem.findMany({
         where: {
+          deletedAt: null,
           checklist: {
             branch: {
               clientId: client.id
@@ -65,6 +66,7 @@ export async function GET() {
       // Get all work orders for contractor's clients
       workOrders = await prisma.checklistItem.findMany({
         where: {
+          deletedAt: null,
           checklist: {
             branch: {
               client: {

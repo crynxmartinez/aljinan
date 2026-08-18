@@ -87,6 +87,7 @@ export async function GET() {
     // Work orders where scheduledDate < today AND stage is not COMPLETED
     const delayedWorkOrders = await prisma.checklistItem.findMany({
       where: {
+        deletedAt: null,
         checklist: {
           branchId: { in: branchIds }
         },

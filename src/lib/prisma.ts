@@ -48,16 +48,38 @@ if (process.env.NODE_ENV !== 'production') {
   globalForPrisma.prisma = prisma
 }
 
-// Graceful shutdown - close connections when process exits
+// Graceful shutdown. Three signals can fire for one exit, and pg throws
+// "Called end on pool more than once" on a second end() — which surfaced as a crash at the
+// end of otherwise successful scripts. Run at most once, and never let teardown throw.
 if (typeof window === 'undefined') {
+  let shuttingDown = false
+
   const cleanup = async () => {
-    await prisma.$disconnect()
-    if (globalForPrisma.pool) {
-      await globalForPrisma.pool.end()
+    if (shuttingDown) return
+    shuttingDown = true
+
+    try {
+      await prisma.$disconnect()
+    } catch (error) {
+      console.error('Error disconnecting Prisma:', error)
+    }
+
+    try {
+      await globalForPrisma.pool?.end()
+    } catch {
+      // already closed
     }
   }
 
-  process.on('beforeExit', cleanup)
-  process.on('SIGINT', cleanup)
-  process.on('SIGTERM', cleanup)
+  // Registered once per process. Under dev HMR this module can be re-evaluated, so guard
+  // against stacking listeners and tripping the max-listeners warning.
+  const marker = '__tasheelPrismaCleanupRegistered'
+  const globalWithMarker = globalThis as unknown as Record<string, boolean>
+
+  if (!globalWithMarker[marker]) {
+    globalWithMarker[marker] = true
+    process.once('beforeExit', cleanup)
+    process.once('SIGINT', cleanup)
+    process.once('SIGTERM', cleanup)
+  }
 }

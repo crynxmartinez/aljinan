@@ -124,6 +124,7 @@ export async function GET(request: Request) {
         ? prisma.checklistItem.findMany({
           where: {
             checklist: { branch: { client: { contractorId } } },
+            deletedAt: null,
             stage: { not: 'ARCHIVED' },
             OR: [
               { description: { contains: query, mode: 'insensitive' } },
@@ -137,6 +138,7 @@ export async function GET(request: Request) {
           ? prisma.checklistItem.findMany({
             where: {
               checklist: { branchId: { in: clientBranchIds } },
+              deletedAt: null,
               stage: { not: 'ARCHIVED' },
               OR: [
                 { description: { contains: query, mode: 'insensitive' } },

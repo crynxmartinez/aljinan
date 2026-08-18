@@ -11,29 +11,46 @@ const redis = process.env.UPSTASH_REDIS_REST_URL
     })
   : undefined
 
-// In-memory store for development (fallback)
+/**
+ * Fixed-window fallback used when Upstash is not configured.
+ *
+ * This is per-process, so on serverless it is only as effective as the number of warm
+ * instances is small. It exists so local development behaves sensibly, NOT as a
+ * production control — configure UPSTASH_REDIS_REST_URL for that.
+ *
+ * The previous implementation re-extended the window on every call and had an incr()
+ * that never created a missing entry, so limits neither expired nor applied correctly.
+ */
 class MemoryStore {
   private store = new Map<string, { count: number; reset: number }>()
+  private lastSweep = 0
 
-  async get(key: string) {
+  hit(key: string, limit: number, windowSeconds: number): { success: boolean; remaining: number } {
+    const now = Date.now()
+    this.sweep(now)
+
     const item = this.store.get(key)
-    if (!item) return null
-    if (Date.now() > item.reset) {
-      this.store.delete(key)
-      return null
+
+    if (!item || now >= item.reset) {
+      this.store.set(key, { count: 1, reset: now + windowSeconds * 1000 })
+      return { success: true, remaining: limit - 1 }
     }
-    return item.count
-  }
 
-  async set(key: string, count: number, ttl: number) {
-    this.store.set(key, { count, reset: Date.now() + ttl * 1000 })
-  }
+    if (item.count >= limit) {
+      return { success: false, remaining: 0 }
+    }
 
-  async incr(key: string) {
-    const item = this.store.get(key)
-    if (!item) return 1
     item.count++
-    return item.count
+    return { success: true, remaining: limit - item.count }
+  }
+
+  /** Drop expired entries occasionally so the map cannot grow without bound. */
+  private sweep(now: number) {
+    if (now - this.lastSweep < 60_000) return
+    this.lastSweep = now
+    for (const [key, item] of this.store) {
+      if (now >= item.reset) this.store.delete(key)
+    }
   }
 }
 
@@ -70,17 +87,7 @@ export async function checkRateLimit(
   limit: number,
   window: number // in seconds
 ): Promise<{ success: boolean; remaining: number }> {
-  const key = `ratelimit:${identifier}`
-  const count = (await memoryStore.get(key)) || 0
-
-  if (count >= limit) {
-    return { success: false, remaining: 0 }
-  }
-
-  await memoryStore.incr(key)
-  await memoryStore.set(key, count + 1, window)
-
-  return { success: true, remaining: limit - count - 1 }
+  return memoryStore.hit(`ratelimit:${identifier}`, limit, window)
 }
 
 // Helper function to get client IP
@@ -130,4 +137,32 @@ export async function checkFileUploadRateLimit(identifier: string) {
   
   // Fallback: 20 uploads per hour (3600 seconds)
   return checkRateLimit(identifier, 20, 3600)
+}
+
+/**
+ * Route-level rate limit guard.
+ *
+ * Returns a 429 response to hand straight back to the caller, or null to continue:
+ *
+ *   const limited = await enforceRateLimit(request, { name: 'contact', limit: 5, window: 3600 })
+ *   if (limited) return limited
+ *
+ * Keys on the caller's IP by default. Pass `identifier` to key on something more stable
+ * (an email for password reset, a user id for authenticated work) so an attacker cannot
+ * sidestep the limit by rotating addresses.
+ */
+export async function enforceRateLimit(
+  request: Request,
+  opts: { name: string; limit: number; window: number; identifier?: string }
+): Promise<Response | null> {
+  const who = opts.identifier?.toLowerCase().trim() || getClientIp(request)
+  const { success } = await checkRateLimit(`${opts.name}:${who}`, opts.limit, opts.window)
+
+  if (success) return null
+
+  const retryAfter = Math.ceil(opts.window / 60)
+  return Response.json(
+    { error: `Too many requests. Please try again in about ${retryAfter} minute(s).` },
+    { status: 429, headers: { 'Retry-After': String(opts.window) } }
+  )
 }
