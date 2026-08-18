@@ -5,58 +5,47 @@
  */
 
 import { prisma } from './prisma'
-import { getCached, CACHE_TAGS } from './cache'
+import { getCached, invalidateCache, CACHE_TAGS } from './cache'
 import { UserRole } from '@prisma/client'
 
+/** Seconds an access decision may be reused. Short, because it gates authorization. */
+const BRANCH_ACCESS_CACHE_TTL = 60
+
 /**
- * Check if user can access a specific branch
+ * Check if a user may access a branch.
+ *
+ * Argument order differs from verifyBranchAccess for historical reasons; both resolve to
+ * the same rules. Prefer verifyBranchAccess in route handlers — it is cached.
  */
 export async function canAccessBranch(
   userId: string,
   userRole: UserRole,
   branchId: string
 ): Promise<boolean> {
-  // Contractors can access all branches
-  if (userRole === 'CONTRACTOR') {
-    return true
-  }
-
-  // Clients can only access their own branches
-  if (userRole === 'CLIENT') {
-    const branch = await prisma.branch.findUnique({
-      where: { id: branchId },
-      select: {
-        client: {
-          select: { userId: true }
-        }
-      }
-    })
-    return branch?.client.userId === userId
-  }
-
-  // Team members can only access branches they're assigned to
-  if (userRole === 'TEAM_MEMBER') {
-    const access = await prisma.teamMemberBranch.findFirst({
-      where: {
-        teamMember: { userId },
-        branchId
-      }
-    })
-    return !!access
-  }
-
-  return false
+  return verifyBranchAccess(branchId, userId, userRole)
 }
 
 /**
- * Verify branch access with caching (for API routes)
- * This is the optimized version used in all API endpoints
+ * The single source of truth for branch-level access. Every route that takes a branchId
+ * must call this before reading or writing anything scoped to that branch.
+ *
+ *   CONTRACTOR   — branches belonging to their own clients only
+ *   CLIENT       — their own branches only
+ *   TEAM_MEMBER  — only branches explicitly assigned via TeamMemberBranch
+ *   ADMIN        — denied. Platform admins operate through the admin console, not
+ *                  tenant data. Support access goes through impersonation, which is
+ *                  permission-checked and audited.
+ *
+ * Cached briefly, so a revocation can take up to CACHE_TTL to be observed. Call
+ * invalidateBranchAccessCache() from any path that changes assignments.
  */
 export async function verifyBranchAccess(
   branchId: string,
   userId: string,
   role: string
 ): Promise<boolean> {
+  if (!branchId || !userId) return false
+
   const cacheKey = CACHE_TAGS.BRANCH_ACCESS(branchId, userId, role)
 
   return getCached(cacheKey, async () => {
@@ -102,7 +91,15 @@ export async function verifyBranchAccess(
     }
 
     return false
-  }, 300) // Cache for 5 minutes
+  }, BRANCH_ACCESS_CACHE_TTL)
+}
+
+/**
+ * Drop cached access decisions for a user. Call after changing a team member's branch
+ * assignments, or after archiving a user, so revocation is observed promptly.
+ */
+export async function invalidateBranchAccessCache(userId: string) {
+  await invalidateCache(`branch:access:*:${userId}:*`)
 }
 
 /**
@@ -113,11 +110,6 @@ export async function canAccessContract(
   userRole: UserRole,
   contractId: string
 ): Promise<boolean> {
-  // Contractors can access all contracts
-  if (userRole === 'CONTRACTOR') {
-    return true
-  }
-
   const contract = await prisma.contract.findUnique({
     where: { id: contractId },
     select: { branchId: true }
@@ -136,10 +128,6 @@ export async function canEditWorkOrder(
   userRole: UserRole,
   workOrderId: string
 ): Promise<boolean> {
-  if (userRole === 'CONTRACTOR') {
-    return true
-  }
-
   // Fetch work order with branch info
   const workOrder = await prisma.checklistItem.findUnique({
     where: { id: workOrderId },
@@ -170,7 +158,7 @@ export async function canEditWorkOrder(
     return isOwnWorkOrder && workOrder.stage === 'FOR_REVIEW'
   }
 
-  // Team members can edit if they have access to the branch
+  // Contractors and team members: allowed if they can reach the branch at all
   return canAccessBranch(userId, userRole, workOrder.checklist.branchId)
 }
 
@@ -223,11 +211,6 @@ export async function canAccessRequest(
   userRole: UserRole,
   requestId: string
 ): Promise<boolean> {
-  // Contractors can access all requests
-  if (userRole === 'CONTRACTOR') {
-    return true
-  }
-
   const request = await prisma.request.findUnique({
     where: { id: requestId },
     select: { branchId: true }
@@ -257,14 +240,18 @@ export async function canEditRequest(
 
   if (!request) return false
 
-  // Contractors can edit all requests
+  // Everyone must be able to reach the branch first.
+  if (!(await canAccessBranch(userId, userRole, request.branchId))) {
+    return false
+  }
+
   if (userRole === 'CONTRACTOR') {
     return true
   }
 
-  // Clients can edit their own requests
-  if (userRole === 'CLIENT' && request.createdById === userId) {
-    return true
+  // Clients may edit only requests they raised themselves
+  if (userRole === 'CLIENT') {
+    return request.createdById === userId
   }
 
   return false
@@ -278,11 +265,6 @@ export async function canAccessInvoice(
   userRole: UserRole,
   invoiceId: string
 ): Promise<boolean> {
-  // Contractors can access all invoices
-  if (userRole === 'CONTRACTOR') {
-    return true
-  }
-
   const invoice = await prisma.invoice.findUnique({
     where: { id: invoiceId },
     select: { branchId: true }
@@ -352,11 +334,6 @@ export async function canAccessEquipment(
   userRole: UserRole,
   equipmentId: string
 ): Promise<boolean> {
-  // Contractors can access all equipment
-  if (userRole === 'CONTRACTOR') {
-    return true
-  }
-
   const equipment = await prisma.equipment.findUnique({
     where: { id: equipmentId },
     select: { branchId: true }
@@ -390,9 +367,10 @@ export async function getUserAccessibleBranches(
   userId: string,
   userRole: UserRole
 ): Promise<string[]> {
-  // Contractors have access to all branches
+  // Contractors: branches belonging to their own clients only
   if (userRole === 'CONTRACTOR') {
     const branches = await prisma.branch.findMany({
+      where: { client: { contractor: { userId } } },
       select: { id: true }
     })
     return branches.map(b => b.id)

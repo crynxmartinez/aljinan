@@ -3,6 +3,7 @@ import { prisma } from '@/lib/prisma'
 import { sendTempPasswordEmail } from '@/lib/email'
 import bcrypt from 'bcryptjs'
 import crypto from 'crypto'
+import { enforceRateLimit } from '@/lib/rate-limit'
 
 export async function POST(request: Request) {
   try {
@@ -14,6 +15,11 @@ export async function POST(request: Request) {
         { status: 400 }
       )
     }
+
+    const limited = await enforceRateLimit(request, {
+      name: 'verify-email', limit: 20, window: 3600,
+    })
+    if (limited) return limited
 
     // Find user with valid verification token
     const user = await prisma.user.findFirst({
@@ -46,6 +52,7 @@ export async function POST(request: Request) {
         mustChangePassword: true,
         emailVerificationToken: null,
         emailVerificationExpiry: null,
+        sessionVersion: { increment: 1 },
       },
     })
 

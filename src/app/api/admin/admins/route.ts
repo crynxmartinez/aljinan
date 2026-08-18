@@ -1,17 +1,14 @@
 import { NextResponse } from 'next/server'
-import { getServerSession } from 'next-auth'
-import { authOptions } from '@/lib/auth'
 import { prisma } from '@/lib/prisma'
 import bcrypt from 'bcryptjs'
 import crypto from 'crypto'
+import { requireAdmin } from '@/lib/admin-auth'
 
 // GET: List all admin users
 export async function GET() {
   try {
-    const session = await getServerSession(authOptions)
-    if (!session || session.user.role !== 'ADMIN') {
-      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
-    }
+    const auth = await requireAdmin('canManageAdmins')
+    if (!auth.ok) return auth.response
 
     const admins = await prisma.adminUser.findMany({
       include: {
@@ -38,19 +35,10 @@ export async function GET() {
 // POST: Create a new admin user
 export async function POST(request: Request) {
   try {
-    const session = await getServerSession(authOptions)
-    if (!session || session.user.role !== 'ADMIN') {
-      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
-    }
+    const auth = await requireAdmin('canManageAdmins')
+    if (!auth.ok) return auth.response
 
     // Check if current admin has canManageAdmins permission
-    const currentAdmin = await prisma.adminUser.findFirst({
-      where: { userId: session.user.id },
-    })
-    if (!currentAdmin?.canManageAdmins) {
-      return NextResponse.json({ error: 'No permission to manage admins' }, { status: 403 })
-    }
-
     const {
       name,
       email,
@@ -148,17 +136,8 @@ export async function POST(request: Request) {
 // PATCH: Update admin permissions
 export async function PATCH(request: Request) {
   try {
-    const session = await getServerSession(authOptions)
-    if (!session || session.user.role !== 'ADMIN') {
-      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
-    }
-
-    const currentAdmin = await prisma.adminUser.findFirst({
-      where: { userId: session.user.id },
-    })
-    if (!currentAdmin?.canManageAdmins) {
-      return NextResponse.json({ error: 'No permission to manage admins' }, { status: 403 })
-    }
+    const auth = await requireAdmin('canManageAdmins')
+    if (!auth.ok) return auth.response
 
     const { adminId, adminRole, ...permissions } = await request.json()
 
@@ -168,7 +147,7 @@ export async function PATCH(request: Request) {
 
     // Can't modify own role if it would remove canManageAdmins
     const targetAdmin = await prisma.adminUser.findUnique({ where: { id: adminId } })
-    if (targetAdmin?.userId === session.user.id && permissions.canManageAdmins === false) {
+    if (targetAdmin?.userId === auth.session.user.id && permissions.canManageAdmins === false) {
       return NextResponse.json({ error: 'Cannot remove your own admin management permission' }, { status: 403 })
     }
 

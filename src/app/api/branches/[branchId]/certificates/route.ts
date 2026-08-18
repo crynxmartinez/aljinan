@@ -2,6 +2,7 @@ import { getServerSession } from 'next-auth'
 import { NextResponse } from 'next/server'
 import { authOptions } from '@/lib/auth'
 import { prisma } from '@/lib/prisma'
+import { verifyBranchAccess } from '@/lib/permissions'
 
 // GET - Fetch all certificates for a branch
 export async function GET(
@@ -147,36 +148,4 @@ export async function POST(
       { status: 500 }
     )
   }
-}
-
-// Helper function to verify branch access
-async function verifyBranchAccess(branchId: string, userId: string, role: string): Promise<boolean> {
-  if (role === 'CONTRACTOR') {
-    const contractor = await prisma.contractor.findUnique({
-      where: { userId },
-      include: {
-        clients: {
-          include: {
-            branches: { where: { id: branchId } }
-          }
-        }
-      }
-    })
-    return contractor?.clients.some(client => client.branches.length > 0) || false
-  } else if (role === 'CLIENT') {
-    const client = await prisma.client.findUnique({
-      where: { userId },
-      include: { branches: { where: { id: branchId } } }
-    })
-    return (client?.branches.length || 0) > 0
-  } else if (role === 'TEAM_MEMBER') {
-    const teamMember = await prisma.teamMember.findUnique({
-      where: { userId },
-      include: {
-        branchAccess: { where: { branchId } }
-      }
-    })
-    return (teamMember?.branchAccess.length || 0) > 0
-  }
-  return false
 }

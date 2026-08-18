@@ -1,16 +1,12 @@
 import { NextResponse } from 'next/server'
-import { getServerSession } from 'next-auth'
-import { authOptions } from '@/lib/auth'
 import { prisma } from '@/lib/prisma'
+import { requireAdmin } from '@/lib/admin-auth'
 
 export async function POST() {
   try {
-    const session = await getServerSession(authOptions)
-    
-    // Only allow admins to run this
-    if (!session || session.user.role !== 'ADMIN') {
-      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
-    }
+    // Bulk data-repair endpoint: platform management, not tenant work.
+    const auth = await requireAdmin('canManagePlatform')
+    if (!auth.ok) return auth.response
 
     const results = {
       contractorsProcessed: 0,

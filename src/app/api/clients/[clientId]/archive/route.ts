@@ -40,7 +40,7 @@ export async function POST(
       // Set user status to ARCHIVED
       prisma.user.update({
         where: { id: client.userId },
-        data: { status: 'ARCHIVED' }
+        data: { status: 'ARCHIVED', sessionVersion: { increment: 1 } }
       }),
       // Set archivedAt timestamp
       prisma.client.update({

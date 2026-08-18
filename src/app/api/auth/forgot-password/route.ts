@@ -1,18 +1,31 @@
 import { NextResponse } from 'next/server'
 import { prisma } from '@/lib/prisma'
 import { sendPasswordResetEmail } from '@/lib/email'
+import { enforceRateLimit } from '@/lib/rate-limit'
 import crypto from 'crypto'
 
 export async function POST(request: Request) {
   try {
     const { email } = await request.json()
 
-    if (!email) {
+    if (!email || typeof email !== 'string') {
       return NextResponse.json(
         { error: 'Email is required' },
         { status: 400 }
       )
     }
+
+    // Two limits: per address, so one mailbox cannot be flooded; and per caller, so a
+    // single client cannot walk a list of addresses.
+    const perAddress = await enforceRateLimit(request, {
+      name: 'forgot-password:address', limit: 3, window: 3600, identifier: email,
+    })
+    if (perAddress) return perAddress
+
+    const perCaller = await enforceRateLimit(request, {
+      name: 'forgot-password:ip', limit: 10, window: 3600,
+    })
+    if (perCaller) return perCaller
 
     // Find user by email
     const user = await prisma.user.findUnique({

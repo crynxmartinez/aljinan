@@ -1,6 +1,8 @@
 import { NextResponse } from 'next/server'
 import { prisma } from '@/lib/prisma'
 import bcrypt from 'bcryptjs'
+import { enforceRateLimit } from '@/lib/rate-limit'
+import { validatePassword } from '@/lib/password-validation'
 
 export async function POST(request: Request) {
   try {
@@ -13,11 +15,15 @@ export async function POST(request: Request) {
       )
     }
 
-    if (password.length < 8) {
-      return NextResponse.json(
-        { error: 'Password must be at least 8 characters' },
-        { status: 400 }
-      )
+    const limited = await enforceRateLimit(request, {
+      name: 'reset-password', limit: 10, window: 3600,
+    })
+    if (limited) return limited
+
+    // The policy lived only in the browser, so a direct API call could set "aaaaaaaa".
+    const policy = validatePassword(password)
+    if (!policy.isValid) {
+      return NextResponse.json({ error: policy.errors.join('. ') }, { status: 400 })
     }
 
     // Find user with valid token
@@ -48,6 +54,8 @@ export async function POST(request: Request) {
         passwordResetToken: null,
         passwordResetExpiry: null,
         mustChangePassword: false, // Clear this flag too if it was set
+        // A reset is often a response to compromise, so existing tokens must stop working.
+        sessionVersion: { increment: 1 },
       },
     })
 

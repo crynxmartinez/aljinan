@@ -178,13 +178,11 @@ export default function ContractorsPage() {
       if (response.ok) {
         const data = await response.json()
 
-        // Sign in as the impersonated user using NextAuth
+        // The grant is a single-use token the server just issued for this one target.
+        // It carries the authorisation; nothing here asserts it.
         const result = await signIn('credentials', {
-          email: data.impersonationData.email,
-          password: '', // No password needed for impersonation
-          impersonation: 'true',
-          realAdminId: data.impersonationData.realAdminId,
-          realAdminEmail: data.impersonationData.realAdminEmail,
+          email: data.email,
+          grant: data.grant,
           redirect: false,
         })
 
@@ -194,6 +192,10 @@ export default function ContractorsPage() {
         } else {
           toast.error(tc.failedImpersonation)
         }
+      } else {
+        // Includes the 503 returned while impersonation is being rebuilt securely.
+        const data = await response.json().catch(() => null)
+        toast.error(data?.error || tc.failedImpersonation)
       }
     } catch (err) {
       console.error('Failed to impersonate:', err)

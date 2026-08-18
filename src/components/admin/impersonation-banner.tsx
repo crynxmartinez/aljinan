@@ -17,12 +17,16 @@ export function ImpersonationBanner({ targetUserName, targetUserEmail, realAdmin
   const handleExitImpersonation = async () => {
     setExiting(true)
     try {
-      // Clear impersonation cookie
-      await fetch('/api/admin/impersonate', { method: 'DELETE' })
+      // Ends impersonation server-side: clears the marker cookie and revokes the session
+      // we are currently holding as the target user.
+      const response = await fetch('/api/admin/impersonate', { method: 'DELETE' })
+      const data = await response.json().catch(() => null)
 
-      // Sign out and redirect to admin page
       await signOut({ redirect: false })
-      window.location.href = '/admin'
+
+      // The admin must sign in as themselves again — their own session was replaced when
+      // they started impersonating.
+      window.location.href = data?.redirectUrl || '/login'
     } catch (error) {
       console.error('Failed to exit impersonation:', error)
       setExiting(false)

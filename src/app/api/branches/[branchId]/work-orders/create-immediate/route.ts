@@ -2,6 +2,7 @@ import { getServerSession } from 'next-auth'
 import { NextResponse } from 'next/server'
 import { authOptions } from '@/lib/auth'
 import { prisma } from '@/lib/prisma'
+import { verifyBranchAccess } from '@/lib/permissions'
 
 export async function POST(
   request: Request,
@@ -40,7 +41,11 @@ export async function POST(
       return NextResponse.json({ error: 'Work order type is required' }, { status: 400 })
     }
 
-    // Verify branch access
+    const hasAccess = await verifyBranchAccess(branchId, session.user.id, session.user.role)
+    if (!hasAccess) {
+      return NextResponse.json({ error: 'Access denied' }, { status: 403 })
+    }
+
     const branch = await prisma.branch.findUnique({
       where: { id: branchId },
       include: {
@@ -178,11 +183,8 @@ export async function POST(
       count: createdWorkOrders.length,
       message: `${createdWorkOrders.length} work order(s) created and started`
     })
-  } catch (error: any) {
+  } catch (error) {
     console.error('Error creating immediate work order:', error)
-    return NextResponse.json({
-      error: 'Failed to create work order',
-      details: error.message
-    }, { status: 500 })
+    return NextResponse.json({ error: 'Failed to create work order' }, { status: 500 })
   }
 }

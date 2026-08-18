@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from 'next/server'
 import { getServerSession } from 'next-auth'
 import { authOptions } from '@/lib/auth'
 import { prisma } from '@/lib/prisma'
+import { verifyBranchAccess } from '@/lib/permissions'
 
 // GET /api/branches/[branchId]/requests/[requestId]/comments - Get all comments for a request
 export async function GET(
@@ -15,6 +16,11 @@ export async function GET(
     }
 
     const { branchId, requestId } = await params
+
+    const hasAccess = await verifyBranchAccess(branchId, session.user.id, session.user.role)
+    if (!hasAccess) {
+      return NextResponse.json({ error: 'Access denied' }, { status: 403 })
+    }
 
     // Verify the request exists and belongs to this branch
     const serviceRequest = await prisma.request.findFirst({
@@ -72,6 +78,11 @@ export async function POST(
 
     if (!content || content.trim() === '') {
       return NextResponse.json({ error: 'Comment content is required' }, { status: 400 })
+    }
+
+    const hasAccess = await verifyBranchAccess(branchId, session.user.id, session.user.role)
+    if (!hasAccess) {
+      return NextResponse.json({ error: 'Access denied' }, { status: 403 })
     }
 
     // Verify the request exists and belongs to this branch

@@ -2,6 +2,7 @@ import { getServerSession } from 'next-auth'
 import { NextResponse } from 'next/server'
 import { authOptions } from '@/lib/auth'
 import { prisma } from '@/lib/prisma'
+import { verifyBranchAccess } from '@/lib/permissions'
 
 // Unified document type for the documents hub
 interface UnifiedDocument {
@@ -267,6 +268,7 @@ export async function GET(
     const workOrdersWithReports = await prisma.checklistItem.findMany({
       where: {
         checklist: { branchId },
+        deletedAt: null,
         reportUrl: { not: null }
       },
       include: {
@@ -298,6 +300,7 @@ export async function GET(
     const workOrdersWithPayment = await prisma.checklistItem.findMany({
       where: {
         checklist: { branchId },
+        deletedAt: null,
         paymentProofUrl: { not: null },
       },
       include: {
@@ -371,36 +374,4 @@ export async function GET(
       { status: 500 }
     )
   }
-}
-
-// Helper function to verify branch access
-async function verifyBranchAccess(branchId: string, userId: string, userRole: string): Promise<boolean> {
-  if (userRole === 'CONTRACTOR') {
-    const contractor = await prisma.contractor.findUnique({
-      where: { userId },
-      include: {
-        clients: {
-          include: {
-            branches: { where: { id: branchId } }
-          }
-        }
-      }
-    })
-    return contractor?.clients.some(client => client.branches.length > 0) || false
-  } else if (userRole === 'CLIENT') {
-    const client = await prisma.client.findUnique({
-      where: { userId },
-      include: { branches: { where: { id: branchId } } }
-    })
-    return (client?.branches.length || 0) > 0
-  } else if (userRole === 'TEAM_MEMBER' || userRole === 'TECHNICIAN') {
-    const teamMember = await prisma.teamMember.findUnique({
-      where: { userId },
-      include: {
-        branchAccess: { where: { branchId } }
-      }
-    })
-    return (teamMember?.branchAccess.length || 0) > 0
-  }
-  return false
 }

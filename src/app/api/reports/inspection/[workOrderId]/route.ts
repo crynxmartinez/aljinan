@@ -2,6 +2,7 @@ import { getServerSession } from 'next-auth'
 import { NextResponse } from 'next/server'
 import { authOptions } from '@/lib/auth'
 import { prisma } from '@/lib/prisma'
+import { verifyBranchAccess } from '@/lib/permissions'
 
 // PDF generation endpoint - returns JSON data for now
 // Full PDF generation will be implemented when schema is synced
@@ -26,7 +27,13 @@ export async function GET(
           include: {
             branch: {
               include: {
-                client: true
+                client: {
+                  include: {
+                    contractor: {
+                      include: { user: { select: { email: true, name: true } } }
+                    }
+                  }
+                }
               }
             }
           }
@@ -42,11 +49,19 @@ export async function GET(
       return NextResponse.json({ error: 'Work order has no associated branch' }, { status: 404 })
     }
 
-    // Get contractor info
-    const contractor = await prisma.contractor.findUnique({
-      where: { userId: session.user.id },
-      include: { user: true }
-    })
+    const hasAccess = await verifyBranchAccess(
+      workOrder.checklist.branchId,
+      session.user.id,
+      session.user.role
+    )
+    if (!hasAccess) {
+      return NextResponse.json({ error: 'Access denied' }, { status: 403 })
+    }
+
+    // The contractor named on the report is the one who owns the branch — not whoever
+    // requested it. Looking it up by session id meant every client-requested report
+    // fell back to a hardcoded company name.
+    const contractor = workOrder.checklist.branch.client.contractor
 
     // Return report data as JSON (PDF generation to be added)
     const reportData = {

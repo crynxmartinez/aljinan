@@ -2,6 +2,8 @@ import { getServerSession } from 'next-auth'
 import { NextResponse } from 'next/server'
 import { authOptions } from '@/lib/auth'
 import { prisma } from '@/lib/prisma'
+import { verifyBranchAccess } from '@/lib/permissions'
+import { roundMoney } from '@/lib/money'
 
 // GET - Fetch a single invoice
 export async function GET(
@@ -213,12 +215,12 @@ export async function PATCH(
       })
 
       const parsedItems = items || []
-      const subtotal = parsedItems.reduce((sum: number, item: { quantity: number; unitPrice: number }) => {
+      const subtotal = roundMoney(parsedItems.reduce((sum: number, item: { quantity: number; unitPrice: number }) => {
         return sum + (item.quantity * item.unitPrice)
-      }, 0)
+      }, 0))
       const tax = taxRate !== undefined ? taxRate : currentInvoice.taxRate
-      const taxAmount = subtotal * (tax / 100)
-      const total = subtotal + taxAmount
+      const taxAmount = roundMoney(subtotal * (tax / 100))
+      const total = roundMoney(subtotal + taxAmount)
 
       updateData.subtotal = subtotal
       updateData.taxRate = tax
@@ -299,36 +301,4 @@ export async function DELETE(
       { status: 500 }
     )
   }
-}
-
-// Helper function to verify branch access
-async function verifyBranchAccess(branchId: string, userId: string, role: string): Promise<boolean> {
-  if (role === 'CONTRACTOR') {
-    const contractor = await prisma.contractor.findUnique({
-      where: { userId },
-      include: {
-        clients: {
-          include: {
-            branches: { where: { id: branchId } }
-          }
-        }
-      }
-    })
-    return contractor?.clients.some(client => client.branches.length > 0) || false
-  } else if (role === 'CLIENT') {
-    const client = await prisma.client.findUnique({
-      where: { userId },
-      include: { branches: { where: { id: branchId } } }
-    })
-    return (client?.branches.length || 0) > 0
-  } else if (role === 'TEAM_MEMBER') {
-    const teamMember = await prisma.teamMember.findUnique({
-      where: { userId },
-      include: {
-        branchAccess: { where: { branchId } }
-      }
-    })
-    return (teamMember?.branchAccess.length || 0) > 0
-  }
-  return false
 }

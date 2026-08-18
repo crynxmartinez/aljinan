@@ -4,6 +4,13 @@ import bcrypt from 'bcryptjs'
 import { prisma } from './prisma'
 import { checkLoginRateLimit } from './rate-limit'
 
+/**
+ * One message for every credential failure. NextAuth surfaces the thrown message in the
+ * error redirect, so distinguishing 'no such user' from 'wrong password' tells an
+ * attacker which email addresses are real.
+ */
+const INVALID_CREDENTIALS = 'Invalid email or password'
+
 export const authOptions: NextAuthOptions = {
   providers: [
     CredentialsProvider({
@@ -11,19 +18,51 @@ export const authOptions: NextAuthOptions = {
       credentials: {
         email: { label: 'Email', type: 'email' },
         password: { label: 'Password', type: 'password' },
+        // Single-use impersonation grant issued by /api/admin/impersonate. Declared so it
+        // is typed; it is only ever accepted after being verified against the database.
+        grant: { label: 'Impersonation grant', type: 'text' },
       },
       async authorize(credentials) {
         if (!credentials?.email) {
-          throw new Error('Invalid credentials')
+          throw new Error(INVALID_CREDENTIALS)
         }
 
-        // Check if this is an impersonation login (special flag)
-        const isImpersonation = (credentials as any).impersonation === 'true'
+        // An impersonation grant is the ONLY way to sign in without a password, and it is
+        // never something the caller can assert about itself: the token must exist in the
+        // database, be unexpired, be unconsumed, and belong to the account being signed
+        // into. It is consumed here so it cannot be replayed.
+        const grantToken = typeof credentials.grant === 'string' ? credentials.grant : null
+        let impersonation: { adminUserId: string; adminEmail: string } | null = null
 
-        if (!isImpersonation) {
-          // Normal login - require password
+        if (grantToken) {
+          const grant = await prisma.impersonationGrant.findUnique({
+            where: { token: grantToken },
+            include: { targetUser: { select: { id: true, email: true } } },
+          })
+
+          if (
+            !grant ||
+            grant.consumedAt !== null ||
+            grant.expiresAt < new Date() ||
+            grant.targetUser.email.toLowerCase() !== credentials.email.toLowerCase()
+          ) {
+            throw new Error(INVALID_CREDENTIALS)
+          }
+
+          const consumed = await prisma.impersonationGrant.updateMany({
+            where: { id: grant.id, consumedAt: null },
+            data: { consumedAt: new Date() },
+          })
+
+          // Lost the race against a concurrent redemption of the same grant.
+          if (consumed.count !== 1) {
+            throw new Error(INVALID_CREDENTIALS)
+          }
+
+          impersonation = { adminUserId: grant.adminUserId, adminEmail: grant.adminEmail }
+        } else {
           if (!credentials.password) {
-            throw new Error('Invalid credentials')
+            throw new Error(INVALID_CREDENTIALS)
           }
 
           // Rate limiting: Check login attempts
@@ -52,22 +91,21 @@ export const authOptions: NextAuthOptions = {
         })
 
         if (!user) {
-          throw new Error('User not found')
+          throw new Error(INVALID_CREDENTIALS)
         }
 
         if (user.status === 'ARCHIVED') {
           throw new Error('Account has been archived')
         }
 
-        // For impersonation, skip password check
-        if (!isImpersonation) {
+        if (!impersonation) {
           const isPasswordValid = await bcrypt.compare(
             credentials.password!,
             user.password
           )
 
           if (!isPasswordValid) {
-            throw new Error('Invalid password')
+            throw new Error(INVALID_CREDENTIALS)
           }
         }
 
@@ -91,6 +129,7 @@ export const authOptions: NextAuthOptions = {
           contractorId?: string
           adminRole?: string
           mustChangePassword?: boolean
+          sessionVersion?: number
           isImpersonating?: boolean
           realAdminId?: string
           realAdminEmail?: string
@@ -101,6 +140,7 @@ export const authOptions: NextAuthOptions = {
           role: user.role,
           status: user.status,
           mustChangePassword: user.mustChangePassword,
+          sessionVersion: user.sessionVersion,
         }
 
         // Add team member specific data
@@ -115,11 +155,11 @@ export const authOptions: NextAuthOptions = {
           userResponse.adminRole = user.admin.adminRole
         }
 
-        // Add impersonation data if this is an impersonation login
-        if (isImpersonation && (credentials as any).realAdminId) {
+        // Sourced from the redeemed grant, never from the request body.
+        if (impersonation) {
           userResponse.isImpersonating = true
-          userResponse.realAdminId = (credentials as any).realAdminId
-          userResponse.realAdminEmail = (credentials as any).realAdminEmail
+          userResponse.realAdminId = impersonation.adminUserId
+          userResponse.realAdminEmail = impersonation.adminEmail
         }
 
         return userResponse
@@ -135,9 +175,37 @@ export const authOptions: NextAuthOptions = {
   },
   callbacks: {
     async jwt({ token, user }) {
+      // Second and later calls: no `user`, so this is an existing token being reused.
+      // Re-read the stored version and reject the token if it has moved on. Without this
+      // a 24h JWT survives a password reset, a role change and a branch-access
+      // revocation — the holder keeps their old rights for a full day.
+      if (!user && token.id) {
+        const current = await prisma.user.findUnique({
+          where: { id: token.id as string },
+          select: { sessionVersion: true, status: true, role: true },
+        })
+
+        if (
+          !current ||
+          current.status === 'ARCHIVED' ||
+          (token.sessionVersion ?? 0) !== current.sessionVersion
+        ) {
+          // Flag rather than return a partial token: the session callback turns this into
+          // an empty session, which is how getServerSession reports "not signed in".
+          token.invalidated = true
+          return token
+        }
+
+        // Role changes take effect without waiting for re-login.
+        token.role = current.role
+      }
+
       if (user) {
         token.id = user.id
         token.role = user.role
+        if ('sessionVersion' in user) {
+          token.sessionVersion = user.sessionVersion
+        }
         if ('status' in user) {
           token.status = user.status
         }
@@ -171,6 +239,12 @@ export const authOptions: NextAuthOptions = {
       return token
     },
     async session({ session, token }) {
+      // getServerSession returns null for a session object with no keys, and useSession
+      // reports unauthenticated. This is what makes a revoked token stop working.
+      if (token.invalidated) {
+        return {} as typeof session
+      }
+
       if (session.user) {
         session.user.id = token.id as string
         session.user.role = token.role as string

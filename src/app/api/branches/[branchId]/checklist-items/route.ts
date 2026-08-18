@@ -2,6 +2,7 @@ import { getServerSession } from 'next-auth'
 import { NextResponse } from 'next/server'
 import { authOptions } from '@/lib/auth'
 import { prisma } from '@/lib/prisma'
+import { verifyBranchAccess } from '@/lib/permissions'
 import {
   notifyWorkOrderForReview,
   notifyWorkOrderStarted,
@@ -895,7 +896,7 @@ export async function PATCH(
       }
 
       // Guard: all work orders must have a price set
-      const unpricedOrders = workOrders.filter(wo => !wo.price || wo.price <= 0)
+      const unpricedOrders = workOrders.filter(wo => !wo.price || Number(wo.price) <= 0)
       if (unpricedOrders.length > 0) {
         return NextResponse.json({ error: 'All work orders must have a price before payment can be submitted' }, { status: 400 })
       }
@@ -1056,36 +1057,4 @@ export async function PATCH(
       { status: 500 }
     )
   }
-}
-
-// Helper function to verify branch access
-async function verifyBranchAccess(branchId: string, userId: string, role: string): Promise<boolean> {
-  if (role === 'CONTRACTOR') {
-    const contractor = await prisma.contractor.findUnique({
-      where: { userId },
-      include: {
-        clients: {
-          include: {
-            branches: { where: { id: branchId } }
-          }
-        }
-      }
-    })
-    return contractor?.clients.some(client => client.branches.length > 0) || false
-  } else if (role === 'CLIENT') {
-    const client = await prisma.client.findUnique({
-      where: { userId },
-      include: { branches: { where: { id: branchId } } }
-    })
-    return (client?.branches.length || 0) > 0
-  } else if (role === 'TEAM_MEMBER') {
-    const teamMember = await prisma.teamMember.findUnique({
-      where: { userId },
-      include: {
-        branchAccess: { where: { branchId } }
-      }
-    })
-    return (teamMember?.branchAccess.length || 0) > 0
-  }
-  return false
 }

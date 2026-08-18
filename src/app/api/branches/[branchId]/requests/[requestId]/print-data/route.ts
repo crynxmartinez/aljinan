@@ -2,6 +2,7 @@ import { NextResponse } from 'next/server'
 import { getServerSession } from 'next-auth'
 import { authOptions } from '@/lib/auth'
 import { prisma } from '@/lib/prisma'
+import { verifyBranchAccess } from '@/lib/permissions'
 
 export async function GET(
   request: Request,
@@ -90,55 +91,4 @@ export async function GET(
       { status: 500 }
     )
   }
-}
-
-async function verifyBranchAccess(
-  branchId: string,
-  userId: string,
-  userRole: string
-): Promise<boolean> {
-  if (userRole === 'ADMIN') return true
-
-  const branch = await prisma.branch.findUnique({
-    where: { id: branchId },
-    include: {
-      client: {
-        select: {
-          userId: true,
-          contractorId: true,
-        }
-      }
-    }
-  })
-
-  if (!branch) return false
-
-  if (userRole === 'CLIENT') {
-    return branch.client.userId === userId
-  }
-
-  if (userRole === 'CONTRACTOR') {
-    const contractor = await prisma.contractor.findUnique({
-      where: { userId },
-      select: { id: true }
-    })
-    return contractor?.id === branch.client.contractorId
-  }
-
-  if (userRole === 'TEAM_MEMBER') {
-    const teamMember = await prisma.teamMember.findUnique({
-      where: { userId },
-      select: {
-        id: true,
-        contractorId: true
-      }
-    })
-
-    if (!teamMember) return false
-
-    // Check if contractor owns this client
-    return teamMember.contractorId === branch.client.contractorId
-  }
-
-  return false
 }

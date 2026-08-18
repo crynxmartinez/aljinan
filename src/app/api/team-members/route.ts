@@ -177,7 +177,7 @@ export async function POST(request: Request) {
 
     // Generate temporary password
     const tempPassword = generateStrongPassword(12)
-    const hashedPassword = await bcrypt.hash(tempPassword, 10)
+    const hashedPassword = await bcrypt.hash(tempPassword, 12)
 
     // Create user and team member in a transaction
     const teamMember = await prisma.teamMember.create({
@@ -195,6 +195,8 @@ export async function POST(request: Request) {
             name,
             role: 'TEAM_MEMBER',
             status: 'ACTIVE',
+            // The contractor relays this password out of band, so it must be rotated.
+            mustChangePassword: true,
           }
         },
         branchAccess: {

@@ -26,6 +26,7 @@ declare module 'next-auth' {
     contractorId?: string
     adminRole?: string
     mustChangePassword?: boolean
+    sessionVersion?: number
     isImpersonating?: boolean
     realAdminId?: string
     realAdminEmail?: string
@@ -36,12 +37,15 @@ declare module 'next-auth/jwt' {
   interface JWT extends DefaultJWT {
     id: string
     role: string
+    /** Set when the stored sessionVersion has moved on; the session callback drops it. */
+    invalidated?: boolean
     status?: string
     teamMemberRole?: string
     assignedBranchIds?: string[]
     contractorId?: string
     adminRole?: string
     mustChangePassword?: boolean
+    sessionVersion?: number
     isImpersonating?: boolean
     realAdminId?: string
     realAdminEmail?: string

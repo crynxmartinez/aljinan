@@ -2,6 +2,7 @@ import { getServerSession } from 'next-auth'
 import { NextResponse } from 'next/server'
 import { authOptions } from '@/lib/auth'
 import { prisma } from '@/lib/prisma'
+import { invalidateBranchAccessCache } from '@/lib/permissions'
 
 // GET - Get a single team member
 export async function GET(
@@ -188,6 +189,14 @@ export async function PATCH(
             branchId
           }))
         })
+
+        // assignedBranchIds is baked into the member's JWT, and several routes read it
+        // from there. Without bumping the version, a removed branch stays reachable for
+        // up to 24 hours.
+        await tx.user.update({
+          where: { id: existingTeamMember.userId },
+          data: { sessionVersion: { increment: 1 } },
+        })
       }
 
       // Return updated team member
@@ -220,6 +229,10 @@ export async function PATCH(
         }
       })
     })
+
+    if (branchIds !== undefined) {
+      await invalidateBranchAccessCache(existingTeamMember.userId)
+    }
 
     return NextResponse.json(updatedTeamMember)
   } catch (error) {

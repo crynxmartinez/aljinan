@@ -2,6 +2,7 @@ import { getServerSession } from 'next-auth'
 import { NextResponse } from 'next/server'
 import { authOptions } from '@/lib/auth'
 import { prisma } from '@/lib/prisma'
+import { verifyBranchAccess } from '@/lib/permissions'
 
 export async function POST(
   request: Request,
@@ -15,13 +16,35 @@ export async function POST(
 
     const { branchId, requestId } = await params
 
-    // Get the request
-    const currentRequest = await prisma.request.findUnique({
-      where: { id: requestId }
+    // Mirrors the 'start_immediately' action on the request route: this is a client
+    // choosing to begin work without waiting for a quotation.
+    if (session.user.role !== 'CLIENT') {
+      return NextResponse.json(
+        { error: 'Only clients can start work immediately' },
+        { status: 403 }
+      )
+    }
+
+    const hasAccess = await verifyBranchAccess(branchId, session.user.id, session.user.role)
+    if (!hasAccess) {
+      return NextResponse.json({ error: 'Access denied' }, { status: 403 })
+    }
+
+    // Scope the lookup to the branch: a request id alone must not be enough to reach it.
+    const currentRequest = await prisma.request.findFirst({
+      where: { id: requestId, branchId }
     })
 
     if (!currentRequest) {
       return NextResponse.json({ error: 'Request not found' }, { status: 404 })
+    }
+
+    // Without this, a completed request can be restarted and re-numbered repeatedly.
+    if (currentRequest.status !== 'REQUESTED') {
+      return NextResponse.json(
+        { error: 'Can only start immediately from requested status' },
+        { status: 400 }
+      )
     }
 
     // Find or create adhoc checklist (no contract)
@@ -96,13 +119,20 @@ export async function POST(
     // Create notification for contractor
     const branch = await prisma.branch.findUnique({
       where: { id: branchId },
-      include: { client: { select: { contractorId: true } } }
+      include: {
+        client: {
+          select: {
+            contractorId: true,
+            contractor: { select: { userId: true } },
+          },
+        },
+      },
     })
 
-    if (branch?.client?.contractorId) {
+    if (branch?.client?.contractor?.userId) {
       await prisma.notification.create({
         data: {
-          userId: branch.client.contractorId,
+          userId: branch.client.contractor.userId,
           type: 'WORK_ORDER_STARTED',
           title: '🚨 Work Started Immediately',
           message: `Client started work immediately: "${currentRequest.title}" - Now in IN PROGRESS`,
@@ -119,10 +149,8 @@ export async function POST(
       stage: 'IN_PROGRESS',
       message: 'Work order created and moved to IN PROGRESS'
     })
-  } catch (error: any) {
-    return NextResponse.json({
-      error: 'Failed to create work order',
-      details: error.message
-    }, { status: 500 })
+  } catch (error) {
+    console.error('Error creating work order from request:', error)
+    return NextResponse.json({ error: 'Failed to create work order' }, { status: 500 })
   }
 }
