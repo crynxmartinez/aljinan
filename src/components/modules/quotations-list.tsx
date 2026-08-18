@@ -8,6 +8,7 @@ import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
 import { Textarea } from '@/components/ui/textarea'
 import { Badge } from '@/components/ui/badge'
+import { api } from '@/lib/api-client'
 import {
   Dialog,
   DialogContent,
@@ -186,11 +187,7 @@ export function QuotationsList({ branchId }: QuotationsListProps) {
 
   const handleSendQuotation = async (quotationId: string) => {
     try {
-      await fetch(`/api/branches/${branchId}/quotations/${quotationId}`, {
-        method: 'PATCH',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ status: 'SENT' }),
-      })
+      await api.patch(`/api/branches/${branchId}/quotations/${quotationId}`, { status: 'SENT' })
       fetchQuotations()
       router.refresh()
     } catch (err) {
@@ -202,9 +199,7 @@ export function QuotationsList({ branchId }: QuotationsListProps) {
     if (!confirm('Are you sure you want to delete this quotation?')) return
 
     try {
-      await fetch(`/api/branches/${branchId}/quotations/${quotationId}`, {
-        method: 'DELETE',
-      })
+      await api.delete(`/api/branches/${branchId}/quotations/${quotationId}`)
       fetchQuotations()
       router.refresh()
     } catch (err) {

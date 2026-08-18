@@ -8,6 +8,7 @@ import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
 import { Textarea } from '@/components/ui/textarea'
 import { Badge } from '@/components/ui/badge'
+import { api } from '@/lib/api-client'
 import {
   Dialog,
   DialogContent,
@@ -184,11 +185,7 @@ export function InvoicesList({ branchId }: InvoicesListProps) {
 
   const handleSendInvoice = async (invoiceId: string) => {
     try {
-      await fetch(`/api/branches/${branchId}/invoices/${invoiceId}`, {
-        method: 'PATCH',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ status: 'SENT' }),
-      })
+      await api.patch(`/api/branches/${branchId}/invoices/${invoiceId}`, { status: 'SENT' })
       fetchInvoices()
       router.refresh()
     } catch (err) {
@@ -198,11 +195,7 @@ export function InvoicesList({ branchId }: InvoicesListProps) {
 
   const handleMarkPaid = async (invoiceId: string) => {
     try {
-      await fetch(`/api/branches/${branchId}/invoices/${invoiceId}`, {
-        method: 'PATCH',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ status: 'PAID' }),
-      })
+      await api.patch(`/api/branches/${branchId}/invoices/${invoiceId}`, { status: 'PAID' })
       fetchInvoices()
       router.refresh()
     } catch (err) {
@@ -214,9 +207,7 @@ export function InvoicesList({ branchId }: InvoicesListProps) {
     if (!confirm('Are you sure you want to delete this invoice?')) return
 
     try {
-      await fetch(`/api/branches/${branchId}/invoices/${invoiceId}`, {
-        method: 'DELETE',
-      })
+      await api.delete(`/api/branches/${branchId}/invoices/${invoiceId}`)
       fetchInvoices()
       router.refresh()
     } catch (err) {

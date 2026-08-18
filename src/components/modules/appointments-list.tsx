@@ -35,6 +35,7 @@ import {
 } from 'lucide-react'
 import { CalendarView } from './calendar-view'
 import { useTranslation } from '@/lib/i18n/use-translation'
+import { api } from '@/lib/api-client'
 
 interface Appointment {
   id: string
@@ -152,11 +153,7 @@ export function AppointmentsList({ branchId }: AppointmentsListProps) {
 
   const handleUpdateStatus = async (appointmentId: string, status: Appointment['status']) => {
     try {
-      await fetch(`/api/branches/${branchId}/appointments/${appointmentId}`, {
-        method: 'PATCH',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ status }),
-      })
+      await api.patch(`/api/branches/${branchId}/appointments/${appointmentId}`, { status })
       fetchAppointments()
       router.refresh()
     } catch (err) {
@@ -168,9 +165,7 @@ export function AppointmentsList({ branchId }: AppointmentsListProps) {
     if (!confirm(ta.deleteConfirm)) return
 
     try {
-      await fetch(`/api/branches/${branchId}/appointments/${appointmentId}`, {
-        method: 'DELETE',
-      })
+      await api.delete(`/api/branches/${branchId}/appointments/${appointmentId}`)
       fetchAppointments()
       router.refresh()
     } catch (err) {

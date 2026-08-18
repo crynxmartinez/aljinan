@@ -3,6 +3,7 @@
 import { useState, useRef } from 'react'
 import Link from 'next/link'
 import { useRouter } from 'next/navigation'
+import { api } from '@/lib/api-client'
 import {
   Users,
   MapPin,
@@ -147,9 +148,7 @@ export function ClientsList({ clients }: ClientsListProps) {
 
   const handleArchiveClient = async (clientId: string) => {
     try {
-      await fetch(`/api/clients/${clientId}/archive`, {
-        method: 'POST',
-      })
+      await api.post(`/api/clients/${clientId}/archive`)
       router.refresh()
     } catch (err) {
       console.error('Failed to archive client:', err)
@@ -158,9 +157,7 @@ export function ClientsList({ clients }: ClientsListProps) {
 
   const handleUnarchiveClient = async (clientId: string) => {
     try {
-      await fetch(`/api/clients/${clientId}/unarchive`, {
-        method: 'POST',
-      })
+      await api.post(`/api/clients/${clientId}/unarchive`)
       router.refresh()
     } catch (err) {
       console.error('Failed to unarchive client:', err)
