@@ -264,7 +264,7 @@ model Client {
   contractorId String
   contractor   Contractor @relation(fields: [contractorId], references: [id], onDelete: Cascade)
   companyName  String
-  slug         String? // URL-friendly slug, unique per contractor (see @@unique below)
+  slug         String // URL-friendly slug, unique per contractor (see @@unique below)
   displayName  String? // Custom nickname/label set by contractor
   companyPhone String?
   companyEmail String?
@@ -305,7 +305,7 @@ model Branch {
   clientId       String
   client         Client  @relation(fields: [clientId], references: [id], onDelete: Cascade)
   name           String
-  slug           String? // URL-friendly slug generated from name
+  slug           String // URL-friendly slug generated from name
   displayName    String? // Custom nickname/label set by contractor
   clientNickname String? // Custom nickname set by client for easier identification
   address        String

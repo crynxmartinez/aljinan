@@ -2,6 +2,7 @@ import { getServerSession } from 'next-auth'
 import { NextResponse } from 'next/server'
 import { authOptions } from '@/lib/auth'
 import { prisma } from '@/lib/prisma'
+import { generateSlug, generateUniqueSlug } from '@/lib/utils/slugify'
 
 // GET - Fetch a single branch request
 export async function GET(
@@ -83,11 +84,23 @@ export async function PATCH(
     }
 
     if (action === 'approve') {
+      // Branch URLs resolve by slug, so one has to be generated here as it is on the
+      // direct-creation path. Without it the approved branch was unreachable.
+      const siblings = await prisma.branch.findMany({
+        where: { clientId: branchRequest.clientId },
+        select: { slug: true },
+      })
+      const slug = generateUniqueSlug(
+        generateSlug(branchRequest.name),
+        siblings.map(s => s.slug).filter((s): s is string => !!s)
+      )
+
       // Create the actual branch
       const branch = await prisma.branch.create({
         data: {
           clientId: branchRequest.clientId,
           name: branchRequest.name,
+          slug,
           address: branchRequest.address,
           city: branchRequest.city,
           state: branchRequest.state,
