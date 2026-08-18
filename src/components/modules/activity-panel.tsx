@@ -1,6 +1,7 @@
 'use client'
 
 import { useState, useEffect, useRef } from 'react'
+import { api } from '@/lib/api-client'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { ScrollArea } from '@/components/ui/scroll-area'
@@ -14,6 +15,7 @@ import {
   XCircle,
   FileText,
   RefreshCw,
+  AlertTriangle,
 } from 'lucide-react'
 import { useTranslation } from '@/lib/i18n/use-translation'
 
@@ -50,18 +52,20 @@ export function ActivityPanel({ branchId, isOpen, onClose }: ActivityPanelProps)
   const [loading, setLoading] = useState(false)
   const [comment, setComment] = useState('')
   const [sending, setSending] = useState(false)
+  const [loadFailed, setLoadFailed] = useState(false)
   const scrollRef = useRef<HTMLDivElement>(null)
 
   const fetchActivities = async () => {
     setLoading(true)
+    setLoadFailed(false)
     try {
-      const response = await fetch(`/api/branches/${branchId}/activities`)
-      if (response.ok) {
-        const data = await response.json()
-        setActivities(data)
-      }
+      const data = await api.get<Activity[]>(`/api/branches/${branchId}/activities`, {
+        showToast: false,
+      })
+      setActivities(data ?? [])
     } catch (err) {
       console.error('Failed to fetch activities:', err)
+      setLoadFailed(true)
     } finally {
       setLoading(false)
     }
@@ -79,16 +83,11 @@ export function ActivityPanel({ branchId, isOpen, onClose }: ActivityPanelProps)
 
     setSending(true)
     try {
-      const response = await fetch(`/api/branches/${branchId}/activities`, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ content: comment }),
-      })
-
-      if (response.ok) {
-        setComment('')
-        fetchActivities()
-      }
+      await api.post(`/api/branches/${branchId}/activities`, { content: comment })
+      // Only clear the box once the comment is actually saved. Clearing it regardless threw
+      // away what the user wrote whenever the request failed.
+      setComment('')
+      fetchActivities()
     } catch (err) {
       console.error('Failed to send comment:', err)
     } finally {
@@ -135,7 +134,21 @@ export function ActivityPanel({ branchId, isOpen, onClose }: ActivityPanelProps)
         <>
           {/* Activity List */}
           <ScrollArea className="flex-1 p-4" ref={scrollRef}>
-            {activities.length === 0 ? (
+            {loadFailed ? (
+              <div className="text-center py-8">
+                <AlertTriangle className="h-8 w-8 mx-auto mb-2 text-destructive/60" />
+                <p className="text-sm text-muted-foreground">
+                  The activity history could not be loaded.
+                </p>
+                <button
+                  type="button"
+                  onClick={fetchActivities}
+                  className="mt-3 text-xs underline text-muted-foreground hover:text-foreground"
+                >
+                  Try again
+                </button>
+              </div>
+            ) : activities.length === 0 ? (
               <div className="text-center text-muted-foreground py-8">
                 <Clock className="h-8 w-8 mx-auto mb-2 opacity-30" />
                 <p className="text-sm">{ta.noActivity}</p>

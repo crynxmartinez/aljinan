@@ -73,6 +73,7 @@ import {
 } from '@dnd-kit/core'
 import { useDraggable, useDroppable } from '@dnd-kit/core'
 import { ServiceReportForm, MaintenanceReportForm, InstallationReportForm } from '@/components/reports'
+import { api } from '@/lib/api-client'
 import {
   ServiceReportData,
   MaintenanceReportData,
@@ -902,7 +903,7 @@ export function ChecklistKanban({ branchId, readOnly = false, userRole }: Checkl
       if (response.ok) {
         toast.success('Work order signed by supervisor')
         fetchItems()
-        const updatedItems = await fetch(`/api/branches/${branchId}/checklist-items`).then(r => r.json())
+        const updatedItems = await api.get<never[]>(`/api/branches/${branchId}/checklist-items`)
         const updated = updatedItems.find((i: ChecklistItem) => i.id === selectedItem.id)
         if (updated) setSelectedItem(updated)
         router.refresh()
@@ -957,7 +958,7 @@ export function ChecklistKanban({ branchId, readOnly = false, userRole }: Checkl
         }
 
         fetchItems()
-        const updatedItems = await fetch(`/api/branches/${branchId}/checklist-items`).then(r => r.json())
+        const updatedItems = await api.get<never[]>(`/api/branches/${branchId}/checklist-items`)
         const updated = updatedItems.find((i: ChecklistItem) => i.id === selectedItem.id)
         if (updated) setSelectedItem(updated)
         router.refresh()
@@ -996,7 +997,7 @@ export function ChecklistKanban({ branchId, readOnly = false, userRole }: Checkl
       if (response.ok) {
         toast.success('Price updated successfully')
         fetchItems()
-        const updatedItems = await fetch(`/api/branches/${branchId}/checklist-items`).then(r => r.json())
+        const updatedItems = await api.get<never[]>(`/api/branches/${branchId}/checklist-items`)
         const updated = updatedItems.find((i: ChecklistItem) => i.id === itemId)
         if (updated) setSelectedItem(updated)
         router.refresh()

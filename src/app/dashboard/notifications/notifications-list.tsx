@@ -18,6 +18,7 @@ import {
 } from 'lucide-react'
 import Link from 'next/link'
 import { useTranslation } from '@/lib/i18n/use-translation'
+import { api } from '@/lib/api-client'
 
 interface Notification {
   id: string
@@ -61,11 +62,7 @@ export function NotificationsList() {
 
   const markAllAsRead = async () => {
     try {
-      await fetch('/api/notifications', {
-        method: 'PATCH',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ markAllRead: true })
-      })
+      await api.patch('/api/notifications', { markAllRead: true })
       fetchNotifications()
       router.refresh()
     } catch (err) {
@@ -75,11 +72,7 @@ export function NotificationsList() {
 
   const markAsRead = async (notificationId: string) => {
     try {
-      await fetch('/api/notifications', {
-        method: 'PATCH',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ notificationIds: [notificationId] })
-      })
+      await api.patch('/api/notifications', { notificationIds: [notificationId] })
       fetchNotifications()
     } catch (err) {
       console.error('Failed to mark as read:', err)

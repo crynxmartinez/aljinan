@@ -1,6 +1,8 @@
 'use client'
 
 import { useState, useEffect } from 'react'
+import { api } from '@/lib/api-client'
+import { LoadFailure } from '@/components/ui/load-failure'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
 import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
@@ -67,6 +69,7 @@ function formatCurrency(amount: number) {
 export function CalendarView({ branchId }: CalendarViewProps) {
   const [tasks, setTasks] = useState<ScheduledTask[]>([])
   const [loading, setLoading] = useState(true)
+  const [loadFailed, setLoadFailed] = useState(false)
   const [currentDate, setCurrentDate] = useState(new Date())
   const [selectedDate, setSelectedDate] = useState<Date | null>(null)
   const [selectedTask, setSelectedTask] = useState<ScheduledTask | null>(null)
@@ -77,16 +80,18 @@ export function CalendarView({ branchId }: CalendarViewProps) {
   }, [branchId])
 
   async function fetchTasks() {
+    setLoadFailed(false)
     try {
-      const response = await fetch(`/api/branches/${branchId}/checklist-items`)
-      if (response.ok) {
-        const data = await response.json()
-        // Filter only items with scheduled dates
-        const scheduledTasks = data.filter((item: ScheduledTask) => item.scheduledDate)
-        setTasks(scheduledTasks)
-      }
+      const data = await api.get<ScheduledTask[]>(
+        `/api/branches/${branchId}/checklist-items`,
+        { showToast: false }
+      )
+      // Only items with scheduled dates belong on a calendar.
+      setTasks((data ?? []).filter(item => item.scheduledDate))
     } catch (error) {
+      // An empty calendar and an unreachable server look identical otherwise.
       console.error('Failed to fetch tasks:', error)
+      setLoadFailed(true)
     } finally {
       setLoading(false)
     }
@@ -162,6 +167,10 @@ export function CalendarView({ branchId }: CalendarViewProps) {
         </CardContent>
       </Card>
     )
+  }
+
+  if (loadFailed) {
+    return <LoadFailure onRetry={fetchTasks} message="The schedule could not be loaded." />
   }
 
   return (

@@ -74,6 +74,7 @@ import {
 import { RequestComments } from './request-comments'
 import { toast } from 'sonner'
 import { useTranslation } from '@/lib/i18n/use-translation'
+import { api } from '@/lib/api-client'
 
 // Helper function to extract base name from work order title (removes Q1, Q2, Month1, etc.)
 function getBaseWorkOrderName(title: string): string {
@@ -829,11 +830,7 @@ export function RequestsList({ branchId, userRole, userId }: RequestsListProps) 
 
   const handleUpdateStatus = async (requestId: string, status: Request['status']) => {
     try {
-      await fetch(`/api/branches/${branchId}/requests/${requestId}`, {
-        method: 'PATCH',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ status }),
-      })
+      await api.patch(`/api/branches/${branchId}/requests/${requestId}`, { status })
       fetchRequests()
       router.refresh()
     } catch (err) {
@@ -875,9 +872,7 @@ export function RequestsList({ branchId, userRole, userId }: RequestsListProps) 
     if (!confirm(tr.deleteConfirm)) return
 
     try {
-      await fetch(`/api/branches/${branchId}/requests/${requestId}`, {
-        method: 'DELETE',
-      })
+      await api.delete(`/api/branches/${branchId}/requests/${requestId}`)
       fetchRequests()
       router.refresh()
     } catch (err) {

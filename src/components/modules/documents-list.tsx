@@ -1,6 +1,8 @@
 'use client'
 
 import { useState, useEffect } from 'react'
+import { api } from '@/lib/api-client'
+import { LoadFailure } from '@/components/ui/load-failure'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
 import { Badge } from '@/components/ui/badge'
@@ -142,16 +144,18 @@ export function DocumentsList({ branchId }: DocumentsListProps) {
   const [expandedSections, setExpandedSections] = useState<Set<SourceType>>(new Set())
   const [previewOpen, setPreviewOpen] = useState(false)
   const [previewFile, setPreviewFile] = useState<{ url: string; name: string; type: 'image' | 'pdf' } | null>(null)
+  const [loadFailed, setLoadFailed] = useState(false)
 
   const fetchDocuments = async () => {
+    setLoadFailed(false)
     try {
-      const response = await fetch(`/api/branches/${branchId}/documents`)
-      if (response.ok) {
-        const data = await response.json()
-        setDocuments(data)
-      }
+      const data = await api.get<UnifiedDocument[]>(`/api/branches/${branchId}/documents`, {
+        showToast: false,
+      })
+      setDocuments(data ?? [])
     } catch (err) {
       console.error('Failed to fetch documents:', err)
+      setLoadFailed(true)
     } finally {
       setLoading(false)
     }
@@ -197,6 +201,10 @@ export function DocumentsList({ branchId }: DocumentsListProps) {
         </CardContent>
       </Card>
     )
+  }
+
+  if (loadFailed) {
+    return <LoadFailure onRetry={fetchDocuments} message={td.documents + ' could not be loaded.'} />
   }
 
   const docsBySource = (source: SourceType) => documents.filter(d => d.source === source)

@@ -1,6 +1,8 @@
 'use client'
 
 import { useState, useEffect } from 'react'
+import { api } from '@/lib/api-client'
+import { LoadFailure } from '@/components/ui/load-failure'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
@@ -92,6 +94,7 @@ export function BranchDashboard({ branchId }: BranchDashboardProps) {
   const { t } = useTranslation()
   const td = t.dashboard.branchDashboard
   const [loading, setLoading] = useState(true)
+  const [loadFailed, setLoadFailed] = useState(false)
   const STAGE_CONFIG: Record<string, { label: string; color: string; icon: React.ReactNode }> = {
     SCHEDULED: { label: td.scheduled, color: 'bg-blue-100 text-blue-700', icon: <Calendar className="h-3 w-3" /> },
     IN_PROGRESS: { label: td.inProgress, color: 'bg-green-100 text-green-700', icon: <Clock className="h-3 w-3" /> },
@@ -127,22 +130,19 @@ export function BranchDashboard({ branchId }: BranchDashboardProps) {
   useEffect(() => {
     const fetchData = async () => {
       setLoading(true)
+      setLoadFailed(false)
       try {
-        // Fetch work orders
-        const woResponse = await fetch(`/api/branches/${branchId}/checklist-items`)
-        if (woResponse.ok) {
-          const data = await woResponse.json()
-          setWorkOrders(data)
-        }
-
-        // Fetch contracts
-        const contractsResponse = await fetch(`/api/branches/${branchId}/contracts`)
-        if (contractsResponse.ok) {
-          const data = await contractsResponse.json()
-          setContracts(data)
-        }
+        // Sequential requests made the page wait for two round trips to show anything.
+        const [workOrderData, contractData] = await Promise.all([
+          api.get<WorkOrder[]>(`/api/branches/${branchId}/checklist-items`, { showToast: false }),
+          api.get<Contract[]>(`/api/branches/${branchId}/contracts`, { showToast: false }),
+        ])
+        setWorkOrders(workOrderData ?? [])
+        setContracts(contractData ?? [])
       } catch (error) {
+        // Rendering zeros here would claim the branch has no work and no contracts.
         console.error('Error fetching dashboard data:', error)
+        setLoadFailed(true)
       } finally {
         setLoading(false)
       }
@@ -411,6 +411,10 @@ export function BranchDashboard({ branchId }: BranchDashboardProps) {
         </div>
       </div>
     )
+  }
+
+  if (loadFailed) {
+    return <LoadFailure message="The branch summary could not be loaded." />
   }
 
   return (

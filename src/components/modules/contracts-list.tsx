@@ -69,6 +69,7 @@ import {
 import { ContractWorkOrdersDisplay } from './contract-work-orders-display'
 import { ContractAttachmentsSection } from './contract-attachments-section'
 import { FileUploadDropzone } from '@/components/ui/file-upload-dropzone'
+import { api } from '@/lib/api-client'
 
 interface WorkOrder {
   id: string
@@ -824,11 +825,7 @@ export function ContractsList({ branchId }: ContractsListProps) {
 
   const handleUpdateStatus = async (contractId: string, status: Contract['status']) => {
     try {
-      await fetch(`/api/branches/${branchId}/contracts/${contractId}`, {
-        method: 'PATCH',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ status }),
-      })
+      await api.patch(`/api/branches/${branchId}/contracts/${contractId}`, { status })
       fetchContracts()
       router.refresh()
     } catch (err) {
@@ -840,9 +837,7 @@ export function ContractsList({ branchId }: ContractsListProps) {
     if (!confirm('Are you sure you want to delete this contract?')) return
 
     try {
-      await fetch(`/api/branches/${branchId}/contracts/${contractId}`, {
-        method: 'DELETE',
-      })
+      await api.delete(`/api/branches/${branchId}/contracts/${contractId}`)
       fetchContracts()
       router.refresh()
     } catch (err) {

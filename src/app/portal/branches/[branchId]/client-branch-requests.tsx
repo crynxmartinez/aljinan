@@ -68,6 +68,7 @@ import {
 import { SignaturePad } from '@/components/ui/signature-pad'
 import { RequestComments } from '@/components/modules/request-comments'
 import { ExportDialog } from '@/components/export/export-dialog'
+import { api } from '@/lib/api-client'
 import {
   exportRequestsToExcel,
   exportRequestsToCsv,
@@ -462,7 +463,7 @@ export function ClientBranchRequests({ branchId, onDataChange, userId }: ClientB
       setAddWorkOrderOpen(false)
       fetchProjects()
       // Refresh selected project
-      const updatedProjects = await fetch(`/api/branches/${branchId}/projects`).then(r => r.json())
+      const updatedProjects = await api.get<never[]>(`/api/branches/${branchId}/projects`)
       const updated = updatedProjects.find((p: Project) => p.id === selectedProject.id)
       if (updated) setSelectedProject(updated)
     } catch (err) {
