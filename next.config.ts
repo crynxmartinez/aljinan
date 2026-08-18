@@ -45,6 +45,30 @@ const nextConfig: NextConfig = {
           {
             key: 'Permissions-Policy',
             value: 'camera=(), microphone=(), geolocation=()'
+          },
+          {
+            // Report-only deliberately. A CSP that blocks something the app needs is worse
+            // than no CSP, and this app loads Google Maps, Sentry, Vercel analytics and
+            // signed S3 URLs. Watch the violation reports, confirm nothing legitimate is
+            // listed, then rename this header to Content-Security-Policy.
+            //
+            // 'unsafe-inline' and 'unsafe-eval' are here because Next.js injects inline
+            // bootstrap scripts and the JSON-LD blocks are inline. Removing them requires
+            // a nonce, which is the follow-up once the policy is enforcing.
+            key: 'Content-Security-Policy-Report-Only',
+            value: [
+              "default-src 'self'",
+              "script-src 'self' 'unsafe-inline' 'unsafe-eval' https://maps.googleapis.com https://*.vercel-scripts.com",
+              "style-src 'self' 'unsafe-inline'",
+              "img-src 'self' data: blob: https://*.amazonaws.com https://maps.googleapis.com https://maps.gstatic.com https://*.tile.openstreetmap.org",
+              "font-src 'self' data:",
+              // ws: and wss: are required for the dev server's hot reload channel.
+              "connect-src 'self' ws: wss: https://maps.googleapis.com https://*.amazonaws.com https://*.ingest.sentry.io https://*.upstash.io",
+              "frame-ancestors 'none'",
+              "base-uri 'self'",
+              "form-action 'self'",
+              "object-src 'none'",
+            ].join('; ')
           }
         ]
       },

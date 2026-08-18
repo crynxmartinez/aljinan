@@ -223,3 +223,57 @@ export function fileUploadError(errors: string[]) {
     status: 400
   }
 }
+
+/**
+ * Leading bytes for the formats we accept.
+ *
+ * The declared MIME type and the extension both come from the client, so on their own they
+ * establish nothing: any file can be uploaded as an image. These are checked against the
+ * actual first bytes.
+ */
+const MAGIC_BYTES: Array<{ mime: string; offset: number; bytes: number[] }> = [
+  { mime: 'image/jpeg', offset: 0, bytes: [0xff, 0xd8, 0xff] },
+  { mime: 'image/png', offset: 0, bytes: [0x89, 0x50, 0x4e, 0x47, 0x0d, 0x0a, 0x1a, 0x0a] },
+  { mime: 'image/gif', offset: 0, bytes: [0x47, 0x49, 0x46, 0x38] },
+  // WEBP is RIFF....WEBP — the format tag sits at offset 8.
+  { mime: 'image/webp', offset: 8, bytes: [0x57, 0x45, 0x42, 0x50] },
+  { mime: 'application/pdf', offset: 0, bytes: [0x25, 0x50, 0x44, 0x46] },
+  // DOCX is a ZIP container.
+  {
+    mime: 'application/vnd.openxmlformats-officedocument.wordprocessingml.document',
+    offset: 0,
+    bytes: [0x50, 0x4b, 0x03, 0x04],
+  },
+  // Legacy DOC is an OLE compound file.
+  { mime: 'application/msword', offset: 0, bytes: [0xd0, 0xcf, 0x11, 0xe0] },
+]
+
+/**
+ * Confirm the bytes match the declared type.
+ *
+ * Returns valid for a declared type we have no signature for, rather than rejecting it —
+ * the MIME whitelist has already run, and this is a second check, not the only one.
+ */
+export async function validateFileContents(
+  file: File,
+  declaredMime: string
+): Promise<{ valid: boolean; error?: string }> {
+  const signatures = MAGIC_BYTES.filter(s => s.mime === declaredMime)
+  if (signatures.length === 0) return { valid: true }
+
+  const needed = Math.max(...signatures.map(s => s.offset + s.bytes.length))
+  const head = new Uint8Array(await file.slice(0, needed).arrayBuffer())
+
+  const matches = signatures.some(sig =>
+    sig.bytes.every((byte, i) => head[sig.offset + i] === byte)
+  )
+
+  if (!matches) {
+    return {
+      valid: false,
+      error: `File contents do not match its declared type (${declaredMime}).`,
+    }
+  }
+
+  return { valid: true }
+}

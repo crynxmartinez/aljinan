@@ -4,7 +4,7 @@ import { authOptions } from '@/lib/auth'
 import { prisma } from '@/lib/prisma'
 import { uploadToS3, deleteFromS3ByKey, isAllowedFolder, ALLOWED_FOLDERS } from '@/lib/s3'
 import { checkFileUploadRateLimit } from '@/lib/rate-limit'
-import { validateFile, generateSafeFilename } from '@/lib/file-security'
+import { validateFile, generateSafeFilename, validateFileContents } from '@/lib/file-security'
 import { verifyBranchAccess } from '@/lib/permissions'
 import { logFileUpload, logSecurityAlert } from '@/lib/audit-log'
 
@@ -118,6 +118,21 @@ export async function POST(request: Request) {
       })
       return NextResponse.json(
         { error: 'File validation failed', details: validation.errors },
+        { status: 400 }
+      )
+    }
+
+    // The MIME type and extension are both supplied by the caller, so they agree with each
+    // other and prove nothing about the file. Check the leading bytes as well.
+    const contents = await validateFileContents(file, file.type)
+    if (!contents.valid) {
+      await logSecurityAlert(session.user.id, 'File contents did not match declared type', {
+        filename: file.name,
+        declaredType: file.type,
+        fileSize: file.size,
+      })
+      return NextResponse.json(
+        { error: 'File validation failed', details: [contents.error] },
         { status: 400 }
       )
     }
