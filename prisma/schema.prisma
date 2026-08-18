@@ -49,38 +49,38 @@ enum IssueType {
   PANEL_ERROR
   ZONE_FAULT
   BATTERY_ISSUE
-  
+
   // Suppression
   SPRINKLER_LEAK
   SPRINKLER_DAMAGE
   PIPE_LEAK
   VALVE_ISSUE
   PUMP_PROBLEM
-  
+
   // Extinguishers
   EXTINGUISHER_REFILL
   EXTINGUISHER_REPLACEMENT
   EXTINGUISHER_EXPIRED
   EXTINGUISHER_MISSING
-  
+
   // Detection
   SMOKE_DETECTOR_FAULT
   HEAT_DETECTOR_FAULT
   GAS_DETECTOR_ISSUE
   DETECTOR_REPLACEMENT
-  
+
   // Emergency Systems
   EMERGENCY_LIGHT_FAULT
   EXIT_SIGN_FAULT
   FIRE_DOOR_ISSUE
   EMERGENCY_EXIT_BLOCKED
-  
+
   // Maintenance & Inspection
   SCHEDULED_INSPECTION
   PREVENTIVE_MAINTENANCE
   ANNUAL_CERTIFICATION
   SYSTEM_TESTING
-  
+
   // Other
   GENERAL_INQUIRY
   QUOTE_REQUEST
@@ -90,11 +90,11 @@ enum IssueType {
 
 // Work order types
 enum WorkOrderType {
-  SERVICE              // Repair, fix issues
-  INSPECTION           // Check systems, compliance
-  MAINTENANCE          // Preventive maintenance
-  INSTALLATION         // New equipment
-  STICKER_INSPECTION   // Equipment sticker/compliance inspection
+  SERVICE // Repair, fix issues
+  INSPECTION // Check systems, compliance
+  MAINTENANCE // Preventive maintenance
+  INSTALLATION // New equipment
+  STICKER_INSPECTION // Equipment sticker/compliance inspection
   OTHER
 }
 
@@ -104,8 +104,8 @@ enum CertificateType {
   COMPLETION
   COMPLIANCE
   INSPECTION
-  CIVIL_DEFENSE     // Uploaded external
-  EQUIPMENT_CERTIFICATE  // Certificate for individual equipment
+  CIVIL_DEFENSE // Uploaded external
+  EQUIPMENT_CERTIFICATE // Certificate for individual equipment
 }
 
 enum BuildingType {
@@ -148,139 +148,152 @@ enum TestResult {
 }
 
 model User {
-  id             String     @id @default(cuid())
-  email          String     @unique
-  password       String
-  name           String?
-  role           UserRole   @default(CONTRACTOR)
-  status         UserStatus @default(PENDING)
-  emailVerified  DateTime?
-  createdAt      DateTime   @default(now())
-  updatedAt      DateTime   @updatedAt
+  id            String     @id @default(cuid())
+  email         String     @unique
+  password      String
+  name          String?
+  role          UserRole   @default(CONTRACTOR)
+  status        UserStatus @default(PENDING)
+  emailVerified DateTime?
+  createdAt     DateTime   @default(now())
+  updatedAt     DateTime   @updatedAt
 
   // Contractor-specific relations
-  contractor     Contractor?
-  
+  contractor Contractor?
+
   // Client-specific relations
-  client         Client?
+  client Client?
 
   // Team member-specific relations
-  teamMember     TeamMember?
-  
+  teamMember TeamMember?
+
   // Admin-specific relations
-  admin          AdminUser?
+  admin AdminUser?
 
   // Request comments
   requestComments RequestComment[]
 
   // Password management
-  mustChangePassword Boolean @default(false)
-  passwordResetToken String? @unique
+  mustChangePassword  Boolean   @default(false)
+  passwordResetToken  String?   @unique
   passwordResetExpiry DateTime?
-  
+
   // Email verification
-  emailVerificationToken String? @unique
+  emailVerificationToken  String?   @unique
   emailVerificationExpiry DateTime?
+
+  // Bumped whenever existing sessions must stop being trusted: password change or reset,
+  // role or status change, or a change to branch assignments. The value is carried in the
+  // JWT and compared on every request, which is what makes a 24h token revocable.
+  sessionVersion Int @default(0)
+
+  // Relations added for auditing and file ownership
+  impersonationGrants ImpersonationGrant[] @relation("ImpersonationTarget")
+  uploads             Upload[]
 }
 
 model AdminUser {
-  id              String    @id @default(cuid())
-  userId          String    @unique
-  user            User      @relation(fields: [userId], references: [id], onDelete: Cascade)
-  adminRole       AdminRole @default(SUPER_ADMIN)
-  
+  id        String    @id @default(cuid())
+  userId    String    @unique
+  user      User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+  adminRole AdminRole @default(SUPER_ADMIN)
+
   // Granular permissions
-  canManageContractors  Boolean @default(true)
-  canManageAdmins       Boolean @default(true)
-  canImpersonateUsers   Boolean @default(true)
-  canViewAnalytics      Boolean @default(true)
-  canManageMessages     Boolean @default(true)
-  canManagePlatform     Boolean @default(true)
-  
-  createdAt       DateTime  @default(now())
-  updatedAt       DateTime  @updatedAt
+  canManageContractors Boolean @default(true)
+  canManageAdmins      Boolean @default(true)
+  canImpersonateUsers  Boolean @default(true)
+  canViewAnalytics     Boolean @default(true)
+  canManageMessages    Boolean @default(true)
+  canManagePlatform    Boolean @default(true)
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
 }
 
 model Contractor {
-  id            String   @id @default(cuid())
-  userId        String   @unique
-  user          User     @relation(fields: [userId], references: [id], onDelete: Cascade)
-  companyName   String?
-  companyPhone  String?
-  companyEmail  String?
+  id             String   @id @default(cuid())
+  userId         String   @unique
+  user           User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  companyName    String?
+  companyPhone   String?
+  companyEmail   String?
   companyAddress String?
-  isVerified    Boolean  @default(false)
-  createdAt     DateTime @default(now())
-  updatedAt     DateTime @updatedAt
+  isVerified     Boolean  @default(false)
+  createdAt      DateTime @default(now())
+  updatedAt      DateTime @updatedAt
 
   // Company Profile Fields
-  logoUrl           String?       // Company logo
-  website           String?       // Company website
-  businessType      BusinessType? // LLC, Corporation, etc.
-  yearEstablished   Int?          // Year company was founded
-  
+  logoUrl         String? // Company logo
+  website         String? // Company website
+  businessType    BusinessType? // LLC, Corporation, etc.
+  yearEstablished Int? // Year company was founded
+
   // Registration & Licensing (KSA: CR, US: Business License)
-  crNumber          String?       // Commercial Registration (KSA) / Business License (US)
-  vatNumber         String?       // VAT Number (KSA) / EIN (US)
-  
+  crNumber  String? // Commercial Registration (KSA) / Business License (US)
+  vatNumber String? // VAT Number (KSA) / EIN (US)
+
   // Civil Defense / State License
-  licenseNumber     String?       // Civil Defense License (KSA) / State Contractor License (US)
-  licenseExpiry     DateTime?     // License expiration date
-  
+  licenseNumber String? // Civil Defense License (KSA) / State Contractor License (US)
+  licenseExpiry DateTime? // License expiration date
+
   // Insurance
-  insuranceCertUrl  String?       // Insurance certificate document URL
-  insuranceExpiry   DateTime?     // Insurance expiration date
-  
+  insuranceCertUrl String? // Insurance certificate document URL
+  insuranceExpiry  DateTime? // Insurance expiration date
+
   // Service Areas
-  serviceAreas      Json?         // Array of cities/regions served
+  serviceAreas Json? // Array of cities/regions served
 
   // Contact Person
-  contactPersonName   String?       // Primary contact person name
-  contactPersonPhone  String?       // Primary contact person phone
-  contactPersonEmail  String?       // Primary contact person email
+  contactPersonName  String? // Primary contact person name
+  contactPersonPhone String? // Primary contact person phone
+  contactPersonEmail String? // Primary contact person email
 
   // Auto-increment counters for human-readable reference numbers
-  nextRequestNumber   Int       @default(1)  // Counter for REQ-0001, REQ-0002...
-  nextWorkOrderNumber Int       @default(1)  // Counter for WO-0001, WO-0002...
+  nextRequestNumber   Int @default(1) // Counter for REQ-0001, REQ-0002...
+  nextWorkOrderNumber Int @default(1) // Counter for WO-0001, WO-0002...
 
   // Relations
-  clients       Client[]
-  teamMembers   TeamMember[]
+  clients     Client[]
+  teamMembers TeamMember[]
 }
 
 model Client {
-  id            String     @id @default(cuid())
-  userId        String     @unique
-  user          User       @relation(fields: [userId], references: [id], onDelete: Cascade)
-  contractorId  String
-  contractor    Contractor @relation(fields: [contractorId], references: [id], onDelete: Cascade)
-  companyName   String
-  slug          String?    @unique  // URL-friendly slug generated from companyName
-  displayName   String?    // Custom nickname/label set by contractor
-  companyPhone  String?
-  companyEmail  String?
-  
+  id           String     @id @default(cuid())
+  userId       String     @unique
+  user         User       @relation(fields: [userId], references: [id], onDelete: Cascade)
+  contractorId String
+  contractor   Contractor @relation(fields: [contractorId], references: [id], onDelete: Cascade)
+  companyName  String
+  slug         String? // URL-friendly slug, unique per contractor (see @@unique below)
+  displayName  String? // Custom nickname/label set by contractor
+  companyPhone String?
+  companyEmail String?
+
   // New profile fields
-  crNumber            String?    // Commercial Registration number
-  vatNumber           String?    // VAT registration number
-  billingAddress      String?    // Billing/invoice address
-  contacts            Json?      // Array of contact persons: [{name, phone, email, whatsapp}]
-  
+  crNumber       String? // Commercial Registration number
+  vatNumber      String? // VAT registration number
+  billingAddress String? // Billing/invoice address
+  contacts       Json? // Array of contact persons: [{name, phone, email, whatsapp}]
+
   // Contact Person
-  contactPersonName   String?    // Primary contact person name
-  contactPersonPhone  String?    // Primary contact person phone
-  contactPersonEmail  String?    // Primary contact person email
-  
+  contactPersonName  String? // Primary contact person name
+  contactPersonPhone String? // Primary contact person phone
+  contactPersonEmail String? // Primary contact person email
+
   // Archive tracking
-  archivedAt    DateTime?  // When the client was archived (for auto-delete after 90 days)
-  
-  createdAt     DateTime   @default(now())
-  updatedAt     DateTime   @updatedAt
+  archivedAt DateTime? // When the client was archived (for auto-delete after 90 days)
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
 
   // Relations
-  branches        Branch[]
-  branchRequests  BranchRequest[]
-  
+  branches       Branch[]
+  branchRequests BranchRequest[]
+
+  // Slugs are generated by checking siblings within one contractor, so the constraint has
+  // to match that scope. A global @unique made two tenants with a same-named client
+  // collide and fail the create with a 500.
+  @@unique([contractorId, slug])
   @@index([companyName])
   @@index([companyEmail])
   @@index([contractorId, companyName])
@@ -288,40 +301,40 @@ model Client {
 }
 
 model Branch {
-  id          String   @id @default(cuid())
-  clientId    String
-  client      Client   @relation(fields: [clientId], references: [id], onDelete: Cascade)
-  name        String
-  slug        String?  // URL-friendly slug generated from name
-  displayName String?  // Custom nickname/label set by contractor
-  clientNickname String?  // Custom nickname set by client for easier identification
-  address     String
-  city        String?
-  state       String?
-  zipCode     String?
-  country     String?
-  phone       String?
-  notes       String?
-  latitude    Float?
-  longitude   Float?
-  isActive    Boolean  @default(true)
-  
+  id             String  @id @default(cuid())
+  clientId       String
+  client         Client  @relation(fields: [clientId], references: [id], onDelete: Cascade)
+  name           String
+  slug           String? // URL-friendly slug generated from name
+  displayName    String? // Custom nickname/label set by contractor
+  clientNickname String? // Custom nickname set by client for easier identification
+  address        String
+  city           String?
+  state          String?
+  zipCode        String?
+  country        String?
+  phone          String?
+  notes          String?
+  latitude       Float?
+  longitude      Float?
+  isActive       Boolean @default(true)
+
   // New facility profile fields
-  municipality          String?       // Municipality / Civil Defense region
-  buildingType          BuildingType? // Type of building
-  floorCount            Int?          // Number of floors
-  areaSize              Float?        // Area in square meters
-  cdCertificateNumber   String?       // Civil Defense certificate number
-  cdCertificateExpiry   DateTime?     // When CD certificate expires
-  cdCertificateUrl      String?       // Uploaded certificate file URL
+  municipality        String? // Municipality / Civil Defense region
+  buildingType        BuildingType? // Type of building
+  floorCount          Int? // Number of floors
+  areaSize            Float? // Area in square meters
+  cdCertificateNumber String? // Civil Defense certificate number
+  cdCertificateExpiry DateTime? // When CD certificate expires
+  cdCertificateUrl    String? // Uploaded certificate file URL
 
   // Contact Person
-  contactPersonName     String?       // Branch contact person name
-  contactPersonPhone    String?       // Branch contact person phone
-  contactPersonEmail    String?       // Branch contact person email
-  
-  createdAt   DateTime @default(now())
-  updatedAt   DateTime @updatedAt
+  contactPersonName  String? // Branch contact person name
+  contactPersonPhone String? // Branch contact person phone
+  contactPersonEmail String? // Branch contact person email
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
 
   // Module relations
   requests     Request[]
@@ -333,12 +346,11 @@ model Branch {
   certificates Certificate[]
   equipment    Equipment[]
   activities   Activity[]
-  
-  @@unique([clientId, slug])  // Slug must be unique per client
 
   // Team member access
   teamMemberAccess TeamMemberBranch[]
-  
+
+  @@unique([clientId, slug]) // Slug must be unique per client
   @@index([clientId])
   @@index([name])
 }
@@ -352,16 +364,16 @@ enum RequestPriority {
 }
 
 enum RequestStatus {
-  REQUESTED           // Client submitted, waiting for contractor
-  QUOTED              // Contractor set date & price, waiting for client
-  SCHEDULED           // Client accepted, work order created
-  IN_PROGRESS         // Technician working
-  FOR_REVIEW          // Work done, pending supervisor review
-  PENDING_APPROVAL    // Waiting final client approval
-  COMPLETED           // Done
-  CLOSED              // Archived
-  REJECTED            // Client rejected quote
-  CANCELLED           // Cancelled by either party
+  REQUESTED // Client submitted, waiting for contractor
+  QUOTED // Contractor set date & price, waiting for client
+  SCHEDULED // Client accepted, work order created
+  IN_PROGRESS // Technician working
+  FOR_REVIEW // Work done, pending supervisor review
+  PENDING_APPROVAL // Waiting final client approval
+  COMPLETED // Done
+  CLOSED // Archived
+  REJECTED // Client rejected quote
+  CANCELLED // Cancelled by either party
 }
 
 // Service Request - created by contractor or client for a branch
@@ -380,50 +392,50 @@ model Request {
   completedAt   DateTime?
   createdAt     DateTime        @default(now())
   updatedAt     DateTime        @updatedAt
-  
+
   // New fields for improved request flow
-  workOrderType       WorkOrderType?  // Service, Inspection, Maintenance, etc.
-  preferredDate       DateTime?       // Client's preferred date
-  preferredTimeSlot   String?         // "Morning", "Afternoon", "Evening"
-  recurringType       RecurringType   @default(ONCE)  // Once, Monthly, Quarterly
-  needsCertificate    Boolean         @default(false) // Auto-generate certificate on completion
-  
+  workOrderType     WorkOrderType? // Service, Inspection, Maintenance, etc.
+  preferredDate     DateTime? // Client's preferred date
+  preferredTimeSlot String? // "Morning", "Afternoon", "Evening"
+  recurringType     RecurringType  @default(ONCE) // Once, Monthly, Quarterly
+  needsCertificate  Boolean        @default(false) // Auto-generate certificate on completion
+
   // Contractor quote fields
-  quotedPrice         Float?          // Price quoted by contractor
-  quotedDate          DateTime?       // Date set by contractor
-  quotedById          String?         // Contractor who quoted
-  quotedAt            DateTime?       // When quote was sent
-  quotedNotes         String?         // Notes/message for client from contractor
-  
+  quotedPrice Float? // Price quoted by contractor
+  quotedDate  DateTime? // Date set by contractor
+  quotedById  String? // Contractor who quoted
+  quotedAt    DateTime? // When quote was sent
+  quotedNotes String? // Notes/message for client from contractor
+
   // Client response
-  acceptedAt          DateTime?       // When client accepted
-  acceptedById        String?         // Client who accepted
-  rejectedAt          DateTime?       // When client rejected
-  rejectedById        String?         // Client who rejected
-  rejectionNote       String?         // Reason for rejection
-  
+  acceptedAt    DateTime? // When client accepted
+  acceptedById  String? // Client who accepted
+  rejectedAt    DateTime? // When client rejected
+  rejectedById  String? // Client who rejected
+  rejectionNote String? // Reason for rejection
+
   // Auto-generated reference number
-  requestNumber       Int?            // Human-readable number: REQ-0001
-  
+  requestNumber Int? // Human-readable number: REQ-0001
+
   // Quotation document
-  quotationUrl        String?         // URL to uploaded quotation PDF/image
-  quotationFileName   String?         // Original filename
-  
+  quotationUrl      String? // URL to uploaded quotation PDF/image
+  quotationFileName String? // Original filename
+
   // Link to created work order
-  workOrderId         String?         // ChecklistItem ID once accepted
-  
+  workOrderId String? // ChecklistItem ID once accepted
+
   // Occurrences for recurring requests (individual dates and prices)
-  occurrences         Json?           // [{ order: 1, visitDate: "2026-01-15", price: 500 }, ...]
-  
+  occurrences Json? // [{ order: 1, visitDate: "2026-01-15", price: 500 }, ...]
+
   // Photos
-  photos              RequestPhoto[]
-  
+  photos RequestPhoto[]
+
   // Comments
-  comments            RequestComment[]
-  
+  comments RequestComment[]
+
   // Equipment for sticker inspections
-  equipment           Equipment[]
-  
+  equipment Equipment[]
+
   @@index([branchId])
   @@index([status])
   @@index([createdAt])
@@ -436,12 +448,12 @@ model Request {
 
 // Photos attached to service requests
 model RequestPhoto {
-  id          String   @id @default(cuid())
-  requestId   String
-  request     Request  @relation(fields: [requestId], references: [id], onDelete: Cascade)
-  url         String
-  caption     String?
-  createdAt   DateTime @default(now())
+  id        String   @id @default(cuid())
+  requestId String
+  request   Request  @relation(fields: [requestId], references: [id], onDelete: Cascade)
+  url       String
+  caption   String?
+  createdAt DateTime @default(now())
 }
 
 // Comments on service requests - visible to both client and contractor
@@ -476,68 +488,68 @@ enum EquipmentType {
 
 // Equipment status for tracking
 enum EquipmentStatus {
-  ACTIVE           // Equipment is OK, not expired
-  EXPIRING_SOON    // Within 30 days of expiry
-  EXPIRED          // Past expiry date
-  NEEDS_ATTENTION  // Failed inspection or needs repair
+  ACTIVE // Equipment is OK, not expired
+  EXPIRING_SOON // Within 30 days of expiry
+  EXPIRED // Past expiry date
+  NEEDS_ATTENTION // Failed inspection or needs repair
 }
 
 // Inspection result for equipment and work orders
 enum InspectionResult {
-  PASS              // Equipment passed inspection
-  PASSED            // Work order inspection passed
-  FAIL              // Equipment failed inspection
-  FAILED            // Work order inspection failed
-  NEEDS_REPAIR      // Equipment needs repair before passing
+  PASS // Equipment passed inspection
+  PASSED // Work order inspection passed
+  FAIL // Equipment failed inspection
+  FAILED // Work order inspection failed
+  NEEDS_REPAIR // Equipment needs repair before passing
   ATTENTION_REQUIRED // Work order needs attention
-  PENDING           // Not yet inspected
+  PENDING // Not yet inspected
 }
 
 // Equipment tracked for sticker inspections
 model Equipment {
-  id              String           @id @default(cuid())
-  
+  id String @id @default(cuid())
+
   // Branch link - for permanent equipment records
-  branchId        String
-  branch          Branch           @relation(fields: [branchId], references: [id], onDelete: Cascade)
-  
+  branchId String
+  branch   Branch @relation(fields: [branchId], references: [id], onDelete: Cascade)
+
   // Optional links to request/work order
-  requestId       String?
-  request         Request?         @relation(fields: [requestId], references: [id], onDelete: SetNull)
-  workOrderId     String?          // ChecklistItem ID - for equipment added during inspection
-  
+  requestId   String?
+  request     Request? @relation(fields: [requestId], references: [id], onDelete: SetNull)
+  workOrderId String? // ChecklistItem ID - for equipment added during inspection
+
   // Equipment identification
-  equipmentNumber String           // Client's tag/ID number (e.g., FE-001)
-  equipmentType   EquipmentType
-  customEquipmentType String?      // Custom type name when equipmentType = OTHER
-  brand           String?          // Brand name
-  model           String?          // Model number
-  serialNumber    String?          // Manufacturer serial number
-  location        String?          // Where in the branch (e.g., "Floor 2, Kitchen")
-  
+  equipmentNumber     String // Client's tag/ID number (e.g., FE-001)
+  equipmentType       EquipmentType
+  customEquipmentType String? // Custom type name when equipmentType = OTHER
+  brand               String? // Brand name
+  model               String? // Model number
+  serialNumber        String? // Manufacturer serial number
+  location            String? // Where in the branch (e.g., "Floor 2, Kitchen")
+
   // Dates
-  dateAdded       DateTime         @default(now())  // When equipment was added to system
-  expectedExpiry  DateTime?        // Next inspection due date
-  lastInspected   DateTime?        // When last inspected
-  
+  dateAdded      DateTime  @default(now()) // When equipment was added to system
+  expectedExpiry DateTime? // Next inspection due date
+  lastInspected  DateTime? // When last inspected
+
   // Inspection tracking
-  status          EquipmentStatus  @default(ACTIVE)
-  inspectionResult InspectionResult @default(PENDING)
-  isInspected     Boolean          @default(false)  // Marked during current inspection cycle
-  certificateIssued Boolean        @default(false)  // Certificate given for this equipment
-  stickerApplied  Boolean          @default(false)  // Physical sticker placed on equipment
-  
+  status            EquipmentStatus  @default(ACTIVE)
+  inspectionResult  InspectionResult @default(PENDING)
+  isInspected       Boolean          @default(false) // Marked during current inspection cycle
+  certificateIssued Boolean          @default(false) // Certificate given for this equipment
+  stickerApplied    Boolean          @default(false) // Physical sticker placed on equipment
+
   // Notes
-  notes           String?
-  deficiencies    String?          // Issues found during inspection
-  
+  notes        String?
+  deficiencies String? // Issues found during inspection
+
   // Certificate link
-  certificateId   String?          @unique  // FK to issued Certificate
-  certificate     Certificate?     @relation("EquipmentCertificate", fields: [certificateId], references: [id], onDelete: SetNull)
-  
-  createdAt       DateTime         @default(now())
-  updatedAt       DateTime         @updatedAt
-  
+  certificateId String?      @unique // FK to issued Certificate
+  certificate   Certificate? @relation("EquipmentCertificate", fields: [certificateId], references: [id], onDelete: SetNull)
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
   @@index([branchId])
   @@index([expectedExpiry])
   @@index([status])
@@ -581,7 +593,7 @@ model Quotation {
   createdById   String
   createdAt     DateTime        @default(now())
   updatedAt     DateTime        @updatedAt
-  
+
   @@index([branchId])
   @@index([status])
   @@index([branchId, createdAt])
@@ -613,34 +625,34 @@ enum AppointmentStatus {
 
 // Appointment - scheduled visits/inspections
 model Appointment {
-  id              String            @id @default(cuid())
-  branchId        String
-  branch          Branch            @relation(fields: [branchId], references: [id], onDelete: Cascade)
-  title           String
-  description     String?
-  date            DateTime
-  startTime       String
-  endTime         String?
-  duration        Int?              // Duration in minutes
-  assignedTo      String?
-  status          AppointmentStatus @default(SCHEDULED)
-  confirmedAt     DateTime?
-  confirmedById   String?
-  completedAt     DateTime?
-  cancelledAt     DateTime?
-  cancelledById   String?
+  id               String            @id @default(cuid())
+  branchId         String
+  branch           Branch            @relation(fields: [branchId], references: [id], onDelete: Cascade)
+  title            String
+  description      String?
+  date             DateTime
+  startTime        String
+  endTime          String?
+  duration         Int? // Duration in minutes
+  assignedTo       String?
+  status           AppointmentStatus @default(SCHEDULED)
+  confirmedAt      DateTime?
+  confirmedById    String?
+  completedAt      DateTime?
+  cancelledAt      DateTime?
+  cancelledById    String?
   cancellationNote String?
-  rescheduleNote  String?
-  createdById     String
-  createdAt       DateTime          @default(now())
-  updatedAt       DateTime          @updatedAt
+  rescheduleNote   String?
+  createdById      String
+  createdAt        DateTime          @default(now())
+  updatedAt        DateTime          @updatedAt
 }
 
 // Invoice statuses
 enum InvoiceStatus {
   DRAFT
   SENT
-  PAYMENT_PENDING  // Client submitted payment proof, awaiting confirmation
+  PAYMENT_PENDING // Client submitted payment proof, awaiting confirmation
   PAID
   PARTIAL
   OVERDUE
@@ -649,35 +661,35 @@ enum InvoiceStatus {
 
 // Invoice - created by contractor for payment
 model Invoice {
-  id            String        @id @default(cuid())
-  branchId      String
-  branch        Branch        @relation(fields: [branchId], references: [id], onDelete: Cascade)
-  contractId    String?
-  contract      Contract?     @relation(fields: [contractId], references: [id], onDelete: SetNull)
-  quotationId   String?
-  invoiceNumber String?
-  title         String
-  description   String?
-  items         InvoiceItem[]
-  subtotal      Float         @default(0)
-  taxRate       Float         @default(0)
-  taxAmount     Float         @default(0)
-  total         Float         @default(0)
-  amountPaid    Float         @default(0)
-  status        InvoiceStatus @default(DRAFT)
-  dueDate       DateTime?
-  sentAt        DateTime?
-  paidAt        DateTime?
+  id                   String        @id @default(cuid())
+  branchId             String
+  branch               Branch        @relation(fields: [branchId], references: [id], onDelete: Cascade)
+  contractId           String?
+  contract             Contract?     @relation(fields: [contractId], references: [id], onDelete: SetNull)
+  quotationId          String?
+  invoiceNumber        String?
+  title                String
+  description          String?
+  items                InvoiceItem[]
+  subtotal             Float         @default(0)
+  taxRate              Float         @default(0)
+  taxAmount            Float         @default(0)
+  total                Float         @default(0)
+  amountPaid           Float         @default(0)
+  status               InvoiceStatus @default(DRAFT)
+  dueDate              DateTime?
+  sentAt               DateTime?
+  paidAt               DateTime?
   // Payment proof fields
-  paymentProofUrl       String?   // URL to uploaded file or external link
-  paymentProofType      String?   // 'file' or 'link'
-  paymentProofFileName  String?   // Original filename if file upload
-  paymentSubmittedAt    DateTime? // When client submitted payment proof
-  paymentSubmittedById  String?   // User who submitted payment proof
-  createdById   String
-  createdAt     DateTime      @default(now())
-  updatedAt     DateTime      @updatedAt
-  
+  paymentProofUrl      String? // URL to uploaded file or external link
+  paymentProofType     String? // 'file' or 'link'
+  paymentProofFileName String? // Original filename if file upload
+  paymentSubmittedAt   DateTime? // When client submitted payment proof
+  paymentSubmittedById String? // User who submitted payment proof
+  createdById          String
+  createdAt            DateTime      @default(now())
+  updatedAt            DateTime      @updatedAt
+
   @@index([branchId])
   @@index([status])
   @@index([dueDate])
@@ -701,9 +713,9 @@ model InvoiceItem {
 // Contract statuses
 enum ContractStatus {
   DRAFT
-  PENDING_SIGNATURE  // Awaiting client start signature
-  SIGNED             // Client signed start, project active
-  COMPLETED          // Client signed end, project done
+  PENDING_SIGNATURE // Awaiting client start signature
+  SIGNED // Client signed start, project active
+  COMPLETED // Client signed end, project done
   EXPIRED
   TERMINATED
 }
@@ -715,90 +727,90 @@ model Contract {
   branch              Branch         @relation(fields: [branchId], references: [id], onDelete: Cascade)
   title               String
   description         String?
-  fileName            String?        // PDF attachment file name
-  fileUrl             String?        // PDF attachment URL
+  fileName            String? // PDF attachment file name
+  fileUrl             String? // PDF attachment URL
   fileSize            Int?
-  certificateFileName String?        // Certificate file name
-  certificateUrl      String?        // Certificate URL
-  startSignatureUrl   String?        // Client start signature image
-  startSignedById     String?        // User who signed at start
-  startSignedAt       DateTime?      // When client signed at start
-  endSignatureUrl     String?        // Client end signature image
-  endSignedById       String?        // User who signed at end
-  endSignedAt         DateTime?      // When client signed at end
+  certificateFileName String? // Certificate file name
+  certificateUrl      String? // Certificate URL
+  startSignatureUrl   String? // Client start signature image
+  startSignedById     String? // User who signed at start
+  startSignedAt       DateTime? // When client signed at start
+  endSignatureUrl     String? // Client end signature image
+  endSignedById       String? // User who signed at end
+  endSignedAt         DateTime? // When client signed at end
   totalValue          Float          @default(0)
   startDate           DateTime?
   endDate             DateTime?
-  autoRenew           Boolean        @default(false)  // Auto-renew contract
+  autoRenew           Boolean        @default(false) // Auto-renew contract
   status              ContractStatus @default(DRAFT)
   createdById         String
   createdAt           DateTime       @default(now())
   updatedAt           DateTime       @updatedAt
-  
+
   // Relations
-  checklist           Checklist?     // One checklist per contract (work orders)
-  invoices            Invoice[]      // Invoices linked to this contract
-  certificates        Certificate[]  // Certificates linked to this contract
-  systems             ContractSystem[]   // Scope of work systems
-  payments            ContractPayment[]  // Payment schedule
-  
+  checklist    Checklist? // One checklist per contract (work orders)
+  invoices     Invoice[] // Invoices linked to this contract
+  certificates Certificate[] // Certificates linked to this contract
+  systems      ContractSystem[] // Scope of work systems
+  payments     ContractPayment[] // Payment schedule
+
   @@index([branchId])
   @@index([status])
 }
 
 // Frequency for contract system visits
 enum ContractSystemFrequency {
-  MONTHLY        // 12 visits per year
-  QUARTERLY      // 4 visits per year
-  SEMI_ANNUALLY  // 2 visits per year
-  ANNUALLY       // 1 visit per year
+  MONTHLY // 12 visits per year
+  QUARTERLY // 4 visits per year
+  SEMI_ANNUALLY // 2 visits per year
+  ANNUALLY // 1 visit per year
 }
 
 // Contract System - scope of work items (e.g., Fire Alarm System, HVAC)
 model ContractSystem {
-  id              String                   @id @default(cuid())
+  id              String                  @id @default(cuid())
   contractId      String
-  contract        Contract                 @relation(fields: [contractId], references: [id], onDelete: Cascade)
-  name            String                   // e.g., "Fire Alarm System"
+  contract        Contract                @relation(fields: [contractId], references: [id], onDelete: Cascade)
+  name            String // e.g., "Fire Alarm System"
   description     String?
-  frequency       ContractSystemFrequency  // How often visits occur
-  visitDates      Json                     // Array of visit dates: ["2026-01-15", "2026-04-15", ...]
-  dateMode        String                   @default("MANUAL")  // "MANUAL" or "AUTOMATIC" for visit dates
-  paymentDueDates Json?                    // Array of payment due dates (parallel to visitDates)
-  paymentAmounts  Json?                    // Array of payment amounts (parallel to visitDates)
-  paymentDateMode String                   @default("AUTOMATIC")  // "AUTOMATIC" (+10 days) or "MANUAL"
-  pricePerVisit   Float?                   // Price for each visit (contract total / number of visits)
-  order           Int                      @default(0)  // Display order
-  createdAt       DateTime                 @default(now())
-  updatedAt       DateTime                 @updatedAt
-  
+  frequency       ContractSystemFrequency // How often visits occur
+  visitDates      Json // Array of visit dates: ["2026-01-15", "2026-04-15", ...]
+  dateMode        String                  @default("MANUAL") // "MANUAL" or "AUTOMATIC" for visit dates
+  paymentDueDates Json? // Array of payment due dates (parallel to visitDates)
+  paymentAmounts  Json? // Array of payment amounts (parallel to visitDates)
+  paymentDateMode String                  @default("AUTOMATIC") // "AUTOMATIC" (+10 days) or "MANUAL"
+  pricePerVisit   Float? // Price for each visit (contract total / number of visits)
+  order           Int                     @default(0) // Display order
+  createdAt       DateTime                @default(now())
+  updatedAt       DateTime                @updatedAt
+
   // Work orders generated from this system
-  workOrders  ChecklistItem[]
-  
+  workOrders ChecklistItem[]
+
   @@index([contractId])
 }
 
 // Contract Payment - payment schedule
 model ContractPayment {
-  id          String    @id @default(cuid())
-  contractId  String
-  contract    Contract  @relation(fields: [contractId], references: [id], onDelete: Cascade)
-  paymentNo   Int       // 1, 2, 3, 4...
-  dueDate     DateTime?
-  amount      Float?    // Can be null/blank initially
-  status      String    @default("PENDING")  // PENDING, PENDING_VERIFICATION, PAID
-  paidAt      DateTime?
-  order       Int       @default(0)  // Display order
-  
+  id         String    @id @default(cuid())
+  contractId String
+  contract   Contract  @relation(fields: [contractId], references: [id], onDelete: Cascade)
+  paymentNo  Int // 1, 2, 3, 4...
+  dueDate    DateTime?
+  amount     Float? // Can be null/blank initially
+  status     String    @default("PENDING") // PENDING, PENDING_VERIFICATION, PAID
+  paidAt     DateTime?
+  order      Int       @default(0) // Display order
+
   // Payment proof fields
-  paymentProofUrl       String?
-  paymentProofType      String?   // TRANSFER, CASH, CHECK, etc.
-  paymentProofFileName  String?
-  paymentSubmittedAt    DateTime?
-  
-  createdAt   DateTime  @default(now())
-  updatedAt   DateTime  @updatedAt
-  
+  paymentProofUrl      String?
+  paymentProofType     String? // TRANSFER, CASH, CHECK, etc.
+  paymentProofFileName String?
+  paymentSubmittedAt   DateTime?
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
   @@index([contractId])
   @@index([dueDate])
   @@index([status])
@@ -813,33 +825,33 @@ enum ChecklistStatus {
 
 // Checklist item stages (for Kanban board)
 enum ChecklistItemStage {
-  SCHEDULED      // Task confirmed with date
-  IN_PROGRESS    // Technician working on it
-  FOR_REVIEW     // Work done, awaiting client confirmation
-  COMPLETED      // Task closed
-  ARCHIVED       // Soft deleted (moved to archive)
+  SCHEDULED // Task confirmed with date
+  IN_PROGRESS // Technician working on it
+  FOR_REVIEW // Work done, awaiting client confirmation
+  COMPLETED // Task closed
+  ARCHIVED // Soft deleted (moved to archive)
 }
 
 // Checklist item types
 enum ChecklistItemType {
-  SCHEDULED      // Part of original contract
-  ADHOC          // Added during contract period
+  SCHEDULED // Part of original contract
+  ADHOC // Added during contract period
 }
 
 // Payment status for work orders
 enum PaymentStatus {
-  UNPAID                // Not yet paid
-  PENDING_VERIFICATION  // Client submitted proof, awaiting contractor verification
-  PAID                  // Contractor verified payment
+  UNPAID // Not yet paid
+  PENDING_VERIFICATION // Client submitted proof, awaiting contractor verification
+  PAID // Contractor verified payment
 }
 
 // Recurring frequency for work orders
 enum RecurringType {
-  ONCE           // One-time work order
-  MONTHLY        // Repeats every month
-  QUARTERLY      // Repeats every 3 months
-  SEMI_ANNUALLY  // Repeats every 6 months
-  ANNUALLY       // Repeats every 12 months
+  ONCE // One-time work order
+  MONTHLY // Repeats every month
+  QUARTERLY // Repeats every 3 months
+  SEMI_ANNUALLY // Repeats every 6 months
+  ANNUALLY // Repeats every 12 months
 }
 
 // Checklist - work orders grouped by contract or standalone (adhoc)
@@ -847,7 +859,7 @@ model Checklist {
   id            String          @id @default(cuid())
   branchId      String
   branch        Branch          @relation(fields: [branchId], references: [id], onDelete: Cascade)
-  contractId    String?         @unique  // One checklist per contract, null for adhoc
+  contractId    String?         @unique // One checklist per contract, null for adhoc
   contract      Contract?       @relation(fields: [contractId], references: [id], onDelete: SetNull)
   title         String
   description   String?
@@ -859,7 +871,7 @@ model Checklist {
   createdById   String
   createdAt     DateTime        @default(now())
   updatedAt     DateTime        @updatedAt
-  
+
   @@index([branchId])
   @@index([contractId])
 }
@@ -873,109 +885,109 @@ model ChecklistItem {
   notes           String?
   stage           ChecklistItemStage @default(SCHEDULED)
   type            ChecklistItemType  @default(SCHEDULED)
-  workOrderType   WorkOrderType?     // Service, Inspection, Maintenance, etc.
+  workOrderType   WorkOrderType? // Service, Inspection, Maintenance, etc.
   recurringType   RecurringType      @default(ONCE)
-  parentItemId    String?            // For recurring: links to original work order
-  occurrenceIndex Int?               // For recurring: which occurrence (1, 2, 3...)
-  workOrderNumber Int?               // Human-readable number: WO-0001
+  parentItemId    String? // For recurring: links to original work order
+  occurrenceIndex Int? // For recurring: which occurrence (1, 2, 3...)
+  workOrderNumber Int? // Human-readable number: WO-0001
   scheduledDate   DateTime?
   price           Float?
   isCompleted     Boolean            @default(false)
-  completedAt     DateTime?          // When work order was completed (moved to COMPLETED stage)
+  completedAt     DateTime? // When work order was completed (moved to COMPLETED stage)
   order           Int                @default(0)
-  
+
   // Link to original request (if created from request)
-  linkedRequestId String?            // Request ID that created this work order
-  
+  linkedRequestId String? // Request ID that created this work order
+
   // Link to contract system (if created from contract)
-  contractSystemId String?           // Contract system that generated this work order
-  contractSystem   ContractSystem?   @relation(fields: [contractSystemId], references: [id])
-  visitIndex       Int?              // Which visit number (0-indexed) for payment tracking
-  paymentDueDate   DateTime?         // Payment due date for this contract work order
-  
+  contractSystemId String? // Contract system that generated this work order
+  contractSystem   ContractSystem? @relation(fields: [contractSystemId], references: [id])
+  visitIndex       Int? // Which visit number (0-indexed) for payment tracking
+  paymentDueDate   DateTime? // Payment due date for this contract work order
+
   // Assignment
-  assignedTo      String?            // User ID of assigned team member
-  
+  assignedTo String? // User ID of assigned team member
+
   // Report Fields - Universal (ALL work order types)
-  inspectionDate        DateTime?     // When work was performed
-  problemScope          String?       // Problem reported / Scope of work
-  findings              String?       // What was discovered
-  actionTaken           String?       // What was done
-  systemStatus          SystemStatus? // Working, NeedsAttention, Critical
-  technicianNotes       String?       // Optional technician notes
-  
+  inspectionDate  DateTime? // When work was performed
+  problemScope    String? // Problem reported / Scope of work
+  findings        String? // What was discovered
+  actionTaken     String? // What was done
+  systemStatus    SystemStatus? // Working, NeedsAttention, Critical
+  technicianNotes String? // Optional technician notes
+
   // Report Fields - SERVICE specific
-  partsReplaced         String?       // Parts replaced (text)
-  
+  partsReplaced String? // Parts replaced (text)
+
   // Report Fields - INSTALLATION specific
-  equipmentInstalled    String?       // Equipment installed
-  installQuantity       String?       // Quantity installed
-  completionStatus      CompletionStatus? // Completed, Partial, Pending
-  
+  equipmentInstalled String? // Equipment installed
+  installQuantity    String? // Quantity installed
+  completionStatus   CompletionStatus? // Completed, Partial, Pending
+
   // Report Fields - INSPECTION specific
-  areasInspected        String?       // Areas inspected
-  systemsChecked        Json?         // Array of systems inspected ["Fire Alarm", "Sprinklers", ...]
-  deficiencies          String?       // Problems found
-  recommendations       String?       // What should be done
-  inspectionResult      InspectionResult? // Passed, AttentionRequired, Failed
-  
+  areasInspected   String? // Areas inspected
+  systemsChecked   Json? // Array of systems inspected ["Fire Alarm", "Sprinklers", ...]
+  deficiencies     String? // Problems found
+  recommendations  String? // What should be done
+  inspectionResult InspectionResult? // Passed, AttentionRequired, Failed
+
   // Report Fields - MAINTENANCE specific
-  systemsMaintained     String?       // Systems maintained
-  maintenancePerformed  String?       // Work performed
-  partsServiced         String?       // Parts serviced
-  testResult            TestResult?   // Passed, Failed, Partial
-  nextMaintenanceDate   DateTime?     // Next scheduled maintenance
-  
+  systemsMaintained    String? // Systems maintained
+  maintenancePerformed String? // Work performed
+  partsServiced        String? // Parts serviced
+  testResult           TestResult? // Passed, Failed, Partial
+  nextMaintenanceDate  DateTime? // Next scheduled maintenance
+
   // Legacy field for backward compatibility
-  reportData            Json?         // Legacy: service-type-specific fields
-  
+  reportData Json? // Legacy: service-type-specific fields
+
   // Signatures
-  technicianSignature   String?       // URL to technician signature image
-  technicianSignedAt    DateTime?     // When technician signed
-  technicianSignedById  String?       // Technician user ID
-  supervisorSignature   String?       // URL to supervisor signature image
-  supervisorSignedAt    DateTime?     // When supervisor signed
-  supervisorSignedById  String?       // Supervisor user ID
-  clientSignature       String?       // URL to client signature image (accepting work)
-  clientSignedAt        DateTime?     // When client signed
-  clientSignedById      String?       // Client user ID who signed
-  
+  technicianSignature  String? // URL to technician signature image
+  technicianSignedAt   DateTime? // When technician signed
+  technicianSignedById String? // Technician user ID
+  supervisorSignature  String? // URL to supervisor signature image
+  supervisorSignedAt   DateTime? // When supervisor signed
+  supervisorSignedById String? // Supervisor user ID
+  clientSignature      String? // URL to client signature image (accepting work)
+  clientSignedAt       DateTime? // When client signed
+  clientSignedById     String? // Client user ID who signed
+
   // Report generation
-  reportGeneratedAt     DateTime?     // When PDF report was generated
-  reportUrl             String?       // URL to generated report PDF
-  
+  reportGeneratedAt DateTime? // When PDF report was generated
+  reportUrl         String? // URL to generated report PDF
+
   // Photos
-  photos                InspectionPhoto[]
-  
+  photos InspectionPhoto[]
+
   // Certificates generated from this work order
-  certificates          Certificate[]
-  
+  certificates Certificate[]
+
   // Payment tracking
-  paymentStatus           PaymentStatus  @default(UNPAID)
-  paymentProofUrl         String?        // URL to uploaded image/PDF or external link
-  paymentProofType        String?        // 'file' or 'link'
-  paymentProofFileName    String?        // Original filename if file upload
-  paymentSubmittedAt      DateTime?      // When client submitted payment proof
-  paymentSubmittedById    String?        // User ID who submitted payment
-  paymentVerifiedAt       DateTime?      // When contractor verified payment
-  paymentVerifiedById     String?        // User ID who verified payment
-  paymentVerifiedSignature String?       // Contractor signature (base64 image) for verification
-  
+  paymentStatus            PaymentStatus @default(UNPAID)
+  paymentProofUrl          String? // URL to uploaded image/PDF or external link
+  paymentProofType         String? // 'file' or 'link'
+  paymentProofFileName     String? // Original filename if file upload
+  paymentSubmittedAt       DateTime? // When client submitted payment proof
+  paymentSubmittedById     String? // User ID who submitted payment
+  paymentVerifiedAt        DateTime? // When contractor verified payment
+  paymentVerifiedById      String? // User ID who verified payment
+  paymentVerifiedSignature String? // Contractor signature (base64 image) for verification
+
   // Soft delete (Archive)
-  deletedAt       DateTime?          // When moved to archive
-  deletedBy       String?            // User ID who archived it
-  deletedReason   String?            // Optional reason for archiving
-  
+  deletedAt     DateTime? // When moved to archive
+  deletedBy     String? // User ID who archived it
+  deletedReason String? // Optional reason for archiving
+
   // Reschedule tracking
-  rescheduledAt       DateTime?      // When work order was rescheduled
-  rescheduledBy       String?        // User ID who rescheduled
-  rescheduledReason   String?        // Reason for rescheduling
-  previousScheduledDate DateTime?    // Previous scheduled date before reschedule
-  rescheduledNotifiedAt DateTime?    // When client was notified about reschedule (null = not seen)
-  
-  createdAt       DateTime           @default(now())
-  updatedAt       DateTime           @updatedAt
-  
+  rescheduledAt         DateTime? // When work order was rescheduled
+  rescheduledBy         String? // User ID who rescheduled
+  rescheduledReason     String? // Reason for rescheduling
+  previousScheduledDate DateTime? // Previous scheduled date before reschedule
+  rescheduledNotifiedAt DateTime? // When client was notified about reschedule (null = not seen)
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
   @@index([stage])
   @@index([scheduledDate])
   @@index([deletedAt])
@@ -995,7 +1007,7 @@ model InspectionPhoto {
   checklistItem   ChecklistItem @relation(fields: [checklistItemId], references: [id], onDelete: Cascade)
   url             String
   caption         String?
-  photoType       String?       // "before", "during", "after"
+  photoType       String? // "before", "during", "after"
   createdAt       DateTime      @default(now())
 }
 
@@ -1006,22 +1018,22 @@ model Certificate {
   branch      Branch          @relation(fields: [branchId], references: [id], onDelete: Cascade)
   contractId  String?
   contract    Contract?       @relation(fields: [contractId], references: [id], onDelete: SetNull)
-  workOrderId String?         // Link to specific work order if applicable
+  workOrderId String? // Link to specific work order if applicable
   workOrder   ChecklistItem?  @relation(fields: [workOrderId], references: [id], onDelete: SetNull)
-  equipmentId String?         @unique  // FK back to Equipment (if cert is per-item)
+  equipmentId String?         @unique // FK back to Equipment (if cert is per-item)
   equipment   Equipment?      @relation("EquipmentCertificate")
   type        CertificateType
   title       String
   description String?
-  fileUrl     String?         // URL to certificate PDF (optional for auto-generated)
+  fileUrl     String? // URL to certificate PDF (optional for auto-generated)
   issueDate   DateTime
   expiryDate  DateTime?
-  issuedBy    String?         // Who issued (contractor name or "Civil Defense")
-  issuedById  String?         // User ID who created/uploaded
+  issuedBy    String? // Who issued (contractor name or "Civil Defense")
+  issuedById  String? // User ID who created/uploaded
   notes       String?
   createdAt   DateTime        @default(now())
   updatedAt   DateTime        @updatedAt
-  
+
   @@index([branchId])
   @@index([title])
   @@index([type])
@@ -1042,17 +1054,17 @@ enum ActivityType {
 
 // Activity - comments and activity log for branches
 model Activity {
-  id          String       @id @default(cuid())
-  branchId    String
-  branch      Branch       @relation(fields: [branchId], references: [id], onDelete: Cascade)
-  contractId  String?      // Optional link to specific contract
-  type        ActivityType
-  content     String?
-  metadata    String?      // JSON string for additional data
-  createdById String
+  id            String       @id @default(cuid())
+  branchId      String
+  branch        Branch       @relation(fields: [branchId], references: [id], onDelete: Cascade)
+  contractId    String? // Optional link to specific contract
+  type          ActivityType
+  content       String?
+  metadata      String? // JSON string for additional data
+  createdById   String
   createdByRole UserRole
-  createdAt   DateTime     @default(now())
-  
+  createdAt     DateTime     @default(now())
+
   @@index([branchId])
   @@index([contractId])
 }
@@ -1092,48 +1104,53 @@ model BranchRequest {
 
 // Notification types
 enum NotificationType {
-  NEW_REQUEST            // New service request created
-  REQUEST_RECEIVED       // New request from client
-  REQUEST_APPROVED       // Request approved
-  REQUEST_REJECTED       // Request rejected
-  REQUEST_COMMENT        // New comment on a request
-  WORK_ORDER_CREATED     // Work order created
-  WORK_ORDER_STARTED     // Work order moved to IN_PROGRESS
-  WORK_ORDER_FOR_REVIEW  // Work order sent for review
-  WORK_ORDER_COMPLETED   // Work order completed
-  WORK_ORDER_APPROVED    // Client approved work order
-  WORK_ORDER_REJECTED    // Client rejected work order (needs revision)
-  WORK_ORDER_REMINDER    // Upcoming work order reminder
-  WORK_ORDER_ASSIGNED    // Work order assigned to technician
-  WORK_ORDER_PRICE_SET   // Price set for work order
-  SIGNATURE_REQUIRED     // Signature required
-  PAYMENT_SUBMITTED      // Client submitted payment proof
-  PAYMENT_VERIFIED       // Contractor verified payment
-  CONTRACT_SIGNED        // Client signed contract
-  CONTRACT_EXPIRING      // Contract expiring soon
-  PROJECT_APPROVED       // Client approved project
-  CERTIFICATE_GENERATED  // Certificate generated
-  PAYMENT_RECEIVED       // Payment received
-  EQUIPMENT_EXPIRING     // Equipment inspection due soon
-  EQUIPMENT_EXPIRED      // Equipment inspection overdue
-  GENERAL                // General notification
+  NEW_REQUEST // New service request created
+  REQUEST_RECEIVED // New request from client
+  REQUEST_APPROVED // Request approved
+  REQUEST_REJECTED // Request rejected
+  REQUEST_COMMENT // New comment on a request
+  WORK_ORDER_CREATED // Work order created
+  WORK_ORDER_STARTED // Work order moved to IN_PROGRESS
+  WORK_ORDER_FOR_REVIEW // Work order sent for review
+  WORK_ORDER_COMPLETED // Work order completed
+  WORK_ORDER_APPROVED // Client approved work order
+  WORK_ORDER_REJECTED // Client rejected work order (needs revision)
+  WORK_ORDER_REMINDER // Upcoming work order reminder
+  WORK_ORDER_ASSIGNED // Work order assigned to technician
+  WORK_ORDER_PRICE_SET // Price set for work order
+  SIGNATURE_REQUIRED // Signature required
+  PAYMENT_SUBMITTED // Client submitted payment proof
+  PAYMENT_VERIFIED // Contractor verified payment
+  CONTRACT_SIGNED // Client signed contract
+  CONTRACT_EXPIRING // Contract expiring soon
+  PROJECT_APPROVED // Client approved project
+  CERTIFICATE_GENERATED // Certificate generated
+  PAYMENT_RECEIVED // Payment received
+  EQUIPMENT_EXPIRING // Equipment inspection due soon
+  EQUIPMENT_EXPIRED // Equipment inspection overdue
+  GENERAL // General notification
 }
 
 // Notification model for scheduled and triggered notifications
 model Notification {
-  id            String           @id @default(cuid())
-  userId        String           // User to notify
-  type          NotificationType
-  title         String
-  message       String
-  link          String?          // Optional link to navigate to
-  isRead        Boolean          @default(false)
-  relatedId     String?          // Related entity ID (work order, contract, etc.)
-  relatedType   String?          // Type of related entity
-  priority      String           @default("medium") // high, medium, low
-  showPopup     Boolean          @default(false) // Show as popup notification
-  createdAt     DateTime         @default(now())
-  
+  id          String           @id @default(cuid())
+  userId      String // User to notify
+  type        NotificationType
+  title       String
+  message     String
+  link        String? // Optional link to navigate to
+  isRead      Boolean          @default(false)
+  relatedId   String? // Related entity ID (work order, contract, etc.)
+  relatedType String? // Type of related entity
+  priority    String           @default("medium") // high, medium, low
+  showPopup   Boolean          @default(false) // Show as popup notification
+  createdAt   DateTime         @default(now())
+
+  // Set by scheduled jobs to "<userId>:<type>:<relatedId>:<YYYY-MM-DD>" so repeated runs
+  // on the same day collapse via createMany({ skipDuplicates: true }) instead of a
+  // findFirst round-trip per notification.
+  dedupeKey String? @unique
+
   @@index([userId, isRead])
   @@index([userId, createdAt])
   @@index([userId, showPopup, isRead])
@@ -1141,30 +1158,30 @@ model Notification {
 
 // Team Member - contractor's staff (supervisors and technicians)
 model TeamMember {
-  id            String          @id @default(cuid())
-  userId        String          @unique
-  user          User            @relation(fields: [userId], references: [id], onDelete: Cascade)
-  contractorId  String
-  contractor    Contractor      @relation(fields: [contractorId], references: [id], onDelete: Cascade)
-  teamRole      TeamMemberRole
-  jobTitle      String?
-  phone         String?
-  address       String?
-  createdAt     DateTime        @default(now())
-  updatedAt     DateTime        @updatedAt
+  id           String         @id @default(cuid())
+  userId       String         @unique
+  user         User           @relation(fields: [userId], references: [id], onDelete: Cascade)
+  contractorId String
+  contractor   Contractor     @relation(fields: [contractorId], references: [id], onDelete: Cascade)
+  teamRole     TeamMemberRole
+  jobTitle     String?
+  phone        String?
+  address      String?
+  createdAt    DateTime       @default(now())
+  updatedAt    DateTime       @updatedAt
 
   // Which branches this team member can access
-  branchAccess  TeamMemberBranch[]
+  branchAccess TeamMemberBranch[]
 }
 
 // Junction table for TeamMember <-> Branch many-to-many relationship
 model TeamMemberBranch {
-  id            String      @id @default(cuid())
-  teamMemberId  String
-  teamMember    TeamMember  @relation(fields: [teamMemberId], references: [id], onDelete: Cascade)
-  branchId      String
-  branch        Branch      @relation(fields: [branchId], references: [id], onDelete: Cascade)
-  createdAt     DateTime    @default(now())
+  id           String     @id @default(cuid())
+  teamMemberId String
+  teamMember   TeamMember @relation(fields: [teamMemberId], references: [id], onDelete: Cascade)
+  branchId     String
+  branch       Branch     @relation(fields: [branchId], references: [id], onDelete: Cascade)
+  createdAt    DateTime   @default(now())
 
   @@unique([teamMemberId, branchId])
 }
@@ -1187,10 +1204,91 @@ model ContactInquiry {
   message       String
   status        InquiryStatus @default(NEW)
   adminNotes    String?
-  convertedToId String?       // User ID if converted to contractor account
+  convertedToId String? // User ID if converted to contractor account
   createdAt     DateTime      @default(now())
   updatedAt     DateTime      @updatedAt
 
   @@index([status])
+  @@index([createdAt])
+}
+
+// ---------------------------------------------------------------------------
+// Impersonation, file ownership and audit
+// ---------------------------------------------------------------------------
+
+/// A single-use, short-lived permit for an admin to assume a user's identity.
+///
+/// Replaces the previous design, where the browser told NextAuth "this is an
+/// impersonation" via a request-body flag. Because next-auth passes the whole body to
+/// authorize(), that flag was self-asserted and anyone could sign in as anyone without a
+/// password. Now the server issues the token, and authorize() will only skip the password
+/// check for a token it can find here, unconsumed and unexpired.
+model ImpersonationGrant {
+  id           String    @id @default(cuid())
+  token        String    @unique
+  targetUserId String
+  targetUser   User      @relation("ImpersonationTarget", fields: [targetUserId], references: [id], onDelete: Cascade)
+  adminUserId  String // User.id of the acting admin
+  adminEmail   String
+  expiresAt    DateTime
+  consumedAt   DateTime? // non-null once redeemed; a grant is never reusable
+  createdAt    DateTime  @default(now())
+
+  @@index([targetUserId])
+  @@index([expiresAt])
+}
+
+/// Ownership record for every file in object storage.
+///
+/// Uploads used to be written with a public-read ACL and referenced only by their raw
+/// bucket URL, so any authenticated caller could delete any file by guessing a URL and
+/// anyone at all could read one. Access is now mediated: this row says who owns the file
+/// and which branch it belongs to, and both reads and deletes go through a branch-access
+/// check against it.
+model Upload {
+  id           String    @id @default(cuid())
+  key          String    @unique // object key in the bucket
+  fileName     String // original name, for display
+  contentType  String
+  size         Int
+  folder       String // one of the allowed prefixes
+  uploadedById String
+  uploadedBy   User      @relation(fields: [uploadedById], references: [id], onDelete: Cascade)
+  branchId     String? // null for account-level files such as a company logo
+  entityType   String? // e.g. "Certificate", "ContractPayment"
+  entityId     String?
+  createdAt    DateTime  @default(now())
+  deletedAt    DateTime?
+
+  @@index([branchId])
+  @@index([uploadedById])
+  @@index([entityType, entityId])
+  @@index([deletedAt])
+}
+
+/// Durable audit trail.
+///
+/// lib/audit-log.ts has had a commented-out `prisma.auditLog.create` since it was written,
+/// so every audit call logged to stdout and nothing else. Nothing recorded who approved a
+/// contract, verified a payment, or impersonated whom.
+model AuditLog {
+  id           String   @id @default(cuid())
+  eventType    String
+  userId       String?
+  userRole     String?
+  userEmail    String?
+  resourceType String?
+  resourceId   String?
+  action       String
+  details      Json?
+  ipAddress    String?
+  userAgent    String?
+  success      Boolean  @default(true)
+  errorMessage String?
+  createdAt    DateTime @default(now())
+
+  @@index([userId, createdAt])
+  @@index([eventType, createdAt])
+  @@index([resourceType, resourceId])
   @@index([createdAt])
 }
