@@ -24,6 +24,7 @@ import {
   MapPin,
 } from 'lucide-react'
 import Link from 'next/link'
+import { useTranslation } from '@/lib/i18n/use-translation'
 
 // Types for each alert category
 interface DelayedWorkOrder {
@@ -77,6 +78,8 @@ interface ActionCenterTableProps {
 }
 
 export function ActionCenterTable({ userRole }: ActionCenterTableProps) {
+  const { t } = useTranslation()
+  const ta = t.dashboard.actionCenter
   const showClientColumn = userRole === 'CONTRACTOR' || userRole === 'TEAM_MEMBER'
   const [data, setData] = useState<ActionCenterData>({
     delayedWorkOrders: [],
@@ -97,10 +100,10 @@ export function ActionCenterTable({ userRole }: ActionCenterTableProps) {
           setData(result)
           setError('')
         } else {
-          setError('Failed to load data')
+          setError(ta.failedToLoad)
         }
       } catch {
-        setError('Failed to fetch data')
+        setError(ta.failedToFetch)
       } finally {
         setLoading(false)
       }
@@ -125,7 +128,7 @@ export function ActionCenterTable({ userRole }: ActionCenterTableProps) {
         <CardHeader>
           <CardTitle className="flex items-center gap-2">
             <AlertTriangle className="h-5 w-5 text-amber-600" />
-            Action Center
+            {ta.actionCenter}
           </CardTitle>
         </CardHeader>
         <CardContent>
@@ -156,14 +159,14 @@ export function ActionCenterTable({ userRole }: ActionCenterTableProps) {
           <div>
             <CardTitle className="flex items-center gap-2 text-amber-700">
               <AlertTriangle className="h-5 w-5" />
-              Action Center
+              {ta.actionCenter}
             </CardTitle>
             <CardDescription>
-              Items requiring your attention
+              {ta.itemsRequiringAttention}
             </CardDescription>
           </div>
           <Badge variant="destructive" className="text-sm">
-            {totalAlerts} {totalAlerts === 1 ? 'Alert' : 'Alerts'}
+            {totalAlerts} {totalAlerts === 1 ? ta.alert : ta.alerts}
           </Badge>
         </div>
       </CardHeader>
@@ -172,7 +175,7 @@ export function ActionCenterTable({ userRole }: ActionCenterTableProps) {
           <TabsList className="w-full justify-start mb-4">
             <TabsTrigger value="delayed-work-orders" className="flex items-center gap-2">
               <CalendarX className="h-4 w-4" />
-              Delayed Work Orders
+              {ta.delayedWorkOrders}
               {delayedCount > 0 && (
                 <Badge variant="destructive" className="ml-1 h-5 min-w-5 p-0 flex items-center justify-center text-xs">
                   {delayedCount}
@@ -181,7 +184,7 @@ export function ActionCenterTable({ userRole }: ActionCenterTableProps) {
             </TabsTrigger>
             <TabsTrigger value="expiring-equipment" className="flex items-center gap-2">
               <Tag className="h-4 w-4" />
-              Expiring Equipment
+              {ta.expiringEquipment}
               {equipmentCount > 0 && (
                 <Badge className="ml-1 h-5 min-w-5 p-0 flex items-center justify-center text-xs bg-amber-500">
                   {equipmentCount}
@@ -191,7 +194,7 @@ export function ActionCenterTable({ userRole }: ActionCenterTableProps) {
             {userRole === 'CONTRACTOR' && (
               <TabsTrigger value="expiring-contracts" className="flex items-center gap-2">
                 <FileCheck className="h-4 w-4" />
-                Expiring Contracts
+                {ta.expiringContracts}
                 {contractsCount > 0 && (
                   <Badge className="ml-1 h-5 min-w-5 p-0 flex items-center justify-center text-xs bg-amber-500">
                     {contractsCount}
@@ -206,20 +209,20 @@ export function ActionCenterTable({ userRole }: ActionCenterTableProps) {
             {delayedCount === 0 ? (
               <div className="text-center py-8 text-muted-foreground">
                 <CalendarX className="h-10 w-10 mx-auto mb-2 opacity-30" />
-                <p>No delayed work orders</p>
+                <p>{ta.noDelayedWorkOrders}</p>
               </div>
             ) : (
               <div className="rounded-md border">
                 <Table>
                   <TableHeader>
                     <TableRow>
-                      <TableHead>WO #</TableHead>
-                      {showClientColumn && <TableHead>Client</TableHead>}
-                      <TableHead>Branch</TableHead>
-                      <TableHead>Work Order</TableHead>
-                      <TableHead>Scheduled Date</TableHead>
-                      <TableHead>Days Overdue</TableHead>
-                      {showClientColumn && <TableHead>Assigned To</TableHead>}
+                      <TableHead>{ta.woNumber}</TableHead>
+                      {showClientColumn && <TableHead>{ta.client}</TableHead>}
+                      <TableHead>{ta.branch}</TableHead>
+                      <TableHead>{ta.workOrder}</TableHead>
+                      <TableHead>{ta.scheduledDate}</TableHead>
+                      <TableHead>{ta.daysOverdue}</TableHead>
+                      {showClientColumn && <TableHead>{ta.assignedTo}</TableHead>}
                       <TableHead className="w-[50px]"></TableHead>
                     </TableRow>
                   </TableHeader>
@@ -251,12 +254,12 @@ export function ActionCenterTable({ userRole }: ActionCenterTableProps) {
                         </TableCell>
                         <TableCell>
                           <Badge variant="destructive">
-                            {wo.daysOverdue} {wo.daysOverdue === 1 ? 'day' : 'days'}
+                            {wo.daysOverdue} {wo.daysOverdue === 1 ? ta.day : ta.days}
                           </Badge>
                         </TableCell>
                         {showClientColumn && (
                           <TableCell className="text-muted-foreground">
-                            {wo.assignedTo || 'Unassigned'}
+                            {wo.assignedTo || ta.unassigned}
                           </TableCell>
                         )}
                         <TableCell>
@@ -279,20 +282,20 @@ export function ActionCenterTable({ userRole }: ActionCenterTableProps) {
             {equipmentCount === 0 ? (
               <div className="text-center py-8 text-muted-foreground">
                 <Tag className="h-10 w-10 mx-auto mb-2 opacity-30" />
-                <p>No expiring equipment</p>
+                <p>{ta.noExpiringEquipment}</p>
               </div>
             ) : (
               <div className="rounded-md border">
                 <Table>
                   <TableHeader>
                     <TableRow>
-                      {showClientColumn && <TableHead>Client</TableHead>}
-                      <TableHead>Branch</TableHead>
-                      <TableHead>Equipment #</TableHead>
-                      <TableHead>Type</TableHead>
-                      {userRole === 'CLIENT' && <TableHead>Location</TableHead>}
-                      <TableHead>Expiry Date</TableHead>
-                      <TableHead>Status</TableHead>
+                      {showClientColumn && <TableHead>{ta.client}</TableHead>}
+                      <TableHead>{ta.branch}</TableHead>
+                      <TableHead>{ta.equipmentNumber}</TableHead>
+                      <TableHead>{ta.type}</TableHead>
+                      {userRole === 'CLIENT' && <TableHead>{ta.location}</TableHead>}
+                      <TableHead>{ta.expiryDate}</TableHead>
+                      <TableHead>{ta.status}</TableHead>
                       <TableHead className="w-[50px]"></TableHead>
                     </TableRow>
                   </TableHeader>
@@ -333,10 +336,10 @@ export function ActionCenterTable({ userRole }: ActionCenterTableProps) {
                         </TableCell>
                         <TableCell>
                           {eq.isExpired ? (
-                            <Badge variant="destructive">Expired</Badge>
+                            <Badge variant="destructive">{ta.expired}</Badge>
                           ) : (
                             <Badge className="bg-amber-100 text-amber-700">
-                              {eq.daysLeft} {eq.daysLeft === 1 ? 'day' : 'days'} left
+                              {eq.daysLeft} {eq.daysLeft === 1 ? ta.dayLeft : ta.daysLeft}
                             </Badge>
                           )}
                         </TableCell>
@@ -361,19 +364,19 @@ export function ActionCenterTable({ userRole }: ActionCenterTableProps) {
               {contractsCount === 0 ? (
                 <div className="text-center py-8 text-muted-foreground">
                   <FileCheck className="h-10 w-10 mx-auto mb-2 opacity-30" />
-                  <p>No expiring contracts</p>
+                  <p>{ta.noExpiringContracts}</p>
                 </div>
               ) : (
                 <div className="rounded-md border">
                   <Table>
                     <TableHeader>
                       <TableRow>
-                        <TableHead>Client</TableHead>
-                        <TableHead>Branch</TableHead>
-                        <TableHead>Contract Name</TableHead>
-                        <TableHead>End Date</TableHead>
-                        <TableHead>Status</TableHead>
-                        <TableHead>Auto-Renew</TableHead>
+                        <TableHead>{ta.client}</TableHead>
+                        <TableHead>{ta.branch}</TableHead>
+                        <TableHead>{ta.contractName}</TableHead>
+                        <TableHead>{ta.endDate}</TableHead>
+                        <TableHead>{ta.status}</TableHead>
+                        <TableHead>{ta.autoRenew}</TableHead>
                         <TableHead className="w-[50px]"></TableHead>
                       </TableRow>
                     </TableHeader>
@@ -402,21 +405,21 @@ export function ActionCenterTable({ userRole }: ActionCenterTableProps) {
                           </TableCell>
                           <TableCell>
                             {contract.isExpired ? (
-                              <Badge variant="destructive">Expired</Badge>
+                              <Badge variant="destructive">{ta.expired}</Badge>
                             ) : (
                               <Badge className="bg-amber-100 text-amber-700">
-                                {contract.daysLeft} {contract.daysLeft === 1 ? 'day' : 'days'} left
+                                {contract.daysLeft} {contract.daysLeft === 1 ? ta.dayLeft : ta.daysLeft}
                               </Badge>
                             )}
                           </TableCell>
                           <TableCell>
                             {contract.autoRenew ? (
                               <Badge variant="outline" className="text-green-600 border-green-600">
-                                Yes
+                                {ta.yes}
                               </Badge>
                             ) : (
                               <Badge variant="outline" className="text-muted-foreground">
-                                No
+                                {ta.no}
                               </Badge>
                             )}
                           </TableCell>

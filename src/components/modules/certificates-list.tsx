@@ -2,6 +2,7 @@
 
 import { useState, useEffect } from 'react'
 import { useRouter } from 'next/navigation'
+import { useTranslation } from '@/lib/i18n/use-translation'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
@@ -119,6 +120,8 @@ function getExpiryStatus(expiryDate: string | null): { status: 'valid' | 'expiri
 
 export function CertificatesList({ branchId, userRole }: CertificatesListProps) {
   const router = useRouter()
+  const { t } = useTranslation()
+  const tcl = t.dashboard.certificatesList
   const [certificates, setCertificates] = useState<Certificate[]>([])
   const [loading, setLoading] = useState(true)
   const [createDialogOpen, setCreateDialogOpen] = useState(false)
@@ -234,7 +237,7 @@ export function CertificatesList({ branchId, userRole }: CertificatesListProps) 
   }
 
   const handleDeleteCertificate = async (certificateId: string) => {
-    if (!confirm('Are you sure you want to delete this certificate?')) return
+    if (!confirm(tcl.deleteConfirm)) return
 
     setDeleting(true)
     try {
@@ -357,10 +360,10 @@ export function CertificatesList({ branchId, userRole }: CertificatesListProps) 
                       <TableCell>
                         {certificate.equipment ? (
                           <Badge variant="outline" className="text-xs">
-                            {certificate.equipment.equipmentNumber} · {certificate.equipment.equipmentType.replace(/_/g, ' ')}
+                            {certificate.equipment.equipmentNumber} · {certificate.equipment.equipmentType === 'OTHER' ? t.dashboard.equipmentList.other : certificate.equipment.equipmentType.replace(/_/g, ' ')}
                           </Badge>
                         ) : (
-                          <span className="text-xs text-muted-foreground">Site Certificate</span>
+                          <span className="text-xs text-muted-foreground">{tcl.siteCertificate}</span>
                         )}
                       </TableCell>
                       <TableCell>
@@ -369,26 +372,26 @@ export function CertificatesList({ branchId, userRole }: CertificatesListProps) 
                       <TableCell>
                         {certificate.expiryDate
                           ? new Date(certificate.expiryDate).toLocaleDateString()
-                          : <span className="text-muted-foreground">No expiry</span>
+                          : <span className="text-muted-foreground">{tcl.noExpiry}</span>
                         }
                       </TableCell>
                       <TableCell>
                         {expiryInfo.status === 'expired' && (
                           <Badge variant="destructive" className="flex items-center gap-1 w-fit">
                             <AlertTriangle className="h-3 w-3" />
-                            Expired
+                            {tcl.expired}
                           </Badge>
                         )}
                         {expiryInfo.status === 'expiring' && (
                           <Badge className="bg-orange-100 text-orange-700 flex items-center gap-1 w-fit">
                             <Clock className="h-3 w-3" />
-                            {expiryInfo.daysLeft} days left
+                            {expiryInfo.daysLeft} {tcl.daysLeft}
                           </Badge>
                         )}
                         {expiryInfo.status === 'valid' && (
                           <Badge className="bg-green-100 text-green-700 flex items-center gap-1 w-fit">
                             <CheckCircle className="h-3 w-3" />
-                            Valid
+                            {tcl.valid}
                           </Badge>
                         )}
                         {expiryInfo.status === 'none' && (
@@ -503,7 +506,7 @@ export function CertificatesList({ branchId, userRole }: CertificatesListProps) 
               </div>
 
               <div className="space-y-2">
-                <Label htmlFor="expiryDate">Expiry Date</Label>
+                <Label htmlFor="expiryDate">{tcl.expiry}</Label>
                 <Input
                   id="expiryDate"
                   type="date"
@@ -577,21 +580,21 @@ export function CertificatesList({ branchId, userRole }: CertificatesListProps) 
 
               {selectedCertificate.certificateNumber && (
                 <div>
-                  <p className="text-sm text-muted-foreground">Certificate Number</p>
+                  <p className="text-sm text-muted-foreground">{tcl.certificateNumber}</p>
                   <p className="font-medium">#{selectedCertificate.certificateNumber}</p>
                 </div>
               )}
 
               <div className="grid grid-cols-2 gap-4">
                 <div>
-                  <p className="text-sm text-muted-foreground">Issue Date</p>
+                  <p className="text-sm text-muted-foreground">{tcl.issueDate}</p>
                   <p className="font-medium flex items-center gap-1">
                     <Calendar className="h-4 w-4" />
                     {new Date(selectedCertificate.issueDate).toLocaleDateString()}
                   </p>
                 </div>
                 <div>
-                  <p className="text-sm text-muted-foreground">Expiry Date</p>
+                  <p className="text-sm text-muted-foreground">{tcl.expiry}</p>
                   {selectedCertificate.expiryDate ? (
                     <>
                       <p className="font-medium flex items-center gap-1">
@@ -601,46 +604,46 @@ export function CertificatesList({ branchId, userRole }: CertificatesListProps) 
                       {(() => {
                         const expiryInfo = getExpiryStatus(selectedCertificate.expiryDate)
                         if (expiryInfo.status === 'expired') {
-                          return <Badge variant="destructive" className="mt-1">Expired</Badge>
+                          return <Badge variant="destructive" className="mt-1">{tcl.expired}</Badge>
                         }
                         if (expiryInfo.status === 'expiring') {
-                          return <Badge className="bg-orange-100 text-orange-700 mt-1">{expiryInfo.daysLeft} days left</Badge>
+                          return <Badge className="bg-orange-100 text-orange-700 mt-1">{expiryInfo.daysLeft} {tcl.daysLeft}</Badge>
                         }
-                        return <Badge className="bg-green-100 text-green-700 mt-1">Valid</Badge>
+                        return <Badge className="bg-green-100 text-green-700 mt-1">{tcl.valid}</Badge>
                       })()}
                     </>
                   ) : (
-                    <p className="text-muted-foreground">No expiry</p>
+                    <p className="text-muted-foreground">{tcl.noExpiry}</p>
                   )}
                 </div>
               </div>
 
               {selectedCertificate.description && (
                 <div>
-                  <p className="text-sm text-muted-foreground">Description</p>
+                  <p className="text-sm text-muted-foreground">{tcl.description}</p>
                   <p className="text-sm">{selectedCertificate.description}</p>
                 </div>
               )}
 
               {selectedCertificate.project && (
                 <div>
-                  <p className="text-sm text-muted-foreground">Related Project</p>
+                  <p className="text-sm text-muted-foreground">{tcl.relatedProject}</p>
                   <p className="text-sm font-medium">{selectedCertificate.project.title}</p>
                 </div>
               )}
 
               {selectedCertificate.equipment && (
                 <div>
-                  <p className="text-sm text-muted-foreground">Covers Equipment</p>
+                  <p className="text-sm text-muted-foreground">{tcl.coversEquipment}</p>
                   <p className="text-sm font-medium">
-                    {selectedCertificate.equipment.equipmentNumber} ({selectedCertificate.equipment.equipmentType.replace(/_/g, ' ')})
+                    {selectedCertificate.equipment.equipmentNumber} ({selectedCertificate.equipment.equipmentType === 'OTHER' ? t.dashboard.equipmentList.other : selectedCertificate.equipment.equipmentType.replace(/_/g, ' ')})
                   </p>
                 </div>
               )}
 
               {selectedCertificate.notes && (
                 <div>
-                  <p className="text-sm text-muted-foreground">Notes</p>
+                  <p className="text-sm text-muted-foreground">{tcl.notes}</p>
                   <p className="text-sm">{selectedCertificate.notes}</p>
                 </div>
               )}

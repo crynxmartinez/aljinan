@@ -1,6 +1,7 @@
 'use client'
 
 import { useState } from 'react'
+import { useTranslation } from '@/lib/i18n/use-translation'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
@@ -41,6 +42,8 @@ export function ContractAttachmentsSection({
   isContractor,
   onUpdate,
 }: ContractAttachmentsSectionProps) {
+  const { t } = useTranslation()
+  const tca = t.dashboard.contractAttachments
   const [pdfDialogOpen, setPdfDialogOpen] = useState(false)
   const [saving, setSaving] = useState(false)
   const [error, setError] = useState('')
@@ -105,14 +108,14 @@ export function ContractAttachmentsSection({
                 )} />
               </div>
               <div className="flex-1 min-w-0">
-                <h4 className="font-medium text-sm">Contract PDF</h4>
+                <h4 className="font-medium text-sm">{tca.contractPdf}</h4>
                 {fileUrl ? (
                   <p className="text-xs text-muted-foreground truncate mt-0.5">
-                    {fileName || 'Document attached'}
+                    {fileName || tca.documentAttached}
                   </p>
                 ) : (
                   <p className="text-xs text-muted-foreground mt-0.5">
-                    No document attached
+                    {tca.noDocumentAttached}
                   </p>
                 )}
               </div>
@@ -128,7 +131,7 @@ export function ContractAttachmentsSection({
                     onClick={() => window.open(fileUrl, '_blank')}
                   >
                     <ExternalLink className="h-3 w-3 mr-1" />
-                    View
+                    {tca.view}
                   </Button>
                   <Button
                     variant="outline"
@@ -142,7 +145,7 @@ export function ContractAttachmentsSection({
                     }}
                   >
                     <Download className="h-3 w-3 mr-1" />
-                    Download
+                    {tca.download}
                   </Button>
                   {isContractor && (
                     <Button
@@ -162,11 +165,11 @@ export function ContractAttachmentsSection({
                   onClick={openPdfDialog}
                 >
                   <Upload className="h-3 w-3 mr-1" />
-                  Attach PDF
+                  {tca.attachPdf}
                 </Button>
               ) : (
                 <p className="text-xs text-muted-foreground italic">
-                  Contractor will attach document
+                  {tca.contractorWillAttach}
                 </p>
               )}
             </div>
@@ -180,10 +183,10 @@ export function ContractAttachmentsSection({
           <DialogHeader>
             <DialogTitle className="flex items-center gap-2">
               <FileText className="h-5 w-5" />
-              {fileUrl ? 'Update Contract PDF' : 'Attach Contract PDF'}
+              {fileUrl ? tca.updateContractPdf : tca.attachContractPdf}
             </DialogTitle>
             <DialogDescription>
-              Enter the URL where the contract PDF is hosted (Google Drive, Dropbox, etc.)
+              {tca.pdfUrlDesc}
             </DialogDescription>
           </DialogHeader>
 
@@ -195,16 +198,16 @@ export function ContractAttachmentsSection({
 
           <div className="space-y-4">
             <div className="space-y-2">
-              <Label htmlFor="pdfFileName">File Name</Label>
+              <Label htmlFor="pdfFileName">{tca.fileName}</Label>
               <Input
                 id="pdfFileName"
                 value={pdfFileName}
                 onChange={(e) => setPdfFileName(e.target.value)}
-                placeholder="e.g., Service Agreement 2026.pdf"
+                placeholder={tca.fileNamePlaceholder}
               />
             </div>
             <div className="space-y-2">
-              <Label htmlFor="pdfUrl">PDF URL *</Label>
+              <Label htmlFor="pdfUrl">{tca.pdfUrl}</Label>
               <div className="flex gap-2">
                 <div className="relative flex-1">
                   <LinkIcon className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
@@ -223,7 +226,7 @@ export function ContractAttachmentsSection({
 
           <DialogFooter>
             <Button variant="outline" onClick={() => setPdfDialogOpen(false)}>
-              Cancel
+              {tca.cancel}
             </Button>
             <Button onClick={handleSavePdf} disabled={saving || !pdfUrl}>
               {saving ? (
@@ -231,7 +234,7 @@ export function ContractAttachmentsSection({
               ) : (
                 <FileCheck className="mr-2 h-4 w-4" />
               )}
-              Save
+              {tca.save}
             </Button>
           </DialogFooter>
         </DialogContent>

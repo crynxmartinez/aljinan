@@ -1,6 +1,7 @@
 'use client'
 
 import { useState, useMemo } from 'react'
+import { useTranslation } from '@/lib/i18n/use-translation'
 import {
   Dialog,
   DialogContent,
@@ -118,6 +119,8 @@ export function ColumnDetailModal({
   items,
   onItemClick,
 }: ColumnDetailModalProps) {
+  const { t } = useTranslation()
+  const tcd = t.dashboard.columnDetail
   const [searchQuery, setSearchQuery] = useState('')
   const [selectedItems, setSelectedItems] = useState<Set<string>>(new Set())
   const [sortField, setSortField] = useState<SortField>('date')
@@ -249,21 +252,21 @@ export function ColumnDetailModal({
         return (
           <Badge variant="destructive" className="text-xs">
             <AlertCircle className="h-3 w-3 mr-1" />
-            {daysOverdue}d overdue
+            {tcd.daysOverdue.replace('{count}', String(daysOverdue))}
           </Badge>
         )
       case 'due-today':
         return (
           <Badge className="text-xs bg-orange-500">
             <Clock className="h-3 w-3 mr-1" />
-            Due today
+            {tcd.dueToday}
           </Badge>
         )
       case 'due-soon':
         return (
           <Badge className="text-xs bg-yellow-500">
             <Clock className="h-3 w-3 mr-1" />
-            Due soon
+            {tcd.dueSoon}
           </Badge>
         )
       default:
@@ -301,13 +304,13 @@ export function ColumnDetailModal({
         <DialogHeader>
           <DialogTitle className="flex items-center gap-2">
             <StageIcon className={stage.color} />
-            {stage.label} Work Orders
+            {stage.label} {tcd.workOrders}
             <Badge variant="secondary" className="ml-2">
-              {stats.total} {stats.total === 1 ? 'item' : 'items'}
+              {stats.total} {stats.total === 1 ? tcd.item : tcd.items}
             </Badge>
           </DialogTitle>
           <DialogDescription>
-            Detailed view of all work orders in this stage
+            {tcd.detailedView}
           </DialogDescription>
         </DialogHeader>
 
@@ -317,28 +320,28 @@ export function ColumnDetailModal({
             <div className="flex items-center gap-2">
               <FileText className="h-4 w-4 text-muted-foreground" />
               <div>
-                <p className="text-xs text-muted-foreground">Total Items</p>
+                <p className="text-xs text-muted-foreground">{tcd.totalItems}</p>
                 <p className="text-lg font-semibold">{stats.total}</p>
               </div>
             </div>
             <div className="flex items-center gap-2">
               <AlertCircle className="h-4 w-4 text-red-500" />
               <div>
-                <p className="text-xs text-muted-foreground">Overdue</p>
+                <p className="text-xs text-muted-foreground">{tcd.overdue}</p>
                 <p className="text-lg font-semibold text-red-600">{stats.overdue}</p>
               </div>
             </div>
             <div className="flex items-center gap-2">
               <Clock className="h-4 w-4 text-orange-500" />
               <div>
-                <p className="text-xs text-muted-foreground">High Priority</p>
+                <p className="text-xs text-muted-foreground">{tcd.highPriority}</p>
                 <p className="text-lg font-semibold text-orange-600">{stats.highPriority}</p>
               </div>
             </div>
             <div className="flex items-center gap-2">
               <Banknote className="h-4 w-4 text-green-500" />
               <div>
-                <p className="text-xs text-muted-foreground">Total Value</p>
+                <p className="text-xs text-muted-foreground">{tcd.totalValue}</p>
                 <p className="text-lg font-semibold text-green-600">{formatCurrency(stats.totalValue)}</p>
               </div>
             </div>
@@ -349,7 +352,7 @@ export function ColumnDetailModal({
             <div className="relative flex-1">
               <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-muted-foreground" />
               <Input
-                placeholder="Search work orders..."
+                placeholder={tcd.searchWorkOrders}
                 value={searchQuery}
                 onChange={(e) => setSearchQuery(e.target.value)}
                 className="pl-9"
@@ -361,9 +364,9 @@ export function ColumnDetailModal({
                 <SelectValue placeholder="Type" />
               </SelectTrigger>
               <SelectContent>
-                <SelectItem value="all">All Types</SelectItem>
-                <SelectItem value="SCHEDULED">Scheduled</SelectItem>
-                <SelectItem value="ADHOC">Ad-hoc</SelectItem>
+                <SelectItem value="all">{tcd.allTypes}</SelectItem>
+                <SelectItem value="SCHEDULED">{tcd.scheduled}</SelectItem>
+                <SelectItem value="ADHOC">{tcd.adhoc}</SelectItem>
               </SelectContent>
             </Select>
 
@@ -372,12 +375,12 @@ export function ColumnDetailModal({
                 <SelectValue placeholder="Work Order Type" />
               </SelectTrigger>
               <SelectContent>
-                <SelectItem value="all">All WO Types</SelectItem>
-                <SelectItem value="SERVICE">Service</SelectItem>
-                <SelectItem value="INSPECTION">Inspection</SelectItem>
-                <SelectItem value="MAINTENANCE">Maintenance</SelectItem>
-                <SelectItem value="INSTALLATION">Installation</SelectItem>
-                <SelectItem value="STICKER_INSPECTION">Sticker Inspection</SelectItem>
+                <SelectItem value="all">{tcd.allWOTypes}</SelectItem>
+                <SelectItem value="SERVICE">{tcd.service}</SelectItem>
+                <SelectItem value="INSPECTION">{tcd.inspection}</SelectItem>
+                <SelectItem value="MAINTENANCE">{tcd.maintenance}</SelectItem>
+                <SelectItem value="INSTALLATION">{tcd.installation}</SelectItem>
+                <SelectItem value="STICKER_INSPECTION">{tcd.stickerInspection}</SelectItem>
               </SelectContent>
             </Select>
 
@@ -386,10 +389,10 @@ export function ColumnDetailModal({
                 <SelectValue />
               </SelectTrigger>
               <SelectContent>
-                <SelectItem value="date">Sort by Date</SelectItem>
-                <SelectItem value="priority">Sort by Priority</SelectItem>
-                <SelectItem value="type">Sort by Type</SelectItem>
-                <SelectItem value="price">Sort by Price</SelectItem>
+                <SelectItem value="date">{tcd.sortByDate}</SelectItem>
+                <SelectItem value="priority">{tcd.sortByPriority}</SelectItem>
+                <SelectItem value="type">{tcd.sortByType}</SelectItem>
+                <SelectItem value="price">{tcd.sortByPrice}</SelectItem>
               </SelectContent>
             </Select>
 
@@ -403,7 +406,7 @@ export function ColumnDetailModal({
 
             <Button variant="outline" size="sm" onClick={handleExport}>
               <Download className="h-4 w-4 mr-2" />
-              Export
+              {tcd.export}
             </Button>
           </div>
 
@@ -418,20 +421,20 @@ export function ColumnDetailModal({
                       onCheckedChange={toggleSelectAll}
                     />
                   </TableHead>
-                  <TableHead>Description</TableHead>
-                  <TableHead>Type</TableHead>
-                  <TableHead>WO Type</TableHead>
-                  <TableHead>Date</TableHead>
-                  <TableHead>Priority</TableHead>
-                  <TableHead>Price</TableHead>
-                  <TableHead>Project</TableHead>
+                  <TableHead>{tcd.description}</TableHead>
+                  <TableHead>{tcd.type}</TableHead>
+                  <TableHead>{tcd.woType}</TableHead>
+                  <TableHead>{tcd.date}</TableHead>
+                  <TableHead>{tcd.priority}</TableHead>
+                  <TableHead>{tcd.price}</TableHead>
+                  <TableHead>{tcd.project}</TableHead>
                 </TableRow>
               </TableHeader>
               <TableBody>
                 {filteredAndSortedItems.length === 0 ? (
                   <TableRow>
                     <TableCell colSpan={8} className="text-center py-8 text-muted-foreground">
-                      No work orders found
+                      {tcd.noWorkOrders}
                     </TableCell>
                   </TableRow>
                 ) : (
@@ -454,18 +457,27 @@ export function ColumnDetailModal({
                       <TableCell>
                         {item.type === 'ADHOC' ? (
                           <Badge variant="outline" className="text-xs border-yellow-300 text-yellow-700">
-                            Ad-hoc
+                            {tcd.adhoc}
                           </Badge>
                         ) : (
                           <Badge variant="outline" className="text-xs border-blue-300 text-blue-700">
-                            Scheduled
+                            {tcd.scheduled}
                           </Badge>
                         )}
                       </TableCell>
                       <TableCell>
                         {item.workOrderType ? (
                           <Badge variant="secondary" className="text-xs">
-                            {item.workOrderType.replace('_', ' ')}
+                            {(() => {
+                              const WO_TYPE_LABELS: Record<string, string> = {
+                                SERVICE: tcd.service,
+                                INSPECTION: tcd.inspection,
+                                MAINTENANCE: tcd.maintenance,
+                                INSTALLATION: tcd.installation,
+                                STICKER_INSPECTION: tcd.stickerInspection,
+                              }
+                              return WO_TYPE_LABELS[item.workOrderType!] || item.workOrderType!.replace('_', ' ')
+                            })()}
                           </Badge>
                         ) : (
                           '-'
@@ -490,11 +502,11 @@ export function ColumnDetailModal({
           {selectedItems.size > 0 && (
             <div className="flex items-center gap-2 p-3 bg-primary/10 rounded-lg border border-primary/20">
               <span className="text-sm font-medium">
-                {selectedItems.size} {selectedItems.size === 1 ? 'item' : 'items'} selected
+                {selectedItems.size} {selectedItems.size === 1 ? tcd.item : tcd.items} {tcd.selected}
               </span>
               <div className="flex-1" />
               <Button variant="outline" size="sm" onClick={() => setSelectedItems(new Set())}>
-                Clear Selection
+                {tcd.clearSelection}
               </Button>
             </div>
           )}

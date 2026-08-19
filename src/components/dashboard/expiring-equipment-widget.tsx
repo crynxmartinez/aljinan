@@ -13,6 +13,7 @@ import {
   MapPin,
 } from 'lucide-react'
 import Link from 'next/link'
+import { useTranslation } from '@/lib/i18n/use-translation'
 
 interface ExpiringEquipment {
   id: string
@@ -32,6 +33,8 @@ interface ExpiringEquipmentWidgetProps {
 }
 
 export function ExpiringEquipmentWidget({ contractorId }: ExpiringEquipmentWidgetProps) {
+  const { t } = useTranslation()
+  const ta = t.dashboard.expiringEquipmentWidget
   const [equipment, setEquipment] = useState<ExpiringEquipment[]>([])
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState('')
@@ -46,10 +49,10 @@ export function ExpiringEquipmentWidget({ contractorId }: ExpiringEquipmentWidge
           setEquipment(data)
           setError('')
         } else {
-          setError('Failed to load equipment')
+          setError(ta.failedToLoadEquipment)
         }
       } catch {
-        setError('Failed to fetch equipment')
+        setError(ta.failedToFetchEquipment)
       } finally {
         setLoading(false)
       }
@@ -67,7 +70,7 @@ export function ExpiringEquipmentWidget({ contractorId }: ExpiringEquipmentWidge
         <CardHeader>
           <CardTitle className="flex items-center gap-2 text-amber-700">
             <Tag className="h-5 w-5" />
-            Equipment Status
+            {ta.equipmentStatus}
           </CardTitle>
         </CardHeader>
         <CardContent>
@@ -94,23 +97,23 @@ export function ExpiringEquipmentWidget({ contractorId }: ExpiringEquipmentWidge
           <div>
             <CardTitle className="flex items-center gap-2 text-amber-700">
               <Tag className="h-5 w-5" />
-              Equipment Alerts
+              {ta.equipmentAlerts}
             </CardTitle>
             <CardDescription>
-              Equipment requiring attention across all branches
+              {ta.equipmentRequiringAttention}
             </CardDescription>
           </div>
           <div className="flex items-center gap-2">
             {expiredCount > 0 && (
               <Badge variant="destructive" className="flex items-center gap-1">
                 <XCircle className="h-3 w-3" />
-                {expiredCount} Expired
+                {expiredCount} {ta.expired}
               </Badge>
             )}
             {expiringSoonCount > 0 && (
               <Badge className="bg-amber-100 text-amber-700 flex items-center gap-1">
                 <Clock className="h-3 w-3" />
-                {expiringSoonCount} Expiring Soon
+                {expiringSoonCount} {ta.expiringSoon}
               </Badge>
             )}
           </div>
@@ -132,12 +135,12 @@ export function ExpiringEquipmentWidget({ contractorId }: ExpiringEquipmentWidge
                   {eq.calculatedStatus === 'EXPIRED' ? (
                     <Badge variant="destructive" className="text-xs">
                       <XCircle className="h-3 w-3 mr-1" />
-                      Expired
+                      {ta.expired}
                     </Badge>
                   ) : (
                     <Badge className="bg-amber-100 text-amber-700 text-xs">
                       <Clock className="h-3 w-3 mr-1" />
-                      Expiring Soon
+                      {ta.expiringSoon}
                     </Badge>
                   )}
                 </div>
@@ -150,7 +153,7 @@ export function ExpiringEquipmentWidget({ contractorId }: ExpiringEquipmentWidge
                   )}
                   {eq.expectedExpiry && (
                     <span>
-                      Expires: {new Date(eq.expectedExpiry).toLocaleDateString()}
+                      {ta.expires} {new Date(eq.expectedExpiry).toLocaleDateString()}
                     </span>
                   )}
                 </div>
@@ -170,7 +173,7 @@ export function ExpiringEquipmentWidget({ contractorId }: ExpiringEquipmentWidge
         </div>
         {equipment.length > 10 && (
           <p className="text-xs text-muted-foreground text-center mt-3">
-            And {equipment.length - 10} more items...
+            {ta.andMoreItems.replace('{count}', String(equipment.length - 10))}
           </p>
         )}
       </CardContent>

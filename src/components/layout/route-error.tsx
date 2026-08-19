@@ -4,6 +4,7 @@ import { useEffect } from 'react'
 import Link from 'next/link'
 import { AlertTriangle } from 'lucide-react'
 import { Button } from '@/components/ui/button'
+import { useTranslation } from '@/lib/i18n/use-translation'
 
 /**
  * Shared body for the per-route-group error boundaries.
@@ -23,6 +24,8 @@ export function RouteError({
   homeHref: string
   homeLabel: string
 }) {
+  const { t } = useTranslation()
+  const ta = t.dashboard.routeError
   useEffect(() => {
     console.error('Route error:', error)
   }, [error])
@@ -34,21 +37,20 @@ export function RouteError({
           <AlertTriangle className="h-6 w-6 text-destructive" />
         </div>
 
-        <h1 className="mb-2 text-xl font-bold">This page could not be loaded</h1>
+        <h1 className="mb-2 text-xl font-bold">{ta.pageCouldNotBeLoaded}</h1>
 
         <p className="mb-6 text-sm text-muted-foreground">
-          Nothing you were working on has been changed. Try again, or head back and open it
-          once more.
+          {ta.nothingChanged}
         </p>
 
         {error.digest && (
           <p className="mb-6 font-mono text-xs text-muted-foreground">
-            Reference: {error.digest}
+            {ta.reference} {error.digest}
           </p>
         )}
 
         <div className="flex items-center justify-center gap-3">
-          <Button onClick={() => reset()}>Try again</Button>
+          <Button onClick={() => reset()}>{ta.tryAgain}</Button>
           <Button variant="outline" asChild>
             <Link href={homeHref}>{homeLabel}</Link>
           </Button>

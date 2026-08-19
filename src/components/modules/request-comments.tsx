@@ -1,15 +1,16 @@
 'use client'
 
 import { useState, useEffect } from 'react'
+import { useTranslation } from '@/lib/i18n/use-translation'
 import { Button } from '@/components/ui/button'
 import { Textarea } from '@/components/ui/textarea'
 import { Badge } from '@/components/ui/badge'
-import { 
-  Loader2, 
-  MessageSquare, 
-  Send, 
-  Pencil, 
-  X, 
+import {
+  Loader2,
+  MessageSquare,
+  Send,
+  Pencil,
+  X,
   Check,
   User,
 } from 'lucide-react'
@@ -35,6 +36,8 @@ interface RequestCommentsProps {
 }
 
 export function RequestComments({ branchId, requestId, currentUserId }: RequestCommentsProps) {
+  const { t } = useTranslation()
+  const trc = t.dashboard.requestComments
   const [comments, setComments] = useState<Comment[]>([])
   const [loading, setLoading] = useState(true)
   const [newComment, setNewComment] = useState('')
@@ -133,22 +136,22 @@ export function RequestComments({ branchId, requestId, currentUserId }: RequestC
     const diffHours = Math.floor(diffMs / 3600000)
     const diffDays = Math.floor(diffMs / 86400000)
 
-    if (diffMins < 1) return 'Just now'
-    if (diffMins < 60) return `${diffMins}m ago`
-    if (diffHours < 24) return `${diffHours}h ago`
-    if (diffDays < 7) return `${diffDays}d ago`
+    if (diffMins < 1) return trc.justNow
+    if (diffMins < 60) return trc.minutesAgo.replace('{count}', String(diffMins))
+    if (diffHours < 24) return trc.hoursAgo.replace('{count}', String(diffHours))
+    if (diffDays < 7) return trc.daysAgo.replace('{count}', String(diffDays))
     return date.toLocaleDateString()
   }
 
   const getRoleBadge = (role: string) => {
     if (role === 'CONTRACTOR') {
-      return <Badge variant="outline" className="text-xs bg-blue-50 text-blue-700 border-blue-200">Contractor</Badge>
+      return <Badge variant="outline" className="text-xs bg-blue-50 text-blue-700 border-blue-200">{trc.contractor}</Badge>
     }
     if (role === 'CLIENT') {
-      return <Badge variant="outline" className="text-xs bg-green-50 text-green-700 border-green-200">Client</Badge>
+      return <Badge variant="outline" className="text-xs bg-green-50 text-green-700 border-green-200">{trc.client}</Badge>
     }
     if (role === 'TEAM_MEMBER' || role === 'SUPERVISOR') {
-      return <Badge variant="outline" className="text-xs bg-purple-50 text-purple-700 border-purple-200">Team</Badge>
+      return <Badge variant="outline" className="text-xs bg-purple-50 text-purple-700 border-purple-200">{trc.team}</Badge>
     }
     return null
   }
@@ -165,7 +168,7 @@ export function RequestComments({ branchId, requestId, currentUserId }: RequestC
     <div className="space-y-4">
       <div className="flex items-center gap-2">
         <MessageSquare className="h-4 w-4 text-muted-foreground" />
-        <h4 className="font-medium text-sm">Comments</h4>
+        <h4 className="font-medium text-sm">{trc.comments}</h4>
         {comments.length > 0 && (
           <Badge variant="secondary" className="text-xs">{comments.length}</Badge>
         )}
@@ -181,17 +184,16 @@ export function RequestComments({ branchId, requestId, currentUserId }: RequestC
       <div className="space-y-3 max-h-[300px] overflow-y-auto">
         {comments.length === 0 ? (
           <p className="text-sm text-muted-foreground text-center py-4">
-            No comments yet. Start the conversation!
+            {trc.noComments}
           </p>
         ) : (
           comments.map((comment) => (
-            <div 
-              key={comment.id} 
-              className={`p-3 rounded-lg border ${
-                comment.createdBy.id === currentUserId 
-                  ? 'bg-primary/5 border-primary/20 ml-4' 
+            <div
+              key={comment.id}
+              className={`p-3 rounded-lg border ${comment.createdBy.id === currentUserId
+                  ? 'bg-primary/5 border-primary/20 ml-4'
                   : 'bg-muted/50 mr-4'
-              }`}
+                }`}
             >
               <div className="flex items-start justify-between gap-2">
                 <div className="flex items-center gap-2">
@@ -207,7 +209,7 @@ export function RequestComments({ branchId, requestId, currentUserId }: RequestC
                     </div>
                     <span className="text-xs text-muted-foreground">
                       {formatDate(comment.createdAt)}
-                      {comment.isEdited && <span className="ml-1 italic">(edited)</span>}
+                      {comment.isEdited && <span className="ml-1 italic">{trc.edited}</span>}
                     </span>
                   </div>
                 </div>
@@ -222,7 +224,7 @@ export function RequestComments({ branchId, requestId, currentUserId }: RequestC
                   </Button>
                 )}
               </div>
-              
+
               {editingId === comment.id ? (
                 <div className="mt-2 space-y-2">
                   <Textarea
@@ -238,7 +240,7 @@ export function RequestComments({ branchId, requestId, currentUserId }: RequestC
                       disabled={saving || !editContent.trim()}
                     >
                       {saving ? <Loader2 className="h-3 w-3 animate-spin" /> : <Check className="h-3 w-3" />}
-                      <span className="ml-1">Save</span>
+                      <span className="ml-1">{trc.save}</span>
                     </Button>
                     <Button
                       size="sm"
@@ -246,7 +248,7 @@ export function RequestComments({ branchId, requestId, currentUserId }: RequestC
                       onClick={cancelEdit}
                     >
                       <X className="h-3 w-3" />
-                      <span className="ml-1">Cancel</span>
+                      <span className="ml-1">{trc.cancel}</span>
                     </Button>
                   </div>
                 </div>
@@ -263,7 +265,7 @@ export function RequestComments({ branchId, requestId, currentUserId }: RequestC
         <Textarea
           value={newComment}
           onChange={(e) => setNewComment(e.target.value)}
-          placeholder="Add a comment..."
+          placeholder={trc.addComment}
           rows={2}
           className="text-sm"
         />

@@ -22,25 +22,26 @@ import {
   SelectValue,
 } from '@/components/ui/select'
 import { Loader2 } from 'lucide-react'
+import { useTranslation } from '@/lib/i18n/use-translation'
 
 const BUILDING_TYPES = [
-  { value: 'OFFICE', label: 'Office' },
-  { value: 'RETAIL', label: 'Retail' },
-  { value: 'WAREHOUSE', label: 'Warehouse' },
-  { value: 'INDUSTRIAL', label: 'Industrial' },
-  { value: 'RESIDENTIAL', label: 'Residential' },
-  { value: 'HOSPITAL', label: 'Hospital' },
-  { value: 'EDUCATIONAL', label: 'Educational' },
-  { value: 'HOTEL', label: 'Hotel' },
-  { value: 'RESTAURANT', label: 'Restaurant' },
-  { value: 'MALL', label: 'Mall' },
-  { value: 'MIXED_USE', label: 'Mixed Use' },
-  { value: 'PARKING', label: 'Parking' },
-  { value: 'MOSQUE', label: 'Mosque' },
-  { value: 'GOVERNMENT', label: 'Government' },
-  { value: 'SPORTS', label: 'Sports' },
-  { value: 'DATA_CENTER', label: 'Data Center' },
-  { value: 'OTHER', label: 'Other' },
+  { value: 'OFFICE', labelKey: 'office' as const },
+  { value: 'RETAIL', labelKey: 'retail' as const },
+  { value: 'WAREHOUSE', labelKey: 'warehouse' as const },
+  { value: 'INDUSTRIAL', labelKey: 'industrial' as const },
+  { value: 'RESIDENTIAL', labelKey: 'residential' as const },
+  { value: 'HOSPITAL', labelKey: 'hospital' as const },
+  { value: 'EDUCATIONAL', labelKey: 'educational' as const },
+  { value: 'HOTEL', labelKey: 'hotel' as const },
+  { value: 'RESTAURANT', labelKey: 'restaurant' as const },
+  { value: 'MALL', labelKey: 'mall' as const },
+  { value: 'MIXED_USE', labelKey: 'mixedUse' as const },
+  { value: 'PARKING', labelKey: 'parking' as const },
+  { value: 'MOSQUE', labelKey: 'mosque' as const },
+  { value: 'GOVERNMENT', labelKey: 'government' as const },
+  { value: 'SPORTS', labelKey: 'sports' as const },
+  { value: 'DATA_CENTER', labelKey: 'dataCenter' as const },
+  { value: 'OTHER', labelKey: 'other' as const },
 ]
 
 interface BranchProfileFormProps {
@@ -71,6 +72,8 @@ interface BranchProfileFormProps {
 }
 
 export function BranchProfileForm({ branch, open, onOpenChange }: BranchProfileFormProps) {
+  const { t } = useTranslation()
+  const ta = t.dashboard.branchProfileForm
   const router = useRouter()
   const [loading, setLoading] = useState(false)
   const [formData, setFormData] = useState({
@@ -119,7 +122,7 @@ export function BranchProfileForm({ branch, open, onOpenChange }: BranchProfileF
       onOpenChange(false)
     } catch (error) {
       console.error('Error updating branch:', error)
-      alert('Failed to update branch profile')
+      alert(ta.failedToUpdateBranch)
     } finally {
       setLoading(false)
     }
@@ -129,21 +132,21 @@ export function BranchProfileForm({ branch, open, onOpenChange }: BranchProfileF
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent className="max-w-2xl max-h-[90vh] overflow-y-auto">
         <DialogHeader>
-          <DialogTitle>Edit Facility Profile</DialogTitle>
+          <DialogTitle>{ta.editFacilityProfile}</DialogTitle>
           <DialogDescription>
-            Update facility information and Civil Defense details
+            {ta.updateFacilityInfo}
           </DialogDescription>
         </DialogHeader>
 
         <form onSubmit={handleSubmit} className="space-y-6">
           <div className="space-y-4">
             <h3 className="font-semibold text-sm text-muted-foreground uppercase tracking-wide">
-              Basic Information
+              {ta.basicInformation}
             </h3>
 
             <div className="grid grid-cols-2 gap-4">
               <div className="space-y-2">
-                <Label htmlFor="name">Facility Name *</Label>
+                <Label htmlFor="name">{ta.facilityName}</Label>
                 <Input
                   id="name"
                   value={formData.name}
@@ -152,7 +155,7 @@ export function BranchProfileForm({ branch, open, onOpenChange }: BranchProfileF
                 />
               </div>
               <div className="space-y-2">
-                <Label htmlFor="phone">Phone</Label>
+                <Label htmlFor="phone">{ta.phone}</Label>
                 <Input
                   id="phone"
                   value={formData.phone}
@@ -162,7 +165,7 @@ export function BranchProfileForm({ branch, open, onOpenChange }: BranchProfileF
             </div>
 
             <div className="space-y-2">
-              <Label htmlFor="address">Address *</Label>
+              <Label htmlFor="address">{ta.address}</Label>
               <Textarea
                 id="address"
                 value={formData.address}
@@ -174,7 +177,7 @@ export function BranchProfileForm({ branch, open, onOpenChange }: BranchProfileF
 
             <div className="grid grid-cols-2 gap-4">
               <div className="space-y-2">
-                <Label htmlFor="city">City</Label>
+                <Label htmlFor="city">{ta.city}</Label>
                 <Input
                   id="city"
                   value={formData.city}
@@ -182,12 +185,12 @@ export function BranchProfileForm({ branch, open, onOpenChange }: BranchProfileF
                 />
               </div>
               <div className="space-y-2">
-                <Label htmlFor="municipality">Municipality / CD Region</Label>
+                <Label htmlFor="municipality">{ta.municipalityCDRegion}</Label>
                 <Input
                   id="municipality"
                   value={formData.municipality}
                   onChange={(e) => setFormData({ ...formData, municipality: e.target.value })}
-                  placeholder="Civil Defense region"
+                  placeholder={ta.civilDefenseRegion}
                 />
               </div>
             </div>
@@ -195,30 +198,30 @@ export function BranchProfileForm({ branch, open, onOpenChange }: BranchProfileF
 
           <div className="space-y-4">
             <h3 className="font-semibold text-sm text-muted-foreground uppercase tracking-wide">
-              Facility Details
+              {ta.facilityDetails}
             </h3>
 
             <div className="grid grid-cols-2 gap-4">
               <div className="space-y-2">
-                <Label htmlFor="buildingType">Building Type</Label>
+                <Label htmlFor="buildingType">{ta.buildingType}</Label>
                 <Select
                   value={formData.buildingType}
                   onValueChange={(value) => setFormData({ ...formData, buildingType: value })}
                 >
                   <SelectTrigger>
-                    <SelectValue placeholder="Select type" />
+                    <SelectValue placeholder={ta.selectType} />
                   </SelectTrigger>
                   <SelectContent>
                     {BUILDING_TYPES.map((type) => (
                       <SelectItem key={type.value} value={type.value}>
-                        {type.label}
+                        {ta.buildingTypes[type.labelKey]}
                       </SelectItem>
                     ))}
                   </SelectContent>
                 </Select>
               </div>
               <div className="space-y-2">
-                <Label htmlFor="floorCount">Number of Floors</Label>
+                <Label htmlFor="floorCount">{ta.numberOfFloors}</Label>
                 <Input
                   id="floorCount"
                   type="number"
@@ -230,7 +233,7 @@ export function BranchProfileForm({ branch, open, onOpenChange }: BranchProfileF
             </div>
 
             <div className="space-y-2">
-              <Label htmlFor="areaSize">Area Size (sqm)</Label>
+              <Label htmlFor="areaSize">{ta.areaSizeSqm}</Label>
               <Input
                 id="areaSize"
                 type="number"
@@ -238,39 +241,39 @@ export function BranchProfileForm({ branch, open, onOpenChange }: BranchProfileF
                 step="0.01"
                 value={formData.areaSize}
                 onChange={(e) => setFormData({ ...formData, areaSize: e.target.value })}
-                placeholder="Area in square meters"
+                placeholder={ta.areaInSquareMeters}
               />
             </div>
 
             <div className="space-y-2">
-              <Label htmlFor="notes">Notes</Label>
+              <Label htmlFor="notes">{ta.notes}</Label>
               <Textarea
                 id="notes"
                 value={formData.notes}
                 onChange={(e) => setFormData({ ...formData, notes: e.target.value })}
                 rows={2}
-                placeholder="Additional notes about this facility"
+                placeholder={ta.additionalNotesAboutFacility}
               />
             </div>
           </div>
 
           <div className="space-y-4">
             <h3 className="font-semibold text-sm text-muted-foreground uppercase tracking-wide">
-              Civil Defense Certificate
+              {ta.civilDefenseCertificate}
             </h3>
 
             <div className="grid grid-cols-2 gap-4">
               <div className="space-y-2">
-                <Label htmlFor="cdCertificateNumber">Certificate Number</Label>
+                <Label htmlFor="cdCertificateNumber">{ta.certificateNumber}</Label>
                 <Input
                   id="cdCertificateNumber"
                   value={formData.cdCertificateNumber}
                   onChange={(e) => setFormData({ ...formData, cdCertificateNumber: e.target.value })}
-                  placeholder="CD certificate number"
+                  placeholder={ta.cdCertificateNumberPlaceholder}
                 />
               </div>
               <div className="space-y-2">
-                <Label htmlFor="cdCertificateExpiry">Expiry Date</Label>
+                <Label htmlFor="cdCertificateExpiry">{ta.expiryDate}</Label>
                 <Input
                   id="cdCertificateExpiry"
                   type="date"
@@ -281,33 +284,33 @@ export function BranchProfileForm({ branch, open, onOpenChange }: BranchProfileF
             </div>
 
             <div className="space-y-2">
-              <Label htmlFor="cdCertificateUrl">Certificate URL</Label>
+              <Label htmlFor="cdCertificateUrl">{ta.certificateUrl}</Label>
               <Input
                 id="cdCertificateUrl"
                 value={formData.cdCertificateUrl}
                 onChange={(e) => setFormData({ ...formData, cdCertificateUrl: e.target.value })}
-                placeholder="Link to uploaded certificate"
+                placeholder={ta.linkToUploadedCertificate}
               />
             </div>
           </div>
 
           <div className="space-y-4">
             <h3 className="font-semibold text-sm text-muted-foreground uppercase tracking-wide">
-              Contact Person
+              {ta.contactPerson}
             </h3>
 
             <div className="grid grid-cols-2 gap-4">
               <div className="space-y-2">
-                <Label htmlFor="contactPersonName">Contact Person Name</Label>
+                <Label htmlFor="contactPersonName">{ta.contactPersonName}</Label>
                 <Input
                   id="contactPersonName"
                   value={formData.contactPersonName}
                   onChange={(e) => setFormData({ ...formData, contactPersonName: e.target.value })}
-                  placeholder="Full name"
+                  placeholder={ta.fullName}
                 />
               </div>
               <div className="space-y-2">
-                <Label htmlFor="contactPersonPhone">Contact Person Phone</Label>
+                <Label htmlFor="contactPersonPhone">{ta.contactPersonPhone}</Label>
                 <Input
                   id="contactPersonPhone"
                   value={formData.contactPersonPhone}
@@ -318,7 +321,7 @@ export function BranchProfileForm({ branch, open, onOpenChange }: BranchProfileF
             </div>
 
             <div className="space-y-2">
-              <Label htmlFor="contactPersonEmail">Contact Person Email</Label>
+              <Label htmlFor="contactPersonEmail">{ta.contactPersonEmail}</Label>
               <Input
                 id="contactPersonEmail"
                 type="email"
@@ -331,11 +334,11 @@ export function BranchProfileForm({ branch, open, onOpenChange }: BranchProfileF
 
           <DialogFooter>
             <Button type="button" variant="outline" onClick={() => onOpenChange(false)}>
-              Cancel
+              {ta.cancel}
             </Button>
             <Button type="submit" disabled={loading}>
               {loading && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
-              Save Changes
+              {ta.saveChanges}
             </Button>
           </DialogFooter>
         </form>

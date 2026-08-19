@@ -147,7 +147,7 @@ export async function GET(request: NextRequest) {
   } catch (error) {
     console.error('[Auto-Archive] Error:', error)
     return NextResponse.json(
-      { error: 'Failed to auto-archive work orders', details: error instanceof Error ? error.message : 'Unknown error' },
+      { error: 'Failed to auto-archive work orders' },
       { status: 500 }
     )
   }

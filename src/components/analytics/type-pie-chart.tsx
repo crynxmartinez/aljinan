@@ -8,6 +8,7 @@ import {
   Legend,
 } from 'chart.js'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
+import { useTranslation } from '@/lib/i18n/use-translation'
 
 ChartJS.register(ArcElement, Tooltip, Legend)
 
@@ -22,9 +23,13 @@ interface TypePieChartProps {
 
 export function TypePieChart({
   data,
-  title = 'Work Orders by Type',
-  description = 'Distribution of work order types',
+  title,
+  description,
 }: TypePieChartProps) {
+  const { t } = useTranslation()
+  const ta = t.dashboard.typePieChart
+  const resolvedTitle = title ?? ta.workOrdersByType
+  const resolvedDescription = description ?? ta.distributionOfWorkOrderTypes
   const chartData = {
     labels: data.labels,
     datasets: [
@@ -85,8 +90,8 @@ export function TypePieChart({
   return (
     <Card>
       <CardHeader>
-        <CardTitle>{title}</CardTitle>
-        <CardDescription>{description}</CardDescription>
+        <CardTitle>{resolvedTitle}</CardTitle>
+        <CardDescription>{resolvedDescription}</CardDescription>
       </CardHeader>
       <CardContent>
         <div className="h-[300px] flex items-center justify-center">

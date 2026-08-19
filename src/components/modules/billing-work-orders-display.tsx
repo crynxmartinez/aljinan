@@ -1,6 +1,7 @@
 'use client'
 
 import { useState } from 'react'
+import { useTranslation } from '@/lib/i18n/use-translation'
 import { Button } from '@/components/ui/button'
 import { Badge } from '@/components/ui/badge'
 import { Switch } from '@/components/ui/switch'
@@ -71,12 +72,12 @@ function groupWorkOrders(workOrders: BillingWorkOrder[]): Map<string, BillingWor
   return groups
 }
 
-function formatDate(dateString: string | null) {
-  if (!dateString) return 'Not scheduled'
+function formatDate(dateString: string | null, notScheduledLabel: string) {
+  if (!dateString) return notScheduledLabel
   return new Date(dateString).toLocaleDateString('en-US', {
     month: 'short',
     day: 'numeric',
-    year: 'numeric',
+    year: 'numeric'
   })
 }
 
@@ -89,38 +90,38 @@ function formatCurrency(amount: number | null) {
   }).format(amount)
 }
 
-function getPaymentStatusBadge(status: BillingWorkOrder['paymentStatus']) {
+function getPaymentStatusBadge(status: BillingWorkOrder['paymentStatus'], labels: { paid: string; pendingVerification: string; unpaid: string }) {
   switch (status) {
     case 'PAID':
       return (
         <Badge className="bg-green-100 text-green-700 border-green-200">
           <CheckCircle className="h-3 w-3 mr-1" />
-          Paid
+          {labels.paid}
         </Badge>
       )
     case 'PENDING_VERIFICATION':
       return (
         <Badge className="bg-amber-100 text-amber-700 border-amber-200">
           <Clock className="h-3 w-3 mr-1" />
-          Pending Verification
+          {labels.pendingVerification}
         </Badge>
       )
     default:
       return (
         <Badge variant="outline" className="bg-gray-50 text-gray-600 border-gray-200">
           <AlertCircle className="h-3 w-3 mr-1" />
-          Unpaid
+          {labels.unpaid}
         </Badge>
       )
   }
 }
 
-function getStageBadge(stage: string) {
+function getStageBadge(stage: string, labels: { scheduled: string; inProgress: string; forReview: string; completed: string }) {
   const config: Record<string, { style: string; label: string }> = {
-    SCHEDULED: { style: 'bg-blue-100 text-blue-700', label: 'Scheduled' },
-    IN_PROGRESS: { style: 'bg-orange-100 text-orange-700', label: 'In Progress' },
-    FOR_REVIEW: { style: 'bg-purple-100 text-purple-700', label: 'For Review' },
-    COMPLETED: { style: 'bg-green-100 text-green-700', label: 'Completed' },
+    SCHEDULED: { style: 'bg-blue-100 text-blue-700', label: labels.scheduled },
+    IN_PROGRESS: { style: 'bg-orange-100 text-orange-700', label: labels.inProgress },
+    FOR_REVIEW: { style: 'bg-purple-100 text-purple-700', label: labels.forReview },
+    COMPLETED: { style: 'bg-green-100 text-green-700', label: labels.completed },
   }
   const { style, label } = config[stage] || { style: 'bg-gray-100 text-gray-700', label: stage }
   return <Badge className={style}>{label}</Badge>
@@ -134,6 +135,8 @@ export function BillingWorkOrdersDisplay({
   onVerifyPayment,
   onViewProof,
 }: BillingWorkOrdersDisplayProps) {
+  const { t } = useTranslation()
+  const tb = t.dashboard.billingWorkOrders
   const [expandedGroups, setExpandedGroups] = useState<Set<string>>(new Set())
   const [payAllMode, setPayAllMode] = useState<Record<string, boolean>>({})
 
@@ -164,7 +167,7 @@ export function BillingWorkOrdersDisplay({
     return (
       <div className="text-center py-8 text-muted-foreground">
         <Wrench className="h-8 w-8 mx-auto mb-2 opacity-50" />
-        <p className="text-sm">No work orders found</p>
+        <p className="text-sm">{tb.noWorkOrdersFound}</p>
       </div>
     )
   }
@@ -173,9 +176,9 @@ export function BillingWorkOrdersDisplay({
     <div className="space-y-4">
       {/* Summary */}
       <div className="flex items-center justify-between text-sm px-1 pb-2 border-b">
-        <span className="text-muted-foreground">Payment Progress</span>
+        <span className="text-muted-foreground">{tb.paymentProgress}</span>
         <span className="font-medium">
-          {formatCurrency(paidValue)} / {formatCurrency(totalValue)} paid
+          {formatCurrency(paidValue)} / {formatCurrency(totalValue)} {tb.paid}
         </span>
       </div>
 
@@ -217,7 +220,7 @@ export function BillingWorkOrdersDisplay({
                         <div>
                           <h4 className="font-medium text-sm">{groupName}</h4>
                           <p className="text-xs text-muted-foreground">
-                            {items.length} occurrence{items.length !== 1 ? 's' : ''} • {paidCount}/{items.length} paid
+                            {items.length} occurrence{items.length !== 1 ? 's' : ''} • {paidCount}/{items.length} {tb.paid}
                           </p>
                         </div>
                       </div>
@@ -226,12 +229,12 @@ export function BillingWorkOrdersDisplay({
                         {allPaid ? (
                           <Badge className="bg-green-100 text-green-700">
                             <CheckCircle className="h-3 w-3 mr-1" />
-                            Fully Paid
+                            {tb.fullyPaid}
                           </Badge>
                         ) : pendingCount > 0 ? (
                           <Badge className="bg-amber-100 text-amber-700">
                             <Clock className="h-3 w-3 mr-1" />
-                            {pendingCount} Pending
+                            {pendingCount} {tb.pending}
                           </Badge>
                         ) : null}
 
@@ -253,7 +256,7 @@ export function BillingWorkOrdersDisplay({
                             }}
                           >
                             <CreditCard className="h-3 w-3 mr-1" />
-                            {isSingleItem ? 'Pay' : `Pay All (${unpaidItems.length})`}
+                            {isSingleItem ? tb.pay : tb.payAll.replace('{count}', String(unpaidItems.length))}
                           </Button>
                         )}
                       </div>
@@ -268,11 +271,11 @@ export function BillingWorkOrdersDisplay({
                     {!isSingleItem && userRole === 'CLIENT' && unpaidItems.length > 0 && (
                       <div className="px-4 py-2 bg-muted/30 border-b flex items-center justify-between">
                         <Label htmlFor={`pay-mode-${groupName}`} className="text-xs text-muted-foreground">
-                          Payment mode
+                          {tb.paymentMode}
                         </Label>
                         <div className="flex items-center gap-2">
                           <span className={cn("text-xs", !isPayAllMode && "font-medium")}>
-                            Pay separately
+                            {tb.paySeparately}
                           </span>
                           <Switch
                             id={`pay-mode-${groupName}`}
@@ -280,7 +283,7 @@ export function BillingWorkOrdersDisplay({
                             onCheckedChange={() => togglePayMode(groupName)}
                           />
                           <span className={cn("text-xs", isPayAllMode && "font-medium")}>
-                            Pay all at once
+                            {tb.payAllAtOnce}
                           </span>
                         </div>
                       </div>
@@ -314,28 +317,28 @@ export function BillingWorkOrdersDisplay({
                                     )}
                                     <span className="text-sm flex items-center gap-1 text-muted-foreground">
                                       <Calendar className="h-3 w-3" />
-                                      {formatDate(wo.scheduledDate)}
+                                      {formatDate(wo.scheduledDate, tb.notScheduled)}
                                     </span>
-                                    {getStageBadge(wo.stage)}
+                                    {getStageBadge(wo.stage, { scheduled: tb.stageScheduled, inProgress: tb.stageInProgress, forReview: tb.stageForReview, completed: tb.stageCompleted })}
                                     {wo.type === 'ADHOC' && (
-                                      <Badge variant="outline" className="text-xs">Ad-hoc</Badge>
+                                      <Badge variant="outline" className="text-xs">{tb.adhoc}</Badge>
                                     )}
                                     {wo.contractTitle && (
                                       <Badge variant="outline" className="text-xs border-purple-300 text-purple-700 bg-purple-50">
-                                        Contract
+                                        {tb.contract}
                                       </Badge>
                                     )}
                                   </div>
                                   {wo.paymentDueDate && (
                                     <div className="text-xs text-muted-foreground">
-                                      Payment due: {formatDate(wo.paymentDueDate)}
+                                      {tb.paymentDue} {formatDate(wo.paymentDueDate, tb.notScheduled)}
                                     </div>
                                   )}
                                 </div>
                               </div>
 
                               <div className="flex items-center gap-3">
-                                {getPaymentStatusBadge(wo.paymentStatus)}
+                                {getPaymentStatusBadge(wo.paymentStatus, { paid: tb.paid, pendingVerification: tb.pendingVerification, unpaid: tb.unpaid })}
                                 <span className="text-sm font-medium min-w-[80px] text-right">
                                   {formatCurrency(wo.price)}
                                 </span>
@@ -348,7 +351,7 @@ export function BillingWorkOrdersDisplay({
                                     onClick={() => onPaySingle?.(wo.id)}
                                   >
                                     <CreditCard className="h-3 w-3 mr-1" />
-                                    Pay
+                                    {tb.pay}
                                   </Button>
                                 )}
 
@@ -360,7 +363,7 @@ export function BillingWorkOrdersDisplay({
                                       onClick={() => onViewProof?.(wo)}
                                     >
                                       <Eye className="h-3 w-3 mr-1" />
-                                      View Proof
+                                      {tb.viewProof}
                                     </Button>
                                     {userRole === 'CONTRACTOR' && (
                                       <Button
@@ -368,7 +371,7 @@ export function BillingWorkOrdersDisplay({
                                         onClick={() => onVerifyPayment?.(wo.id)}
                                       >
                                         <CheckCircle className="h-3 w-3 mr-1" />
-                                        Verify
+                                        {tb.verify}
                                       </Button>
                                     )}
                                   </>
@@ -390,9 +393,9 @@ export function BillingWorkOrdersDisplay({
       {/* Total */}
       <div className="flex items-center justify-between p-4 bg-primary/5 rounded-lg border-2 border-primary/20">
         <div>
-          <span className="font-semibold">Total</span>
+          <span className="font-semibold">{tb.total}</span>
           <p className="text-xs text-muted-foreground">
-            {workOrders.filter(wo => wo.paymentStatus === 'PAID').length} of {workOrders.length} paid
+            {workOrders.filter(wo => wo.paymentStatus === 'PAID').length} {tb.paidCount.replace('{paid}', String(workOrders.filter(wo => wo.paymentStatus === 'PAID').length)).replace('{total}', String(workOrders.length))}
           </p>
         </div>
         <div className="text-right">
@@ -401,7 +404,7 @@ export function BillingWorkOrdersDisplay({
           </span>
           {paidValue > 0 && paidValue < totalValue && (
             <p className="text-xs text-green-600">
-              {formatCurrency(paidValue)} paid
+              {formatCurrency(paidValue)} {tb.paid}
             </p>
           )}
         </div>

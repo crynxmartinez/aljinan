@@ -11,6 +11,7 @@ import {
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu'
 import { Badge } from '@/components/ui/badge'
+import { useTranslation } from '@/lib/i18n/use-translation'
 
 interface BulkToolbarProps {
   selectedCount: number
@@ -29,6 +30,8 @@ export function BulkToolbar({
   onEdit,
   onClearSelection,
 }: BulkToolbarProps) {
+  const { t } = useTranslation()
+  const ta = t.dashboard.bulkToolbar
   if (selectedCount === 0) return null
 
   return (
@@ -40,7 +43,7 @@ export function BulkToolbar({
             <Badge variant="secondary" className="mr-2">
               {selectedCount}
             </Badge>
-            {selectedCount === 1 ? 'item' : 'items'} selected
+            {selectedCount === 1 ? ta.itemSelected : ta.itemsSelected}
           </span>
         </div>
 
@@ -50,21 +53,21 @@ export function BulkToolbar({
           {onAssign && (
             <Button variant="outline" size="sm" onClick={onAssign}>
               <UserPlus className="h-4 w-4 mr-2" />
-              Assign
+              {ta.assign}
             </Button>
           )}
 
           {onChangeStatus && (
             <Button variant="outline" size="sm" onClick={onChangeStatus}>
               <Edit className="h-4 w-4 mr-2" />
-              Change Status
+              {ta.changeStatus}
             </Button>
           )}
 
           {onDelete && (
             <Button variant="outline" size="sm" onClick={onDelete}>
               <Trash2 className="h-4 w-4 mr-2" />
-              Delete
+              {ta.delete}
             </Button>
           )}
 
@@ -75,16 +78,16 @@ export function BulkToolbar({
               </Button>
             </DropdownMenuTrigger>
             <DropdownMenuContent align="end">
-              <DropdownMenuLabel>More Actions</DropdownMenuLabel>
+              <DropdownMenuLabel>{ta.moreActions}</DropdownMenuLabel>
               <DropdownMenuSeparator />
               {onEdit && (
                 <DropdownMenuItem onClick={onEdit}>
                   <Edit className="h-4 w-4 mr-2" />
-                  Bulk Edit
+                  {ta.bulkEdit}
                 </DropdownMenuItem>
               )}
               <DropdownMenuItem onClick={onClearSelection}>
-                Clear Selection
+                {ta.clearSelection}
               </DropdownMenuItem>
             </DropdownMenuContent>
           </DropdownMenu>
@@ -93,7 +96,7 @@ export function BulkToolbar({
         <div className="h-6 w-px bg-border" />
 
         <Button variant="ghost" size="sm" onClick={onClearSelection}>
-          Clear
+          {ta.clear}
         </Button>
       </div>
     </div>

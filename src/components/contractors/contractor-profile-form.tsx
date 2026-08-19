@@ -23,16 +23,17 @@ import {
 } from '@/components/ui/select'
 import { Badge } from '@/components/ui/badge'
 import { X, Plus } from 'lucide-react'
+import { useTranslation } from '@/lib/i18n/use-translation'
 
 const BUSINESS_TYPES = [
-  { value: 'LLC', label: 'LLC' },
-  { value: 'CORPORATION', label: 'Corporation' },
-  { value: 'SOLE_PROPRIETOR', label: 'Sole Proprietor' },
-  { value: 'PARTNERSHIP', label: 'Partnership' },
-  { value: 'JOINT_VENTURE', label: 'Joint Venture' },
-  { value: 'GOVERNMENT', label: 'Government' },
-  { value: 'NON_PROFIT', label: 'Non-Profit' },
-  { value: 'OTHER', label: 'Other' },
+  { value: 'LLC', labelKey: 'llc' as const },
+  { value: 'CORPORATION', labelKey: 'corporation' as const },
+  { value: 'SOLE_PROPRIETOR', labelKey: 'soleProprietor' as const },
+  { value: 'PARTNERSHIP', labelKey: 'partnership' as const },
+  { value: 'JOINT_VENTURE', labelKey: 'jointVenture' as const },
+  { value: 'GOVERNMENT', labelKey: 'government' as const },
+  { value: 'NON_PROFIT', labelKey: 'nonProfit' as const },
+  { value: 'OTHER', labelKey: 'other' as const },
 ]
 
 interface ContractorProfileFormProps {
@@ -62,6 +63,8 @@ interface ContractorProfileFormProps {
 }
 
 export function ContractorProfileForm({ contractor, open, onOpenChange }: ContractorProfileFormProps) {
+  const { t } = useTranslation()
+  const ta = t.dashboard.contractorProfileForm
   const router = useRouter()
   const [loading, setLoading] = useState(false)
   const [formData, setFormData] = useState({
@@ -131,9 +134,9 @@ export function ContractorProfileForm({ contractor, open, onOpenChange }: Contra
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent className="max-w-2xl max-h-[90vh] overflow-y-auto">
         <DialogHeader>
-          <DialogTitle>Edit Company Profile</DialogTitle>
+          <DialogTitle>{ta.editCompanyProfile}</DialogTitle>
           <DialogDescription>
-            Update your company information for compliance and credibility.
+            {ta.updateCompanyInfoCompliance}
           </DialogDescription>
         </DialogHeader>
 
@@ -141,32 +144,32 @@ export function ContractorProfileForm({ contractor, open, onOpenChange }: Contra
           {/* Basic Info */}
           <div className="space-y-4">
             <h4 className="text-sm font-semibold text-muted-foreground uppercase tracking-wide">
-              Basic Information
+              {ta.basicInformation}
             </h4>
             <div className="grid gap-4 sm:grid-cols-2">
               <div className="space-y-2">
-                <Label htmlFor="companyName">Company Name</Label>
+                <Label htmlFor="companyName">{ta.companyName}</Label>
                 <Input
                   id="companyName"
                   value={formData.companyName}
                   onChange={(e) => setFormData({ ...formData, companyName: e.target.value })}
-                  placeholder="Your Company Name"
+                  placeholder={ta.yourCompanyName}
                 />
               </div>
 
               <div className="space-y-2">
-                <Label htmlFor="businessType">Business Type</Label>
+                <Label htmlFor="businessType">{ta.businessType}</Label>
                 <Select
                   value={formData.businessType}
                   onValueChange={(value) => setFormData({ ...formData, businessType: value })}
                 >
                   <SelectTrigger>
-                    <SelectValue placeholder="Select business type" />
+                    <SelectValue placeholder={ta.selectBusinessType} />
                   </SelectTrigger>
                   <SelectContent>
                     {BUSINESS_TYPES.map((type) => (
                       <SelectItem key={type.value} value={type.value}>
-                        {type.label}
+                        {ta.businessTypes[type.labelKey]}
                       </SelectItem>
                     ))}
                   </SelectContent>
@@ -174,7 +177,7 @@ export function ContractorProfileForm({ contractor, open, onOpenChange }: Contra
               </div>
 
               <div className="space-y-2">
-                <Label htmlFor="companyEmail">Company Email</Label>
+                <Label htmlFor="companyEmail">{ta.companyEmail}</Label>
                 <Input
                   id="companyEmail"
                   type="email"
@@ -185,7 +188,7 @@ export function ContractorProfileForm({ contractor, open, onOpenChange }: Contra
               </div>
 
               <div className="space-y-2">
-                <Label htmlFor="companyPhone">Company Phone</Label>
+                <Label htmlFor="companyPhone">{ta.companyPhone}</Label>
                 <Input
                   id="companyPhone"
                   value={formData.companyPhone}
@@ -195,12 +198,12 @@ export function ContractorProfileForm({ contractor, open, onOpenChange }: Contra
               </div>
 
               <div className="space-y-2 sm:col-span-2">
-                <Label htmlFor="companyAddress">Company Address</Label>
+                <Label htmlFor="companyAddress">{ta.companyAddress}</Label>
                 <Textarea
                   id="companyAddress"
                   value={formData.companyAddress}
                   onChange={(e) => setFormData({ ...formData, companyAddress: e.target.value })}
-                  placeholder="Full company address"
+                  placeholder={ta.fullCompanyAddress}
                   rows={2}
                 />
               </div>
@@ -210,11 +213,11 @@ export function ContractorProfileForm({ contractor, open, onOpenChange }: Contra
           {/* Contact Person */}
           <div className="space-y-4">
             <h4 className="text-sm font-semibold text-muted-foreground uppercase tracking-wide">
-              Contact Person
+              {ta.contactPerson}
             </h4>
             <div className="grid gap-4 sm:grid-cols-2">
               <div className="space-y-2">
-                <Label htmlFor="contactPersonName">Contact Person Name</Label>
+                <Label htmlFor="contactPersonName">{ta.contactPersonName}</Label>
                 <Input
                   id="contactPersonName"
                   value={formData.contactPersonName}
@@ -224,7 +227,7 @@ export function ContractorProfileForm({ contractor, open, onOpenChange }: Contra
               </div>
 
               <div className="space-y-2">
-                <Label htmlFor="contactPersonPhone">Contact Person Phone</Label>
+                <Label htmlFor="contactPersonPhone">{ta.contactPersonPhone}</Label>
                 <Input
                   id="contactPersonPhone"
                   value={formData.contactPersonPhone}
@@ -234,7 +237,7 @@ export function ContractorProfileForm({ contractor, open, onOpenChange }: Contra
               </div>
 
               <div className="space-y-2 sm:col-span-2">
-                <Label htmlFor="contactPersonEmail">Contact Person Email</Label>
+                <Label htmlFor="contactPersonEmail">{ta.contactPersonEmail}</Label>
                 <Input
                   id="contactPersonEmail"
                   type="email"
@@ -249,11 +252,11 @@ export function ContractorProfileForm({ contractor, open, onOpenChange }: Contra
           {/* Additional Info */}
           <div className="space-y-4">
             <h4 className="text-sm font-semibold text-muted-foreground uppercase tracking-wide">
-              Additional Information
+              {ta.additionalInformation}
             </h4>
             <div className="grid gap-4 sm:grid-cols-2">
               <div className="space-y-2">
-                <Label htmlFor="website">Website</Label>
+                <Label htmlFor="website">{ta.website}</Label>
                 <Input
                   id="website"
                   value={formData.website}
@@ -263,7 +266,7 @@ export function ContractorProfileForm({ contractor, open, onOpenChange }: Contra
               </div>
 
               <div className="space-y-2">
-                <Label htmlFor="yearEstablished">Year Established</Label>
+                <Label htmlFor="yearEstablished">{ta.yearEstablished}</Label>
                 <Input
                   id="yearEstablished"
                   type="number"
@@ -276,7 +279,7 @@ export function ContractorProfileForm({ contractor, open, onOpenChange }: Contra
               </div>
 
               <div className="space-y-2 sm:col-span-2">
-                <Label htmlFor="logoUrl">Logo URL</Label>
+                <Label htmlFor="logoUrl">{ta.logoUrl}</Label>
                 <Input
                   id="logoUrl"
                   value={formData.logoUrl}
@@ -290,26 +293,26 @@ export function ContractorProfileForm({ contractor, open, onOpenChange }: Contra
           {/* Registration & Tax */}
           <div className="space-y-4 pt-4 border-t">
             <h4 className="text-sm font-semibold text-muted-foreground uppercase tracking-wide">
-              Registration & Tax
+              {ta.registrationTax}
             </h4>
             <div className="grid gap-4 sm:grid-cols-2">
               <div className="space-y-2">
-                <Label htmlFor="crNumber">CR / Business License Number</Label>
+                <Label htmlFor="crNumber">{ta.crBusinessLicense}</Label>
                 <Input
                   id="crNumber"
                   value={formData.crNumber}
                   onChange={(e) => setFormData({ ...formData, crNumber: e.target.value })}
-                  placeholder="Commercial Registration / License #"
+                  placeholder={ta.commercialRegistrationLicense}
                 />
               </div>
 
               <div className="space-y-2">
-                <Label htmlFor="vatNumber">VAT / Tax ID</Label>
+                <Label htmlFor="vatNumber">{ta.vatTaxId}</Label>
                 <Input
                   id="vatNumber"
                   value={formData.vatNumber}
                   onChange={(e) => setFormData({ ...formData, vatNumber: e.target.value })}
-                  placeholder="VAT Number / EIN"
+                  placeholder={ta.vatNumberEin}
                 />
               </div>
             </div>
@@ -318,21 +321,21 @@ export function ContractorProfileForm({ contractor, open, onOpenChange }: Contra
           {/* Licensing */}
           <div className="space-y-4 pt-4 border-t">
             <h4 className="text-sm font-semibold text-muted-foreground uppercase tracking-wide">
-              Contractor License
+              {ta.contractorLicense}
             </h4>
             <div className="grid gap-4 sm:grid-cols-2">
               <div className="space-y-2">
-                <Label htmlFor="licenseNumber">License Number</Label>
+                <Label htmlFor="licenseNumber">{ta.licenseNumber}</Label>
                 <Input
                   id="licenseNumber"
                   value={formData.licenseNumber}
                   onChange={(e) => setFormData({ ...formData, licenseNumber: e.target.value })}
-                  placeholder="Civil Defense / State License #"
+                  placeholder={ta.civilDefenseStateLicense}
                 />
               </div>
 
               <div className="space-y-2">
-                <Label htmlFor="licenseExpiry">License Expiry Date</Label>
+                <Label htmlFor="licenseExpiry">{ta.licenseExpiryDate}</Label>
                 <Input
                   id="licenseExpiry"
                   type="date"
@@ -346,11 +349,11 @@ export function ContractorProfileForm({ contractor, open, onOpenChange }: Contra
           {/* Insurance */}
           <div className="space-y-4 pt-4 border-t">
             <h4 className="text-sm font-semibold text-muted-foreground uppercase tracking-wide">
-              Insurance
+              {ta.insurance}
             </h4>
             <div className="grid gap-4 sm:grid-cols-2">
               <div className="space-y-2">
-                <Label htmlFor="insuranceCertUrl">Insurance Certificate URL</Label>
+                <Label htmlFor="insuranceCertUrl">{ta.insuranceCertificateUrl}</Label>
                 <Input
                   id="insuranceCertUrl"
                   value={formData.insuranceCertUrl}
@@ -360,7 +363,7 @@ export function ContractorProfileForm({ contractor, open, onOpenChange }: Contra
               </div>
 
               <div className="space-y-2">
-                <Label htmlFor="insuranceExpiry">Insurance Expiry Date</Label>
+                <Label htmlFor="insuranceExpiry">{ta.insuranceExpiryDate}</Label>
                 <Input
                   id="insuranceExpiry"
                   type="date"
@@ -374,13 +377,13 @@ export function ContractorProfileForm({ contractor, open, onOpenChange }: Contra
           {/* Service Areas */}
           <div className="space-y-4 pt-4 border-t">
             <h4 className="text-sm font-semibold text-muted-foreground uppercase tracking-wide">
-              Service Areas
+              {ta.serviceAreas}
             </h4>
             <div className="flex gap-2">
               <Input
                 value={newServiceArea}
                 onChange={(e) => setNewServiceArea(e.target.value)}
-                placeholder="Add city or region..."
+                placeholder={ta.addCityOrRegion}
                 onKeyDown={(e) => {
                   if (e.key === 'Enter') {
                     e.preventDefault()
@@ -412,10 +415,10 @@ export function ContractorProfileForm({ contractor, open, onOpenChange }: Contra
 
           <DialogFooter>
             <Button type="button" variant="outline" onClick={() => onOpenChange(false)}>
-              Cancel
+              {ta.cancel}
             </Button>
             <Button type="submit" disabled={loading}>
-              {loading ? 'Saving...' : 'Save Changes'}
+              {loading ? ta.saving : ta.saveChanges}
             </Button>
           </DialogFooter>
         </form>

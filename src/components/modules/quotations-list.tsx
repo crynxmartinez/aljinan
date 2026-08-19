@@ -2,6 +2,7 @@
 
 import { useState, useEffect } from 'react'
 import { useRouter } from 'next/navigation'
+import { useTranslation } from '@/lib/i18n/use-translation'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
@@ -68,6 +69,8 @@ interface QuotationsListProps {
 
 export function QuotationsList({ branchId }: QuotationsListProps) {
   const router = useRouter()
+  const { t } = useTranslation()
+  const tql = t.dashboard.quotationsList
   const [quotations, setQuotations] = useState<Quotation[]>([])
   const [loading, setLoading] = useState(true)
   const [createDialogOpen, setCreateDialogOpen] = useState(false)
@@ -196,7 +199,7 @@ export function QuotationsList({ branchId }: QuotationsListProps) {
   }
 
   const handleDeleteQuotation = async (quotationId: string) => {
-    if (!confirm('Are you sure you want to delete this quotation?')) return
+    if (!confirm(tql.deleteConfirm)) return
 
     try {
       await api.delete(`/api/branches/${branchId}/quotations/${quotationId}`)

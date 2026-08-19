@@ -255,7 +255,7 @@ export function EquipmentList({ branchId, userRole = 'CONTRACTOR' }: EquipmentLi
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({
-            title: `${formData.equipmentNumber} - ${formData.equipmentType.replace(/_/g, ' ')} Certificate`,
+            title: te.certificateTitle.replace('{type}', EQUIPMENT_TYPES.find(et => et.value === formData.equipmentType)?.label || formData.equipmentType.replace(/_/g, ' ')),
             type: 'EQUIPMENT_CERTIFICATE',
             issueDate: new Date().toISOString(),
             expiryDate: certificateExpiry ? new Date(certificateExpiry).toISOString() : null,
@@ -402,6 +402,13 @@ export function EquipmentList({ branchId, userRole = 'CONTRACTOR' }: EquipmentLi
     needsAttention: equipment.filter(eq => getEffectiveStatus(eq) === 'NEEDS_ATTENTION').length,
   }
 
+  const STATUS_LABELS: Record<string, string> = {
+    'ACTIVE': te.statusActive,
+    'EXPIRING_SOON': te.statusExpiringSoon,
+    'EXPIRED': te.statusExpired,
+    'NEEDS_ATTENTION': te.statusNeedsAttention,
+  }
+
   const getStatusDisplay = (eq: Equipment) => {
     const status = eq.calculatedStatus || eq.status
     const config = STATUS_COLORS[status] || STATUS_COLORS['ACTIVE']
@@ -409,7 +416,7 @@ export function EquipmentList({ branchId, userRole = 'CONTRACTOR' }: EquipmentLi
     return (
       <Badge className={`${config.bg} ${config.text} border-0`}>
         <Icon className="h-3 w-3 mr-1" />
-        {status.replace(/_/g, ' ')}
+        {STATUS_LABELS[status] || status}
       </Badge>
     )
   }
@@ -550,7 +557,7 @@ export function EquipmentList({ branchId, userRole = 'CONTRACTOR' }: EquipmentLi
                         <Badge variant="outline" className="text-xs">
                           {eq.equipmentType === 'OTHER' && eq.customEquipmentType
                             ? eq.customEquipmentType
-                            : eq.equipmentType.replace(/_/g, ' ')}
+                            : EQUIPMENT_TYPES.find(et => et.value === eq.equipmentType)?.label || eq.equipmentType.replace(/_/g, ' ')}
                         </Badge>
                       </TableCell>
                       <TableCell>

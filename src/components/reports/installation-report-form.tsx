@@ -1,18 +1,19 @@
 'use client'
 
 import { Button } from '@/components/ui/button'
+import { useTranslation } from '@/lib/i18n/use-translation'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
 import { Textarea } from '@/components/ui/textarea'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Checkbox } from '@/components/ui/checkbox'
 import { Plus, Trash2, Package, CheckCircle, XCircle } from 'lucide-react'
-import { 
-  InstallationReportData, 
-  EquipmentInstalled, 
-  CommissioningItem, 
+import {
+  InstallationReportData,
+  EquipmentInstalled,
+  CommissioningItem,
   TestResult,
-  emptyInstallationReportData 
+  emptyInstallationReportData
 } from '@/types/reports'
 import {
   Select,
@@ -29,6 +30,8 @@ interface InstallationReportFormProps {
 }
 
 export function InstallationReportForm({ data, onChange, readOnly = false }: InstallationReportFormProps) {
+  const { t } = useTranslation()
+  const tr = t.dashboard.reports.installation
   const reportData = data || emptyInstallationReportData
 
   const updateField = <K extends keyof InstallationReportData>(field: K, value: InstallationReportData[K]) => {
@@ -87,18 +90,18 @@ export function InstallationReportForm({ data, onChange, readOnly = false }: Ins
     <div className="space-y-6">
       <div className="flex items-center gap-2 text-purple-600">
         <Package className="h-5 w-5" />
-        <h3 className="font-semibold text-lg">Installation Report</h3>
+        <h3 className="font-semibold text-lg">{tr.title}</h3>
       </div>
 
       {/* Equipment Installed */}
       <Card>
         <CardHeader className="py-3">
           <div className="flex items-center justify-between">
-            <CardTitle className="text-sm font-medium">Equipment Installed</CardTitle>
+            <CardTitle className="text-sm font-medium">{tr.equipmentInstalled}</CardTitle>
             {!readOnly && (
               <Button type="button" variant="outline" size="sm" onClick={addEquipment}>
                 <Plus className="h-4 w-4 mr-1" />
-                Add Equipment
+                {tr.addEquipment}
               </Button>
             )}
           </div>
@@ -106,15 +109,15 @@ export function InstallationReportForm({ data, onChange, readOnly = false }: Ins
         <CardContent className="pt-0">
           {reportData.equipmentInstalled.length === 0 ? (
             <p className="text-sm text-muted-foreground text-center py-4">
-              No equipment added
+              {tr.noEquipment}
             </p>
           ) : (
             <div className="space-y-3">
               <div className="grid grid-cols-12 gap-2 text-xs font-medium text-muted-foreground">
-                <div className="col-span-3">Equipment</div>
-                <div className="col-span-3">Model</div>
-                <div className="col-span-3">Serial Number</div>
-                <div className="col-span-2">Location</div>
+                <div className="col-span-3">{tr.equipment}</div>
+                <div className="col-span-3">{tr.model}</div>
+                <div className="col-span-3">{tr.serialNumber}</div>
+                <div className="col-span-2">{tr.location}</div>
                 <div className="col-span-1"></div>
               </div>
               {reportData.equipmentInstalled.map((eq, index) => (
@@ -123,7 +126,7 @@ export function InstallationReportForm({ data, onChange, readOnly = false }: Ins
                     <Input
                       value={eq.name}
                       onChange={(e) => updateEquipment(index, 'name', e.target.value)}
-                      placeholder="Equipment name"
+                      placeholder={tr.equipment}
                       disabled={readOnly}
                     />
                   </div>
@@ -131,7 +134,7 @@ export function InstallationReportForm({ data, onChange, readOnly = false }: Ins
                     <Input
                       value={eq.model}
                       onChange={(e) => updateEquipment(index, 'model', e.target.value)}
-                      placeholder="Model"
+                      placeholder={tr.model}
                       disabled={readOnly}
                     />
                   </div>
@@ -139,7 +142,7 @@ export function InstallationReportForm({ data, onChange, readOnly = false }: Ins
                     <Input
                       value={eq.serialNumber}
                       onChange={(e) => updateEquipment(index, 'serialNumber', e.target.value)}
-                      placeholder="Serial #"
+                      placeholder={tr.serialNumber}
                       disabled={readOnly}
                     />
                   </div>
@@ -147,7 +150,7 @@ export function InstallationReportForm({ data, onChange, readOnly = false }: Ins
                     <Input
                       value={eq.location}
                       onChange={(e) => updateEquipment(index, 'location', e.target.value)}
-                      placeholder="Location"
+                      placeholder={tr.location}
                       disabled={readOnly}
                     />
                   </div>
@@ -173,12 +176,12 @@ export function InstallationReportForm({ data, onChange, readOnly = false }: Ins
 
       {/* Configuration Details */}
       <div className="space-y-2">
-        <Label htmlFor="configurationDetails">Configuration Details</Label>
+        <Label htmlFor="configurationDetails">{tr.configurationDetails}</Label>
         <Textarea
           id="configurationDetails"
           value={reportData.configurationDetails}
           onChange={(e) => updateField('configurationDetails', e.target.value)}
-          placeholder="System configuration, zones, settings..."
+          placeholder={tr.configurationPlaceholder}
           rows={3}
           disabled={readOnly}
         />
@@ -188,11 +191,11 @@ export function InstallationReportForm({ data, onChange, readOnly = false }: Ins
       <Card>
         <CardHeader className="py-3">
           <div className="flex items-center justify-between">
-            <CardTitle className="text-sm font-medium">Commissioning Checklist</CardTitle>
+            <CardTitle className="text-sm font-medium">{tr.commissioningChecklist}</CardTitle>
             {!readOnly && (
               <Button type="button" variant="outline" size="sm" onClick={addCommissioningItem}>
                 <Plus className="h-4 w-4 mr-1" />
-                Add Item
+                {tr.addItem}
               </Button>
             )}
           </div>
@@ -200,7 +203,7 @@ export function InstallationReportForm({ data, onChange, readOnly = false }: Ins
         <CardContent className="pt-0">
           {reportData.commissioningChecklist.length === 0 ? (
             <p className="text-sm text-muted-foreground text-center py-4">
-              No checklist items
+              {tr.noChecklistItems}
             </p>
           ) : (
             <div className="space-y-3">
@@ -216,14 +219,14 @@ export function InstallationReportForm({ data, onChange, readOnly = false }: Ins
                     <Input
                       value={item.item}
                       onChange={(e) => updateCommissioningItem(index, 'item', e.target.value)}
-                      placeholder="Checklist item"
+                      placeholder={tr.checklistItem}
                       disabled={readOnly}
                       className={item.completed ? 'line-through text-muted-foreground' : ''}
                     />
                     <Input
                       value={item.notes}
                       onChange={(e) => updateCommissioningItem(index, 'notes', e.target.value)}
-                      placeholder="Notes (optional)"
+                      placeholder={tr.notesOptional}
                       disabled={readOnly}
                       className="text-sm"
                     />
@@ -250,11 +253,11 @@ export function InstallationReportForm({ data, onChange, readOnly = false }: Ins
       <Card>
         <CardHeader className="py-3">
           <div className="flex items-center justify-between">
-            <CardTitle className="text-sm font-medium">Testing Results</CardTitle>
+            <CardTitle className="text-sm font-medium">{tr.testingResults}</CardTitle>
             {!readOnly && (
               <Button type="button" variant="outline" size="sm" onClick={addTestResult}>
                 <Plus className="h-4 w-4 mr-1" />
-                Add Test
+                {tr.addTest}
               </Button>
             )}
           </div>
@@ -262,14 +265,14 @@ export function InstallationReportForm({ data, onChange, readOnly = false }: Ins
         <CardContent className="pt-0">
           {reportData.testingResults.length === 0 ? (
             <p className="text-sm text-muted-foreground text-center py-4">
-              No tests recorded
+              {tr.noTests}
             </p>
           ) : (
             <div className="space-y-3">
               <div className="grid grid-cols-12 gap-2 text-xs font-medium text-muted-foreground">
-                <div className="col-span-5">Test</div>
-                <div className="col-span-2">Result</div>
-                <div className="col-span-4">Notes</div>
+                <div className="col-span-5">{tr.test}</div>
+                <div className="col-span-2">{tr.result}</div>
+                <div className="col-span-4">{tr.notes}</div>
                 <div className="col-span-1"></div>
               </div>
               {reportData.testingResults.map((test, index) => (
@@ -278,7 +281,7 @@ export function InstallationReportForm({ data, onChange, readOnly = false }: Ins
                     <Input
                       value={test.test}
                       onChange={(e) => updateTestResult(index, 'test', e.target.value)}
-                      placeholder="Test name"
+                      placeholder={tr.test}
                       disabled={readOnly}
                     />
                   </div>
@@ -295,13 +298,13 @@ export function InstallationReportForm({ data, onChange, readOnly = false }: Ins
                         <SelectItem value="pass">
                           <div className="flex items-center gap-2">
                             <CheckCircle className="h-4 w-4 text-green-600" />
-                            Pass
+                            {tr.pass}
                           </div>
                         </SelectItem>
                         <SelectItem value="fail">
                           <div className="flex items-center gap-2">
                             <XCircle className="h-4 w-4 text-red-600" />
-                            Fail
+                            {tr.fail}
                           </div>
                         </SelectItem>
                       </SelectContent>
@@ -311,7 +314,7 @@ export function InstallationReportForm({ data, onChange, readOnly = false }: Ins
                     <Input
                       value={test.notes}
                       onChange={(e) => updateTestResult(index, 'notes', e.target.value)}
-                      placeholder="Notes"
+                      placeholder={tr.notes}
                       disabled={readOnly}
                     />
                   </div>
@@ -338,7 +341,7 @@ export function InstallationReportForm({ data, onChange, readOnly = false }: Ins
       {/* Training */}
       <Card>
         <CardHeader className="py-3">
-          <CardTitle className="text-sm font-medium">Training</CardTitle>
+          <CardTitle className="text-sm font-medium">{tr.training}</CardTitle>
         </CardHeader>
         <CardContent className="pt-0 space-y-4">
           <div className="flex items-center gap-2">
@@ -348,13 +351,13 @@ export function InstallationReportForm({ data, onChange, readOnly = false }: Ins
               onCheckedChange={(checked) => updateField('trainingProvided', !!checked)}
               disabled={readOnly}
             />
-            <Label htmlFor="trainingProvided">Training was provided to client</Label>
+            <Label htmlFor="trainingProvided">{tr.trainingProvided}</Label>
           </div>
           {reportData.trainingProvided && (
             <Textarea
               value={reportData.trainingNotes}
               onChange={(e) => updateField('trainingNotes', e.target.value)}
-              placeholder="Training details, attendees, topics covered..."
+              placeholder={tr.trainingPlaceholder}
               rows={2}
               disabled={readOnly}
             />
@@ -365,12 +368,12 @@ export function InstallationReportForm({ data, onChange, readOnly = false }: Ins
       {/* Warranty */}
       <Card>
         <CardHeader className="py-3">
-          <CardTitle className="text-sm font-medium">Warranty Information</CardTitle>
+          <CardTitle className="text-sm font-medium">{tr.warrantyInfo}</CardTitle>
         </CardHeader>
         <CardContent className="pt-0">
           <div className="grid grid-cols-2 gap-4">
             <div className="space-y-2">
-              <Label htmlFor="warrantyStartDate">Start Date</Label>
+              <Label htmlFor="warrantyStartDate">{tr.startDate}</Label>
               <Input
                 id="warrantyStartDate"
                 type="date"
@@ -380,7 +383,7 @@ export function InstallationReportForm({ data, onChange, readOnly = false }: Ins
               />
             </div>
             <div className="space-y-2">
-              <Label htmlFor="warrantyEndDate">End Date</Label>
+              <Label htmlFor="warrantyEndDate">{tr.endDate}</Label>
               <Input
                 id="warrantyEndDate"
                 type="date"
@@ -396,22 +399,22 @@ export function InstallationReportForm({ data, onChange, readOnly = false }: Ins
       {/* Handover */}
       <Card>
         <CardHeader className="py-3">
-          <CardTitle className="text-sm font-medium">Handover</CardTitle>
+          <CardTitle className="text-sm font-medium">{tr.handover}</CardTitle>
         </CardHeader>
         <CardContent className="pt-0">
           <div className="grid grid-cols-2 gap-4">
             <div className="space-y-2">
-              <Label htmlFor="handoverName">Client Representative Name</Label>
+              <Label htmlFor="handoverName">{tr.clientRepName}</Label>
               <Input
                 id="handoverName"
                 value={reportData.handoverName}
                 onChange={(e) => updateField('handoverName', e.target.value)}
-                placeholder="Name of person receiving equipment"
+                placeholder={tr.clientRepPlaceholder}
                 disabled={readOnly}
               />
             </div>
             <div className="space-y-2">
-              <Label htmlFor="handoverDate">Handover Date</Label>
+              <Label htmlFor="handoverDate">{tr.handoverDate}</Label>
               <Input
                 id="handoverDate"
                 type="date"
@@ -423,7 +426,7 @@ export function InstallationReportForm({ data, onChange, readOnly = false }: Ins
           </div>
           <div className="mt-4 p-4 bg-muted/50 rounded-lg">
             <p className="text-sm text-muted-foreground">
-              Client signature will be captured when accepting the work order.
+              {tr.clientSignatureNote}
             </p>
           </div>
         </CardContent>

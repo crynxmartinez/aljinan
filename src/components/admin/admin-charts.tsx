@@ -14,6 +14,7 @@ import {
   Cell,
   Legend,
 } from 'recharts'
+import { useTranslation } from '@/lib/i18n/use-translation'
 
 interface AdminChartsProps {
   requestsByMonth: { month: string; count: number }[]
@@ -32,12 +33,14 @@ const STATUS_COLORS: Record<string, string> = {
 }
 
 export function AdminCharts({ requestsByMonth, requestsByStatus }: AdminChartsProps) {
+  const { t } = useTranslation()
+  const ta = t.dashboard.adminCharts
   return (
     <div className="grid gap-4 md:grid-cols-2 mt-6">
       {/* Requests Over Time */}
       <Card>
         <CardHeader>
-          <CardTitle className="text-base">Requests Over Time</CardTitle>
+          <CardTitle className="text-base">{ta.requestsOverTime}</CardTitle>
         </CardHeader>
         <CardContent>
           {requestsByMonth.length > 0 ? (
@@ -47,12 +50,12 @@ export function AdminCharts({ requestsByMonth, requestsByStatus }: AdminChartsPr
                 <XAxis dataKey="month" tick={{ fontSize: 12 }} />
                 <YAxis tick={{ fontSize: 12 }} allowDecimals={false} />
                 <Tooltip />
-                <Bar dataKey="count" fill="#3b82f6" radius={[4, 4, 0, 0]} name="Requests" />
+                <Bar dataKey="count" fill="#3b82f6" radius={[4, 4, 0, 0]} name={ta.requests} />
               </BarChart>
             </ResponsiveContainer>
           ) : (
             <div className="h-[280px] flex items-center justify-center text-muted-foreground">
-              No request data yet
+              {ta.noRequestData}
             </div>
           )}
         </CardContent>
@@ -61,7 +64,7 @@ export function AdminCharts({ requestsByMonth, requestsByStatus }: AdminChartsPr
       {/* Requests by Status */}
       <Card>
         <CardHeader>
-          <CardTitle className="text-base">Requests by Status</CardTitle>
+          <CardTitle className="text-base">{ta.requestsByStatus}</CardTitle>
         </CardHeader>
         <CardContent>
           {requestsByStatus.length > 0 ? (
@@ -90,7 +93,7 @@ export function AdminCharts({ requestsByMonth, requestsByStatus }: AdminChartsPr
             </ResponsiveContainer>
           ) : (
             <div className="h-[280px] flex items-center justify-center text-muted-foreground">
-              No request data yet
+              {ta.noRequestData}
             </div>
           )}
         </CardContent>

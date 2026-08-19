@@ -84,7 +84,7 @@ export async function PATCH(
     }
 
     // Build update data
-    const updateData: any = {}
+    const updateData: Record<string, unknown> = {}
 
     // Validate custom equipment type if OTHER is selected
     if (body.equipmentType === 'OTHER' && !body.customEquipmentType?.trim()) {

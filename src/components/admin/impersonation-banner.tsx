@@ -4,6 +4,7 @@ import { AlertCircle, LogOut } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { signOut } from 'next-auth/react'
 import { useState } from 'react'
+import { useTranslation } from '@/lib/i18n/use-translation'
 
 interface ImpersonationBannerProps {
   targetUserName?: string | null
@@ -12,6 +13,8 @@ interface ImpersonationBannerProps {
 }
 
 export function ImpersonationBanner({ targetUserName, targetUserEmail, realAdminEmail }: ImpersonationBannerProps) {
+  const { t } = useTranslation()
+  const ta = t.dashboard.adminImpersonationBanner
   const [exiting, setExiting] = useState(false)
 
   const handleExitImpersonation = async () => {
@@ -38,10 +41,10 @@ export function ImpersonationBanner({ targetUserName, targetUserEmail, realAdmin
       <div className="flex items-center gap-3">
         <AlertCircle className="h-5 w-5 flex-shrink-0" />
         <div className="flex flex-col sm:flex-row sm:items-center sm:gap-2">
-          <span className="font-semibold">Impersonation Mode:</span>
+          <span className="font-semibold">{ta.impersonationMode}</span>
           <span className="text-sm">
-            Viewing as <span className="font-medium">{targetUserName || targetUserEmail}</span>
-            {' '} • Admin: {realAdminEmail}
+            {ta.viewingAs} <span className="font-medium">{targetUserName || targetUserEmail}</span>
+            {' '} • {ta.admin} {realAdminEmail}
           </span>
         </div>
       </div>
@@ -53,7 +56,7 @@ export function ImpersonationBanner({ targetUserName, targetUserEmail, realAdmin
         className="flex-shrink-0"
       >
         <LogOut className="h-4 w-4 mr-2" />
-        {exiting ? 'Exiting...' : 'Exit Impersonation'}
+        {exiting ? ta.exiting : ta.exitImpersonation}
       </Button>
     </div>
   )

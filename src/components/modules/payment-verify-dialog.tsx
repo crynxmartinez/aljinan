@@ -1,6 +1,7 @@
 'use client'
 
 import { useState } from 'react'
+import { useTranslation } from '@/lib/i18n/use-translation'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
@@ -48,6 +49,8 @@ export function PaymentVerifyDialog({
   branchId,
   onSuccess,
 }: PaymentVerifyDialogProps) {
+  const { t } = useTranslation()
+  const tv = t.dashboard.paymentVerify
   const [verifying, setVerifying] = useState(false)
   const [error, setError] = useState('')
   const [signature, setSignature] = useState<string | null>(null)
@@ -62,19 +65,19 @@ export function PaymentVerifyDialog({
   }
 
   const totalAmount = workOrders.reduce((sum, wo) => sum + (wo.price || 0), 0)
-  
+
   // Get the first work order's proof (they should all have the same proof if paid together)
   const proofWorkOrder = workOrders[0]
-  const isImageProof = proofWorkOrder?.paymentProofUrl?.startsWith('data:image') || 
-                       proofWorkOrder?.paymentProofFileName?.match(/\.(jpg|jpeg|png|gif|webp)$/i)
+  const isImageProof = proofWorkOrder?.paymentProofUrl?.startsWith('data:image') ||
+    proofWorkOrder?.paymentProofFileName?.match(/\.(jpg|jpeg|png|gif|webp)$/i)
 
   const handleVerify = async () => {
     if (workOrders.length === 0) return
     if (!signature) {
-      setError('Please provide your signature to verify the payment')
+      setError(tv.errorNoSignature)
       return
     }
-    
+
     setVerifying(true)
     setError('')
 
@@ -120,17 +123,17 @@ export function PaymentVerifyDialog({
         <DialogHeader>
           <DialogTitle className="flex items-center gap-2">
             <CheckCircle className="h-5 w-5" />
-            Verify Payment
+            {tv.title}
           </DialogTitle>
           <DialogDescription>
-            Review the payment proof and sign to confirm payment received.
+            {tv.desc}
           </DialogDescription>
         </DialogHeader>
 
         {/* Work orders list */}
         <div className="bg-muted/50 rounded-lg p-3 space-y-2">
           <div className="text-sm font-medium mb-2">
-            {workOrders.length === 1 ? 'Work Order' : `${workOrders.length} Work Orders`}
+            {workOrders.length === 1 ? tv.workOrder : tv.workOrdersMultiple.replace('{count}', String(workOrders.length))}
           </div>
           <div className="space-y-2 max-h-[150px] overflow-y-auto">
             {workOrders.map((wo) => (
@@ -141,12 +144,12 @@ export function PaymentVerifyDialog({
             ))}
           </div>
           <div className="border-t pt-2 mt-2 flex items-center justify-between font-bold">
-            <span>Total</span>
+            <span>{tv.total}</span>
             <span className="text-primary">{formatCurrency(totalAmount)}</span>
           </div>
           {proofWorkOrder?.paymentSubmittedAt && (
             <div className="text-xs text-muted-foreground">
-              Payment submitted: {new Date(proofWorkOrder.paymentSubmittedAt).toLocaleString()}
+              {tv.paymentSubmitted} {new Date(proofWorkOrder.paymentSubmittedAt).toLocaleString()}
             </div>
           )}
         </div>
@@ -159,8 +162,8 @@ export function PaymentVerifyDialog({
 
         {/* Payment proof display */}
         <div className="space-y-3">
-          <Label>Payment Proof</Label>
-          
+          <Label>{tv.paymentProof}</Label>
+
           {proofWorkOrder?.paymentProofType === 'link' ? (
             <div className="space-y-2">
               <div className="flex items-center gap-2">
@@ -174,7 +177,7 @@ export function PaymentVerifyDialog({
                 </Button>
               </div>
               <p className="text-xs text-muted-foreground">
-                Click the button to open the payment link in a new tab
+                {tv.openLinkHelp}
               </p>
             </div>
           ) : (
@@ -189,7 +192,7 @@ export function PaymentVerifyDialog({
                   {proofWorkOrder.paymentProofFileName}
                 </div>
               )}
-              
+
               {isImageProof && proofWorkOrder?.paymentProofUrl ? (
                 <div className="border rounded-lg overflow-hidden">
                   <img
@@ -205,7 +208,7 @@ export function PaymentVerifyDialog({
                   onClick={() => window.open(proofWorkOrder.paymentProofUrl!, '_blank')}
                 >
                   <FileText className="mr-2 h-4 w-4" />
-                  View Document
+                  {tv.viewDocument}
                 </Button>
               ) : null}
             </div>
@@ -216,12 +219,12 @@ export function PaymentVerifyDialog({
         <div className="space-y-3">
           <Label className="flex items-center gap-2">
             <PenTool className="h-4 w-4" />
-            Your Signature (Required)
+            {tv.yourSignature}
           </Label>
           <p className="text-xs text-muted-foreground">
-            By signing below, you confirm that you have received the payment for the above work order(s).
+            {tv.signatureHelp}
           </p>
-          <SignaturePad 
+          <SignaturePad
             onSignatureChange={setSignature}
             width={450}
             height={120}
@@ -230,10 +233,10 @@ export function PaymentVerifyDialog({
 
         <DialogFooter className="gap-2">
           <Button variant="outline" onClick={() => handleClose(false)}>
-            Cancel
+            {tv.cancel}
           </Button>
-          <Button 
-            onClick={handleVerify} 
+          <Button
+            onClick={handleVerify}
             disabled={verifying || !signature}
             className="bg-green-600 hover:bg-green-700"
           >
@@ -242,7 +245,7 @@ export function PaymentVerifyDialog({
             ) : (
               <CheckCircle className="mr-2 h-4 w-4" />
             )}
-            Confirm Payment Received
+            {tv.confirmPaymentReceived}
           </Button>
         </DialogFooter>
       </DialogContent>

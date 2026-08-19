@@ -2,6 +2,7 @@
 
 import { useState, useEffect } from 'react'
 import { useRouter } from 'next/navigation'
+import { useTranslation } from '@/lib/i18n/use-translation'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
@@ -131,6 +132,8 @@ interface ContractsListProps {
 
 export function ContractsList({ branchId }: ContractsListProps) {
   const router = useRouter()
+  const { t } = useTranslation()
+  const tcl = t.dashboard.contractsList
   const [contracts, setContracts] = useState<Contract[]>([])
   const [loading, setLoading] = useState(true)
   const [createDialogOpen, setCreateDialogOpen] = useState(false)
@@ -827,7 +830,7 @@ export function ContractsList({ branchId }: ContractsListProps) {
   }
 
   const handleDeleteContract = async (contractId: string) => {
-    if (!confirm('Are you sure you want to delete this contract?')) return
+    if (!confirm(tcl.deleteConfirm)) return
 
     try {
       await api.delete(`/api/branches/${branchId}/contracts/${contractId}`)

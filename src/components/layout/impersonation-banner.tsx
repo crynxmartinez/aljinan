@@ -4,8 +4,11 @@ import { useState, useEffect } from 'react'
 import { useRouter } from 'next/navigation'
 import { Shield, LogOut } from 'lucide-react'
 import { Button } from '@/components/ui/button'
+import { useTranslation } from '@/lib/i18n/use-translation'
 
 export function ImpersonationBanner() {
+  const { t } = useTranslation()
+  const ta = t.dashboard.layoutImpersonationBanner
   const router = useRouter()
   const [impersonation, setImpersonation] = useState<{
     adminEmail: string
@@ -49,7 +52,7 @@ export function ImpersonationBanner() {
       <div className="flex items-center gap-2">
         <Shield className="h-4 w-4" />
         <span>
-          <strong>Admin View</strong> — Viewing as{' '}
+          <strong>{ta.adminView}</strong> — {ta.viewingAs}{' '}
           <strong>{impersonation.targetEmail}</strong> ({impersonation.targetRole})
         </span>
       </div>
@@ -60,7 +63,7 @@ export function ImpersonationBanner() {
         onClick={handleExitImpersonation}
       >
         <LogOut className="h-3.5 w-3.5 mr-1" />
-        Exit to Admin
+        {ta.exitToAdmin}
       </Button>
     </div>
   )

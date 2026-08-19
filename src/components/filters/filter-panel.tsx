@@ -24,6 +24,7 @@ import {
 } from '@/components/ui/popover'
 import { cn } from '@/lib/utils'
 import { Check } from 'lucide-react'
+import { useTranslation } from '@/lib/i18n/use-translation'
 
 interface FilterOption {
   value: string
@@ -48,9 +49,9 @@ interface FilterPanelProps {
   onClientChange?: (clients: string[]) => void
 }
 
-export function FilterPanel({ 
-  filters, 
-  onFilterChange, 
+export function FilterPanel({
+  filters,
+  onFilterChange,
   activeFilterCount = 0,
   dateRange,
   onDateRangeChange,
@@ -58,6 +59,8 @@ export function FilterPanel({
   selectedClients,
   onClientChange
 }: FilterPanelProps) {
+  const { t } = useTranslation()
+  const ta = t.dashboard.filterPanel
   const [localFilters, setLocalFilters] = useState(filters)
   const [isOpen, setIsOpen] = useState(false)
 
@@ -99,7 +102,7 @@ export function FilterPanel({
       <SheetTrigger asChild>
         <Button variant="outline" size="sm" className="relative">
           <Filter className="h-4 w-4 mr-2" />
-          Filters
+          {ta.filters}
           {activeFilterCount > 0 && (
             <Badge variant="secondary" className="ml-2 h-5 px-1.5">
               {activeFilterCount}
@@ -109,9 +112,9 @@ export function FilterPanel({
       </SheetTrigger>
       <SheetContent className="w-80">
         <SheetHeader className="px-1">
-          <SheetTitle>Filters</SheetTitle>
+          <SheetTitle>{ta.filters}</SheetTitle>
           <SheetDescription>
-            Refine your results by applying filters
+            {ta.refineResults}
           </SheetDescription>
         </SheetHeader>
 
@@ -121,10 +124,10 @@ export function FilterPanel({
             {onDateRangeChange && (
               <>
                 <div className="space-y-3 px-4">
-                  <Label className="text-sm font-medium text-foreground">Date Range</Label>
+                  <Label className="text-sm font-medium text-foreground">{ta.dateRange}</Label>
                   <div className="space-y-3">
                     <div className="space-y-2">
-                      <Label htmlFor="date-from" className="text-xs font-medium text-muted-foreground">From</Label>
+                      <Label htmlFor="date-from" className="text-xs font-medium text-muted-foreground">{ta.from}</Label>
                       <Input
                         id="date-from"
                         type="date"
@@ -134,7 +137,7 @@ export function FilterPanel({
                       />
                     </div>
                     <div className="space-y-2">
-                      <Label htmlFor="date-to" className="text-xs font-medium text-muted-foreground">To</Label>
+                      <Label htmlFor="date-to" className="text-xs font-medium text-muted-foreground">{ta.to}</Label>
                       <Input
                         id="date-to"
                         type="date"
@@ -153,7 +156,7 @@ export function FilterPanel({
             {clients && clients.length > 0 && onClientChange && (
               <>
                 <div className="space-y-3 px-4">
-                  <Label className="text-sm font-medium text-foreground">Clients</Label>
+                  <Label className="text-sm font-medium text-foreground">{ta.clients}</Label>
                   <Popover>
                     <PopoverTrigger asChild>
                       <Button
@@ -162,8 +165,8 @@ export function FilterPanel({
                       >
                         <span className="text-sm">
                           {selectedClients && selectedClients.length > 0
-                            ? `${selectedClients.length} selected`
-                            : 'Select clients...'}
+                            ? `${selectedClients.length} ${ta.selected}`
+                            : ta.selectClients}
                         </span>
                         <ChevronDown className="h-4 w-4 opacity-50" />
                       </Button>
@@ -220,8 +223,8 @@ export function FilterPanel({
                       >
                         <span className="text-sm">
                           {selectedCount > 0
-                            ? `${selectedCount} selected`
-                            : `Select ${group.label.toLowerCase()}...`}
+                            ? `${selectedCount} ${ta.selected}`
+                            : `${ta.selectClients.replace('...', '')} ${group.label.toLowerCase()}...`}
                         </span>
                         <ChevronDown className="h-4 w-4 opacity-50" />
                       </Button>
@@ -262,10 +265,10 @@ export function FilterPanel({
         <SheetFooter className="flex gap-2 px-1">
           <Button variant="outline" onClick={handleClearAll} className="flex-1">
             <X className="h-4 w-4 mr-2" />
-            Clear All
+            {ta.clearAll}
           </Button>
           <Button onClick={handleApply} className="flex-1">
-            Apply Filters
+            {ta.applyFilters}
           </Button>
         </SheetFooter>
       </SheetContent>

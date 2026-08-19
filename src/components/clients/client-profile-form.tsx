@@ -15,6 +15,7 @@ import {
   DialogTitle,
 } from '@/components/ui/dialog'
 import { Plus, Trash2, Loader2 } from 'lucide-react'
+import { useTranslation } from '@/lib/i18n/use-translation'
 
 interface ContactPerson {
   name: string
@@ -42,6 +43,8 @@ interface ClientProfileFormProps {
 }
 
 export function ClientProfileForm({ client, open, onOpenChange }: ClientProfileFormProps) {
+  const { t } = useTranslation()
+  const ta = t.dashboard.clientProfileForm
   const router = useRouter()
   const [loading, setLoading] = useState(false)
   const [formData, setFormData] = useState({
@@ -82,7 +85,7 @@ export function ClientProfileForm({ client, open, onOpenChange }: ClientProfileF
       onOpenChange(false)
     } catch (error) {
       console.error('Error updating client:', error)
-      alert(error instanceof Error ? error.message : 'Failed to update client profile')
+      alert(error instanceof Error ? error.message : ta.failedToUpdateClient)
     } finally {
       setLoading(false)
     }
@@ -106,21 +109,21 @@ export function ClientProfileForm({ client, open, onOpenChange }: ClientProfileF
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent className="sm:max-w-4xl max-h-[90vh] overflow-y-auto">
         <DialogHeader>
-          <DialogTitle>Edit Client Profile</DialogTitle>
+          <DialogTitle>{ta.editClientProfile}</DialogTitle>
           <DialogDescription>
-            Update company information and contact details
+            {ta.updateCompanyInfo}
           </DialogDescription>
         </DialogHeader>
 
         <form onSubmit={handleSubmit} className="space-y-6">
           <div className="space-y-4">
             <h3 className="font-semibold text-sm text-muted-foreground uppercase tracking-wide">
-              Company Information
+              {ta.companyInformation}
             </h3>
 
             <div className="grid grid-cols-2 gap-4">
               <div className="space-y-2">
-                <Label htmlFor="companyName">Company Name *</Label>
+                <Label htmlFor="companyName">{ta.companyName}</Label>
                 <Input
                   id="companyName"
                   value={formData.companyName}
@@ -129,7 +132,7 @@ export function ClientProfileForm({ client, open, onOpenChange }: ClientProfileF
                 />
               </div>
               <div className="space-y-2">
-                <Label htmlFor="companyEmail">Company Email</Label>
+                <Label htmlFor="companyEmail">{ta.companyEmail}</Label>
                 <Input
                   id="companyEmail"
                   type="email"
@@ -142,7 +145,7 @@ export function ClientProfileForm({ client, open, onOpenChange }: ClientProfileF
 
             <div className="grid grid-cols-2 gap-4">
               <div className="space-y-2">
-                <Label htmlFor="companyPhone">Phone</Label>
+                <Label htmlFor="companyPhone">{ta.companyPhone}</Label>
                 <Input
                   id="companyPhone"
                   value={formData.companyPhone}
@@ -153,32 +156,32 @@ export function ClientProfileForm({ client, open, onOpenChange }: ClientProfileF
 
             <div className="grid grid-cols-2 gap-4">
               <div className="space-y-2">
-                <Label htmlFor="crNumber">CR Number</Label>
+                <Label htmlFor="crNumber">{ta.crNumber}</Label>
                 <Input
                   id="crNumber"
                   value={formData.crNumber}
                   onChange={(e) => setFormData({ ...formData, crNumber: e.target.value })}
-                  placeholder="Commercial Registration"
+                  placeholder={ta.commercialRegistration}
                 />
               </div>
               <div className="space-y-2">
-                <Label htmlFor="vatNumber">VAT Number</Label>
+                <Label htmlFor="vatNumber">{ta.vatNumber}</Label>
                 <Input
                   id="vatNumber"
                   value={formData.vatNumber}
                   onChange={(e) => setFormData({ ...formData, vatNumber: e.target.value })}
-                  placeholder="VAT Registration"
+                  placeholder={ta.vatRegistration}
                 />
               </div>
             </div>
 
             <div className="space-y-2">
-              <Label htmlFor="billingAddress">Billing Address</Label>
+              <Label htmlFor="billingAddress">{ta.billingAddress}</Label>
               <Textarea
                 id="billingAddress"
                 value={formData.billingAddress}
                 onChange={(e) => setFormData({ ...formData, billingAddress: e.target.value })}
-                placeholder="Full billing address"
+                placeholder={ta.fullBillingAddress}
                 rows={2}
               />
             </div>
@@ -188,12 +191,12 @@ export function ClientProfileForm({ client, open, onOpenChange }: ClientProfileF
           {/* Contact Person */}
           <div className="space-y-4">
             <h3 className="font-semibold text-sm text-muted-foreground uppercase tracking-wide">
-              Primary Contact Person
+              {ta.primaryContactPerson}
             </h3>
 
             <div className="grid grid-cols-2 gap-4">
               <div className="space-y-2">
-                <Label htmlFor="contactPersonName">Contact Person Name</Label>
+                <Label htmlFor="contactPersonName">{ta.contactPersonName}</Label>
                 <Input
                   id="contactPersonName"
                   value={formData.contactPersonName}
@@ -202,7 +205,7 @@ export function ClientProfileForm({ client, open, onOpenChange }: ClientProfileF
                 />
               </div>
               <div className="space-y-2">
-                <Label htmlFor="contactPersonPhone">Contact Person Phone</Label>
+                <Label htmlFor="contactPersonPhone">{ta.contactPersonPhone}</Label>
                 <Input
                   id="contactPersonPhone"
                   value={formData.contactPersonPhone}
@@ -213,7 +216,7 @@ export function ClientProfileForm({ client, open, onOpenChange }: ClientProfileF
             </div>
 
             <div className="space-y-2">
-              <Label htmlFor="contactPersonEmail">Contact Person Email</Label>
+              <Label htmlFor="contactPersonEmail">{ta.contactPersonEmail}</Label>
               <Input
                 id="contactPersonEmail"
                 type="email"
@@ -227,24 +230,24 @@ export function ClientProfileForm({ client, open, onOpenChange }: ClientProfileF
           <div className="space-y-4">
             <div className="flex items-center justify-between">
               <h3 className="font-semibold text-sm text-muted-foreground uppercase tracking-wide">
-                Additional Contact Persons
+                {ta.additionalContactPersons}
               </h3>
               <Button type="button" variant="outline" size="sm" onClick={addContact}>
                 <Plus className="h-4 w-4 mr-1" />
-                Add Contact
+                {ta.addContact}
               </Button>
             </div>
 
             {contacts.length === 0 ? (
               <p className="text-sm text-muted-foreground text-center py-4 bg-muted/50 rounded-lg">
-                No additional contacts. Click &quot;Add Contact&quot; to add one.
+                {ta.noAdditionalContacts}
               </p>
             ) : (
               <div className="space-y-4">
                 {contacts.map((contact, index) => (
                   <div key={index} className="p-4 border rounded-lg space-y-3">
                     <div className="flex items-center justify-between">
-                      <span className="text-sm font-medium">Contact {index + 1}</span>
+                      <span className="text-sm font-medium">{ta.contact} {index + 1}</span>
                       <Button
                         type="button"
                         variant="ghost"
@@ -256,36 +259,36 @@ export function ClientProfileForm({ client, open, onOpenChange }: ClientProfileF
                     </div>
                     <div className="grid grid-cols-2 gap-3">
                       <div className="space-y-1">
-                        <Label className="text-xs">Name</Label>
+                        <Label className="text-xs">{ta.name}</Label>
                         <Input
                           value={contact.name}
                           onChange={(e) => updateContact(index, 'name', e.target.value)}
-                          placeholder="Contact name"
+                          placeholder={ta.contactName}
                         />
                       </div>
                       <div className="space-y-1">
-                        <Label className="text-xs">Phone</Label>
+                        <Label className="text-xs">{ta.companyPhone}</Label>
                         <Input
                           value={contact.phone}
                           onChange={(e) => updateContact(index, 'phone', e.target.value)}
-                          placeholder="Phone number"
+                          placeholder={ta.phoneNumber}
                         />
                       </div>
                       <div className="space-y-1">
-                        <Label className="text-xs">Email</Label>
+                        <Label className="text-xs">{ta.email}</Label>
                         <Input
                           type="email"
                           value={contact.email}
                           onChange={(e) => updateContact(index, 'email', e.target.value)}
-                          placeholder="Email address"
+                          placeholder={ta.emailAddress}
                         />
                       </div>
                       <div className="space-y-1">
-                        <Label className="text-xs">WhatsApp</Label>
+                        <Label className="text-xs">{ta.whatsapp}</Label>
                         <Input
                           value={contact.whatsapp}
                           onChange={(e) => updateContact(index, 'whatsapp', e.target.value)}
-                          placeholder="WhatsApp number"
+                          placeholder={ta.whatsappNumber}
                         />
                       </div>
                     </div>
@@ -297,11 +300,11 @@ export function ClientProfileForm({ client, open, onOpenChange }: ClientProfileF
 
           <DialogFooter>
             <Button type="button" variant="outline" onClick={() => onOpenChange(false)}>
-              Cancel
+              {ta.cancel}
             </Button>
             <Button type="submit" disabled={loading}>
               {loading && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
-              Save Changes
+              {ta.saveChanges}
             </Button>
           </DialogFooter>
         </form>

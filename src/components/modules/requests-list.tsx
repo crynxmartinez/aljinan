@@ -405,7 +405,7 @@ function WorkOrdersGroupedViewContractor({
                       ) : (
                         <>
                           {wo.price !== null ? (
-                            <span className="font-medium">SAR {wo.price.toLocaleString('en-US', { minimumFractionDigits: 2 })}</span>
+                            <span className="font-medium">{tr.sar} {wo.price.toLocaleString('en-US', { minimumFractionDigits: 2 })}</span>
                           ) : (
                             <Badge variant="outline" className="text-xs text-orange-600">{tr.pending}</Badge>
                           )}
@@ -926,9 +926,16 @@ export function RequestsList({ branchId, userRole, userId }: RequestsListProps) 
   }
 
   // Format work order type for display
+  const WORK_ORDER_TYPE_LABELS: Record<string, string> = {
+    'SERVICE': tr.service,
+    'INSPECTION': tr.inspection,
+    'MAINTENANCE': tr.maintenance,
+    'INSTALLATION': tr.installation,
+  }
+
   const formatWorkOrderType = (type: string | null | undefined): string => {
     if (!type) return tr.service
-    return type.charAt(0) + type.slice(1).toLowerCase()
+    return WORK_ORDER_TYPE_LABELS[type] || type.charAt(0) + type.slice(1).toLowerCase()
   }
 
   const getPriorityBadge = (priority: Request['priority']) => {
@@ -1705,7 +1712,7 @@ export function RequestsList({ branchId, userRole, userId }: RequestsListProps) 
                     <div className="grid grid-cols-2 gap-2 text-sm">
                       <div>
                         <p className="text-purple-600">{tr.price}</p>
-                        <p className="font-semibold">SAR {selectedRequest.quotedPrice.toLocaleString()}</p>
+                        <p className="font-semibold">{tr.sar} {selectedRequest.quotedPrice.toLocaleString()}</p>
                       </div>
                       {selectedRequest.quotedDate && (
                         <div>
@@ -2010,7 +2017,7 @@ export function RequestsList({ branchId, userRole, userId }: RequestsListProps) 
                                   <span className="text-blue-700">
                                     └ {quoteRequest.recurringType === 'MONTHLY' ? `${tr.month} ${idx + 1}` : `Q${idx + 1}`}: {date.toLocaleDateString()}
                                   </span>
-                                  <span className="font-medium text-blue-800">SAR {price.toLocaleString()}</span>
+                                  <span className="font-medium text-blue-800">{tr.sar} {price.toLocaleString()}</span>
                                 </div>
                               ))}
                               {dates.length > 4 && (
@@ -2018,7 +2025,7 @@ export function RequestsList({ branchId, userRole, userId }: RequestsListProps) 
                               )}
                               <div className="flex justify-between items-center pt-3 mt-2 border-t border-blue-300 font-semibold">
                                 <span className="text-blue-800">{tr.total} ({dates.length} {tr.totalWorkOrders})</span>
-                                <span className="text-blue-900">SAR {(price * dates.length).toLocaleString()}</span>
+                                <span className="font-medium text-blue-900">{tr.sar} {(price * dates.length).toLocaleString()}</span>
                               </div>
                             </>
                           )

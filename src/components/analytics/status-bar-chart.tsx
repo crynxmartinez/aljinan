@@ -11,6 +11,7 @@ import {
   Legend,
 } from 'chart.js'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
+import { useTranslation } from '@/lib/i18n/use-translation'
 
 ChartJS.register(CategoryScale, LinearScale, BarElement, Title, Tooltip, Legend)
 
@@ -25,14 +26,18 @@ interface StatusBarChartProps {
 
 export function StatusBarChart({
   data,
-  title = 'Work Orders by Status',
-  description = 'Distribution of work orders across different stages',
+  title,
+  description,
 }: StatusBarChartProps) {
+  const { t } = useTranslation()
+  const ta = t.dashboard.statusBarChart
+  const resolvedTitle = title ?? ta.workOrdersByStatus
+  const resolvedDescription = description ?? ta.distributionOfWorkOrders
   const chartData = {
     labels: data.labels,
     datasets: [
       {
-        label: 'Work Orders',
+        label: ta.workOrders,
         data: data.values,
         backgroundColor: [
           'rgba(59, 130, 246, 0.8)',   // Scheduled - Blue
@@ -90,8 +95,8 @@ export function StatusBarChart({
   return (
     <Card>
       <CardHeader>
-        <CardTitle>{title}</CardTitle>
-        <CardDescription>{description}</CardDescription>
+        <CardTitle>{resolvedTitle}</CardTitle>
+        <CardDescription>{resolvedDescription}</CardDescription>
       </CardHeader>
       <CardContent>
         <div className="h-[300px]">

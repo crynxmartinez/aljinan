@@ -1,18 +1,19 @@
 'use client'
 
 import { Button } from '@/components/ui/button'
+import { useTranslation } from '@/lib/i18n/use-translation'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Checkbox } from '@/components/ui/checkbox'
 import { Badge } from '@/components/ui/badge'
 import { Plus, Trash2, Settings, CheckCircle, AlertTriangle, XCircle } from 'lucide-react'
-import { 
-  MaintenanceReportData, 
-  MaintenanceTask, 
-  Measurement, 
+import {
+  MaintenanceReportData,
+  MaintenanceTask,
+  Measurement,
   ConsumableUsed,
-  emptyMaintenanceReportData 
+  emptyMaintenanceReportData
 } from '@/types/reports'
 import {
   Select,
@@ -29,6 +30,8 @@ interface MaintenanceReportFormProps {
 }
 
 export function MaintenanceReportForm({ data, onChange, readOnly = false }: MaintenanceReportFormProps) {
+  const { t } = useTranslation()
+  const tr = t.dashboard.reports.maintenance
   const reportData = data || emptyMaintenanceReportData
 
   const updateField = <K extends keyof MaintenanceReportData>(field: K, value: MaintenanceReportData[K]) => {
@@ -86,13 +89,13 @@ export function MaintenanceReportForm({ data, onChange, readOnly = false }: Main
   const getConditionBadge = (condition: string) => {
     switch (condition) {
       case 'good':
-        return <Badge className="bg-green-100 text-green-800">Good</Badge>
+        return <Badge className="bg-green-100 text-green-800">{tr.good}</Badge>
       case 'fair':
-        return <Badge className="bg-yellow-100 text-yellow-800">Fair</Badge>
+        return <Badge className="bg-yellow-100 text-yellow-800">{tr.fair}</Badge>
       case 'poor':
-        return <Badge className="bg-orange-100 text-orange-800">Poor</Badge>
+        return <Badge className="bg-orange-100 text-orange-800">{tr.poor}</Badge>
       case 'critical':
-        return <Badge className="bg-red-100 text-red-800">Critical</Badge>
+        return <Badge className="bg-red-100 text-red-800">{tr.critical}</Badge>
       default:
         return null
     }
@@ -102,12 +105,12 @@ export function MaintenanceReportForm({ data, onChange, readOnly = false }: Main
     <div className="space-y-6">
       <div className="flex items-center gap-2 text-green-600">
         <Settings className="h-5 w-5" />
-        <h3 className="font-semibold text-lg">Maintenance Report</h3>
+        <h3 className="font-semibold text-lg">{tr.title}</h3>
       </div>
 
       {/* Equipment Condition */}
       <div className="space-y-2">
-        <Label>Equipment Condition</Label>
+        <Label>{tr.equipmentCondition}</Label>
         <div className="flex gap-2">
           <Select
             value={reportData.equipmentCondition}
@@ -115,31 +118,31 @@ export function MaintenanceReportForm({ data, onChange, readOnly = false }: Main
             disabled={readOnly}
           >
             <SelectTrigger className="w-[200px]">
-              <SelectValue placeholder="Select condition" />
+              <SelectValue placeholder={tr.selectCondition} />
             </SelectTrigger>
             <SelectContent>
               <SelectItem value="good">
                 <div className="flex items-center gap-2">
                   <CheckCircle className="h-4 w-4 text-green-600" />
-                  Good
+                  {tr.good}
                 </div>
               </SelectItem>
               <SelectItem value="fair">
                 <div className="flex items-center gap-2">
                   <AlertTriangle className="h-4 w-4 text-yellow-600" />
-                  Fair
+                  {tr.fair}
                 </div>
               </SelectItem>
               <SelectItem value="poor">
                 <div className="flex items-center gap-2">
                   <AlertTriangle className="h-4 w-4 text-orange-600" />
-                  Poor
+                  {tr.poor}
                 </div>
               </SelectItem>
               <SelectItem value="critical">
                 <div className="flex items-center gap-2">
                   <XCircle className="h-4 w-4 text-red-600" />
-                  Critical
+                  {tr.critical}
                 </div>
               </SelectItem>
             </SelectContent>
@@ -152,11 +155,11 @@ export function MaintenanceReportForm({ data, onChange, readOnly = false }: Main
       <Card>
         <CardHeader className="py-3">
           <div className="flex items-center justify-between">
-            <CardTitle className="text-sm font-medium">Maintenance Tasks Performed</CardTitle>
+            <CardTitle className="text-sm font-medium">{tr.maintenanceTasks}</CardTitle>
             {!readOnly && (
               <Button type="button" variant="outline" size="sm" onClick={addTask}>
                 <Plus className="h-4 w-4 mr-1" />
-                Add Task
+                {tr.addTask}
               </Button>
             )}
           </div>
@@ -164,7 +167,7 @@ export function MaintenanceReportForm({ data, onChange, readOnly = false }: Main
         <CardContent className="pt-0">
           {reportData.tasksPerformed.length === 0 ? (
             <p className="text-sm text-muted-foreground text-center py-4">
-              No tasks added
+              {tr.noTasksAdded}
             </p>
           ) : (
             <div className="space-y-3">
@@ -180,14 +183,14 @@ export function MaintenanceReportForm({ data, onChange, readOnly = false }: Main
                     <Input
                       value={task.task}
                       onChange={(e) => updateTask(index, 'task', e.target.value)}
-                      placeholder="Task description"
+                      placeholder={tr.taskDescription}
                       disabled={readOnly}
                       className={task.completed ? 'line-through text-muted-foreground' : ''}
                     />
                     <Input
                       value={task.notes}
                       onChange={(e) => updateTask(index, 'notes', e.target.value)}
-                      placeholder="Notes (optional)"
+                      placeholder={tr.notesOptional}
                       disabled={readOnly}
                       className="text-sm"
                     />
@@ -214,11 +217,11 @@ export function MaintenanceReportForm({ data, onChange, readOnly = false }: Main
       <Card>
         <CardHeader className="py-3">
           <div className="flex items-center justify-between">
-            <CardTitle className="text-sm font-medium">Measurements & Readings</CardTitle>
+            <CardTitle className="text-sm font-medium">{tr.measurements}</CardTitle>
             {!readOnly && (
               <Button type="button" variant="outline" size="sm" onClick={addMeasurement}>
                 <Plus className="h-4 w-4 mr-1" />
-                Add Measurement
+                {tr.addMeasurement}
               </Button>
             )}
           </div>
@@ -226,16 +229,16 @@ export function MaintenanceReportForm({ data, onChange, readOnly = false }: Main
         <CardContent className="pt-0">
           {reportData.measurements.length === 0 ? (
             <p className="text-sm text-muted-foreground text-center py-4">
-              No measurements recorded
+              {tr.noMeasurements}
             </p>
           ) : (
             <div className="space-y-3">
               <div className="grid grid-cols-12 gap-2 text-xs font-medium text-muted-foreground">
-                <div className="col-span-3">Parameter</div>
-                <div className="col-span-2">Value</div>
-                <div className="col-span-2">Unit</div>
-                <div className="col-span-2">Normal Range</div>
-                <div className="col-span-2">Status</div>
+                <div className="col-span-3">{tr.parameter}</div>
+                <div className="col-span-2">{tr.value}</div>
+                <div className="col-span-2">{tr.unit}</div>
+                <div className="col-span-2">{tr.normalRange}</div>
+                <div className="col-span-2">{tr.status}</div>
                 <div className="col-span-1"></div>
               </div>
               {reportData.measurements.map((measurement, index) => (
@@ -282,9 +285,9 @@ export function MaintenanceReportForm({ data, onChange, readOnly = false }: Main
                         <SelectValue />
                       </SelectTrigger>
                       <SelectContent>
-                        <SelectItem value="normal">Normal</SelectItem>
-                        <SelectItem value="warning">Warning</SelectItem>
-                        <SelectItem value="critical">Critical</SelectItem>
+                        <SelectItem value="normal">{tr.normal}</SelectItem>
+                        <SelectItem value="warning">{tr.warning}</SelectItem>
+                        <SelectItem value="critical">{tr.critical}</SelectItem>
                       </SelectContent>
                     </Select>
                   </div>
@@ -312,11 +315,11 @@ export function MaintenanceReportForm({ data, onChange, readOnly = false }: Main
       <Card>
         <CardHeader className="py-3">
           <div className="flex items-center justify-between">
-            <CardTitle className="text-sm font-medium">Consumables Used</CardTitle>
+            <CardTitle className="text-sm font-medium">{tr.consumablesUsed}</CardTitle>
             {!readOnly && (
               <Button type="button" variant="outline" size="sm" onClick={addConsumable}>
                 <Plus className="h-4 w-4 mr-1" />
-                Add Consumable
+                {tr.addConsumable}
               </Button>
             )}
           </div>
@@ -324,7 +327,7 @@ export function MaintenanceReportForm({ data, onChange, readOnly = false }: Main
         <CardContent className="pt-0">
           {reportData.consumablesUsed.length === 0 ? (
             <p className="text-sm text-muted-foreground text-center py-4">
-              No consumables used
+              {tr.noConsumables}
             </p>
           ) : (
             <div className="space-y-2">
@@ -333,14 +336,14 @@ export function MaintenanceReportForm({ data, onChange, readOnly = false }: Main
                   <Input
                     value={consumable.item}
                     onChange={(e) => updateConsumable(index, 'item', e.target.value)}
-                    placeholder="Item name"
+                    placeholder={tr.itemName}
                     disabled={readOnly}
                     className="flex-1"
                   />
                   <Input
                     value={consumable.quantity}
                     onChange={(e) => updateConsumable(index, 'quantity', e.target.value)}
-                    placeholder="Quantity"
+                    placeholder={tr.quantity}
                     disabled={readOnly}
                     className="w-32"
                   />
@@ -364,7 +367,7 @@ export function MaintenanceReportForm({ data, onChange, readOnly = false }: Main
 
       {/* Next Maintenance Date */}
       <div className="space-y-2">
-        <Label htmlFor="nextMaintenanceDate">Next Maintenance Date</Label>
+        <Label htmlFor="nextMaintenanceDate">{tr.nextMaintenanceDate}</Label>
         <Input
           id="nextMaintenanceDate"
           type="date"

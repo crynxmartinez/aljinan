@@ -1,6 +1,7 @@
 'use client'
 
 import { Button } from '@/components/ui/button'
+import { useTranslation } from '@/lib/i18n/use-translation'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
 import { Textarea } from '@/components/ui/textarea'
@@ -15,6 +16,8 @@ interface ServiceReportFormProps {
 }
 
 export function ServiceReportForm({ data, onChange, readOnly = false }: ServiceReportFormProps) {
+  const { t } = useTranslation()
+  const tr = t.dashboard.reports.service
   const reportData = data || emptyServiceReportData
 
   const updateField = <K extends keyof ServiceReportData>(field: K, value: ServiceReportData[K]) => {
@@ -29,17 +32,17 @@ export function ServiceReportForm({ data, onChange, readOnly = false }: ServiceR
   const updatePart = (index: number, field: keyof PartReplaced, value: string | number) => {
     const parts = [...reportData.partsReplaced]
     parts[index] = { ...parts[index], [field]: value }
-    
+
     // Auto-calculate total
     if (field === 'quantity' || field === 'unitCost') {
       parts[index].total = parts[index].quantity * parts[index].unitCost
     }
-    
+
     // Calculate total parts cost
     const totalPartsCost = parts.reduce((sum, p) => sum + p.total, 0)
     const laborCost = reportData.laborHours * reportData.laborRate
     const totalCost = totalPartsCost + laborCost
-    
+
     onChange({ ...reportData, partsReplaced: parts, totalPartsCost, totalCost })
   }
 
@@ -48,7 +51,7 @@ export function ServiceReportForm({ data, onChange, readOnly = false }: ServiceR
     const totalPartsCost = parts.reduce((sum, p) => sum + p.total, 0)
     const laborCost = reportData.laborHours * reportData.laborRate
     const totalCost = totalPartsCost + laborCost
-    
+
     onChange({ ...reportData, partsReplaced: parts, totalPartsCost, totalCost })
   }
 
@@ -57,7 +60,7 @@ export function ServiceReportForm({ data, onChange, readOnly = false }: ServiceR
     const rate = field === 'laborRate' ? value : reportData.laborRate
     const laborCost = hours * rate
     const totalCost = reportData.totalPartsCost + laborCost
-    
+
     onChange({ ...reportData, [field]: value, laborCost, totalCost })
   }
 
@@ -65,17 +68,17 @@ export function ServiceReportForm({ data, onChange, readOnly = false }: ServiceR
     <div className="space-y-6">
       <div className="flex items-center gap-2 text-orange-600">
         <Wrench className="h-5 w-5" />
-        <h3 className="font-semibold text-lg">Service Report</h3>
+        <h3 className="font-semibold text-lg">{tr.title}</h3>
       </div>
 
       {/* Problem Description */}
       <div className="space-y-2">
-        <Label htmlFor="problemDescription">Problem Description</Label>
+        <Label htmlFor="problemDescription">{tr.problemDescription}</Label>
         <Textarea
           id="problemDescription"
           value={reportData.problemDescription}
           onChange={(e) => updateField('problemDescription', e.target.value)}
-          placeholder="Describe the issue that was reported..."
+          placeholder={tr.problemDescriptionPlaceholder}
           rows={3}
           disabled={readOnly}
         />
@@ -83,12 +86,12 @@ export function ServiceReportForm({ data, onChange, readOnly = false }: ServiceR
 
       {/* Root Cause */}
       <div className="space-y-2">
-        <Label htmlFor="rootCause">Root Cause Analysis</Label>
+        <Label htmlFor="rootCause">{tr.rootCause}</Label>
         <Textarea
           id="rootCause"
           value={reportData.rootCause}
           onChange={(e) => updateField('rootCause', e.target.value)}
-          placeholder="What caused the problem..."
+          placeholder={tr.rootCausePlaceholder}
           rows={2}
           disabled={readOnly}
         />
@@ -96,12 +99,12 @@ export function ServiceReportForm({ data, onChange, readOnly = false }: ServiceR
 
       {/* Work Performed */}
       <div className="space-y-2">
-        <Label htmlFor="workPerformed">Work Performed</Label>
+        <Label htmlFor="workPerformed">{tr.workPerformed}</Label>
         <Textarea
           id="workPerformed"
           value={reportData.workPerformed}
           onChange={(e) => updateField('workPerformed', e.target.value)}
-          placeholder="Detailed description of work done..."
+          placeholder={tr.workPerformedPlaceholder}
           rows={4}
           disabled={readOnly}
         />
@@ -111,11 +114,11 @@ export function ServiceReportForm({ data, onChange, readOnly = false }: ServiceR
       <Card>
         <CardHeader className="py-3">
           <div className="flex items-center justify-between">
-            <CardTitle className="text-sm font-medium">Parts Replaced</CardTitle>
+            <CardTitle className="text-sm font-medium">{tr.partsReplaced}</CardTitle>
             {!readOnly && (
               <Button type="button" variant="outline" size="sm" onClick={addPart}>
                 <Plus className="h-4 w-4 mr-1" />
-                Add Part
+                {tr.addPart}
               </Button>
             )}
           </div>
@@ -123,15 +126,15 @@ export function ServiceReportForm({ data, onChange, readOnly = false }: ServiceR
         <CardContent className="pt-0">
           {reportData.partsReplaced.length === 0 ? (
             <p className="text-sm text-muted-foreground text-center py-4">
-              No parts replaced
+              {tr.noPartsReplaced}
             </p>
           ) : (
             <div className="space-y-3">
               <div className="grid grid-cols-12 gap-2 text-xs font-medium text-muted-foreground">
-                <div className="col-span-5">Part Name</div>
-                <div className="col-span-2">Qty</div>
-                <div className="col-span-2">Unit Cost</div>
-                <div className="col-span-2">Total</div>
+                <div className="col-span-5">{tr.partName}</div>
+                <div className="col-span-2">{tr.qty}</div>
+                <div className="col-span-2">{tr.unitCost}</div>
+                <div className="col-span-2">{tr.total}</div>
                 <div className="col-span-1"></div>
               </div>
               {reportData.partsReplaced.map((part, index) => (
@@ -140,7 +143,7 @@ export function ServiceReportForm({ data, onChange, readOnly = false }: ServiceR
                     <Input
                       value={part.name}
                       onChange={(e) => updatePart(index, 'name', e.target.value)}
-                      placeholder="Part name"
+                      placeholder={tr.partName}
                       disabled={readOnly}
                     />
                   </div>
@@ -164,7 +167,7 @@ export function ServiceReportForm({ data, onChange, readOnly = false }: ServiceR
                   </div>
                   <div className="col-span-2">
                     <Input
-                      value={`SAR ${part.total.toFixed(2)}`}
+                      value={`${t.dashboard.requestsList.sar} ${part.total.toFixed(2)}`}
                       disabled
                       className="bg-muted"
                     />
@@ -186,7 +189,7 @@ export function ServiceReportForm({ data, onChange, readOnly = false }: ServiceR
               ))}
               <div className="flex justify-end pt-2 border-t">
                 <div className="text-sm font-medium">
-                  Parts Total: SAR {reportData.totalPartsCost.toFixed(2)}
+                  {tr.partsTotal} {t.dashboard.requestsList.sar} {reportData.totalPartsCost.toFixed(2)}
                 </div>
               </div>
             </div>
@@ -197,12 +200,12 @@ export function ServiceReportForm({ data, onChange, readOnly = false }: ServiceR
       {/* Labor */}
       <Card>
         <CardHeader className="py-3">
-          <CardTitle className="text-sm font-medium">Labor</CardTitle>
+          <CardTitle className="text-sm font-medium">{tr.labor}</CardTitle>
         </CardHeader>
         <CardContent className="pt-0">
           <div className="grid grid-cols-3 gap-4">
             <div className="space-y-2">
-              <Label htmlFor="laborHours">Hours</Label>
+              <Label htmlFor="laborHours">{tr.hours}</Label>
               <Input
                 id="laborHours"
                 type="number"
@@ -214,7 +217,7 @@ export function ServiceReportForm({ data, onChange, readOnly = false }: ServiceR
               />
             </div>
             <div className="space-y-2">
-              <Label htmlFor="laborRate">Rate (SAR/hr)</Label>
+              <Label htmlFor="laborRate">{tr.rate}</Label>
               <Input
                 id="laborRate"
                 type="number"
@@ -225,9 +228,9 @@ export function ServiceReportForm({ data, onChange, readOnly = false }: ServiceR
               />
             </div>
             <div className="space-y-2">
-              <Label>Labor Cost</Label>
+              <Label>{tr.laborCost}</Label>
               <Input
-                value={`SAR ${reportData.laborCost.toFixed(2)}`}
+                value={`${t.dashboard.requestsList.sar} ${reportData.laborCost.toFixed(2)}`}
                 disabled
                 className="bg-muted"
               />
@@ -239,18 +242,18 @@ export function ServiceReportForm({ data, onChange, readOnly = false }: ServiceR
       {/* Total Cost */}
       <div className="flex justify-end p-4 bg-muted rounded-lg">
         <div className="text-lg font-semibold">
-          Total Cost: SAR {reportData.totalCost.toFixed(2)}
+          {tr.totalCost} {t.dashboard.requestsList.sar} {reportData.totalCost.toFixed(2)}
         </div>
       </div>
 
       {/* Warranty Information */}
       <div className="space-y-2">
-        <Label htmlFor="warrantyInfo">Warranty Information</Label>
+        <Label htmlFor="warrantyInfo">{tr.warrantyInfo}</Label>
         <Textarea
           id="warrantyInfo"
           value={reportData.warrantyInfo}
           onChange={(e) => updateField('warrantyInfo', e.target.value)}
-          placeholder="Warranty terms for parts and labor..."
+          placeholder={tr.warrantyInfoPlaceholder}
           rows={2}
           disabled={readOnly}
         />

@@ -20,6 +20,7 @@ import {
   ChevronRight,
 } from 'lucide-react'
 import { cn } from '@/lib/utils'
+import { useTranslation } from '@/lib/i18n/use-translation'
 
 type ChecklistItemStage = 'SCHEDULED' | 'IN_PROGRESS' | 'FOR_REVIEW' | 'COMPLETED'
 type ChecklistItemType = 'SCHEDULED' | 'ADHOC'
@@ -47,13 +48,6 @@ const STAGE_COLORS: Record<ChecklistItemStage, string> = {
   COMPLETED: 'bg-green-500',
 }
 
-const STAGE_LABELS: Record<ChecklistItemStage, string> = {
-  SCHEDULED: 'Scheduled',
-  IN_PROGRESS: 'In Progress',
-  FOR_REVIEW: 'For Review',
-  COMPLETED: 'Completed',
-}
-
 function formatCurrency(amount: number) {
   return new Intl.NumberFormat('en-SA', {
     style: 'currency',
@@ -62,6 +56,14 @@ function formatCurrency(amount: number) {
 }
 
 export function CalendarView({ branchId }: CalendarViewProps) {
+  const { t } = useTranslation()
+  const tc = t.dashboard.calendarView
+  const STAGE_LABELS: Record<ChecklistItemStage, string> = {
+    SCHEDULED: tc.stageScheduled,
+    IN_PROGRESS: tc.stageInProgress,
+    FOR_REVIEW: tc.stageForReview,
+    COMPLETED: tc.stageCompleted,
+  }
   const [tasks, setTasks] = useState<ScheduledTask[]>([])
   const [loading, setLoading] = useState(true)
   const [loadFailed, setLoadFailed] = useState(false)
@@ -294,7 +296,7 @@ export function CalendarView({ branchId }: CalendarViewProps) {
               {(selectedDate ? tasksForSelectedDate : upcomingTasks).length === 0 ? (
                 <div className="text-center py-8 text-muted-foreground">
                   <Calendar className="h-12 w-12 mx-auto mb-4 opacity-50" />
-                  <p>No tasks scheduled</p>
+                  <p>{tc.noTasksScheduled}</p>
                 </div>
               ) : (
                 <div className="space-y-3">
@@ -327,7 +329,7 @@ export function CalendarView({ branchId }: CalendarViewProps) {
                                   : 'border-blue-300 text-blue-700 bg-blue-50'
                               )}
                             >
-                              {task.type === 'ADHOC' ? 'Ad-hoc' : 'Scheduled'}
+                              {task.type === 'ADHOC' ? tc.typeAdhoc : tc.typeScheduled}
                             </Badge>
                             <Badge variant="secondary" className="text-xs">
                               {STAGE_LABELS[task.stage]}
@@ -347,7 +349,7 @@ export function CalendarView({ branchId }: CalendarViewProps) {
                 className="w-full mt-4"
                 onClick={() => setSelectedDate(null)}
               >
-                Show All Upcoming
+                {tc.showAllUpcoming}
               </Button>
             )}
           </CardContent>
@@ -358,29 +360,29 @@ export function CalendarView({ branchId }: CalendarViewProps) {
       <Dialog open={detailsOpen} onOpenChange={setDetailsOpen}>
         <DialogContent className="max-w-lg">
           <DialogHeader>
-            <DialogTitle>Task Details</DialogTitle>
+            <DialogTitle>{tc.taskDetails}</DialogTitle>
             <DialogDescription>
-              Scheduled work order details
+              {tc.taskDetailsDesc}
             </DialogDescription>
           </DialogHeader>
 
           {selectedTask && (
             <div className="space-y-4">
               <div>
-                <h4 className="text-sm font-medium text-muted-foreground mb-1">Description</h4>
+                <h4 className="text-sm font-medium text-muted-foreground mb-1">{tc.description}</h4>
                 <p className="text-sm">{selectedTask.description}</p>
               </div>
 
               {selectedTask.notes && (
                 <div>
-                  <h4 className="text-sm font-medium text-muted-foreground mb-1">Notes</h4>
+                  <h4 className="text-sm font-medium text-muted-foreground mb-1">{tc.notes}</h4>
                   <p className="text-sm">{selectedTask.notes}</p>
                 </div>
               )}
 
               <div className="grid grid-cols-2 gap-4">
                 <div>
-                  <h4 className="text-sm font-medium text-muted-foreground mb-1">Scheduled Date</h4>
+                  <h4 className="text-sm font-medium text-muted-foreground mb-1">{tc.scheduledDate}</h4>
                   <p className="text-sm flex items-center gap-2">
                     <Calendar className="h-4 w-4" />
                     {new Date(selectedTask.scheduledDate).toLocaleDateString('en-US', {
@@ -393,7 +395,7 @@ export function CalendarView({ branchId }: CalendarViewProps) {
                 </div>
 
                 <div>
-                  <h4 className="text-sm font-medium text-muted-foreground mb-1">Status</h4>
+                  <h4 className="text-sm font-medium text-muted-foreground mb-1">{tc.status}</h4>
                   <Badge className={cn(STAGE_COLORS[selectedTask.stage], 'text-white')}>
                     {STAGE_LABELS[selectedTask.stage]}
                   </Badge>
@@ -402,15 +404,15 @@ export function CalendarView({ branchId }: CalendarViewProps) {
 
               <div className="grid grid-cols-2 gap-4">
                 <div>
-                  <h4 className="text-sm font-medium text-muted-foreground mb-1">Type</h4>
+                  <h4 className="text-sm font-medium text-muted-foreground mb-1">{tc.type}</h4>
                   <Badge variant="outline">
-                    {selectedTask.type === 'ADHOC' ? 'Ad-hoc' : 'Scheduled'}
+                    {selectedTask.type === 'ADHOC' ? tc.typeAdhoc : tc.typeScheduled}
                   </Badge>
                 </div>
 
                 {selectedTask.price && (
                   <div>
-                    <h4 className="text-sm font-medium text-muted-foreground mb-1">Price</h4>
+                    <h4 className="text-sm font-medium text-muted-foreground mb-1">{tc.price}</h4>
                     <p className="text-lg font-semibold text-green-700">
                       {formatCurrency(selectedTask.price)}
                     </p>
@@ -420,7 +422,7 @@ export function CalendarView({ branchId }: CalendarViewProps) {
 
               {selectedTask.projectTitle && (
                 <div>
-                  <h4 className="text-sm font-medium text-muted-foreground mb-1">Project</h4>
+                  <h4 className="text-sm font-medium text-muted-foreground mb-1">{tc.project}</h4>
                   <p className="text-sm">{selectedTask.projectTitle}</p>
                 </div>
               )}

@@ -2,6 +2,7 @@
 
 import { useState, useEffect } from 'react'
 import { useRouter } from 'next/navigation'
+import { useTranslation } from '@/lib/i18n/use-translation'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
@@ -69,6 +70,8 @@ interface InvoicesListProps {
 
 export function InvoicesList({ branchId }: InvoicesListProps) {
   const router = useRouter()
+  const { t } = useTranslation()
+  const til = t.dashboard.invoicesList
   const [invoices, setInvoices] = useState<Invoice[]>([])
   const [loading, setLoading] = useState(true)
   const [createDialogOpen, setCreateDialogOpen] = useState(false)
@@ -204,7 +207,7 @@ export function InvoicesList({ branchId }: InvoicesListProps) {
   }
 
   const handleDeleteInvoice = async (invoiceId: string) => {
-    if (!confirm('Are you sure you want to delete this invoice?')) return
+    if (!confirm(til.deleteConfirm)) return
 
     try {
       await api.delete(`/api/branches/${branchId}/invoices/${invoiceId}`)

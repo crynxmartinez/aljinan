@@ -1,6 +1,7 @@
 'use client'
 
 import { useEffect, useState } from 'react'
+import { useTranslation } from '@/lib/i18n/use-translation'
 
 interface Equipment {
   id: string
@@ -171,6 +172,8 @@ interface WorkOrderPrintProps {
 }
 
 export function WorkOrderPrint({ workOrderId }: WorkOrderPrintProps) {
+  const { t } = useTranslation()
+  const tp = t.dashboard.workOrderPrint
   const [data, setData] = useState<WorkOrderPrintData | null>(null)
   const [loading, setLoading] = useState(true)
 
@@ -204,7 +207,7 @@ export function WorkOrderPrint({ workOrderId }: WorkOrderPrintProps) {
       <div className="flex items-center justify-center min-h-screen">
         <div className="text-center">
           <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-primary mx-auto mb-4"></div>
-          <p className="text-muted-foreground">Preparing document...</p>
+          <p className="text-muted-foreground">{tp.preparingDocument}</p>
         </div>
       </div>
     )
@@ -213,7 +216,7 @@ export function WorkOrderPrint({ workOrderId }: WorkOrderPrintProps) {
   if (!data) {
     return (
       <div className="flex items-center justify-center min-h-screen">
-        <p className="text-red-600">Failed to load work order data</p>
+        <p className="text-red-600">{tp.failedToLoad}</p>
       </div>
     )
   }
@@ -237,22 +240,22 @@ export function WorkOrderPrint({ workOrderId }: WorkOrderPrintProps) {
 
   const getStageLabel = (stage: string) => {
     const labels: Record<string, string> = {
-      SCHEDULED: 'Scheduled',
-      IN_PROGRESS: 'In Progress',
-      FOR_REVIEW: 'For Review',
-      COMPLETED: 'Completed',
-      CANCELLED: 'Cancelled'
+      SCHEDULED: tp.stageScheduled,
+      IN_PROGRESS: tp.stageInProgress,
+      FOR_REVIEW: tp.stageForReview,
+      COMPLETED: tp.stageCompleted,
+      CANCELLED: tp.stageCancelled
     }
     return labels[stage] || stage
   }
 
   const getWorkOrderTypeLabel = (type: string) => {
     const labels: Record<string, string> = {
-      SERVICE: 'Service',
-      INSPECTION: 'Inspection',
-      MAINTENANCE: 'Maintenance',
-      INSTALLATION: 'Installation',
-      STICKER_INSPECTION: 'Sticker Inspection'
+      SERVICE: tp.woTypeService,
+      INSPECTION: tp.woTypeInspection,
+      MAINTENANCE: tp.woTypeMaintenance,
+      INSTALLATION: tp.woTypeInstallation,
+      STICKER_INSPECTION: tp.woTypeStickerInspection
     }
     return labels[type] || type
   }
@@ -331,13 +334,13 @@ export function WorkOrderPrint({ workOrderId }: WorkOrderPrintProps) {
           <div className="flex justify-between items-start">
             <div>
               <h1 className="text-4xl font-bold text-primary mb-2">TASHEEL</h1>
-              <p className="text-sm text-muted-foreground">Safety Contractor Management</p>
+              <p className="text-sm text-muted-foreground">{tp.safetyContractorManagement}</p>
             </div>
             <div className="text-right">
-              <h2 className="text-2xl font-bold mb-1">WORK ORDER REPORT</h2>
+              <h2 className="text-2xl font-bold mb-1">{tp.workOrderReport}</h2>
               <p className="text-lg font-semibold">WO #{data.workOrderNumber}</p>
               <p className="text-sm text-muted-foreground mt-1">
-                Generated: {new Date().toLocaleDateString()} {new Date().toLocaleTimeString()}
+                {tp.generated} {new Date().toLocaleDateString()} {new Date().toLocaleTimeString()}
               </p>
             </div>
           </div>
@@ -345,23 +348,23 @@ export function WorkOrderPrint({ workOrderId }: WorkOrderPrintProps) {
 
         {/* Client Information */}
         <div className="mb-6 print-section">
-          <h3 className="text-lg font-bold mb-3 text-primary border-b pb-2">CLIENT INFORMATION</h3>
+          <h3 className="text-lg font-bold mb-3 text-primary border-b pb-2">{tp.clientInformation}</h3>
           <div className="grid grid-cols-2 gap-4">
             <div>
-              <p className="text-sm text-muted-foreground">Company Name</p>
+              <p className="text-sm text-muted-foreground">{tp.companyName}</p>
               <p className="font-semibold">{data.clientName}</p>
             </div>
             <div>
-              <p className="text-sm text-muted-foreground">Branch</p>
+              <p className="text-sm text-muted-foreground">{tp.branch}</p>
               <p className="font-semibold">{data.branchName}</p>
             </div>
             <div>
-              <p className="text-sm text-muted-foreground">Address</p>
+              <p className="text-sm text-muted-foreground">{tp.address}</p>
               <p className="font-semibold">{data.branchAddress}</p>
             </div>
             {data.branchPhone && (
               <div>
-                <p className="text-sm text-muted-foreground">Contact</p>
+                <p className="text-sm text-muted-foreground">{tp.contact}</p>
                 <p className="font-semibold">{data.branchPhone}</p>
               </div>
             )}
@@ -370,27 +373,27 @@ export function WorkOrderPrint({ workOrderId }: WorkOrderPrintProps) {
 
         {/* Work Order Details */}
         <div className="mb-6 print-section">
-          <h3 className="text-lg font-bold mb-3 text-primary border-b pb-2">WORK ORDER DETAILS</h3>
+          <h3 className="text-lg font-bold mb-3 text-primary border-b pb-2">{tp.workOrderDetails}</h3>
           <div className="grid grid-cols-2 gap-4">
             <div>
-              <p className="text-sm text-muted-foreground">Type</p>
+              <p className="text-sm text-muted-foreground">{tp.type}</p>
               <p className="font-semibold">{getWorkOrderTypeLabel(data.workOrderType)}</p>
             </div>
             <div>
-              <p className="text-sm text-muted-foreground">Status</p>
+              <p className="text-sm text-muted-foreground">{tp.status}</p>
               <p className="font-semibold">{getStageLabel(data.stage)}</p>
             </div>
             <div>
-              <p className="text-sm text-muted-foreground">Scheduled Date</p>
+              <p className="text-sm text-muted-foreground">{tp.scheduledDate}</p>
               <p className="font-semibold">{formatDate(data.scheduledDate)}</p>
             </div>
             <div>
-              <p className="text-sm text-muted-foreground">Price</p>
+              <p className="text-sm text-muted-foreground">{tp.price}</p>
               <p className="font-semibold">{formatCurrency(data.price)}</p>
             </div>
             {data.recurringType && data.recurringType !== 'ONCE' && (
               <div>
-                <p className="text-sm text-muted-foreground">Recurring</p>
+                <p className="text-sm text-muted-foreground">{tp.recurring}</p>
                 <p className="font-semibold">
                   {data.recurringType} ({data.occurrenceIndex || 1})
                 </p>
@@ -401,11 +404,11 @@ export function WorkOrderPrint({ workOrderId }: WorkOrderPrintProps) {
 
         {/* Description */}
         <div className="mb-6 print-section">
-          <h3 className="text-lg font-bold mb-3 text-primary border-b pb-2">DESCRIPTION</h3>
+          <h3 className="text-lg font-bold mb-3 text-primary border-b pb-2">{tp.description}</h3>
           <p className="whitespace-pre-wrap">{data.description}</p>
           {data.notes && (
             <div className="mt-3 p-3 bg-gray-50 rounded">
-              <p className="text-sm font-semibold mb-1">Notes:</p>
+              <p className="text-sm font-semibold mb-1">{tp.notes}</p>
               <p className="text-sm whitespace-pre-wrap">{data.notes}</p>
             </div>
           )}
@@ -417,10 +420,10 @@ export function WorkOrderPrint({ workOrderId }: WorkOrderPrintProps) {
           data.systemsMaintained || data.maintenancePerformed) && (
             <div className="mb-6 print-section">
               <h3 className="text-lg font-bold mb-3 text-primary border-b pb-2">
-                {data.workOrderType === 'SERVICE' ? 'SERVICE REPORT' :
-                  data.workOrderType === 'INSTALLATION' ? 'INSTALLATION REPORT' :
-                    data.workOrderType === 'MAINTENANCE' ? 'MAINTENANCE REPORT' :
-                      data.workOrderType === 'INSPECTION' ? 'INSPECTION REPORT' : 'WORK REPORT'}
+                {data.workOrderType === 'SERVICE' ? tp.serviceReport :
+                  data.workOrderType === 'INSTALLATION' ? tp.installationReport :
+                    data.workOrderType === 'MAINTENANCE' ? tp.maintenanceReport :
+                      data.workOrderType === 'INSPECTION' ? tp.inspectionReport : tp.workReport}
               </h3>
               <div className="space-y-3">
                 {/* SERVICE Report Fields */}
@@ -428,36 +431,36 @@ export function WorkOrderPrint({ workOrderId }: WorkOrderPrintProps) {
                   <>
                     {data.problemScope && (
                       <div>
-                        <p className="text-sm font-semibold mb-1">Issue Reported:</p>
+                        <p className="text-sm font-semibold mb-1">{tp.issueReported}</p>
                         <p className="text-sm whitespace-pre-wrap">{data.problemScope}</p>
                       </div>
                     )}
                     {data.findings && (
                       <div>
-                        <p className="text-sm font-semibold mb-1">Findings:</p>
+                        <p className="text-sm font-semibold mb-1">{tp.findings}</p>
                         <p className="text-sm whitespace-pre-wrap">{data.findings}</p>
                       </div>
                     )}
                     {data.actionTaken && (
                       <div>
-                        <p className="text-sm font-semibold mb-1">Action Taken:</p>
+                        <p className="text-sm font-semibold mb-1">{tp.actionTaken}</p>
                         <p className="text-sm whitespace-pre-wrap">{data.actionTaken}</p>
                       </div>
                     )}
                     {data.partsReplaced && (
                       <div>
-                        <p className="text-sm font-semibold mb-1">Parts Replaced:</p>
+                        <p className="text-sm font-semibold mb-1">{tp.partsReplaced}</p>
                         <p className="text-sm">{data.partsReplaced}</p>
                       </div>
                     )}
                     {data.systemStatus && (
                       <div>
-                        <p className="text-sm font-semibold mb-1">System Status:</p>
+                        <p className="text-sm font-semibold mb-1">{tp.systemStatus}</p>
                         <p className={`text-sm font-semibold ${data.systemStatus === 'WORKING' ? 'text-green-600' :
-                            data.systemStatus === 'NEEDS_ATTENTION' ? 'text-yellow-600' : 'text-red-600'
+                          data.systemStatus === 'NEEDS_ATTENTION' ? 'text-yellow-600' : 'text-red-600'
                           }`}>
-                          {data.systemStatus === 'WORKING' ? '✅ Working Normally' :
-                            data.systemStatus === 'NEEDS_ATTENTION' ? '⚠️ Needs Attention' : '❌ Critical'}
+                          {data.systemStatus === 'WORKING' ? `✅ ${tp.workingNormally}` :
+                            data.systemStatus === 'NEEDS_ATTENTION' ? `⚠️ ${tp.needsAttention}` : `❌ ${tp.critical}`}
                         </p>
                       </div>
                     )}
@@ -469,7 +472,7 @@ export function WorkOrderPrint({ workOrderId }: WorkOrderPrintProps) {
                   <>
                     {data.problemScope && (
                       <div>
-                        <p className="text-sm font-semibold mb-1">Scope of Installation:</p>
+                        <p className="text-sm font-semibold mb-1">{tp.scopeOfInstallation}</p>
                         <p className="text-sm whitespace-pre-wrap">{data.problemScope}</p>
                       </div>
                     )}
@@ -477,13 +480,13 @@ export function WorkOrderPrint({ workOrderId }: WorkOrderPrintProps) {
                       <div className="grid grid-cols-2 gap-4">
                         {data.equipmentInstalled && (
                           <div>
-                            <p className="text-sm font-semibold mb-1">Equipment Installed:</p>
+                            <p className="text-sm font-semibold mb-1">{tp.equipmentInstalled}</p>
                             <p className="text-sm">{data.equipmentInstalled}</p>
                           </div>
                         )}
                         {data.installQuantity && (
                           <div>
-                            <p className="text-sm font-semibold mb-1">Quantity:</p>
+                            <p className="text-sm font-semibold mb-1">{tp.quantity}</p>
                             <p className="text-sm">{data.installQuantity}</p>
                           </div>
                         )}
@@ -491,18 +494,18 @@ export function WorkOrderPrint({ workOrderId }: WorkOrderPrintProps) {
                     )}
                     {data.findings && (
                       <div>
-                        <p className="text-sm font-semibold mb-1">Testing Result:</p>
+                        <p className="text-sm font-semibold mb-1">{tp.testingResult}</p>
                         <p className="text-sm whitespace-pre-wrap">{data.findings}</p>
                       </div>
                     )}
                     {data.completionStatus && (
                       <div>
-                        <p className="text-sm font-semibold mb-1">Completion Status:</p>
+                        <p className="text-sm font-semibold mb-1">{tp.completionStatus}</p>
                         <p className={`text-sm font-semibold ${data.completionStatus === 'COMPLETED' ? 'text-green-600' :
-                            data.completionStatus === 'PARTIAL' ? 'text-yellow-600' : 'text-gray-600'
+                          data.completionStatus === 'PARTIAL' ? 'text-yellow-600' : 'text-gray-600'
                           }`}>
-                          {data.completionStatus === 'COMPLETED' ? '✅ Completed' :
-                            data.completionStatus === 'PARTIAL' ? '⚠️ Partial' : '⏳ Pending'}
+                          {data.completionStatus === 'COMPLETED' ? `✅ ${tp.completed}` :
+                            data.completionStatus === 'PARTIAL' ? `⚠️ ${tp.partial}` : `⏳ ${tp.pending}`}
                         </p>
                       </div>
                     )}
@@ -516,13 +519,13 @@ export function WorkOrderPrint({ workOrderId }: WorkOrderPrintProps) {
                       <div className="grid grid-cols-2 gap-4">
                         {data.areasInspected && (
                           <div>
-                            <p className="text-sm font-semibold mb-1">Areas Inspected:</p>
+                            <p className="text-sm font-semibold mb-1">{tp.areasInspected}</p>
                             <p className="text-sm">{data.areasInspected}</p>
                           </div>
                         )}
                         {data.systemsChecked && (
                           <div>
-                            <p className="text-sm font-semibold mb-1">Systems Checked:</p>
+                            <p className="text-sm font-semibold mb-1">{tp.systemsChecked}</p>
                             <p className="text-sm">{data.systemsChecked}</p>
                           </div>
                         )}
@@ -530,30 +533,30 @@ export function WorkOrderPrint({ workOrderId }: WorkOrderPrintProps) {
                     )}
                     {data.findings && (
                       <div>
-                        <p className="text-sm font-semibold mb-1">Findings:</p>
+                        <p className="text-sm font-semibold mb-1">{tp.findings}</p>
                         <p className="text-sm whitespace-pre-wrap">{data.findings}</p>
                       </div>
                     )}
                     {data.deficiencies && (
                       <div>
-                        <p className="text-sm font-semibold mb-1">Deficiencies:</p>
+                        <p className="text-sm font-semibold mb-1">{tp.deficiencies}</p>
                         <p className="text-sm whitespace-pre-wrap text-orange-700">{data.deficiencies}</p>
                       </div>
                     )}
                     {data.recommendations && (
                       <div>
-                        <p className="text-sm font-semibold mb-1">Recommendations:</p>
+                        <p className="text-sm font-semibold mb-1">{tp.recommendations}</p>
                         <p className="text-sm whitespace-pre-wrap">{data.recommendations}</p>
                       </div>
                     )}
                     {data.inspectionResult && (
                       <div>
-                        <p className="text-sm font-semibold mb-1">Inspection Result:</p>
+                        <p className="text-sm font-semibold mb-1">{tp.inspectionResult}</p>
                         <p className={`text-sm font-semibold ${data.inspectionResult === 'PASSED' ? 'text-green-600' :
-                            data.inspectionResult === 'ATTENTION_REQUIRED' ? 'text-yellow-600' : 'text-red-600'
+                          data.inspectionResult === 'ATTENTION_REQUIRED' ? 'text-yellow-600' : 'text-red-600'
                           }`}>
-                          {data.inspectionResult === 'PASSED' ? '✅ Passed' :
-                            data.inspectionResult === 'ATTENTION_REQUIRED' ? '⚠️ Attention Required' : '❌ Failed'}
+                          {data.inspectionResult === 'PASSED' ? `✅ ${tp.passed}` :
+                            data.inspectionResult === 'ATTENTION_REQUIRED' ? `⚠️ ${tp.attentionRequired}` : `❌ ${tp.failed}`}
                         </p>
                       </div>
                     )}
@@ -565,36 +568,36 @@ export function WorkOrderPrint({ workOrderId }: WorkOrderPrintProps) {
                   <>
                     {data.systemsMaintained && (
                       <div>
-                        <p className="text-sm font-semibold mb-1">Systems Maintained:</p>
+                        <p className="text-sm font-semibold mb-1">{tp.systemsMaintained}</p>
                         <p className="text-sm">{data.systemsMaintained}</p>
                       </div>
                     )}
                     {data.maintenancePerformed && (
                       <div>
-                        <p className="text-sm font-semibold mb-1">Maintenance Performed:</p>
+                        <p className="text-sm font-semibold mb-1">{tp.maintenancePerformed}</p>
                         <p className="text-sm whitespace-pre-wrap">{data.maintenancePerformed}</p>
                       </div>
                     )}
                     {data.partsServiced && (
                       <div>
-                        <p className="text-sm font-semibold mb-1">Parts Serviced:</p>
+                        <p className="text-sm font-semibold mb-1">{tp.partsServiced}</p>
                         <p className="text-sm">{data.partsServiced}</p>
                       </div>
                     )}
                     {data.testResult && (
                       <div>
-                        <p className="text-sm font-semibold mb-1">Test Result:</p>
+                        <p className="text-sm font-semibold mb-1">{tp.testResult}</p>
                         <p className={`text-sm font-semibold ${data.testResult === 'PASSED' ? 'text-green-600' :
-                            data.testResult === 'PARTIAL' ? 'text-yellow-600' : 'text-red-600'
+                          data.testResult === 'PARTIAL' ? 'text-yellow-600' : 'text-red-600'
                           }`}>
-                          {data.testResult === 'PASSED' ? '✅ Passed' :
-                            data.testResult === 'PARTIAL' ? '⚠️ Partial' : '❌ Failed'}
+                          {data.testResult === 'PASSED' ? `✅ ${tp.passed}` :
+                            data.testResult === 'PARTIAL' ? `⚠️ ${tp.partial}` : `❌ ${tp.failed}`}
                         </p>
                       </div>
                     )}
                     {data.nextMaintenanceDate && (
                       <div>
-                        <p className="text-sm font-semibold mb-1">Next Maintenance Date:</p>
+                        <p className="text-sm font-semibold mb-1">{tp.nextMaintenanceDate}</p>
                         <p className="text-sm font-semibold text-blue-600">{formatDate(data.nextMaintenanceDate)}</p>
                       </div>
                     )}
@@ -604,7 +607,7 @@ export function WorkOrderPrint({ workOrderId }: WorkOrderPrintProps) {
                 {/* Technician Notes - Universal */}
                 {data.technicianNotes && (
                   <div className="mt-4 pt-3 border-t">
-                    <p className="text-sm font-semibold mb-1">Technician Notes:</p>
+                    <p className="text-sm font-semibold mb-1">{tp.technicianNotes}</p>
                     <p className="text-sm whitespace-pre-wrap">{data.technicianNotes}</p>
                   </div>
                 )}
@@ -616,15 +619,15 @@ export function WorkOrderPrint({ workOrderId }: WorkOrderPrintProps) {
         {data.equipment && data.equipment.length > 0 && (
           <div className="mb-6">
             <h3 className="text-lg font-bold mb-3 text-primary border-b pb-2">
-              EQUIPMENT LIST ({data.equipment.length} items)
+              {tp.equipmentList.replace('{count}', String(data.equipment.length))}
             </h3>
             <table className="w-full border-collapse border border-gray-300">
               <thead>
                 <tr className="bg-gray-100">
-                  <th className="border border-gray-300 px-3 py-2 text-left text-sm font-semibold">Equipment #</th>
-                  <th className="border border-gray-300 px-3 py-2 text-left text-sm font-semibold">Type</th>
-                  <th className="border border-gray-300 px-3 py-2 text-left text-sm font-semibold">Location</th>
-                  <th className="border border-gray-300 px-3 py-2 text-left text-sm font-semibold">Expiry Date</th>
+                  <th className="border border-gray-300 px-3 py-2 text-left text-sm font-semibold">{tp.equipmentNumber}</th>
+                  <th className="border border-gray-300 px-3 py-2 text-left text-sm font-semibold">{tp.type}</th>
+                  <th className="border border-gray-300 px-3 py-2 text-left text-sm font-semibold">{tp.location}</th>
+                  <th className="border border-gray-300 px-3 py-2 text-left text-sm font-semibold">{tp.expiryDate}</th>
                 </tr>
               </thead>
               <tbody>
@@ -646,24 +649,24 @@ export function WorkOrderPrint({ workOrderId }: WorkOrderPrintProps) {
         {/* Maintenance Report */}
         {data.workOrderType === 'MAINTENANCE' && data.reportData && (
           <div className="mb-6 print-section">
-            <h3 className="text-lg font-bold mb-3 text-primary border-b pb-2">MAINTENANCE REPORT</h3>
+            <h3 className="text-lg font-bold mb-3 text-primary border-b pb-2">{tp.maintenanceReport}</h3>
             <div className="space-y-4">
               {/* Equipment Condition */}
               <div>
-                <p className="text-sm text-muted-foreground">Equipment Condition</p>
+                <p className="text-sm text-muted-foreground">{tp.equipmentCondition}</p>
                 <p className="font-semibold capitalize">{(data.reportData as MaintenanceReportData).equipmentCondition || '-'}</p>
               </div>
 
               {/* Tasks Performed */}
               {(data.reportData as MaintenanceReportData).tasksPerformed?.length > 0 && (
                 <div>
-                  <p className="text-sm font-semibold mb-2">Tasks Performed:</p>
+                  <p className="text-sm font-semibold mb-2">{tp.tasksPerformed}</p>
                   <table className="w-full border-collapse border border-gray-300">
                     <thead>
                       <tr className="bg-gray-100">
                         <th className="border border-gray-300 px-3 py-2 text-left text-sm font-semibold w-8">✓</th>
-                        <th className="border border-gray-300 px-3 py-2 text-left text-sm font-semibold">Task</th>
-                        <th className="border border-gray-300 px-3 py-2 text-left text-sm font-semibold">Notes</th>
+                        <th className="border border-gray-300 px-3 py-2 text-left text-sm font-semibold">{tp.task}</th>
+                        <th className="border border-gray-300 px-3 py-2 text-left text-sm font-semibold">{tp.notes}</th>
                       </tr>
                     </thead>
                     <tbody>
@@ -684,14 +687,14 @@ export function WorkOrderPrint({ workOrderId }: WorkOrderPrintProps) {
               {/* Measurements */}
               {(data.reportData as MaintenanceReportData).measurements?.length > 0 && (
                 <div>
-                  <p className="text-sm font-semibold mb-2">Measurements:</p>
+                  <p className="text-sm font-semibold mb-2">{tp.measurements}</p>
                   <table className="w-full border-collapse border border-gray-300">
                     <thead>
                       <tr className="bg-gray-100">
-                        <th className="border border-gray-300 px-3 py-2 text-left text-sm font-semibold">Parameter</th>
-                        <th className="border border-gray-300 px-3 py-2 text-left text-sm font-semibold">Value</th>
-                        <th className="border border-gray-300 px-3 py-2 text-left text-sm font-semibold">Normal Range</th>
-                        <th className="border border-gray-300 px-3 py-2 text-left text-sm font-semibold">Status</th>
+                        <th className="border border-gray-300 px-3 py-2 text-left text-sm font-semibold">{tp.parameter}</th>
+                        <th className="border border-gray-300 px-3 py-2 text-left text-sm font-semibold">{tp.value}</th>
+                        <th className="border border-gray-300 px-3 py-2 text-left text-sm font-semibold">{tp.normalRange}</th>
+                        <th className="border border-gray-300 px-3 py-2 text-left text-sm font-semibold">{tp.status}</th>
                       </tr>
                     </thead>
                     <tbody>
@@ -713,12 +716,12 @@ export function WorkOrderPrint({ workOrderId }: WorkOrderPrintProps) {
               {/* Consumables Used */}
               {(data.reportData as MaintenanceReportData).consumablesUsed?.length > 0 && (
                 <div>
-                  <p className="text-sm font-semibold mb-2">Consumables Used:</p>
+                  <p className="text-sm font-semibold mb-2">{tp.consumablesUsed}</p>
                   <table className="w-full border-collapse border border-gray-300">
                     <thead>
                       <tr className="bg-gray-100">
-                        <th className="border border-gray-300 px-3 py-2 text-left text-sm font-semibold">Item</th>
-                        <th className="border border-gray-300 px-3 py-2 text-left text-sm font-semibold">Quantity</th>
+                        <th className="border border-gray-300 px-3 py-2 text-left text-sm font-semibold">{tp.item}</th>
+                        <th className="border border-gray-300 px-3 py-2 text-left text-sm font-semibold">{tp.quantity}</th>
                       </tr>
                     </thead>
                     <tbody>
@@ -736,7 +739,7 @@ export function WorkOrderPrint({ workOrderId }: WorkOrderPrintProps) {
               {/* Next Maintenance Date */}
               {(data.reportData as MaintenanceReportData).nextMaintenanceDate && (
                 <div>
-                  <p className="text-sm text-muted-foreground">Next Maintenance Date</p>
+                  <p className="text-sm text-muted-foreground">{tp.nextMaintenanceDate}</p>
                   <p className="font-semibold">{formatDate((data.reportData as MaintenanceReportData).nextMaintenanceDate)}</p>
                 </div>
               )}
@@ -747,23 +750,23 @@ export function WorkOrderPrint({ workOrderId }: WorkOrderPrintProps) {
         {/* Service Report */}
         {data.workOrderType === 'SERVICE' && data.reportData && (
           <div className="mb-6 print-section">
-            <h3 className="text-lg font-bold mb-3 text-primary border-b pb-2">SERVICE REPORT</h3>
+            <h3 className="text-lg font-bold mb-3 text-primary border-b pb-2">{tp.serviceReport}</h3>
             <div className="space-y-3">
               {(data.reportData as ServiceReportData).problemDescription && (
                 <div>
-                  <p className="text-sm font-semibold mb-1">Problem Description:</p>
+                  <p className="text-sm font-semibold mb-1">{tp.problemDescription}</p>
                   <p className="text-sm whitespace-pre-wrap">{(data.reportData as ServiceReportData).problemDescription}</p>
                 </div>
               )}
               {(data.reportData as ServiceReportData).rootCause && (
                 <div>
-                  <p className="text-sm font-semibold mb-1">Root Cause:</p>
+                  <p className="text-sm font-semibold mb-1">{tp.rootCause}</p>
                   <p className="text-sm whitespace-pre-wrap">{(data.reportData as ServiceReportData).rootCause}</p>
                 </div>
               )}
               {(data.reportData as ServiceReportData).workPerformed && (
                 <div>
-                  <p className="text-sm font-semibold mb-1">Work Performed:</p>
+                  <p className="text-sm font-semibold mb-1">{tp.workPerformed}</p>
                   <p className="text-sm whitespace-pre-wrap">{(data.reportData as ServiceReportData).workPerformed}</p>
                 </div>
               )}
@@ -771,14 +774,14 @@ export function WorkOrderPrint({ workOrderId }: WorkOrderPrintProps) {
               {/* Parts Replaced */}
               {(data.reportData as ServiceReportData).partsReplaced?.length > 0 && (
                 <div>
-                  <p className="text-sm font-semibold mb-2">Parts Replaced:</p>
+                  <p className="text-sm font-semibold mb-2">{tp.partsReplaced}</p>
                   <table className="w-full border-collapse border border-gray-300">
                     <thead>
                       <tr className="bg-gray-100">
-                        <th className="border border-gray-300 px-3 py-2 text-left text-sm font-semibold">Part</th>
-                        <th className="border border-gray-300 px-3 py-2 text-left text-sm font-semibold">Qty</th>
-                        <th className="border border-gray-300 px-3 py-2 text-left text-sm font-semibold">Unit Cost</th>
-                        <th className="border border-gray-300 px-3 py-2 text-left text-sm font-semibold">Total</th>
+                        <th className="border border-gray-300 px-3 py-2 text-left text-sm font-semibold">{tp.part}</th>
+                        <th className="border border-gray-300 px-3 py-2 text-left text-sm font-semibold">{tp.qty}</th>
+                        <th className="border border-gray-300 px-3 py-2 text-left text-sm font-semibold">{tp.unitCost}</th>
+                        <th className="border border-gray-300 px-3 py-2 text-left text-sm font-semibold">{tp.total}</th>
                       </tr>
                     </thead>
                     <tbody>
@@ -798,36 +801,36 @@ export function WorkOrderPrint({ workOrderId }: WorkOrderPrintProps) {
               {/* Labor & Cost Summary */}
               {((data.reportData as ServiceReportData).laborHours > 0 || (data.reportData as ServiceReportData).totalCost > 0) && (
                 <div>
-                  <p className="text-sm font-semibold mb-2">Cost Summary:</p>
+                  <p className="text-sm font-semibold mb-2">{tp.costSummary}</p>
                   <table className="w-full border-collapse border border-gray-300">
                     <tbody>
                       {(data.reportData as ServiceReportData).laborHours > 0 && (
                         <tr>
-                          <td className="border border-gray-300 px-3 py-2 text-sm">Labor Hours</td>
-                          <td className="border border-gray-300 px-3 py-2 text-sm text-right">{(data.reportData as ServiceReportData).laborHours} hrs</td>
+                          <td className="border border-gray-300 px-3 py-2 text-sm">{tp.laborHours}</td>
+                          <td className="border border-gray-300 px-3 py-2 text-sm text-right">{(data.reportData as ServiceReportData).laborHours} {tp.hrs}</td>
                         </tr>
                       )}
                       {(data.reportData as ServiceReportData).laborRate > 0 && (
                         <tr>
-                          <td className="border border-gray-300 px-3 py-2 text-sm">Labor Rate</td>
+                          <td className="border border-gray-300 px-3 py-2 text-sm">{tp.laborRate}</td>
                           <td className="border border-gray-300 px-3 py-2 text-sm text-right">{formatCurrency((data.reportData as ServiceReportData).laborRate)}/hr</td>
                         </tr>
                       )}
                       {(data.reportData as ServiceReportData).laborCost > 0 && (
                         <tr>
-                          <td className="border border-gray-300 px-3 py-2 text-sm">Labor Cost</td>
+                          <td className="border border-gray-300 px-3 py-2 text-sm">{tp.laborCost}</td>
                           <td className="border border-gray-300 px-3 py-2 text-sm text-right">{formatCurrency((data.reportData as ServiceReportData).laborCost)}</td>
                         </tr>
                       )}
                       {(data.reportData as ServiceReportData).totalPartsCost > 0 && (
                         <tr>
-                          <td className="border border-gray-300 px-3 py-2 text-sm">Total Parts Cost</td>
+                          <td className="border border-gray-300 px-3 py-2 text-sm">{tp.totalPartsCost}</td>
                           <td className="border border-gray-300 px-3 py-2 text-sm text-right">{formatCurrency((data.reportData as ServiceReportData).totalPartsCost)}</td>
                         </tr>
                       )}
                       {(data.reportData as ServiceReportData).totalCost > 0 && (
                         <tr className="bg-gray-100 font-semibold">
-                          <td className="border border-gray-300 px-3 py-2 text-sm">Total Cost</td>
+                          <td className="border border-gray-300 px-3 py-2 text-sm">{tp.totalCost}</td>
                           <td className="border border-gray-300 px-3 py-2 text-sm text-right">{formatCurrency((data.reportData as ServiceReportData).totalCost)}</td>
                         </tr>
                       )}
@@ -839,24 +842,24 @@ export function WorkOrderPrint({ workOrderId }: WorkOrderPrintProps) {
               {/* Before/After Photos */}
               {((data.reportData as ServiceReportData).beforePhotos?.length > 0 || (data.reportData as ServiceReportData).afterPhotos?.length > 0) && (
                 <div>
-                  <p className="text-sm font-semibold mb-2">Documentation Photos:</p>
+                  <p className="text-sm font-semibold mb-2">{tp.documentationPhotos}</p>
                   <div className="grid grid-cols-2 gap-4">
                     {(data.reportData as ServiceReportData).beforePhotos?.length > 0 && (
                       <div>
-                        <p className="text-xs text-muted-foreground mb-1">Before:</p>
+                        <p className="text-xs text-muted-foreground mb-1">{tp.before}</p>
                         <div className="flex flex-wrap gap-2">
                           {(data.reportData as ServiceReportData).beforePhotos.map((photo, idx) => (
-                            <img key={idx} src={photo} alt={`Before ${idx + 1}`} className="w-24 h-24 object-cover border rounded" />
+                            <img key={idx} src={photo} alt={`${tp.before} ${idx + 1}`} className="w-24 h-24 object-cover border rounded" />
                           ))}
                         </div>
                       </div>
                     )}
                     {(data.reportData as ServiceReportData).afterPhotos?.length > 0 && (
                       <div>
-                        <p className="text-xs text-muted-foreground mb-1">After:</p>
+                        <p className="text-xs text-muted-foreground mb-1">{tp.after}</p>
                         <div className="flex flex-wrap gap-2">
                           {(data.reportData as ServiceReportData).afterPhotos.map((photo, idx) => (
-                            <img key={idx} src={photo} alt={`After ${idx + 1}`} className="w-24 h-24 object-cover border rounded" />
+                            <img key={idx} src={photo} alt={`${tp.after} ${idx + 1}`} className="w-24 h-24 object-cover border rounded" />
                           ))}
                         </div>
                       </div>
@@ -867,7 +870,7 @@ export function WorkOrderPrint({ workOrderId }: WorkOrderPrintProps) {
 
               {(data.reportData as ServiceReportData).warrantyInfo && (
                 <div>
-                  <p className="text-sm font-semibold mb-1">Warranty Information:</p>
+                  <p className="text-sm font-semibold mb-1">{tp.warrantyInformation}</p>
                   <p className="text-sm whitespace-pre-wrap">{(data.reportData as ServiceReportData).warrantyInfo}</p>
                 </div>
               )}
@@ -878,19 +881,19 @@ export function WorkOrderPrint({ workOrderId }: WorkOrderPrintProps) {
         {/* Installation Report */}
         {data.workOrderType === 'INSTALLATION' && data.reportData && (
           <div className="mb-6 print-section">
-            <h3 className="text-lg font-bold mb-3 text-primary border-b pb-2">INSTALLATION REPORT</h3>
+            <h3 className="text-lg font-bold mb-3 text-primary border-b pb-2">{tp.installationReport}</h3>
             <div className="space-y-3">
               {/* Equipment Installed */}
               {(data.reportData as InstallationReportData).equipmentInstalled?.length > 0 && (
                 <div>
-                  <p className="text-sm font-semibold mb-2">Equipment Installed:</p>
+                  <p className="text-sm font-semibold mb-2">{tp.equipmentInstalled}</p>
                   <table className="w-full border-collapse border border-gray-300">
                     <thead>
                       <tr className="bg-gray-100">
-                        <th className="border border-gray-300 px-3 py-2 text-left text-sm font-semibold">Name</th>
-                        <th className="border border-gray-300 px-3 py-2 text-left text-sm font-semibold">Model</th>
-                        <th className="border border-gray-300 px-3 py-2 text-left text-sm font-semibold">Serial #</th>
-                        <th className="border border-gray-300 px-3 py-2 text-left text-sm font-semibold">Location</th>
+                        <th className="border border-gray-300 px-3 py-2 text-left text-sm font-semibold">{tp.name}</th>
+                        <th className="border border-gray-300 px-3 py-2 text-left text-sm font-semibold">{tp.model}</th>
+                        <th className="border border-gray-300 px-3 py-2 text-left text-sm font-semibold">{tp.serialNumber}</th>
+                        <th className="border border-gray-300 px-3 py-2 text-left text-sm font-semibold">{tp.location}</th>
                       </tr>
                     </thead>
                     <tbody>
@@ -910,7 +913,7 @@ export function WorkOrderPrint({ workOrderId }: WorkOrderPrintProps) {
               {/* Configuration Details */}
               {(data.reportData as InstallationReportData).configurationDetails && (
                 <div>
-                  <p className="text-sm font-semibold mb-1">Configuration Details:</p>
+                  <p className="text-sm font-semibold mb-1">{tp.configurationDetails}</p>
                   <p className="text-sm whitespace-pre-wrap">{(data.reportData as InstallationReportData).configurationDetails}</p>
                 </div>
               )}
@@ -918,13 +921,13 @@ export function WorkOrderPrint({ workOrderId }: WorkOrderPrintProps) {
               {/* Commissioning Checklist */}
               {(data.reportData as InstallationReportData).commissioningChecklist?.length > 0 && (
                 <div>
-                  <p className="text-sm font-semibold mb-2">Commissioning Checklist:</p>
+                  <p className="text-sm font-semibold mb-2">{tp.commissioningChecklist}</p>
                   <table className="w-full border-collapse border border-gray-300">
                     <thead>
                       <tr className="bg-gray-100">
                         <th className="border border-gray-300 px-3 py-2 text-left text-sm font-semibold w-8">✓</th>
-                        <th className="border border-gray-300 px-3 py-2 text-left text-sm font-semibold">Item</th>
-                        <th className="border border-gray-300 px-3 py-2 text-left text-sm font-semibold">Notes</th>
+                        <th className="border border-gray-300 px-3 py-2 text-left text-sm font-semibold">{tp.item}</th>
+                        <th className="border border-gray-300 px-3 py-2 text-left text-sm font-semibold">{tp.notes}</th>
                       </tr>
                     </thead>
                     <tbody>
@@ -945,13 +948,13 @@ export function WorkOrderPrint({ workOrderId }: WorkOrderPrintProps) {
               {/* Testing Results */}
               {(data.reportData as InstallationReportData).testingResults?.length > 0 && (
                 <div>
-                  <p className="text-sm font-semibold mb-2">Testing Results:</p>
+                  <p className="text-sm font-semibold mb-2">{tp.testingResults}</p>
                   <table className="w-full border-collapse border border-gray-300">
                     <thead>
                       <tr className="bg-gray-100">
-                        <th className="border border-gray-300 px-3 py-2 text-left text-sm font-semibold">Test</th>
-                        <th className="border border-gray-300 px-3 py-2 text-left text-sm font-semibold">Result</th>
-                        <th className="border border-gray-300 px-3 py-2 text-left text-sm font-semibold">Notes</th>
+                        <th className="border border-gray-300 px-3 py-2 text-left text-sm font-semibold">{tp.test}</th>
+                        <th className="border border-gray-300 px-3 py-2 text-left text-sm font-semibold">{tp.result}</th>
+                        <th className="border border-gray-300 px-3 py-2 text-left text-sm font-semibold">{tp.notes}</th>
                       </tr>
                     </thead>
                     <tbody>
@@ -960,7 +963,7 @@ export function WorkOrderPrint({ workOrderId }: WorkOrderPrintProps) {
                           <td className="border border-gray-300 px-3 py-2 text-sm">{test.test}</td>
                           <td className={`border border-gray-300 px-3 py-2 text-sm font-semibold ${test.result === 'pass' ? 'text-green-600' : 'text-red-600'
                             }`}>
-                            {test.result === 'pass' ? 'PASS' : 'FAIL'}
+                            {test.result === 'pass' ? tp.pass : tp.fail}
                           </td>
                           <td className="border border-gray-300 px-3 py-2 text-sm">{test.notes || '-'}</td>
                         </tr>
@@ -973,8 +976,8 @@ export function WorkOrderPrint({ workOrderId }: WorkOrderPrintProps) {
               {/* Training */}
               {(data.reportData as InstallationReportData).trainingProvided && (
                 <div>
-                  <p className="text-sm font-semibold mb-1">Training Provided:</p>
-                  <p className="text-sm">Yes</p>
+                  <p className="text-sm font-semibold mb-1">{tp.trainingProvided}</p>
+                  <p className="text-sm">{tp.yes}</p>
                   {(data.reportData as InstallationReportData).trainingNotes && (
                     <p className="text-sm whitespace-pre-wrap mt-1">{(data.reportData as InstallationReportData).trainingNotes}</p>
                   )}
@@ -984,7 +987,7 @@ export function WorkOrderPrint({ workOrderId }: WorkOrderPrintProps) {
               {/* Warranty Period */}
               {((data.reportData as InstallationReportData).warrantyStartDate || (data.reportData as InstallationReportData).warrantyEndDate) && (
                 <div>
-                  <p className="text-sm font-semibold mb-1">Warranty Period:</p>
+                  <p className="text-sm font-semibold mb-1">{tp.warrantyPeriod}</p>
                   <p className="text-sm">
                     {formatDate((data.reportData as InstallationReportData).warrantyStartDate)} - {formatDate((data.reportData as InstallationReportData).warrantyEndDate)}
                   </p>
@@ -994,16 +997,16 @@ export function WorkOrderPrint({ workOrderId }: WorkOrderPrintProps) {
               {/* Handover */}
               {(data.reportData as InstallationReportData).handoverName && (
                 <div>
-                  <p className="text-sm font-semibold mb-1">Handover:</p>
-                  <p className="text-sm">Received by: {(data.reportData as InstallationReportData).handoverName}</p>
+                  <p className="text-sm font-semibold mb-1">{tp.handover}</p>
+                  <p className="text-sm">{tp.receivedBy} {(data.reportData as InstallationReportData).handoverName}</p>
                   {(data.reportData as InstallationReportData).handoverDate && (
-                    <p className="text-sm">Date: {formatDate((data.reportData as InstallationReportData).handoverDate)}</p>
+                    <p className="text-sm">{tp.date} {formatDate((data.reportData as InstallationReportData).handoverDate)}</p>
                   )}
                   {(data.reportData as InstallationReportData).handoverSignature && (
                     <div className="mt-2">
                       <img
                         src={(data.reportData as InstallationReportData).handoverSignature}
-                        alt="Handover signature"
+                        alt={tp.handover}
                         className="max-h-16 border rounded"
                       />
                     </div>
@@ -1018,13 +1021,13 @@ export function WorkOrderPrint({ workOrderId }: WorkOrderPrintProps) {
         {(data.workOrderType === 'INSPECTION' || data.workOrderType === 'STICKER_INSPECTION') && data.reportData && (
           <div className="mb-6 print-section">
             <h3 className="text-lg font-bold mb-3 text-primary border-b pb-2">
-              {data.workOrderType === 'STICKER_INSPECTION' ? 'STICKER INSPECTION REPORT' : 'INSPECTION REPORT'}
+              {data.workOrderType === 'STICKER_INSPECTION' ? tp.stickerInspectionReport : tp.inspectionReport}
             </h3>
             <div className="space-y-3">
               {/* Overall Status & Risk Level */}
               <div className="grid grid-cols-2 gap-4">
                 <div>
-                  <p className="text-sm text-muted-foreground">Overall Status</p>
+                  <p className="text-sm text-muted-foreground">{tp.overallStatus}</p>
                   <p className={`font-semibold capitalize ${(data.reportData as InspectionReportData).overallStatus === 'pass' ? 'text-green-600' :
                     (data.reportData as InspectionReportData).overallStatus === 'fail' ? 'text-red-600' : 'text-yellow-600'
                     }`}>
@@ -1032,7 +1035,7 @@ export function WorkOrderPrint({ workOrderId }: WorkOrderPrintProps) {
                   </p>
                 </div>
                 <div>
-                  <p className="text-sm text-muted-foreground">Risk Level</p>
+                  <p className="text-sm text-muted-foreground">{tp.riskLevel}</p>
                   <p className={`font-semibold capitalize ${(data.reportData as InspectionReportData).riskLevel === 'critical' ? 'text-red-600' :
                     (data.reportData as InspectionReportData).riskLevel === 'high' ? 'text-orange-600' :
                       (data.reportData as InspectionReportData).riskLevel === 'medium' ? 'text-yellow-600' : 'text-green-600'
@@ -1045,13 +1048,13 @@ export function WorkOrderPrint({ workOrderId }: WorkOrderPrintProps) {
               {/* Checklist Items */}
               {(data.reportData as InspectionReportData).checklistItems?.length > 0 && (
                 <div>
-                  <p className="text-sm font-semibold mb-2">Inspection Checklist:</p>
+                  <p className="text-sm font-semibold mb-2">{tp.inspectionChecklist}</p>
                   <table className="w-full border-collapse border border-gray-300">
                     <thead>
                       <tr className="bg-gray-100">
-                        <th className="border border-gray-300 px-3 py-2 text-left text-sm font-semibold">Item</th>
-                        <th className="border border-gray-300 px-3 py-2 text-left text-sm font-semibold w-20">Status</th>
-                        <th className="border border-gray-300 px-3 py-2 text-left text-sm font-semibold">Notes</th>
+                        <th className="border border-gray-300 px-3 py-2 text-left text-sm font-semibold">{tp.item}</th>
+                        <th className="border border-gray-300 px-3 py-2 text-left text-sm font-semibold w-20">{tp.status}</th>
+                        <th className="border border-gray-300 px-3 py-2 text-left text-sm font-semibold">{tp.notes}</th>
                       </tr>
                     </thead>
                     <tbody>
@@ -1061,7 +1064,7 @@ export function WorkOrderPrint({ workOrderId }: WorkOrderPrintProps) {
                           <td className={`border border-gray-300 px-3 py-2 text-sm font-semibold text-center ${item.status === 'pass' ? 'text-green-600' :
                             item.status === 'fail' ? 'text-red-600' : 'text-gray-500'
                             }`}>
-                            {item.status === 'pass' ? 'PASS' : item.status === 'fail' ? 'FAIL' : 'N/A'}
+                            {item.status === 'pass' ? tp.pass : item.status === 'fail' ? tp.fail : tp.na}
                           </td>
                           <td className="border border-gray-300 px-3 py-2 text-sm">{item.notes || '-'}</td>
                         </tr>
@@ -1074,7 +1077,7 @@ export function WorkOrderPrint({ workOrderId }: WorkOrderPrintProps) {
               {/* Next Inspection Date */}
               {(data.reportData as InspectionReportData).nextInspectionDate && (
                 <div>
-                  <p className="text-sm text-muted-foreground">Next Inspection Date</p>
+                  <p className="text-sm text-muted-foreground">{tp.nextInspectionDate}</p>
                   <p className="font-semibold">{formatDate((data.reportData as InspectionReportData).nextInspectionDate)}</p>
                 </div>
               )}
@@ -1085,33 +1088,33 @@ export function WorkOrderPrint({ workOrderId }: WorkOrderPrintProps) {
         {/* Inspection Results - legacy fields fallback (when no reportData but has inspectionDate) */}
         {(data.workOrderType === 'INSPECTION' || data.workOrderType === 'STICKER_INSPECTION') && !data.reportData && data.inspectionDate && (
           <div className="mb-6 print-section">
-            <h3 className="text-lg font-bold mb-3 text-primary border-b pb-2">INSPECTION RESULTS</h3>
+            <h3 className="text-lg font-bold mb-3 text-primary border-b pb-2">{tp.inspectionResults}</h3>
             <div className="space-y-3">
               <div>
-                <p className="text-sm text-muted-foreground">Inspection Date</p>
+                <p className="text-sm text-muted-foreground">{tp.inspectionDate}</p>
                 <p className="font-semibold">{formatDate(data.inspectionDate)}</p>
               </div>
               {data.systemsChecked && (
                 <div>
-                  <p className="text-sm font-semibold mb-1">Systems Checked:</p>
+                  <p className="text-sm font-semibold mb-1">{tp.systemsChecked}</p>
                   <p className="text-sm whitespace-pre-wrap">{data.systemsChecked}</p>
                 </div>
               )}
               {data.findings && (
                 <div>
-                  <p className="text-sm font-semibold mb-1">Findings:</p>
+                  <p className="text-sm font-semibold mb-1">{tp.findings}</p>
                   <p className="text-sm whitespace-pre-wrap">{data.findings}</p>
                 </div>
               )}
               {data.deficiencies && (
                 <div>
-                  <p className="text-sm font-semibold mb-1">Deficiencies:</p>
+                  <p className="text-sm font-semibold mb-1">{tp.deficiencies}</p>
                   <p className="text-sm whitespace-pre-wrap text-red-600">{data.deficiencies}</p>
                 </div>
               )}
               {data.recommendations && (
                 <div>
-                  <p className="text-sm font-semibold mb-1">Recommendations:</p>
+                  <p className="text-sm font-semibold mb-1">{tp.recommendations}</p>
                   <p className="text-sm whitespace-pre-wrap">{data.recommendations}</p>
                 </div>
               )}
@@ -1122,11 +1125,11 @@ export function WorkOrderPrint({ workOrderId }: WorkOrderPrintProps) {
         {/* Technician Name (if assigned) */}
         {data.technicianName && (
           <div className="mt-8 pt-4 border-t">
-            <p className="text-sm font-semibold mb-2">Technician Assigned:</p>
+            <p className="text-sm font-semibold mb-2">{tp.technicianAssigned}</p>
             <p className="text-base">{data.technicianName}</p>
             {data.technicianSignedAt && (
               <p className="text-xs text-muted-foreground mt-1">
-                Signed on: {formatDate(data.technicianSignedAt)}
+                {tp.signedOn} {formatDate(data.technicianSignedAt)}
               </p>
             )}
           </div>
@@ -1134,42 +1137,42 @@ export function WorkOrderPrint({ workOrderId }: WorkOrderPrintProps) {
 
         {/* Signature Section */}
         <div className="mt-12 pt-6 border-t-2">
-          <h3 className="text-lg font-bold mb-4">SIGNATURES</h3>
+          <h3 className="text-lg font-bold mb-4">{tp.signatures}</h3>
           <div className="grid grid-cols-2 gap-8">
             <div>
-              <p className="text-sm font-semibold mb-4">Supervisor Signature</p>
+              <p className="text-sm font-semibold mb-4">{tp.supervisorSignature}</p>
               <div className="border-b-2 border-gray-400 h-24 mb-2 flex items-center justify-center bg-white">
                 {data.supervisorSignature && data.supervisorSignature.startsWith('data:image') && (
                   <img
                     src={data.supervisorSignature}
-                    alt="Supervisor signature"
+                    alt={tp.supervisorSignature}
                     className="max-h-20 max-w-full object-contain"
                   />
                 )}
               </div>
               <p className="text-xs text-muted-foreground">
-                Name: {data.supervisorName || '___________________'}
+                {tp.nameLabel} {data.supervisorName || '___________________'}
               </p>
               <p className="text-xs text-muted-foreground mt-1">
-                Date: {data.supervisorSignedAt ? formatDate(data.supervisorSignedAt) : '___________________'}
+                {tp.dateLabel} {data.supervisorSignedAt ? formatDate(data.supervisorSignedAt) : '___________________'}
               </p>
             </div>
             <div>
-              <p className="text-sm font-semibold mb-4">Client Signature</p>
+              <p className="text-sm font-semibold mb-4">{tp.clientSignature}</p>
               <div className="border-b-2 border-gray-400 h-24 mb-2 flex items-center justify-center bg-white">
                 {data.clientSignature && data.clientSignature.startsWith('data:image') && (
                   <img
                     src={data.clientSignature}
-                    alt="Client signature"
+                    alt={tp.clientSignature}
                     className="max-h-20 max-w-full object-contain"
                   />
                 )}
               </div>
               <p className="text-xs text-muted-foreground">
-                Name: {data.clientSignedByName || '___________________'}
+                {tp.nameLabel} {data.clientSignedByName || '___________________'}
               </p>
               <p className="text-xs text-muted-foreground mt-1">
-                Date: {data.clientSignedAt ? formatDate(data.clientSignedAt) : '___________________'}
+                {tp.dateLabel} {data.clientSignedAt ? formatDate(data.clientSignedAt) : '___________________'}
               </p>
             </div>
           </div>
@@ -1177,8 +1180,8 @@ export function WorkOrderPrint({ workOrderId }: WorkOrderPrintProps) {
 
         {/* Footer */}
         <div className="mt-8 pt-4 border-t text-center text-xs text-muted-foreground">
-          <p>This is an official work order document from Tasheel Safety Management System</p>
-          <p className="mt-1">For inquiries, please contact your contractor</p>
+          <p>{tp.officialWorkOrderDoc}</p>
+          <p className="mt-1">{t.dashboard.requestQuotePrint.forInquiries}</p>
         </div>
       </div>
     </>

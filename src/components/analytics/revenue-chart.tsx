@@ -13,6 +13,7 @@ import {
   Filler,
 } from 'chart.js'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
+import { useTranslation } from '@/lib/i18n/use-translation'
 
 ChartJS.register(
   CategoryScale,
@@ -34,12 +35,16 @@ interface RevenueChartProps {
   description?: string
 }
 
-export function RevenueChart({ data, title = 'Revenue Trend', description = 'Monthly revenue over time' }: RevenueChartProps) {
+export function RevenueChart({ data, title, description }: RevenueChartProps) {
+  const { t } = useTranslation()
+  const ta = t.dashboard.revenueChart
+  const resolvedTitle = title ?? ta.revenueTrend
+  const resolvedDescription = description ?? ta.monthlyRevenueOverTime
   const chartData = {
     labels: data.labels,
     datasets: [
       {
-        label: 'Revenue (SAR)',
+        label: ta.revenueSAR,
         data: data.values,
         borderColor: 'rgb(59, 130, 246)',
         backgroundColor: 'rgba(59, 130, 246, 0.1)',
@@ -100,8 +105,8 @@ export function RevenueChart({ data, title = 'Revenue Trend', description = 'Mon
   return (
     <Card>
       <CardHeader>
-        <CardTitle>{title}</CardTitle>
-        <CardDescription>{description}</CardDescription>
+        <CardTitle>{resolvedTitle}</CardTitle>
+        <CardDescription>{resolvedDescription}</CardDescription>
       </CardHeader>
       <CardContent>
         <div className="h-[300px]">

@@ -1,6 +1,7 @@
 'use client'
 
 import { useState, useRef } from 'react'
+import { useTranslation } from '@/lib/i18n/use-translation'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
@@ -40,6 +41,8 @@ export function PaymentSubmitDialog({
   branchId,
   onSuccess,
 }: PaymentSubmitDialogProps) {
+  const { t } = useTranslation()
+  const tp = t.dashboard.paymentSubmit
   const [paymentProofType, setPaymentProofType] = useState<'file' | 'link'>('file')
   const [paymentLink, setPaymentLink] = useState('')
   const [paymentFile, setPaymentFile] = useState<File | null>(null)
@@ -81,14 +84,14 @@ export function PaymentSubmitDialog({
 
       if (paymentProofType === 'link') {
         if (!paymentLink) {
-          setError('Please enter a payment link')
+          setError(tp.errorNoLink)
           setSubmitting(false)
           return
         }
         proofUrl = paymentLink
       } else {
         if (!paymentFile) {
-          setError('Please select a file')
+          setError(tp.errorNoFile)
           setSubmitting(false)
           return
         }
@@ -148,12 +151,12 @@ export function PaymentSubmitDialog({
         <DialogHeader>
           <DialogTitle className="flex items-center gap-2">
             <CreditCard className="h-5 w-5" />
-            Submit Payment Proof
+            {tp.title}
           </DialogTitle>
           <DialogDescription>
-            {isMultiple 
-              ? `Submit payment proof for ${workOrderIds.length} work orders`
-              : 'Upload a screenshot or receipt of your payment'
+            {isMultiple
+              ? tp.descMultiple.replace('{count}', String(workOrderIds.length))
+              : tp.descSingle
             }
           </DialogDescription>
         </DialogHeader>
@@ -161,18 +164,18 @@ export function PaymentSubmitDialog({
         {/* Work order summary */}
         <div className="bg-muted/50 rounded-lg p-3 space-y-2">
           <div className="text-sm font-medium">
-            {isMultiple ? 'Work Orders:' : 'Work Order:'}
+            {isMultiple ? tp.workOrders : tp.workOrder}
           </div>
           <ul className="text-sm text-muted-foreground space-y-1">
             {workOrderDescriptions.slice(0, 5).map((desc, idx) => (
               <li key={idx} className="truncate">• {desc}</li>
             ))}
             {workOrderDescriptions.length > 5 && (
-              <li className="text-xs">...and {workOrderDescriptions.length - 5} more</li>
+              <li className="text-xs">{tp.andMore.replace('{count}', String(workOrderDescriptions.length - 5))}</li>
             )}
           </ul>
           <div className="flex items-center justify-between pt-2 border-t">
-            <span className="text-sm font-medium">Total Amount:</span>
+            <span className="text-sm font-medium">{tp.totalAmount}</span>
             <span className="text-lg font-bold text-primary">
               {formatCurrency(totalAmount)}
             </span>
@@ -195,7 +198,7 @@ export function PaymentSubmitDialog({
               className="flex-1"
             >
               <Upload className="mr-2 h-4 w-4" />
-              Upload File
+              {tp.uploadFile}
             </Button>
             <Button
               type="button"
@@ -204,13 +207,13 @@ export function PaymentSubmitDialog({
               className="flex-1"
             >
               <LinkIcon className="mr-2 h-4 w-4" />
-              Paste Link
+              {tp.pasteLink}
             </Button>
           </div>
 
           {paymentProofType === 'file' ? (
             <div className="space-y-2">
-              <Label>Payment Screenshot / Receipt</Label>
+              <Label>{tp.paymentScreenshot}</Label>
               <div
                 className="border-2 border-dashed rounded-lg p-6 text-center cursor-pointer hover:border-primary transition-colors"
                 onClick={() => fileInputRef.current?.click()}
@@ -219,12 +222,12 @@ export function PaymentSubmitDialog({
                   <div className="space-y-2">
                     <FileText className="h-8 w-8 mx-auto text-primary" />
                     <p className="font-medium">{paymentFile.name}</p>
-                    <p className="text-sm text-muted-foreground">Click to change file</p>
+                    <p className="text-sm text-muted-foreground">{tp.clickToChange}</p>
                   </div>
                 ) : (
                   <div className="space-y-2">
                     <Upload className="h-8 w-8 mx-auto text-muted-foreground" />
-                    <p className="text-muted-foreground">Click to upload PDF, image, or document</p>
+                    <p className="text-muted-foreground">{tp.clickToUpload}</p>
                   </div>
                 )}
               </div>
@@ -238,7 +241,7 @@ export function PaymentSubmitDialog({
             </div>
           ) : (
             <div className="space-y-2">
-              <Label htmlFor="paymentLink">Payment Link</Label>
+              <Label htmlFor="paymentLink">{tp.paymentLink}</Label>
               <Input
                 id="paymentLink"
                 type="url"
@@ -247,7 +250,7 @@ export function PaymentSubmitDialog({
                 onChange={(e) => setPaymentLink(e.target.value)}
               />
               <p className="text-xs text-muted-foreground">
-                Paste a link to your payment confirmation or transaction receipt
+                {tp.paymentLinkHelp}
               </p>
             </div>
           )}
@@ -255,7 +258,7 @@ export function PaymentSubmitDialog({
 
         <DialogFooter>
           <Button variant="outline" onClick={() => onOpenChange(false)}>
-            Cancel
+            {tp.cancel}
           </Button>
           <Button onClick={handleSubmit} disabled={submitting}>
             {submitting ? (
@@ -263,7 +266,7 @@ export function PaymentSubmitDialog({
             ) : (
               <Send className="mr-2 h-4 w-4" />
             )}
-            Submit Proof
+            {tp.submitProof}
           </Button>
         </DialogFooter>
       </DialogContent>

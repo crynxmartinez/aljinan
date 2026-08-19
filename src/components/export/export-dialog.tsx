@@ -16,6 +16,7 @@ import {
 import { Label } from '@/components/ui/label'
 import { RadioGroup, RadioGroupItem } from '@/components/ui/radio-group'
 import { Checkbox } from '@/components/ui/checkbox'
+import { useTranslation } from '@/lib/i18n/use-translation'
 
 interface ExportDialogProps {
   title?: string
@@ -26,12 +27,16 @@ interface ExportDialogProps {
 }
 
 export function ExportDialog({
-  title = 'Export Data',
-  description = 'Choose export format and options',
+  title,
+  description,
   itemCount,
   onExport,
   showDateRange = false,
 }: ExportDialogProps) {
+  const { t } = useTranslation()
+  const ta = t.dashboard.exportDialog
+  const resolvedTitle = title ?? ta.exportData
+  const resolvedDescription = description ?? ta.chooseExportFormat
   const [format, setFormat] = useState('excel')
   const [options, setOptions] = useState({
     includeDetails: true,
@@ -63,14 +68,14 @@ export function ExportDialog({
   const formatOptions = [
     {
       value: 'excel',
-      label: 'Excel Spreadsheet',
-      description: 'Editable .xlsx file',
+      label: ta.excelSpreadsheet,
+      description: ta.editableXlsx,
       icon: FileSpreadsheet,
     },
     {
       value: 'pdf',
-      label: 'PDF Report',
-      description: 'Professional formatted report',
+      label: ta.pdfReport,
+      description: ta.professionalFormattedReport,
       icon: FileText,
     },
   ]
@@ -80,23 +85,23 @@ export function ExportDialog({
       <DialogTrigger asChild>
         <Button variant="outline" size="sm">
           <Download className="h-4 w-4 mr-2" />
-          Export
+          {ta.export}
         </Button>
       </DialogTrigger>
       <DialogContent className="sm:max-w-[500px]">
         <DialogHeader>
-          <DialogTitle>{title}</DialogTitle>
-          <DialogDescription>{description}</DialogDescription>
+          <DialogTitle>{resolvedTitle}</DialogTitle>
+          <DialogDescription>{resolvedDescription}</DialogDescription>
         </DialogHeader>
 
         <div className="space-y-6 py-4">
           {/* Date Range Filter */}
           {showDateRange && (
             <div className="space-y-3">
-              <Label>Date Range</Label>
+              <Label>{ta.dateRange}</Label>
               <div className="grid grid-cols-2 gap-3">
                 <div className="space-y-1">
-                  <label className="text-xs text-muted-foreground">From</label>
+                  <label className="text-xs text-muted-foreground">{ta.from}</label>
                   <Input
                     type="date"
                     value={dateFrom}
@@ -104,7 +109,7 @@ export function ExportDialog({
                   />
                 </div>
                 <div className="space-y-1">
-                  <label className="text-xs text-muted-foreground">To</label>
+                  <label className="text-xs text-muted-foreground">{ta.to}</label>
                   <Input
                     type="date"
                     value={dateTo}
@@ -117,7 +122,7 @@ export function ExportDialog({
 
           {/* Format Selection */}
           <div className="space-y-3">
-            <Label>Select Format</Label>
+            <Label>{ta.selectFormat}</Label>
             <RadioGroup value={format} onValueChange={setFormat}>
               {formatOptions.map((option) => {
                 const Icon = option.icon
@@ -148,7 +153,7 @@ export function ExportDialog({
 
           {/* Export Options */}
           <div className="space-y-3">
-            <Label>Include</Label>
+            <Label>{ta.include}</Label>
             <div className="space-y-2">
               <div className="flex items-center space-x-2">
                 <Checkbox
@@ -159,7 +164,7 @@ export function ExportDialog({
                   }
                 />
                 <label htmlFor="details" className="text-sm cursor-pointer">
-                  Work order details
+                  {ta.workOrderDetails}
                 </label>
               </div>
               <div className="flex items-center space-x-2">
@@ -171,7 +176,7 @@ export function ExportDialog({
                   }
                 />
                 <label htmlFor="client" className="text-sm cursor-pointer">
-                  Client information
+                  {ta.clientInformation}
                 </label>
               </div>
               <div className="flex items-center space-x-2">
@@ -183,7 +188,7 @@ export function ExportDialog({
                   }
                 />
                 <label htmlFor="pricing" className="text-sm cursor-pointer">
-                  Pricing
+                  {ta.pricing}
                 </label>
               </div>
               <div className="flex items-center space-x-2">
@@ -195,7 +200,7 @@ export function ExportDialog({
                   }
                 />
                 <label htmlFor="dates" className="text-sm cursor-pointer">
-                  Dates and status
+                  {ta.datesAndStatus}
                 </label>
               </div>
               <div className="flex items-center space-x-2">
@@ -207,7 +212,7 @@ export function ExportDialog({
                   }
                 />
                 <label htmlFor="photos" className="text-sm cursor-pointer">
-                  Photos and attachments
+                  {ta.photosAndAttachments}
                 </label>
               </div>
             </div>
@@ -216,8 +221,7 @@ export function ExportDialog({
           {/* Preview */}
           <div className="p-3 bg-muted/50 rounded-lg">
             <p className="text-sm text-muted-foreground">
-              <span className="font-medium text-foreground">{itemCount}</span> items
-              will be exported as{' '}
+              <span className="font-medium text-foreground">{itemCount}</span> {ta.itemsWillBeExported}{' '}
               <span className="font-medium text-foreground">
                 {formatOptions.find((f) => f.value === format)?.label}
               </span>
@@ -227,15 +231,15 @@ export function ExportDialog({
 
         <DialogFooter>
           <Button variant="outline" onClick={() => setIsOpen(false)}>
-            Cancel
+            {ta.cancel}
           </Button>
           <Button onClick={handleExport} disabled={exporting}>
             {exporting ? (
-              <>Exporting...</>
+              <>{ta.exporting}</>
             ) : (
               <>
                 <Download className="h-4 w-4 mr-2" />
-                Export
+                {ta.export}
               </>
             )}
           </Button>

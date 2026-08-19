@@ -1,9 +1,10 @@
 'use client'
 
+import { useTranslation } from '@/lib/i18n/use-translation'
 import { Badge } from '@/components/ui/badge'
-import { 
-  Wrench, 
-  Calendar, 
+import {
+  Wrench,
+  Calendar,
   CheckCircle,
   Clock,
   AlertCircle,
@@ -32,7 +33,7 @@ function getBaseWorkOrderName(title: string): string {
 // Group work orders by their base name
 function groupWorkOrders(workOrders: WorkOrder[]): Map<string, WorkOrder[]> {
   const groups = new Map<string, WorkOrder[]>()
-  
+
   for (const wo of workOrders) {
     const baseName = getBaseWorkOrderName(wo.description)
     if (!groups.has(baseName)) {
@@ -40,12 +41,12 @@ function groupWorkOrders(workOrders: WorkOrder[]): Map<string, WorkOrder[]> {
     }
     groups.get(baseName)!.push(wo)
   }
-  
+
   return groups
 }
 
-function formatDate(dateString: string | null) {
-  if (!dateString) return 'Not scheduled'
+function formatDate(dateString: string | null, notScheduledLabel: string) {
+  if (!dateString) return notScheduledLabel
   return new Date(dateString).toLocaleDateString('en-US', {
     month: 'short',
     day: 'numeric',
@@ -91,6 +92,14 @@ function getStageColor(stage: string) {
 }
 
 export function ContractWorkOrdersDisplay({ workOrders, showStatus = true }: ContractWorkOrdersDisplayProps) {
+  const { t } = useTranslation()
+  const tb = t.dashboard.billingWorkOrders
+  const STAGE_LABELS: Record<string, string> = {
+    SCHEDULED: tb.stageScheduled,
+    IN_PROGRESS: tb.stageInProgress,
+    FOR_REVIEW: tb.stageForReview,
+    COMPLETED: tb.stageCompleted,
+  }
   const groups = groupWorkOrders(workOrders)
   const totalValue = workOrders.reduce((sum, wo) => sum + (wo.price || 0), 0)
   const completedCount = workOrders.filter(wo => wo.stage === 'COMPLETED').length
@@ -99,7 +108,7 @@ export function ContractWorkOrdersDisplay({ workOrders, showStatus = true }: Con
     return (
       <div className="text-center py-8 text-muted-foreground">
         <Wrench className="h-8 w-8 mx-auto mb-2 opacity-50" />
-        <p className="text-sm">No work orders in this contract</p>
+        <p className="text-sm">{t.dashboard.contractsList.noWorkOrdersInContract}</p>
       </div>
     )
   }
@@ -109,9 +118,9 @@ export function ContractWorkOrdersDisplay({ workOrders, showStatus = true }: Con
       {/* Progress indicator */}
       {showStatus && (
         <div className="flex items-center justify-between text-sm px-1">
-          <span className="text-muted-foreground">Progress</span>
+          <span className="text-muted-foreground">{t.dashboard.contractsList.progress}</span>
           <span className="font-medium">
-            {completedCount} / {workOrders.length} completed
+            {completedCount} / {workOrders.length} {t.dashboard.contractsList.completed}
           </span>
         </div>
       )}
@@ -122,10 +131,10 @@ export function ContractWorkOrdersDisplay({ workOrders, showStatus = true }: Con
           const groupTotal = items.reduce((sum, wo) => sum + (wo.price || 0), 0)
           const isSingleItem = items.length === 1
           const allCompleted = items.every(wo => wo.stage === 'COMPLETED')
-          
+
           return (
-            <div 
-              key={groupName} 
+            <div
+              key={groupName}
               className={cn(
                 "rounded-lg border bg-card",
                 allCompleted && "border-green-200 bg-green-50/30"
@@ -140,7 +149,7 @@ export function ContractWorkOrdersDisplay({ workOrders, showStatus = true }: Con
                       <h4 className="font-medium text-sm">{groupName}</h4>
                       {!isSingleItem && (
                         <p className="text-xs text-muted-foreground mt-0.5">
-                          {items.length} occurrences
+                          {items.length} {t.dashboard.contractsList.occurrences}
                         </p>
                       )}
                     </div>
@@ -152,7 +161,7 @@ export function ContractWorkOrdersDisplay({ workOrders, showStatus = true }: Con
                     {showStatus && allCompleted && (
                       <Badge className="ml-2 bg-green-100 text-green-700 text-xs">
                         <CheckCircle className="h-3 w-3 mr-1" />
-                        Done
+                        {t.dashboard.contractsList.done}
                       </Badge>
                     )}
                   </div>
@@ -162,12 +171,12 @@ export function ContractWorkOrdersDisplay({ workOrders, showStatus = true }: Con
               {/* Individual Items */}
               <div className="divide-y">
                 {items.map((wo, idx) => {
-                  const suffix = wo.description.match(/\((Q\d+|Month\d+)\)/i)?.[1] || 
-                                 (isSingleItem ? '' : `#${idx + 1}`)
-                  
+                  const suffix = wo.description.match(/\((Q\d+|Month\d+)\)/i)?.[1] ||
+                    (isSingleItem ? '' : `#${idx + 1}`)
+
                   return (
-                    <div 
-                      key={wo.id} 
+                    <div
+                      key={wo.id}
                       className={cn(
                         "px-3 py-2 flex items-center justify-between",
                         wo.stage === 'COMPLETED' && "bg-green-50/50"
@@ -182,15 +191,15 @@ export function ContractWorkOrdersDisplay({ workOrders, showStatus = true }: Con
                         )}
                         <div className="flex items-center gap-1.5 text-muted-foreground">
                           <Calendar className="h-3 w-3" />
-                          <span>{formatDate(wo.scheduledDate)}</span>
+                          <span>{formatDate(wo.scheduledDate, tb.notScheduled)}</span>
                         </div>
                         {showStatus && (
-                          <Badge 
-                            variant="outline" 
+                          <Badge
+                            variant="outline"
                             className={cn("text-xs ml-2", getStageColor(wo.stage))}
                           >
                             {getStageIcon(wo.stage)}
-                            <span className="ml-1">{wo.stage.replace('_', ' ')}</span>
+                            <span className="ml-1">{STAGE_LABELS[wo.stage] || wo.stage.replace('_', ' ')}</span>
                           </Badge>
                         )}
                       </div>
@@ -208,7 +217,7 @@ export function ContractWorkOrdersDisplay({ workOrders, showStatus = true }: Con
 
       {/* Total */}
       <div className="flex items-center justify-between p-4 bg-primary/5 rounded-lg border-2 border-primary/20">
-        <span className="font-semibold">Total Contract Value</span>
+        <span className="font-semibold">{t.dashboard.contractsList.totalContractValue}</span>
         <span className="text-xl font-bold text-primary">
           {formatCurrency(totalValue)}
         </span>
