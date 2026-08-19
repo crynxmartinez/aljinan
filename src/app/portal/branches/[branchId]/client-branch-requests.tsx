@@ -29,12 +29,6 @@ import {
   AlertDialogTitle,
 } from '@/components/ui/alert-dialog'
 import {
-  Table,
-  TableBody,
-  TableCell,
-  TableHead,
-  TableHeader,
-  TableRow,
 } from '@/components/ui/table'
 import {
   Select,
@@ -54,11 +48,9 @@ import {
   Calendar,
   Banknote,
   Send,
-  MessageSquare,
   ChevronDown,
   ChevronRight,
   CornerDownRight,
-  Upload,
   X,
   Image as ImageIcon,
   ThumbsUp,
@@ -386,7 +378,7 @@ export function ClientBranchRequests({ branchId, onDataChange, userId }: ClientB
         const errorData = await response.json()
         setError(`Failed to load requests: ${errorData.error || response.statusText}`)
       }
-    } catch (err) {
+    } catch {
       setError('Failed to fetch requests. Please try again.')
     } finally {
       setLoading(false)

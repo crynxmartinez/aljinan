@@ -2,7 +2,7 @@
 
 import { useState, useEffect } from 'react'
 import { useRouter } from 'next/navigation'
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
+import { Card, CardContent } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
@@ -17,21 +17,14 @@ import {
   DialogTitle,
 } from '@/components/ui/dialog'
 import {
-  DropdownMenu,
-  DropdownMenuContent,
-  DropdownMenuItem,
-  DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu'
 import {
-  Plus,
   Loader2,
-  MoreHorizontal,
   Clock,
   CheckCircle,
   XCircle,
   AlertCircle,
   CalendarCheck,
-  Trash2,
 } from 'lucide-react'
 import { CalendarView } from './calendar-view'
 import { useTranslation } from '@/lib/i18n/use-translation'

@@ -9,7 +9,6 @@ import {
   FileText,
   Globe,
   User,
-  Briefcase,
 } from 'lucide-react'
 
 interface CompanyInfoCardProps {

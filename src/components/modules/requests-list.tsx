@@ -17,12 +17,6 @@ import {
   DialogTitle,
 } from '@/components/ui/dialog'
 import {
-  Table,
-  TableBody,
-  TableCell,
-  TableHead,
-  TableHeader,
-  TableRow,
 } from '@/components/ui/table'
 import {
   Select,
@@ -50,16 +44,11 @@ import {
   Banknote,
   Pencil,
   Save,
-  Eye,
-  EyeOff,
   ChevronDown,
   ChevronRight,
   CornerDownRight,
   Send,
   Image as ImageIcon,
-  User,
-  Upload,
-  Paperclip,
   Printer,
   Zap,
 } from 'lucide-react'
@@ -863,7 +852,7 @@ export function RequestsList({ branchId, userRole, userId }: RequestsListProps) 
       toast.success(`Work order created and moved to IN PROGRESS!`)
       fetchRequests()
       router.refresh()
-    } catch (err) {
+    } catch {
       toast.error(t.toasts.createWorkOrderFailed)
     }
   }

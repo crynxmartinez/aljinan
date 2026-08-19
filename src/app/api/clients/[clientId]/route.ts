@@ -2,10 +2,9 @@ import { getServerSession } from 'next-auth'
 import { NextResponse } from 'next/server'
 import { authOptions } from '@/lib/auth'
 import { prisma } from '@/lib/prisma'
-import { canManageClients, permissionDeniedError } from '@/lib/permissions'
 import { sanitizePlainText, sanitizeEmail, sanitizePhone } from '@/lib/sanitize'
 import { validateEmail, validatePhone, validateRequired } from '@/lib/validation'
-import { logResourceUpdated, logPermissionDenied } from '@/lib/audit-log'
+import { logResourceUpdated } from '@/lib/audit-log'
 
 // GET - Fetch a single client
 export async function GET(

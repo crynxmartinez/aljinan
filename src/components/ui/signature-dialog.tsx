@@ -125,7 +125,7 @@ export function SignatureDialog({
       await onSign(signatureData)
       onOpenChange(false)
       clearSignature()
-    } catch (error) {
+    } catch {
       // Error handled by parent
     } finally {
       setSigning(false)

@@ -17,10 +17,9 @@ import {
   Search,
   AlertCircle,
   Mail,
-  RefreshCw,
   Key,
 } from 'lucide-react'
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
+import { Card, CardContent } from '@/components/ui/card'
 import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
@@ -56,7 +55,7 @@ import {
   DialogTitle,
 } from '@/components/ui/dialog'
 import { Label } from '@/components/ui/label'
-import { Plus, Copy, Check } from 'lucide-react'
+import { Plus } from 'lucide-react'
 import { useTranslation } from '@/lib/i18n/use-translation'
 
 interface ClientInfo {

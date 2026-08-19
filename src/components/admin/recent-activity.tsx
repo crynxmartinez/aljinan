@@ -2,7 +2,7 @@
 
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Badge } from '@/components/ui/badge'
-import { Building2, Users, FileText, UserPlus, Clock } from 'lucide-react'
+import { Building2, FileText, UserPlus, Clock } from 'lucide-react'
 
 interface ActivityItem {
   id: string

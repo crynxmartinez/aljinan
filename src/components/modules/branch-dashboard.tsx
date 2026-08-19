@@ -20,7 +20,6 @@ import {
   ClipboardList,
   Plus,
   Filter,
-  Loader2,
 } from 'lucide-react'
 import {
   Select,

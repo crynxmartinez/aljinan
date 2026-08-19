@@ -1,10 +1,9 @@
 'use client'
 
 import { useState } from 'react'
-import { Filter, X, Calendar as CalendarIcon, Users, ChevronDown } from 'lucide-react'
+import { Filter, X, ChevronDown } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { Label } from '@/components/ui/label'
-import { Checkbox } from '@/components/ui/checkbox'
 import { Input } from '@/components/ui/input'
 import { ScrollArea } from '@/components/ui/scroll-area'
 import { Separator } from '@/components/ui/separator'

@@ -43,10 +43,8 @@ import {
   Loader2,
   Edit,
   Trash2,
-  Award,
   Download,
   Eye,
-  Upload,
   FileText,
   Link2,
 } from 'lucide-react'
@@ -175,7 +173,7 @@ export function EquipmentList({ branchId, userRole = 'CONTRACTOR' }: EquipmentLi
         const errorData = await response.json()
         setError(errorData.error || 'Failed to load equipment')
       }
-    } catch (err) {
+    } catch {
       setError('Failed to fetch equipment')
     } finally {
       setLoading(false)
@@ -215,7 +213,7 @@ export function EquipmentList({ branchId, userRole = 'CONTRACTOR' }: EquipmentLi
         const errorData = await response.json()
         setError(errorData.error || 'Failed to add equipment')
       }
-    } catch (err) {
+    } catch {
       setError('Failed to add equipment')
     } finally {
       setSaving(false)
@@ -297,7 +295,7 @@ export function EquipmentList({ branchId, userRole = 'CONTRACTOR' }: EquipmentLi
         const errorData = await response.json()
         setError(errorData.error || 'Failed to update equipment')
       }
-    } catch (err) {
+    } catch {
       setError('Failed to update equipment')
     } finally {
       setSaving(false)
@@ -332,7 +330,7 @@ export function EquipmentList({ branchId, userRole = 'CONTRACTOR' }: EquipmentLi
         const errorData = await response.json()
         setError(errorData.error || 'Failed to delete equipment')
       }
-    } catch (err) {
+    } catch {
       setError('Failed to delete equipment')
     }
   }

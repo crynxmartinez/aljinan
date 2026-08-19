@@ -1,6 +1,6 @@
 'use client'
 
-import { useState, useRef } from 'react'
+import { useState } from 'react'
 import Link from 'next/link'
 import { useRouter } from 'next/navigation'
 import { api } from '@/lib/api-client'
@@ -15,9 +15,6 @@ import {
   RotateCcw,
   Mail,
   Building2,
-  Copy,
-  CheckCircle,
-  Key,
   Pencil,
   Check,
   X,

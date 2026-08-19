@@ -4,7 +4,7 @@ import { useEffect, useState } from 'react'
 import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle } from '@/components/ui/dialog'
 import { Button } from '@/components/ui/button'
 import { Badge } from '@/components/ui/badge'
-import { Bell, CheckCircle, Clock, AlertCircle, FileText, Eye, Wrench, XCircle } from 'lucide-react'
+import { Bell, CheckCircle, Clock, AlertCircle, Eye, Wrench, XCircle } from 'lucide-react'
 import { cn } from '@/lib/utils'
 
 interface NotificationPopupProps {

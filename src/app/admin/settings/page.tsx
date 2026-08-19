@@ -1,5 +1,5 @@
-import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card'
-import { Settings, UserCog, Shield } from 'lucide-react'
+import { Card, CardHeader, CardTitle, CardDescription } from '@/components/ui/card'
+import { UserCog } from 'lucide-react'
 import Link from 'next/link'
 import { getTranslations } from '@/lib/i18n/server'
 

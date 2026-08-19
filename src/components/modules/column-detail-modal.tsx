@@ -28,18 +28,13 @@ import {
   SelectValue,
 } from '@/components/ui/select'
 import {
-  Calendar,
   Clock,
   FileText,
-  CheckCircle,
-  Archive,
   Search,
   Download,
   ArrowUpDown,
   AlertCircle,
   Banknote,
-  Tag,
-  User,
 } from 'lucide-react'
 
 type ChecklistItemStage = 'SCHEDULED' | 'IN_PROGRESS' | 'FOR_REVIEW' | 'COMPLETED' | 'ARCHIVED'

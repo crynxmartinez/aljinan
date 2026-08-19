@@ -18,11 +18,6 @@ import {
   Calendar,
   ChevronLeft,
   ChevronRight,
-  Clock,
-  CheckCircle,
-  AlertCircle,
-  FileText,
-  MapPin,
 } from 'lucide-react'
 import { cn } from '@/lib/utils'
 

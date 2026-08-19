@@ -17,7 +17,6 @@ import {
   Loader2,
   CheckCircle,
   ExternalLink,
-  Calendar,
   Image as ImageIcon,
   PenTool,
 } from 'lucide-react'

@@ -10,7 +10,6 @@ import {
   notifyWorkOrderForReview,
   notifyWorkOrderStarted,
   notifyWorkOrderCompleted,
-  notifyWorkOrderRejected,
   notifyWorkOrderAssigned,
   notifyPriceSet
 } from '@/lib/notification-service'

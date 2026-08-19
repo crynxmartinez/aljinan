@@ -8,7 +8,6 @@ import {
   Phone,
   Building2,
   Clock,
-  ChevronDown,
   UserPlus,
 } from 'lucide-react'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'

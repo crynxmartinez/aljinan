@@ -7,7 +7,7 @@
     "dev": "next dev",
     "build": "next build",
     "start": "next start",
-    "lint": "eslint . --ext .js,.jsx,.ts,.tsx --max-warnings=331",
+    "lint": "eslint . --ext .js,.jsx,.ts,.tsx --max-warnings=205",
     "type-check": "tsc --noEmit",
     "validate": "npm run type-check && npm run lint && npm test",
     "postinstall": "prisma generate",

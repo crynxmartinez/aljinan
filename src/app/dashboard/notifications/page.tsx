@@ -5,21 +5,16 @@ import { prisma } from '@/lib/prisma'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
 import { Badge } from '@/components/ui/badge'
 import { ScrollArea } from '@/components/ui/scroll-area'
-import { Button } from '@/components/ui/button'
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
 import {
   Bell,
   FileText,
   Receipt,
   Calendar,
-  CheckCircle,
-  Clock,
-  AlertCircle,
   MessageSquare,
   Users,
   MapPin,
   ClipboardList,
-  Eye
 } from 'lucide-react'
 import Link from 'next/link'
 import { NotificationsList } from './notifications-list'

@@ -6,7 +6,6 @@ import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
 import {
   Tag,
-  AlertTriangle,
   Clock,
   XCircle,
   ChevronRight,
@@ -49,7 +48,7 @@ export function ExpiringEquipmentWidget({ contractorId }: ExpiringEquipmentWidge
         } else {
           setError('Failed to load equipment')
         }
-      } catch (err) {
+      } catch {
         setError('Failed to fetch equipment')
       } finally {
         setLoading(false)

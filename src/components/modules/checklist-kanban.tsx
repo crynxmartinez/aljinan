@@ -21,25 +21,19 @@ import {
   CalendarClock,
   Clock,
   CheckCircle,
-  AlertCircle,
   FileText,
   User,
-  MapPin,
   Send,
   Loader2,
   GripVertical,
-  Upload,
-  X,
   XCircle,
   Image as ImageIcon,
   PenTool,
   ClipboardCheck,
   Award,
   Tag,
-  Plus,
   Check,
   Archive,
-  RotateCcw,
   Printer,
 } from 'lucide-react'
 import {
@@ -49,7 +43,6 @@ import {
   SelectTrigger,
   SelectValue,
 } from '@/components/ui/select'
-import { Checkbox } from '@/components/ui/checkbox'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
 import { FileUploadDropzone } from '@/components/ui/file-upload-dropzone'
@@ -72,7 +65,6 @@ import {
   DragOverEvent,
 } from '@dnd-kit/core'
 import { useDraggable, useDroppable } from '@dnd-kit/core'
-import { ServiceReportForm, MaintenanceReportForm, InstallationReportForm } from '@/components/reports'
 import { api } from '@/lib/api-client'
 import { useTranslation } from '@/lib/i18n/use-translation'
 import {
@@ -80,11 +72,7 @@ import {
   MaintenanceReportData,
   InstallationReportData,
   InspectionReportData,
-  getReportTitle,
   getEmptyReportData,
-  emptyServiceReportData,
-  emptyMaintenanceReportData,
-  emptyInstallationReportData
 } from '@/types/reports'
 
 type AnyReportData = ServiceReportData | MaintenanceReportData | InstallationReportData | InspectionReportData | null
@@ -1071,7 +1059,7 @@ export function ChecklistKanban({ branchId, readOnly = false, userRole }: Checkl
         const error = await response.json()
         toast.error(error.error || 'Failed to reschedule')
       }
-    } catch (error) {
+    } catch {
       toast.error(t.toasts.rescheduleFailed)
     } finally {
       setRescheduling(false)

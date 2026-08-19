@@ -15,7 +15,6 @@ import {
 } from '@/components/ui/table'
 import {
   AlertTriangle,
-  Clock,
   Tag,
   FileCheck,
   Loader2,
@@ -100,7 +99,7 @@ export function ActionCenterTable({ userRole }: ActionCenterTableProps) {
         } else {
           setError('Failed to load data')
         }
-      } catch (err) {
+      } catch {
         setError('Failed to fetch data')
       } finally {
         setLoading(false)

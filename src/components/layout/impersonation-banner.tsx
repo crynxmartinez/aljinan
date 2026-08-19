@@ -2,7 +2,7 @@
 
 import { useState, useEffect } from 'react'
 import { useRouter } from 'next/navigation'
-import { Shield, X, LogOut } from 'lucide-react'
+import { Shield, LogOut } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 
 export function ImpersonationBanner() {
