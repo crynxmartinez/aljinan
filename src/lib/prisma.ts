@@ -19,17 +19,15 @@ function createPrismaClient() {
   // Optimize connection pool for serverless
   const pool = globalForPrisma.pool ?? new Pool({
     connectionString,
-    max: 10,                    // Reduced max connections for serverless
+    max: 3,                     // Minimal connections per serverless instance
     min: 0,                     // No minimum connections
     idleTimeoutMillis: 10000,   // Close idle connections after 10s (faster cleanup)
     connectionTimeoutMillis: 3000, // Fail fast if can't connect
     allowExitOnIdle: true,      // Allow process to exit when idle
   })
 
-  // Reuse pool in development to avoid connection leaks
-  if (process.env.NODE_ENV !== 'production') {
-    globalForPrisma.pool = pool
-  }
+  // Reuse pool globally to avoid connection leaks in both dev and production (serverless)
+  globalForPrisma.pool = pool
 
   const adapter = new PrismaPg(pool)
 
@@ -43,10 +41,8 @@ function createPrismaClient() {
 
 export const prisma = globalForPrisma.prisma ?? createPrismaClient()
 
-// Reuse Prisma instance in development
-if (process.env.NODE_ENV !== 'production') {
-  globalForPrisma.prisma = prisma
-}
+// Reuse Prisma instance globally (critical for serverless connection management)
+globalForPrisma.prisma = prisma
 
 // Graceful shutdown. Three signals can fire for one exit, and pg throws
 // "Called end on pool more than once" on a second end() — which surfaced as a crash at the
