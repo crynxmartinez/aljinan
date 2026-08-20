@@ -5,6 +5,8 @@ import { prisma } from '@/lib/prisma'
 import { ContractSystemFrequency } from '@prisma/client'
 import { verifyBranchAccess } from '@/lib/permissions'
 
+const VALID_FREQUENCIES = ['MONTHLY', 'QUARTERLY', 'SEMI_ANNUALLY', 'ANNUALLY']
+
 // GET - Fetch all contracts for a branch
 export async function GET(
   request: Request,
@@ -110,6 +112,31 @@ export async function POST(
 
     if (!title) {
       return NextResponse.json({ error: 'Title is required' }, { status: 400 })
+    }
+
+    // Validate system frequencies and payment amounts if provided
+    if (systems && Array.isArray(systems)) {
+      for (const system of systems) {
+        if (!VALID_FREQUENCIES.includes(system.frequency)) {
+          return NextResponse.json(
+            { error: `Invalid frequency "${system.frequency}". Must be one of: ${VALID_FREQUENCIES.join(', ')}` },
+            { status: 400 }
+          )
+        }
+        if (system.paymentAmounts && Array.isArray(system.paymentAmounts)) {
+          for (const amount of system.paymentAmounts) {
+            if (amount !== null && amount !== undefined && amount !== '') {
+              const parsed = parseFloat(amount)
+              if (isNaN(parsed)) {
+                return NextResponse.json(
+                  { error: `Invalid payment amount "${amount}". Must be a valid number.` },
+                  { status: 400 }
+                )
+              }
+            }
+          }
+        }
+      }
     }
 
     const hasAccess = await verifyBranchAccess(branchId, session.user.id, session.user.role)

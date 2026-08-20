@@ -82,6 +82,18 @@ export async function POST(
 
     // Calculate totals
     const parsedItems = items || []
+
+    // Validate items have numeric quantity and unitPrice
+    for (const item of parsedItems) {
+      if (typeof item.quantity !== 'number' || typeof item.unitPrice !== 'number' ||
+        isNaN(item.quantity) || isNaN(item.unitPrice)) {
+        return NextResponse.json(
+          { error: 'Each quotation item must have numeric quantity and unitPrice' },
+          { status: 400 }
+        )
+      }
+    }
+
     const subtotal = roundMoney(parsedItems.reduce((sum: number, item: { quantity: number; unitPrice: number }) => {
       return sum + (item.quantity * item.unitPrice)
     }, 0))

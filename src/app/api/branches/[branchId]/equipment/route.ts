@@ -32,15 +32,15 @@ export async function GET(
 
     // Build where clause
     const where: any = { branchId }
-    
+
     if (status) {
       where.status = status
     }
-    
+
     if (type) {
       where.equipmentType = type
     }
-    
+
     // Filter for equipment expiring within 30 days
     if (expiringSoon) {
       const thirtyDaysFromNow = new Date()
@@ -83,20 +83,22 @@ export async function GET(
       })
     }
 
-    // Calculate status based on expiry date for each equipment
+    // Calculate status based on inspection result and expiry date for each equipment
     const equipmentWithCalculatedStatus = equipment.map(eq => {
       let calculatedStatus = eq.status
-      if (eq.expectedExpiry) {
+
+      // Failed inspection takes priority over expiry status
+      if (eq.inspectionResult === 'FAIL' || eq.inspectionResult === 'NEEDS_REPAIR') {
+        calculatedStatus = 'NEEDS_ATTENTION'
+      } else if (eq.expectedExpiry) {
         const now = new Date()
         const thirtyDaysFromNow = new Date()
         thirtyDaysFromNow.setDate(thirtyDaysFromNow.getDate() + 30)
-        
+
         if (eq.expectedExpiry < now) {
           calculatedStatus = 'EXPIRED'
         } else if (eq.expectedExpiry <= thirtyDaysFromNow) {
           calculatedStatus = 'EXPIRING_SOON'
-        } else if (eq.inspectionResult === 'FAIL' || eq.inspectionResult === 'NEEDS_REPAIR') {
-          calculatedStatus = 'NEEDS_ATTENTION'
         } else {
           calculatedStatus = 'ACTIVE'
         }
@@ -143,9 +145,22 @@ export async function POST(
       workOrderId,
     } = body
 
+    const VALID_EQUIPMENT_TYPES = [
+      'FIRE_EXTINGUISHER', 'FIRE_ALARM_PANEL', 'SPRINKLER_SYSTEM', 'EMERGENCY_LIGHTING',
+      'EXIT_SIGN', 'FIRE_DOOR', 'SMOKE_DETECTOR', 'HEAT_DETECTOR', 'GAS_DETECTOR',
+      'KITCHEN_HOOD_SUPPRESSION', 'FIRE_PUMP', 'FIRE_HOSE_REEL', 'OTHER'
+    ]
+
     if (!equipmentNumber || !equipmentType) {
       return NextResponse.json(
         { error: 'Equipment number and type are required' },
+        { status: 400 }
+      )
+    }
+
+    if (!VALID_EQUIPMENT_TYPES.includes(equipmentType)) {
+      return NextResponse.json(
+        { error: `Invalid equipment type. Must be one of: ${VALID_EQUIPMENT_TYPES.join(', ')}` },
         { status: 400 }
       )
     }

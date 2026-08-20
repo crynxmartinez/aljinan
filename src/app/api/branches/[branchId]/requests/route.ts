@@ -5,6 +5,14 @@ import { prisma } from '@/lib/prisma'
 import { notifyNewRequest } from '@/lib/notification-service'
 import { verifyBranchAccess } from '@/lib/permissions'
 
+const VALID_EQUIPMENT_TYPES = [
+  'FIRE_EXTINGUISHER', 'FIRE_ALARM_PANEL', 'SPRINKLER_SYSTEM', 'EMERGENCY_LIGHTING',
+  'EXIT_SIGN', 'FIRE_DOOR', 'SMOKE_DETECTOR', 'HEAT_DETECTOR', 'GAS_DETECTOR',
+  'KITCHEN_HOOD_SUPPRESSION', 'FIRE_PUMP', 'FIRE_HOSE_REEL', 'OTHER'
+]
+
+const VALID_WORK_ORDER_TYPES = ['SERVICE', 'INSPECTION', 'MAINTENANCE', 'INSTALLATION', 'STICKER_INSPECTION', 'OTHER']
+
 // GET - Fetch all requests for a branch
 export async function GET(
   request: Request,
@@ -108,6 +116,26 @@ export async function POST(
         { error: 'Title is required' },
         { status: 400 }
       )
+    }
+
+    // Validate workOrderType if provided
+    if (workOrderType && !VALID_WORK_ORDER_TYPES.includes(workOrderType)) {
+      return NextResponse.json(
+        { error: `Invalid work order type. Must be one of: ${VALID_WORK_ORDER_TYPES.join(', ')}` },
+        { status: 400 }
+      )
+    }
+
+    // Validate equipment types if provided
+    if (equipment && Array.isArray(equipment) && equipment.length > 0) {
+      for (const eq of equipment) {
+        if (!VALID_EQUIPMENT_TYPES.includes(eq.equipmentType)) {
+          return NextResponse.json(
+            { error: `Invalid equipment type "${eq.equipmentType}". Must be one of: ${VALID_EQUIPMENT_TYPES.join(', ')}` },
+            { status: 400 }
+          )
+        }
+      }
     }
 
     // Verify user has access to this branch

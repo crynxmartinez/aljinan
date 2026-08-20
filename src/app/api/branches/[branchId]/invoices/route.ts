@@ -77,12 +77,29 @@ export async function POST(
       return NextResponse.json({ error: 'Access denied' }, { status: 403 })
     }
 
-    // Generate invoice number
-    const count = await prisma.invoice.count()
-    const invoiceNumber = `INV-${String(count + 1).padStart(5, '0')}`
+    // Get the contractor for this branch (Branch → Client → Contractor)
+    const branch = await prisma.branch.findUnique({
+      where: { id: branchId },
+      include: { client: { select: { contractorId: true } } }
+    })
+    if (!branch) {
+      return NextResponse.json({ error: 'Branch not found' }, { status: 404 })
+    }
 
     // Calculate totals
     const parsedItems = items || []
+
+    // Validate items have numeric quantity and unitPrice
+    for (const item of parsedItems) {
+      if (typeof item.quantity !== 'number' || typeof item.unitPrice !== 'number' ||
+        isNaN(item.quantity) || isNaN(item.unitPrice)) {
+        return NextResponse.json(
+          { error: 'Each invoice item must have numeric quantity and unitPrice' },
+          { status: 400 }
+        )
+      }
+    }
+
     const subtotal = roundMoney(parsedItems.reduce((sum: number, item: { quantity: number; unitPrice: number }) => {
       return sum + (item.quantity * item.unitPrice)
     }, 0))
@@ -90,30 +107,40 @@ export async function POST(
     const taxAmount = roundMoney(subtotal * (tax / 100))
     const total = roundMoney(subtotal + taxAmount)
 
-    const invoice = await prisma.invoice.create({
-      data: {
-        branchId,
-        contractId: contractId || null,
-        quotationId: quotationId || null,
-        invoiceNumber,
-        title,
-        description,
-        subtotal,
-        taxRate: tax,
-        taxAmount,
-        total,
-        dueDate: dueDate ? new Date(dueDate) : null,
-        createdById: session.user.id,
-        items: {
-          create: parsedItems.map((item: { description: string; quantity: number; unitPrice: number }) => ({
-            description: item.description,
-            quantity: item.quantity,
-            unitPrice: item.unitPrice,
-            total: item.quantity * item.unitPrice,
-          }))
-        }
-      },
-      include: { items: true }
+    // Generate invoice number using atomic counter
+    const invoice = await prisma.$transaction(async (tx) => {
+      const contractor = await tx.contractor.update({
+        where: { id: branch.client.contractorId },
+        data: { nextInvoiceNumber: { increment: 1 } },
+        select: { nextInvoiceNumber: true }
+      })
+      const invoiceNumber = `INV-${String(contractor.nextInvoiceNumber - 1).padStart(5, '0')}`
+
+      return tx.invoice.create({
+        data: {
+          branchId,
+          contractId: contractId || null,
+          quotationId: quotationId || null,
+          invoiceNumber,
+          title,
+          description,
+          subtotal,
+          taxRate: tax,
+          taxAmount,
+          total,
+          dueDate: dueDate ? new Date(dueDate) : null,
+          createdById: session.user.id,
+          items: {
+            create: parsedItems.map((item: { description: string; quantity: number; unitPrice: number }) => ({
+              description: item.description,
+              quantity: item.quantity,
+              unitPrice: item.unitPrice,
+              total: item.quantity * item.unitPrice,
+            }))
+          }
+        },
+        include: { items: true }
+      })
     })
 
     return NextResponse.json(invoice, { status: 201 })

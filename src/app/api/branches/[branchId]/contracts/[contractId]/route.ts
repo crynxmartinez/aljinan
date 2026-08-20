@@ -5,6 +5,8 @@ import { prisma } from '@/lib/prisma'
 import { ContractSystemFrequency } from '@prisma/client'
 import { verifyBranchAccess } from '@/lib/permissions'
 
+const VALID_FREQUENCIES = ['MONTHLY', 'QUARTERLY', 'SEMI_ANNUALLY', 'ANNUALLY']
+
 // Type for system input
 interface SystemInput {
   id?: string
@@ -107,6 +109,14 @@ export async function PATCH(
         return NextResponse.json({ error: 'Signature is required' }, { status: 400 })
       }
 
+      // Verify contract exists and belongs to this branch
+      const contractExists = await prisma.contract.findFirst({
+        where: { id: contractId, branchId }
+      })
+      if (!contractExists) {
+        return NextResponse.json({ error: 'Contract not found' }, { status: 404 })
+      }
+
       // Use transaction to update contract and generate work orders
       const result = await prisma.$transaction(async (tx) => {
         // Update contract with signature
@@ -126,12 +136,29 @@ export async function PATCH(
 
         // Only generate work orders if contract has systems and no existing checklist
         if (updated.systems.length > 0 && !updated.checklist) {
-          // Get the next work order number
-          const lastWorkOrder = await tx.checklistItem.findFirst({
-            orderBy: { workOrderNumber: 'desc' },
-            select: { workOrderNumber: true }
+          // Count total work orders to create across all systems
+          let totalWorkOrders = 0
+          for (const system of updated.systems) {
+            const visitDates = system.visitDates as string[]
+            for (let i = 0; i < visitDates.length; i++) {
+              if (visitDates[i]) totalWorkOrders++
+            }
+          }
+
+          // Atomically increment the contractor's work order counter
+          const branch = await tx.branch.findUnique({
+            where: { id: branchId },
+            include: { client: { select: { contractorId: true } } }
           })
-          let nextWorkOrderNumber = (lastWorkOrder?.workOrderNumber || 0) + 1
+          let nextWorkOrderNumber = 1
+          if (branch && totalWorkOrders > 0) {
+            const contractor = await tx.contractor.update({
+              where: { id: branch.client.contractorId },
+              data: { nextWorkOrderNumber: { increment: totalWorkOrders } },
+              select: { nextWorkOrderNumber: true }
+            })
+            nextWorkOrderNumber = contractor.nextWorkOrderNumber - totalWorkOrders
+          }
 
           // Create a checklist for this contract
           const checklist = await tx.checklist.create({
@@ -235,8 +262,8 @@ export async function PATCH(
       }
 
       // Verify all work orders are completed AND paid before allowing end signature
-      const contract = await prisma.contract.findUnique({
-        where: { id: contractId },
+      const contract = await prisma.contract.findFirst({
+        where: { id: contractId, branchId },
         include: {
           checklist: {
             include: {
@@ -293,6 +320,31 @@ export async function PATCH(
       systems,
       payments
     } = body
+
+    // Validate system frequencies and payment amounts if provided
+    if (systems && Array.isArray(systems)) {
+      for (const system of systems) {
+        if (!VALID_FREQUENCIES.includes(system.frequency)) {
+          return NextResponse.json(
+            { error: `Invalid frequency "${system.frequency}". Must be one of: ${VALID_FREQUENCIES.join(', ')}` },
+            { status: 400 }
+          )
+        }
+        if (system.paymentAmounts && Array.isArray(system.paymentAmounts)) {
+          for (const amount of system.paymentAmounts) {
+            if (amount !== null && amount !== undefined && amount !== '') {
+              const parsed = parseFloat(amount)
+              if (isNaN(parsed)) {
+                return NextResponse.json(
+                  { error: `Invalid payment amount "${amount}". Must be a valid number.` },
+                  { status: 400 }
+                )
+              }
+            }
+          }
+        }
+      }
+    }
 
     // Check if contract was already signed - if so, editing will require re-signature
     const existingContract = await prisma.contract.findUnique({
@@ -535,6 +587,34 @@ export async function DELETE(
     const hasAccess = await verifyBranchAccess(branchId, session.user.id, session.user.role)
     if (!hasAccess) {
       return NextResponse.json({ error: 'Access denied' }, { status: 403 })
+    }
+
+    // Check for active work orders before deleting
+    const contractWithChecklist = await prisma.contract.findFirst({
+      where: { id: contractId, branchId },
+      include: {
+        checklist: {
+          include: {
+            items: { select: { id: true, stage: true } }
+          }
+        }
+      }
+    })
+
+    if (!contractWithChecklist) {
+      return NextResponse.json({ error: 'Contract not found' }, { status: 404 })
+    }
+
+    if (contractWithChecklist.checklist) {
+      const activeWorkOrders = contractWithChecklist.checklist.items.filter(
+        item => item.stage === 'IN_PROGRESS' || item.stage === 'FOR_REVIEW'
+      )
+      if (activeWorkOrders.length > 0) {
+        return NextResponse.json(
+          { error: `Cannot delete contract with ${activeWorkOrders.length} active work order(s). Complete or cancel them first.` },
+          { status: 400 }
+        )
+      }
     }
 
     await prisma.contract.delete({

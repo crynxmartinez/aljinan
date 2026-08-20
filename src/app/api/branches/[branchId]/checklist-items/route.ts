@@ -455,7 +455,16 @@ export async function PATCH(
       if (problemScope !== undefined) updateData.problemScope = problemScope || null
       if (findings !== undefined) updateData.findings = findings || null
       if (actionTaken !== undefined) updateData.actionTaken = actionTaken || null
-      if (systemStatus !== undefined) updateData.systemStatus = systemStatus || null
+      if (systemStatus !== undefined) {
+        const validSystemStatuses = ['WORKING', 'NEEDS_ATTENTION', 'CRITICAL']
+        if (systemStatus && !validSystemStatuses.includes(systemStatus as string)) {
+          return NextResponse.json(
+            { error: `Invalid systemStatus. Must be one of: ${validSystemStatuses.join(', ')}` },
+            { status: 400 }
+          )
+        }
+        updateData.systemStatus = systemStatus || null
+      }
       if (technicianNotes !== undefined) updateData.technicianNotes = technicianNotes || null
 
       // SERVICE fields
@@ -464,20 +473,52 @@ export async function PATCH(
       // INSTALLATION fields
       if (equipmentInstalled !== undefined) updateData.equipmentInstalled = equipmentInstalled || null
       if (installQuantity !== undefined) updateData.installQuantity = installQuantity || null
-      if (completionStatus !== undefined) updateData.completionStatus = completionStatus || null
+      if (completionStatus !== undefined) {
+        const validCompletionStatuses = ['COMPLETED', 'PARTIAL', 'PENDING']
+        if (completionStatus && !validCompletionStatuses.includes(completionStatus as string)) {
+          return NextResponse.json(
+            { error: `Invalid completionStatus. Must be one of: ${validCompletionStatuses.join(', ')}` },
+            { status: 400 }
+          )
+        }
+        updateData.completionStatus = completionStatus || null
+      }
 
       // INSPECTION fields
-      if (areasInspected !== undefined) updateData.areasInspected = areasInspected || null
+      // areasInspected is a String? column — coerce arrays to a comma-separated string
+      if (areasInspected !== undefined) {
+        updateData.areasInspected = Array.isArray(areasInspected)
+          ? areasInspected.join(', ')
+          : (areasInspected || null)
+      }
       if (systemsChecked !== undefined) updateData.systemsChecked = systemsChecked || null
       if (deficiencies !== undefined) updateData.deficiencies = deficiencies || null
       if (recommendations !== undefined) updateData.recommendations = recommendations || null
-      if (inspectionResult !== undefined) updateData.inspectionResult = inspectionResult || null
+      if (inspectionResult !== undefined) {
+        const validInspectionResults = ['PASSED', 'FAILED', 'ATTENTION_REQUIRED']
+        if (inspectionResult && !validInspectionResults.includes(inspectionResult as string)) {
+          return NextResponse.json(
+            { error: `Invalid inspectionResult. Must be one of: ${validInspectionResults.join(', ')}` },
+            { status: 400 }
+          )
+        }
+        updateData.inspectionResult = inspectionResult || null
+      }
 
       // MAINTENANCE fields
       if (systemsMaintained !== undefined) updateData.systemsMaintained = systemsMaintained || null
       if (maintenancePerformed !== undefined) updateData.maintenancePerformed = maintenancePerformed || null
       if (partsServiced !== undefined) updateData.partsServiced = partsServiced || null
-      if (testResult !== undefined) updateData.testResult = testResult || null
+      if (testResult !== undefined) {
+        const validTestResults = ['PASSED', 'FAILED', 'PARTIAL']
+        if (testResult && !validTestResults.includes(testResult as string)) {
+          return NextResponse.json(
+            { error: `Invalid testResult. Must be one of: ${validTestResults.join(', ')}` },
+            { status: 400 }
+          )
+        }
+        updateData.testResult = testResult || null
+      }
       if (nextMaintenanceDate !== undefined) updateData.nextMaintenanceDate = nextMaintenanceDate ? new Date(nextMaintenanceDate) : null
 
       // Legacy reportData (for backward compatibility)

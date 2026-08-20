@@ -4,6 +4,16 @@ import { authOptions } from '@/lib/auth'
 import { prisma } from '@/lib/prisma'
 import { verifyBranchAccess } from '@/lib/permissions'
 
+const VALID_EQUIPMENT_TYPES = [
+  'FIRE_EXTINGUISHER', 'FIRE_ALARM_PANEL', 'SPRINKLER_SYSTEM', 'EMERGENCY_LIGHTING',
+  'EXIT_SIGN', 'FIRE_DOOR', 'SMOKE_DETECTOR', 'HEAT_DETECTOR', 'GAS_DETECTOR',
+  'KITCHEN_HOOD_SUPPRESSION', 'FIRE_PUMP', 'FIRE_HOSE_REEL', 'OTHER'
+]
+
+const VALID_EQUIPMENT_STATUSES = ['ACTIVE', 'EXPIRING_SOON', 'EXPIRED', 'NEEDS_ATTENTION']
+
+const VALID_INSPECTION_RESULTS = ['PENDING', 'PASS', 'FAIL', 'NEEDS_REPAIR']
+
 // GET - Fetch single equipment
 export async function GET(
   request: Request,
@@ -85,6 +95,30 @@ export async function PATCH(
 
     // Build update data
     const updateData: Record<string, unknown> = {}
+
+    // Validate equipmentType if provided
+    if (body.equipmentType !== undefined && !VALID_EQUIPMENT_TYPES.includes(body.equipmentType)) {
+      return NextResponse.json(
+        { error: `Invalid equipment type. Must be one of: ${VALID_EQUIPMENT_TYPES.join(', ')}` },
+        { status: 400 }
+      )
+    }
+
+    // Validate status if provided
+    if (body.status !== undefined && !VALID_EQUIPMENT_STATUSES.includes(body.status)) {
+      return NextResponse.json(
+        { error: `Invalid equipment status. Must be one of: ${VALID_EQUIPMENT_STATUSES.join(', ')}` },
+        { status: 400 }
+      )
+    }
+
+    // Validate inspectionResult if provided
+    if (body.inspectionResult !== undefined && !VALID_INSPECTION_RESULTS.includes(body.inspectionResult)) {
+      return NextResponse.json(
+        { error: `Invalid inspection result. Must be one of: ${VALID_INSPECTION_RESULTS.join(', ')}` },
+        { status: 400 }
+      )
+    }
 
     // Validate custom equipment type if OTHER is selected
     if (body.equipmentType === 'OTHER' && !body.customEquipmentType?.trim()) {
