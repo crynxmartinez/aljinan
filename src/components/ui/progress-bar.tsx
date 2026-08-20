@@ -1,4 +1,5 @@
 import { cn } from "@/lib/utils"
+import { useTranslation } from "@/lib/i18n/use-translation"
 
 interface ProgressBarProps {
   value: number
@@ -14,20 +15,21 @@ const sizeClasses = {
   lg: "h-3",
 }
 
-export function ProgressBar({ 
-  value, 
-  max = 100, 
-  className, 
+export function ProgressBar({
+  value,
+  max = 100,
+  className,
   showLabel = false,
-  size = "md" 
+  size = "md"
 }: ProgressBarProps) {
+  const { t } = useTranslation()
   const percentage = Math.min(Math.max((value / max) * 100, 0), 100)
-  
+
   return (
     <div className="w-full space-y-1">
       {showLabel && (
         <div className="flex justify-between text-xs text-muted-foreground">
-          <span>Progress</span>
+          <span>{t.uiComponents.progress}</span>
           <span>{Math.round(percentage)}%</span>
         </div>
       )}
@@ -41,12 +43,12 @@ export function ProgressBar({
   )
 }
 
-export function UploadProgress({ 
-  fileName, 
-  progress 
-}: { 
+export function UploadProgress({
+  fileName,
+  progress
+}: {
   fileName: string
-  progress: number 
+  progress: number
 }) {
   return (
     <div className="space-y-2 p-3 border rounded-lg bg-muted/50">

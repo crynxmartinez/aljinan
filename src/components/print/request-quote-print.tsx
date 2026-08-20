@@ -92,7 +92,7 @@ export function RequestQuotePrint({ requestId, branchId }: RequestQuotePrintProp
 
   const formatDate = (dateString: string | null) => {
     if (!dateString) return '-'
-    return new Date(dateString).toLocaleDateString('en-US', {
+    return new Date(dateString).toLocaleDateString('ar-SA', {
       year: 'numeric',
       month: 'long',
       day: 'numeric'
@@ -218,7 +218,7 @@ export function RequestQuotePrint({ requestId, branchId }: RequestQuotePrintProp
               <h1 className="text-4xl font-bold text-primary mb-2">TASHEEL</h1>
               <p className="text-sm text-muted-foreground">{tp.safetyContractorManagement}</p>
             </div>
-            <div className="text-right">
+            <div className="text-end">
               <h2 className="text-2xl font-bold mb-1">
                 {isQuoted ? tp.serviceQuotation : tp.serviceRequest}
               </h2>
@@ -312,10 +312,10 @@ export function RequestQuotePrint({ requestId, branchId }: RequestQuotePrintProp
             <table className="w-full border-collapse border border-gray-300">
               <thead>
                 <tr className="bg-gray-100">
-                  <th className="border border-gray-300 px-3 py-2 text-left text-sm font-semibold">{tp.equipmentNumber}</th>
-                  <th className="border border-gray-300 px-3 py-2 text-left text-sm font-semibold">{tp.type}</th>
-                  <th className="border border-gray-300 px-3 py-2 text-left text-sm font-semibold">{tp.location}</th>
-                  <th className="border border-gray-300 px-3 py-2 text-left text-sm font-semibold">{tp.expiryDate}</th>
+                  <th className="border border-gray-300 px-3 py-2 text-start text-sm font-semibold">{tp.equipmentNumber}</th>
+                  <th className="border border-gray-300 px-3 py-2 text-start text-sm font-semibold">{tp.type}</th>
+                  <th className="border border-gray-300 px-3 py-2 text-start text-sm font-semibold">{tp.location}</th>
+                  <th className="border border-gray-300 px-3 py-2 text-start text-sm font-semibold">{tp.expiryDate}</th>
                 </tr>
               </thead>
               <tbody>

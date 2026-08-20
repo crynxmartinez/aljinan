@@ -121,3 +121,13 @@
     @apply bg-background text-foreground;
   }
 }
+
+/* RTL: flip physical properties that Tailwind logical utilities don't cover */
+[dir="rtl"] {
+  text-align: right;
+}
+
+/* Arabic font rendering */
+[dir="rtl"] body {
+  font-family: 'Tajawal', 'Cairo', 'Segoe UI', system-ui, -apple-system, sans-serif;
+}

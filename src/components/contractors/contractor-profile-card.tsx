@@ -58,7 +58,7 @@ export function ContractorProfileCard({ contractor }: ContractorProfileCardProps
 
   const formatDate = (dateString: string | null) => {
     if (!dateString) return null
-    return new Date(dateString).toLocaleDateString('en-US', {
+    return new Date(dateString).toLocaleDateString('ar-SA', {
       year: 'numeric',
       month: 'short',
       day: 'numeric'
@@ -159,7 +159,7 @@ export function ContractorProfileCard({ contractor }: ContractorProfileCardProps
               </div>
             </div>
             <Button variant="outline" size="sm" onClick={() => setEditOpen(true)}>
-              <Edit className="h-4 w-4 mr-1" />
+              <Edit className="h-4 w-4 me-1" />
               {tc.editProfile}
             </Button>
           </div>
@@ -178,7 +178,7 @@ export function ContractorProfileCard({ contractor }: ContractorProfileCardProps
                 <div className="flex items-center gap-2">
                   <h3 className="font-semibold text-lg">{tc.subscription}</h3>
                   <Badge className="bg-green-100 text-green-700 hover:bg-green-100">
-                    <CheckCircle className="h-3 w-3 mr-1" />
+                    <CheckCircle className="h-3 w-3 me-1" />
                     {tc.active}
                   </Badge>
                 </div>
@@ -189,11 +189,11 @@ export function ContractorProfileCard({ contractor }: ContractorProfileCardProps
             </div>
             <div className="flex items-center gap-3">
               <Button variant="outline" size="sm">
-                <Clock className="h-4 w-4 mr-1" />
+                <Clock className="h-4 w-4 me-1" />
                 {tc.viewHistory}
               </Button>
               <Button size="sm">
-                <CreditCard className="h-4 w-4 mr-1" />
+                <CreditCard className="h-4 w-4 me-1" />
                 {tc.paySubscription}
               </Button>
             </div>
@@ -403,7 +403,7 @@ export function ContractorProfileCard({ contractor }: ContractorProfileCardProps
                 className="bg-white"
                 onClick={() => setEditOpen(true)}
               >
-                <Edit className="h-4 w-4 mr-1" />
+                <Edit className="h-4 w-4 me-1" />
                 {tc.completeProfile}
               </Button>
             </div>

@@ -126,7 +126,7 @@ export default async function ArchivedNoticePage() {
             {client.contractor.user.email && (
               <Button asChild className="w-full">
                 <a href={`mailto:${client.contractor.user.email}?subject=Account Reactivation Request - ${client.companyName}`}>
-                  <Mail className="h-4 w-4 mr-2" />
+                  <Mail className="h-4 w-4 me-2" />
                   {ta.contactContractorEmail}
                 </a>
               </Button>

@@ -132,7 +132,7 @@ export function ClientBranchAppointments({ branchId }: ClientBranchAppointmentsP
   }
 
   const formatDate = (dateStr: string) => {
-    return new Date(dateStr).toLocaleDateString('en-US', {
+    return new Date(dateStr).toLocaleDateString('ar-SA', {
       weekday: 'long',
       month: 'long',
       day: 'numeric',

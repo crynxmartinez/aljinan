@@ -415,7 +415,7 @@ export function InvoicesList({ branchId }: InvoicesListProps) {
                           onChange={(e) => handleItemChange(index, 'unitPrice', parseFloat(e.target.value) || 0)}
                         />
                       </div>
-                      <div className="col-span-2 text-right font-medium">
+                      <div className="col-span-2 text-end font-medium">
                         {formatCurrency(item.quantity * item.unitPrice)}
                       </div>
                       <div className="col-span-1">
@@ -528,39 +528,39 @@ export function InvoicesList({ branchId }: InvoicesListProps) {
                   <table className="w-full text-sm">
                     <thead className="bg-muted">
                       <tr>
-                        <th className="text-left p-2">Description</th>
-                        <th className="text-right p-2">Qty</th>
-                        <th className="text-right p-2">Unit Price</th>
-                        <th className="text-right p-2">Total</th>
+                        <th className="text-start p-2">Description</th>
+                        <th className="text-end p-2">Qty</th>
+                        <th className="text-end p-2">Unit Price</th>
+                        <th className="text-end p-2">Total</th>
                       </tr>
                     </thead>
                     <tbody>
                       {selectedInvoice.items.map((item, idx) => (
                         <tr key={idx} className="border-t">
                           <td className="p-2">{item.description}</td>
-                          <td className="text-right p-2">{item.quantity}</td>
-                          <td className="text-right p-2">{formatCurrency(item.unitPrice)}</td>
-                          <td className="text-right p-2">{formatCurrency(item.total)}</td>
+                          <td className="text-end p-2">{item.quantity}</td>
+                          <td className="text-end p-2">{formatCurrency(item.unitPrice)}</td>
+                          <td className="text-end p-2">{formatCurrency(item.total)}</td>
                         </tr>
                       ))}
                     </tbody>
                     <tfoot className="bg-muted/50">
                       <tr className="border-t">
-                        <td colSpan={3} className="text-right p-2 font-medium">Subtotal</td>
-                        <td className="text-right p-2">{formatCurrency(selectedInvoice.subtotal)}</td>
+                        <td colSpan={3} className="text-end p-2 font-medium">Subtotal</td>
+                        <td className="text-end p-2">{formatCurrency(selectedInvoice.subtotal)}</td>
                       </tr>
                       <tr>
-                        <td colSpan={3} className="text-right p-2 font-medium">Tax ({selectedInvoice.taxRate}%)</td>
-                        <td className="text-right p-2">{formatCurrency(selectedInvoice.taxAmount)}</td>
+                        <td colSpan={3} className="text-end p-2 font-medium">Tax ({selectedInvoice.taxRate}%)</td>
+                        <td className="text-end p-2">{formatCurrency(selectedInvoice.taxAmount)}</td>
                       </tr>
                       <tr className="font-bold">
-                        <td colSpan={3} className="text-right p-2">Total</td>
-                        <td className="text-right p-2">{formatCurrency(selectedInvoice.total)}</td>
+                        <td colSpan={3} className="text-end p-2">Total</td>
+                        <td className="text-end p-2">{formatCurrency(selectedInvoice.total)}</td>
                       </tr>
                       {selectedInvoice.amountPaid > 0 && (
                         <tr>
-                          <td colSpan={3} className="text-right p-2 font-medium text-green-600">Amount Paid</td>
-                          <td className="text-right p-2 text-green-600">{formatCurrency(selectedInvoice.amountPaid)}</td>
+                          <td colSpan={3} className="text-end p-2 font-medium text-green-600">Amount Paid</td>
+                          <td className="text-end p-2 text-green-600">{formatCurrency(selectedInvoice.amountPaid)}</td>
                         </tr>
                       )}
                     </tfoot>

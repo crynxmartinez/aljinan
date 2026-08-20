@@ -308,7 +308,7 @@ export default function WorkOrdersPage() {
           selectedClients={selectedClients}
           onClientChange={handleClientChange}
         />
-        <div className="flex items-center gap-4 ml-auto">
+        <div className="flex items-center gap-4 ms-auto">
           <div className="flex items-center gap-2">
             <span className="text-sm text-muted-foreground">{tw.show}:</span>
             <Select value={itemsPerPage.toString()} onValueChange={handleItemsPerPageChange}>
@@ -369,7 +369,7 @@ export default function WorkOrdersPage() {
                 <div className="col-span-2">{tw.status}</div>
                 <div className="col-span-1">{tw.type}</div>
                 <div className="col-span-1">{tw.date}</div>
-                <div className="col-span-1 text-right">{tw.price}</div>
+                <div className="col-span-1 text-end">{tw.price}</div>
               </div>
 
               {/* Table Rows */}
@@ -432,7 +432,7 @@ export default function WorkOrdersPage() {
                   onClick={handlePreviousPage}
                   disabled={currentPage === 1}
                 >
-                  <ChevronLeft className="h-4 w-4 mr-1" />
+                  <ChevronLeft className="h-4 w-4 me-1" />
                   {tw.previous}
                 </Button>
                 <div className="flex items-center gap-1">
@@ -468,7 +468,7 @@ export default function WorkOrdersPage() {
                   disabled={currentPage === totalPages}
                 >
                   {tw.next}
-                  <ChevronRight className="h-4 w-4 ml-1" />
+                  <ChevronRight className="h-4 w-4 ms-1" />
                 </Button>
               </div>
             </div>

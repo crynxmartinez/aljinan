@@ -36,7 +36,7 @@ export function ProblemSolution() {
 
             {/* Solutions */}
             <div className="flex-1 space-y-4 w-full">
-              <h3 className="text-2xl font-bold text-center md:text-left mb-6">
+              <h3 className="text-2xl font-bold text-center md:text-start mb-6">
                 {t.problemSolution.solutionTitle}
               </h3>
               {t.problemSolution.solutions.map((solution, index) => (

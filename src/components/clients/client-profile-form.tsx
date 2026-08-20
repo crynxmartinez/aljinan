@@ -233,7 +233,7 @@ export function ClientProfileForm({ client, open, onOpenChange }: ClientProfileF
                 {ta.additionalContactPersons}
               </h3>
               <Button type="button" variant="outline" size="sm" onClick={addContact}>
-                <Plus className="h-4 w-4 mr-1" />
+                <Plus className="h-4 w-4 me-1" />
                 {ta.addContact}
               </Button>
             </div>

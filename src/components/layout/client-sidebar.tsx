@@ -130,7 +130,7 @@ export function ClientSidebar({ client }: ClientSidebarProps) {
   }
 
   return (
-    <div className="flex h-screen w-64 flex-col border-r bg-sidebar text-sidebar-foreground">
+    <div className="flex h-screen w-64 flex-col border-e bg-sidebar text-sidebar-foreground">
       {/* Logo */}
       <div className="flex h-16 items-center border-b px-6">
         <Link href="/portal" className="flex items-center gap-2">
@@ -368,7 +368,7 @@ export function ClientSidebar({ client }: ClientSidebarProps) {
             <Button onClick={handleSaveNickname} disabled={saving}>
               {saving ? (
                 <>
-                  <Loader2 className="h-4 w-4 mr-2 animate-spin" />
+                  <Loader2 className="h-4 w-4 me-2 animate-spin" />
                   {t.dashboard.portal.saving}
                 </>
               ) : (

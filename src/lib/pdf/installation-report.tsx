@@ -177,7 +177,7 @@ interface InstallationReportDocumentData {
 export function InstallationReportDocument({ data }: { data: InstallationReportDocumentData }) {
   const formatDate = (dateStr: string) => {
     if (!dateStr) return '-'
-    return new Date(dateStr).toLocaleDateString('en-US', {
+    return new Date(dateStr).toLocaleDateString('ar-SA', {
       year: 'numeric',
       month: 'long',
       day: 'numeric',
@@ -194,34 +194,34 @@ export function InstallationReportDocument({ data }: { data: InstallationReportD
           <View>
             <Text style={styles.companyName}>{data.contractor.name}</Text>
             {data.contractor.address && <Text>{data.contractor.address}</Text>}
-            {data.contractor.phone && <Text>Tel: {data.contractor.phone}</Text>}
-            {data.contractor.email && <Text>Email: {data.contractor.email}</Text>}
+            {data.contractor.phone && <Text>هاتف: {data.contractor.phone}</Text>}
+            {data.contractor.email && <Text>بريد: {data.contractor.email}</Text>}
           </View>
           <View style={{ textAlign: 'right' }}>
-            <Text style={{ fontSize: 9, color: '#6b7280' }}>Report No:</Text>
+            <Text style={{ fontSize: 9, color: '#6b7280' }}>رقم التقرير:</Text>
             <Text style={{ fontWeight: 'bold' }}>{data.reportNumber}</Text>
-            <Text style={{ fontSize: 9, color: '#6b7280', marginTop: 4 }}>Generated:</Text>
+            <Text style={{ fontSize: 9, color: '#6b7280', marginTop: 4 }}>تاريخ الإنشاء:</Text>
             <Text>{formatDate(data.generatedDate)}</Text>
           </View>
         </View>
 
         {/* Title */}
-        <Text style={styles.title}>INSTALLATION REPORT</Text>
+        <Text style={styles.title}>تقرير التركيب</Text>
 
         {/* Client Information */}
         <View style={styles.section}>
-          <Text style={styles.sectionTitle}>CLIENT INFORMATION</Text>
+          <Text style={styles.sectionTitle}>معلومات العميل</Text>
           <View style={styles.row}>
-            <Text style={styles.label}>Company:</Text>
+            <Text style={styles.label}>الشركة:</Text>
             <Text style={styles.value}>{data.client.name}</Text>
           </View>
           <View style={styles.row}>
-            <Text style={styles.label}>Branch:</Text>
+            <Text style={styles.label}>الفرع:</Text>
             <Text style={styles.value}>{data.client.branch}</Text>
           </View>
           {data.client.address && (
             <View style={styles.row}>
-              <Text style={styles.label}>Address:</Text>
+              <Text style={styles.label}>العنوان:</Text>
               <Text style={styles.value}>{data.client.address}</Text>
             </View>
           )}
@@ -229,13 +229,13 @@ export function InstallationReportDocument({ data }: { data: InstallationReportD
 
         {/* Work Order Details */}
         <View style={styles.section}>
-          <Text style={styles.sectionTitle}>INSTALLATION DETAILS</Text>
+          <Text style={styles.sectionTitle}>تفاصيل التركيب</Text>
           <View style={styles.row}>
-            <Text style={styles.label}>Work Order Report:</Text>
+            <Text style={styles.label}>أمر العمل:</Text>
             <Text style={styles.value}>{data.workOrder.title}</Text>
           </View>
           <View style={styles.row}>
-            <Text style={styles.label}>Installation Date:</Text>
+            <Text style={styles.label}>تاريخ التركيب:</Text>
             <Text style={styles.value}>{formatDate(data.workOrder.date)}</Text>
           </View>
         </View>
@@ -243,13 +243,13 @@ export function InstallationReportDocument({ data }: { data: InstallationReportD
         {/* Equipment Installed */}
         {report.equipmentInstalled && report.equipmentInstalled.length > 0 && (
           <View style={styles.section}>
-            <Text style={styles.sectionTitle}>EQUIPMENT INSTALLED</Text>
+            <Text style={styles.sectionTitle}>المعدات المركبة</Text>
             <View style={styles.table}>
               <View style={styles.tableHeader}>
-                <Text style={{ width: '30%' }}>Equipment</Text>
-                <Text style={{ width: '25%' }}>Model</Text>
-                <Text style={{ width: '25%' }}>Serial Number</Text>
-                <Text style={{ width: '20%' }}>Location</Text>
+                <Text style={{ width: '30%' }}>المعدة</Text>
+                <Text style={{ width: '25%' }}>الموديل</Text>
+                <Text style={{ width: '25%' }}>الرقم التسلسلي</Text>
+                <Text style={{ width: '20%' }}>الموقع</Text>
               </View>
               {report.equipmentInstalled.map((eq, index) => (
                 <View key={index} style={styles.tableRow}>
@@ -266,7 +266,7 @@ export function InstallationReportDocument({ data }: { data: InstallationReportD
         {/* Configuration Details */}
         {report.configurationDetails && (
           <View style={styles.section}>
-            <Text style={styles.sectionTitle}>CONFIGURATION DETAILS</Text>
+            <Text style={styles.sectionTitle}>تفاصيل التهيئة</Text>
             <Text style={styles.textBlock}>{report.configurationDetails}</Text>
           </View>
         )}
@@ -274,7 +274,7 @@ export function InstallationReportDocument({ data }: { data: InstallationReportD
         {/* Commissioning Checklist */}
         {report.commissioningChecklist && report.commissioningChecklist.length > 0 && (
           <View style={styles.section}>
-            <Text style={styles.sectionTitle}>COMMISSIONING CHECKLIST</Text>
+            <Text style={styles.sectionTitle}>قائمة التشغيل التجريبي</Text>
             {report.commissioningChecklist.map((item, index) => (
               <View key={index} style={{ flexDirection: 'row', padding: 6, borderBottomWidth: 1, borderBottomColor: '#e5e7eb', alignItems: 'center' }}>
                 <View style={[styles.checkbox, item.completed ? styles.checkboxChecked : {}]}>
@@ -296,12 +296,12 @@ export function InstallationReportDocument({ data }: { data: InstallationReportD
         {/* Testing Results */}
         {report.testingResults && report.testingResults.length > 0 && (
           <View style={styles.section}>
-            <Text style={styles.sectionTitle}>TESTING RESULTS</Text>
+            <Text style={styles.sectionTitle}>نتائج الاختبار</Text>
             <View style={styles.table}>
               <View style={styles.tableHeader}>
-                <Text style={{ width: '40%' }}>Test</Text>
-                <Text style={{ width: '20%', textAlign: 'center' }}>Result</Text>
-                <Text style={{ width: '40%' }}>Notes</Text>
+                <Text style={{ width: '40%' }}>الاختبار</Text>
+                <Text style={{ width: '20%', textAlign: 'center' }}>النتيجة</Text>
+                <Text style={{ width: '40%' }}>ملاحظات</Text>
               </View>
               {report.testingResults.map((test, index) => (
                 <View key={index} style={styles.tableRow}>
@@ -320,10 +320,10 @@ export function InstallationReportDocument({ data }: { data: InstallationReportD
 
         {/* Training */}
         <View style={styles.section}>
-          <Text style={styles.sectionTitle}>TRAINING</Text>
+          <Text style={styles.sectionTitle}>التدريب</Text>
           <View style={styles.row}>
-            <Text style={styles.label}>Training Provided:</Text>
-            <Text style={styles.value}>{report.trainingProvided ? 'Yes' : 'No'}</Text>
+            <Text style={styles.label}>تم تقديم تدريب:</Text>
+            <Text style={styles.value}>{report.trainingProvided ? 'نعم' : 'لا'}</Text>
           </View>
           {report.trainingProvided && report.trainingNotes && (
             <Text style={styles.textBlock}>{report.trainingNotes}</Text>
@@ -332,14 +332,14 @@ export function InstallationReportDocument({ data }: { data: InstallationReportD
 
         {/* Warranty */}
         <View style={styles.section}>
-          <Text style={styles.sectionTitle}>WARRANTY INFORMATION</Text>
+          <Text style={styles.sectionTitle}>معلومات الضمان</Text>
           <View style={styles.warrantyBox}>
             <View style={styles.row}>
-              <Text style={styles.label}>Start Date:</Text>
+              <Text style={styles.label}>تاريخ البداية:</Text>
               <Text style={styles.value}>{formatDate(report.warrantyStartDate)}</Text>
             </View>
             <View style={styles.row}>
-              <Text style={styles.label}>End Date:</Text>
+              <Text style={styles.label}>تاريخ الانتهاء:</Text>
               <Text style={styles.value}>{formatDate(report.warrantyEndDate)}</Text>
             </View>
           </View>
@@ -348,13 +348,13 @@ export function InstallationReportDocument({ data }: { data: InstallationReportD
         {/* Handover */}
         {report.handoverName && (
           <View style={styles.section}>
-            <Text style={styles.sectionTitle}>HANDOVER</Text>
+            <Text style={styles.sectionTitle}>التسليم</Text>
             <View style={styles.row}>
-              <Text style={styles.label}>Received By:</Text>
+              <Text style={styles.label}>استلمه:</Text>
               <Text style={styles.value}>{report.handoverName}</Text>
             </View>
             <View style={styles.row}>
-              <Text style={styles.label}>Handover Date:</Text>
+              <Text style={styles.label}>تاريخ التسليم:</Text>
               <Text style={styles.value}>{formatDate(report.handoverDate)}</Text>
             </View>
           </View>
@@ -365,10 +365,10 @@ export function InstallationReportDocument({ data }: { data: InstallationReportD
           <View style={styles.signatureBox}>
             <View style={styles.signatureLine}>
               {data.signatures.technician && (
-                <Text style={{ fontSize: 10, color: '#166534', fontWeight: 'bold' }}>✓ Signed</Text>
+                <Text style={{ fontSize: 10, color: '#166534', fontWeight: 'bold' }}>✓ موقّع</Text>
               )}
             </View>
-            <Text style={styles.signatureLabel}>Technician</Text>
+            <Text style={styles.signatureLabel}>الفني</Text>
             {data.signatures.technicianDate && (
               <Text style={{ fontSize: 8, color: '#9ca3af', marginTop: 2 }}>
                 {formatDate(data.signatures.technicianDate)}
@@ -378,10 +378,10 @@ export function InstallationReportDocument({ data }: { data: InstallationReportD
           <View style={styles.signatureBox}>
             <View style={styles.signatureLine}>
               {data.signatures.supervisor && (
-                <Text style={{ fontSize: 10, color: '#166534', fontWeight: 'bold' }}>✓ Signed</Text>
+                <Text style={{ fontSize: 10, color: '#166534', fontWeight: 'bold' }}>✓ موقّع</Text>
               )}
             </View>
-            <Text style={styles.signatureLabel}>Supervisor</Text>
+            <Text style={styles.signatureLabel}>المشرف</Text>
             {data.signatures.supervisorDate && (
               <Text style={{ fontSize: 8, color: '#9ca3af', marginTop: 2 }}>
                 {formatDate(data.signatures.supervisorDate)}
@@ -391,10 +391,10 @@ export function InstallationReportDocument({ data }: { data: InstallationReportD
           <View style={styles.signatureBox}>
             <View style={styles.signatureLine}>
               {data.signatures.client && (
-                <Text style={{ fontSize: 10, color: '#166534', fontWeight: 'bold' }}>✓ Signed</Text>
+                <Text style={{ fontSize: 10, color: '#166534', fontWeight: 'bold' }}>✓ موقّع</Text>
               )}
             </View>
-            <Text style={styles.signatureLabel}>Client</Text>
+            <Text style={styles.signatureLabel}>العميل</Text>
             {data.signatures.clientDate && (
               <Text style={{ fontSize: 8, color: '#9ca3af', marginTop: 2 }}>
                 {formatDate(data.signatures.clientDate)}
@@ -405,7 +405,7 @@ export function InstallationReportDocument({ data }: { data: InstallationReportD
 
         {/* Footer */}
         <Text style={styles.footer}>
-          This report was generated by {data.contractor.name} • Report #{data.reportNumber} • {formatDate(data.generatedDate)}
+          تم إنشاء هذا التقرير بواسطة {data.contractor.name} • تقرير #{data.reportNumber} • {formatDate(data.generatedDate)}
         </Text>
       </Page>
     </Document>

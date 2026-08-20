@@ -296,7 +296,7 @@ function DraggableCard({
           <div
             {...attributes}
             {...listeners}
-            className="cursor-grab active:cursor-grabbing p-1 -ml-1 hover:bg-muted rounded"
+            className="cursor-grab active:cursor-grabbing p-1 -ms-1 hover:bg-muted rounded"
             onClick={(e) => e.stopPropagation()}
           >
             <GripVertical className="h-4 w-4 text-muted-foreground" />
@@ -315,17 +315,17 @@ function DraggableCard({
           {/* Priority badges */}
           {priority === 'overdue' && (
             <Badge variant="destructive" className="text-xs mb-2">
-              Overdue {Math.abs(daysOverdue)} day{Math.abs(daysOverdue) !== 1 ? 's' : ''}
+              متأخر {Math.abs(daysOverdue)} يوم
             </Badge>
           )}
           {priority === 'due-today' && (
             <Badge className="text-xs mb-2 bg-orange-500">
-              Due Today
+              مستحق اليوم
             </Badge>
           )}
           {priority === 'due-soon' && (
             <Badge className="text-xs mb-2 bg-yellow-500 text-yellow-900">
-              Due in {daysOverdue} day{daysOverdue !== 1 ? 's' : ''}
+              مستحق خلال {daysOverdue} يوم
             </Badge>
           )}
 
@@ -333,21 +333,21 @@ function DraggableCard({
             <div className="flex items-center gap-1 flex-wrap">
               {isArchived ? (
                 <Badge variant="outline" className="text-xs border-gray-400 text-gray-600 bg-gray-200">
-                  <Archive className="h-3 w-3 mr-1" />
-                  Archived
+                  <Archive className="h-3 w-3 me-1" />
+                  مؤرشف
                 </Badge>
               ) : item.type === 'ADHOC' ? (
                 <Badge variant="outline" className="text-xs border-yellow-300 text-yellow-700 bg-yellow-50">
-                  Ad-hoc
+                  مؤقت
                 </Badge>
               ) : (
                 <Badge variant="outline" className="text-xs border-blue-300 text-blue-700 bg-blue-50">
-                  Scheduled
+                  مجدول
                 </Badge>
               )}
               {!isArchived && item.price === null && (
                 <Badge variant="outline" className="text-xs border-orange-300 text-orange-700 bg-orange-50">
-                  Pending Price
+                  بانتظار السعر
                 </Badge>
               )}
             </div>
@@ -383,13 +383,13 @@ function DraggableCard({
           {item.contractTitle && (
             <div className="mt-2 space-y-1">
               <Badge variant="outline" className="text-xs border-purple-300 text-purple-700 bg-purple-50">
-                <ClipboardList className="h-3 w-3 mr-1" />
-                Contract Work Order
+                <ClipboardList className="h-3 w-3 me-1" />
+                أمر عمل تعاقدي
               </Badge>
               <div className="text-xs text-purple-600 truncate">{item.contractTitle}</div>
               {item.paymentDueDate && (
                 <div className="text-xs text-muted-foreground">
-                  Payment due: {new Date(item.paymentDueDate).toLocaleDateString()}
+                  استحقاق الدفع: {new Date(item.paymentDueDate).toLocaleDateString('ar-SA')}
                 </div>
               )}
             </div>
@@ -407,14 +407,14 @@ function DraggableCard({
             <div className="mt-2 flex items-center gap-1 flex-wrap">
               {hasSupervisorAcceptance && (
                 <Badge variant="outline" className="text-xs border-green-500 text-green-700 bg-green-100">
-                  <CheckCircle className="h-3 w-3 mr-1" />
-                  Supervisor
+                  <CheckCircle className="h-3 w-3 me-1" />
+                  المشرف
                 </Badge>
               )}
               {hasClientAcceptance && (
                 <Badge variant="outline" className="text-xs border-green-500 text-green-700 bg-green-100">
-                  <CheckCircle className="h-3 w-3 mr-1" />
-                  Client
+                  <CheckCircle className="h-3 w-3 me-1" />
+                  العميل
                 </Badge>
               )}
             </div>
@@ -463,7 +463,7 @@ function DroppableColumn({
           <span className={cn('font-semibold text-sm', stage.color)}>
             {stage.label}
           </span>
-          <Badge variant="secondary" className="text-xs ml-auto">
+          <Badge variant="secondary" className="text-xs ms-auto">
             {count}
           </Badge>
         </div>
@@ -478,9 +478,9 @@ function DroppableColumn({
   )
 }
 
-function formatDate(dateString: string | null) {
+function formatDate(dateString: string | null, locale: 'en' | 'ar' = 'ar') {
   if (!dateString) return null
-  return new Date(dateString).toLocaleDateString('en-US', {
+  return new Date(dateString).toLocaleDateString(locale === 'ar' ? 'ar-SA' : 'en-US', {
     month: 'short',
     day: 'numeric',
   })
@@ -565,7 +565,7 @@ function sortByPriority(items: ChecklistItem[]): ChecklistItem[] {
 
 export function ChecklistKanban({ branchId, readOnly = false, userRole }: ChecklistKanbanProps) {
   const router = useRouter()
-  const { t } = useTranslation()
+  const { t, locale } = useTranslation()
   const [items, setItems] = useState<ChecklistItem[]>([])
   const [loading, setLoading] = useState(true)
   const [columnModalOpen, setColumnModalOpen] = useState(false)
@@ -1057,7 +1057,7 @@ export function ChecklistKanban({ branchId, readOnly = false, userRole }: Checkl
         router.refresh()
       } else {
         const error = await response.json()
-        toast.error(error.error || 'Failed to reschedule')
+        toast.error(error.error || (t.toasts?.rescheduleFailed || 'فشل في إعادة الجدولة'))
       }
     } catch {
       toast.error(t.toasts.rescheduleFailed)
@@ -1383,7 +1383,7 @@ export function ChecklistKanban({ branchId, readOnly = false, userRole }: Checkl
                         }}
                         className="h-7 text-xs mt-2 text-blue-700 border-blue-300 hover:bg-blue-50"
                       >
-                        <CalendarClock className="h-3 w-3 mr-1" />
+                        <CalendarClock className="h-3 w-3 me-1" />
                         Reschedule
                       </Button>
                     )}
@@ -2355,18 +2355,18 @@ export function ChecklistKanban({ branchId, readOnly = false, userRole }: Checkl
           <DialogHeader>
             <DialogTitle className="flex items-center gap-2">
               <CalendarClock className="h-5 w-5 text-blue-600" />
-              Reschedule Work Order
+              إعادة جدولة أمر العمل
             </DialogTitle>
             <DialogDescription>
-              Change the scheduled date for this work order. The client will be notified.
+              قم بتغيير التاريخ المجدول لأمر العمل. سيتم إخطار العميل.
             </DialogDescription>
           </DialogHeader>
           <div className="space-y-4 py-4">
             {selectedItem?.scheduledDate && (
               <div className="p-3 bg-muted/50 rounded-lg">
-                <p className="text-sm text-muted-foreground">Current Schedule</p>
+                <p className="text-sm text-muted-foreground">الجدول الحالي</p>
                 <p className="font-medium">
-                  {new Date(selectedItem.scheduledDate).toLocaleDateString('en-US', {
+                  {new Date(selectedItem.scheduledDate).toLocaleDateString(locale === 'ar' ? 'ar-SA' : 'en-US', {
                     weekday: 'long',
                     year: 'numeric',
                     month: 'long',
@@ -2376,7 +2376,7 @@ export function ChecklistKanban({ branchId, readOnly = false, userRole }: Checkl
               </div>
             )}
             <div className="space-y-2">
-              <Label htmlFor="newDate">New Date *</Label>
+              <Label htmlFor="newDate">التاريخ الجديد *</Label>
               <Input
                 id="newDate"
                 type="date"
@@ -2386,12 +2386,12 @@ export function ChecklistKanban({ branchId, readOnly = false, userRole }: Checkl
               />
             </div>
             <div className="space-y-2">
-              <Label htmlFor="reason">Reason for Rescheduling</Label>
+              <Label htmlFor="reason">سبب إعادة الجدولة</Label>
               <Textarea
                 id="reason"
                 value={rescheduleData.reason}
                 onChange={(e) => setRescheduleData({ ...rescheduleData, reason: e.target.value })}
-                placeholder="e.g., Client requested different date, Technician unavailable..."
+                placeholder="مثال: طلب العميل تاريخاً مختلفاً، الفني غير متاح..."
                 rows={3}
               />
             </div>
@@ -2404,16 +2404,16 @@ export function ChecklistKanban({ branchId, readOnly = false, userRole }: Checkl
                 setRescheduleData({ newDate: '', reason: '' })
               }}
             >
-              Cancel
+              إلغاء
             </Button>
             <Button
               onClick={handleReschedule}
               disabled={rescheduling || !rescheduleData.newDate}
               className="bg-blue-600 hover:bg-blue-700"
             >
-              {rescheduling && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
-              <CalendarClock className="mr-2 h-4 w-4" />
-              Confirm Reschedule
+              {rescheduling && <Loader2 className="me-2 h-4 w-4 animate-spin" />}
+              <CalendarClock className="me-2 h-4 w-4" />
+              تأكيد إعادة الجدولة
             </Button>
           </DialogFooter>
         </DialogContent>

@@ -139,7 +139,7 @@ export function PaymentVerifyDialog({
             {workOrders.map((wo) => (
               <div key={wo.id} className="flex items-center justify-between text-sm">
                 <span className="truncate flex-1">{wo.description}</span>
-                <span className="font-medium ml-2">{formatCurrency(wo.price)}</span>
+                <span className="font-medium ms-2">{formatCurrency(wo.price)}</span>
               </div>
             ))}
           </div>

@@ -158,7 +158,7 @@ export function MaintenanceReportForm({ data, onChange, readOnly = false }: Main
             <CardTitle className="text-sm font-medium">{tr.maintenanceTasks}</CardTitle>
             {!readOnly && (
               <Button type="button" variant="outline" size="sm" onClick={addTask}>
-                <Plus className="h-4 w-4 mr-1" />
+                <Plus className="h-4 w-4 me-1" />
                 {tr.addTask}
               </Button>
             )}
@@ -220,7 +220,7 @@ export function MaintenanceReportForm({ data, onChange, readOnly = false }: Main
             <CardTitle className="text-sm font-medium">{tr.measurements}</CardTitle>
             {!readOnly && (
               <Button type="button" variant="outline" size="sm" onClick={addMeasurement}>
-                <Plus className="h-4 w-4 mr-1" />
+                <Plus className="h-4 w-4 me-1" />
                 {tr.addMeasurement}
               </Button>
             )}
@@ -318,7 +318,7 @@ export function MaintenanceReportForm({ data, onChange, readOnly = false }: Main
             <CardTitle className="text-sm font-medium">{tr.consumablesUsed}</CardTitle>
             {!readOnly && (
               <Button type="button" variant="outline" size="sm" onClick={addConsumable}>
-                <Plus className="h-4 w-4 mr-1" />
+                <Plus className="h-4 w-4 me-1" />
                 {tr.addConsumable}
               </Button>
             )}

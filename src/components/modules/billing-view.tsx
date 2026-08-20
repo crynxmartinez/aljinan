@@ -299,7 +299,7 @@ export function BillingView({ branchId, userRole }: BillingViewProps) {
                     </CardTitle>
                     <Badge variant="secondary">{contractWorkOrders.length}</Badge>
                   </div>
-                  <div className="text-right">
+                  <div className="text-end">
                     <p className="font-semibold">{formatCurrency(contractTotalValue)}</p>
                     <p className="text-xs text-muted-foreground">
                       {contractUnpaidValue > 0 ? `${formatCurrency(contractUnpaidValue)} ${tb.unpaid}` : tb.allPaid}
@@ -364,7 +364,7 @@ export function BillingView({ branchId, userRole }: BillingViewProps) {
                     <Badge className="bg-purple-100 text-purple-700">{tb.scheduled}</Badge>
                     <Badge variant="secondary">{contractPayments.length}</Badge>
                   </div>
-                  <div className="text-right">
+                  <div className="text-end">
                     <p className="font-semibold text-purple-700">
                       {formatCurrency(contractPayments.reduce((sum, p) => sum + (p.amount || 0), 0))}
                     </p>
@@ -427,7 +427,7 @@ export function BillingView({ branchId, userRole }: BillingViewProps) {
                     <Badge className="bg-blue-100 text-blue-700">{tb.adhoc}</Badge>
                     <Badge variant="secondary">{standaloneWorkOrders.length}</Badge>
                   </div>
-                  <div className="text-right">
+                  <div className="text-end">
                     <p className="font-semibold text-blue-700">{formatCurrency(standaloneTotalValue)}</p>
                     <p className="text-xs text-blue-600">
                       {standaloneUnpaidValue > 0 ? `${formatCurrency(standaloneUnpaidValue)} ${tb.unpaid}` : tb.allPaid}
@@ -468,7 +468,7 @@ export function BillingView({ branchId, userRole }: BillingViewProps) {
                     <Badge className="bg-amber-100 text-amber-700">{tb.equipment}</Badge>
                     <Badge variant="secondary">{stickerInspectionWorkOrders.length}</Badge>
                   </div>
-                  <div className="text-right">
+                  <div className="text-end">
                     <p className="font-semibold text-amber-700">{formatCurrency(stickerTotalValue)}</p>
                     <p className="text-xs text-amber-600">
                       {stickerUnpaidValue > 0 ? `${formatCurrency(stickerUnpaidValue)} ${tb.unpaid}` : tb.allPaid}

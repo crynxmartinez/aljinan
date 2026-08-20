@@ -196,7 +196,7 @@ export default function AdminUsersPage() {
           <p className="text-muted-foreground mt-1">{ta.subtitle}</p>
         </div>
         <Button onClick={() => setCreateOpen(true)}>
-          <UserPlus className="h-4 w-4 mr-2" />
+          <UserPlus className="h-4 w-4 me-2" />
           {ta.addAdmin}
         </Button>
       </div>
@@ -243,9 +243,9 @@ export default function AdminUsersPage() {
                     disabled={saving === admin.id}
                   >
                     {saving === admin.id ? (
-                      <Loader2 className="h-3.5 w-3.5 mr-1 animate-spin" />
+                      <Loader2 className="h-3.5 w-3.5 me-1 animate-spin" />
                     ) : (
-                      <Save className="h-3.5 w-3.5 mr-1" />
+                      <Save className="h-3.5 w-3.5 me-1" />
                     )}
                     {ta.saveChanges}
                   </Button>
@@ -289,7 +289,7 @@ export default function AdminUsersPage() {
                 variant="outline"
                 className="w-full"
               >
-                {copied ? <Check className="h-4 w-4 mr-2 text-green-600" /> : <Copy className="h-4 w-4 mr-2" />}
+                {copied ? <Check className="h-4 w-4 me-2 text-green-600" /> : <Copy className="h-4 w-4 me-2" />}
                 {copied ? ta.copied : ta.copyCredentials}
               </Button>
               <DialogFooter>
@@ -333,7 +333,7 @@ export default function AdminUsersPage() {
               <DialogFooter>
                 <Button type="button" variant="outline" onClick={resetCreateDialog}>{ta.cancel}</Button>
                 <Button type="submit" disabled={creating}>
-                  {creating ? <Loader2 className="h-4 w-4 mr-2 animate-spin" /> : <UserPlus className="h-4 w-4 mr-2" />}
+                  {creating ? <Loader2 className="h-4 w-4 me-2 animate-spin" /> : <UserPlus className="h-4 w-4 me-2" />}
                   {creating ? ta.creating : ta.createAdmin}
                 </Button>
               </DialogFooter>

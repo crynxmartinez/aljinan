@@ -113,7 +113,7 @@ export function ActivityPanel({ branchId, isOpen, onClose }: ActivityPanelProps)
   if (!isOpen) return null
 
   return (
-    <div className="fixed inset-y-0 right-0 w-80 bg-background border-l shadow-lg z-50 flex flex-col">
+    <div className="fixed inset-y-0 right-0 w-80 bg-background border-s shadow-lg z-50 flex flex-col">
       {/* Header */}
       <div className="flex items-center justify-between p-4 border-b">
         <div className="flex items-center gap-2">

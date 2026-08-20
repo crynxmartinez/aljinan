@@ -21,7 +21,7 @@ export function PrivacyContent() {
                   <h2 className="text-2xl font-bold mb-4">{section.title}</h2>
                   <p className="text-muted-foreground mb-4">{section.content}</p>
                   {sectionWithList.list && (
-                    <ul className="list-disc pl-6 space-y-2 text-muted-foreground">
+                    <ul className="list-disc ps-6 space-y-2 text-muted-foreground">
                       {sectionWithList.list.map((item: string, i: number) => (
                         <li key={i}>{item}</li>
                       ))}

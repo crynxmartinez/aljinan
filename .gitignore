@@ -43,3 +43,4 @@ android/
 
 # Local development database (scripts/dev-db.mjs)
 .devdb/
+.env.backup

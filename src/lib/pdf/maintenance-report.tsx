@@ -176,7 +176,7 @@ interface MaintenanceReportDocumentData {
 
 export function MaintenanceReportDocument({ data }: { data: MaintenanceReportDocumentData }) {
   const formatDate = (dateStr: string) => {
-    return new Date(dateStr).toLocaleDateString('en-US', {
+    return new Date(dateStr).toLocaleDateString('ar-SA', {
       year: 'numeric',
       month: 'long',
       day: 'numeric',
@@ -212,34 +212,34 @@ export function MaintenanceReportDocument({ data }: { data: MaintenanceReportDoc
           <View>
             <Text style={styles.companyName}>{data.contractor.name}</Text>
             {data.contractor.address && <Text>{data.contractor.address}</Text>}
-            {data.contractor.phone && <Text>Tel: {data.contractor.phone}</Text>}
-            {data.contractor.email && <Text>Email: {data.contractor.email}</Text>}
+            {data.contractor.phone && <Text>هاتف: {data.contractor.phone}</Text>}
+            {data.contractor.email && <Text>بريد: {data.contractor.email}</Text>}
           </View>
           <View style={{ textAlign: 'right' }}>
-            <Text style={{ fontSize: 9, color: '#6b7280' }}>Report No:</Text>
+            <Text style={{ fontSize: 9, color: '#6b7280' }}>رقم التقرير:</Text>
             <Text style={{ fontWeight: 'bold' }}>{data.reportNumber}</Text>
-            <Text style={{ fontSize: 9, color: '#6b7280', marginTop: 4 }}>Generated:</Text>
+            <Text style={{ fontSize: 9, color: '#6b7280', marginTop: 4 }}>تاريخ الإنشاء:</Text>
             <Text>{formatDate(data.generatedDate)}</Text>
           </View>
         </View>
 
         {/* Title */}
-        <Text style={styles.title}>MAINTENANCE REPORT</Text>
+        <Text style={styles.title}>تقرير الصيانة</Text>
 
         {/* Client Information */}
         <View style={styles.section}>
-          <Text style={styles.sectionTitle}>CLIENT INFORMATION</Text>
+          <Text style={styles.sectionTitle}>معلومات العميل</Text>
           <View style={styles.row}>
-            <Text style={styles.label}>Company:</Text>
+            <Text style={styles.label}>الشركة:</Text>
             <Text style={styles.value}>{data.client.name}</Text>
           </View>
           <View style={styles.row}>
-            <Text style={styles.label}>Branch:</Text>
+            <Text style={styles.label}>الفرع:</Text>
             <Text style={styles.value}>{data.client.branch}</Text>
           </View>
           {data.client.address && (
             <View style={styles.row}>
-              <Text style={styles.label}>Address:</Text>
+              <Text style={styles.label}>العنوان:</Text>
               <Text style={styles.value}>{data.client.address}</Text>
             </View>
           )}
@@ -247,17 +247,17 @@ export function MaintenanceReportDocument({ data }: { data: MaintenanceReportDoc
 
         {/* Work Order Details */}
         <View style={styles.section}>
-          <Text style={styles.sectionTitle}>MAINTENANCE DETAILS</Text>
+          <Text style={styles.sectionTitle}>تفاصيل الصيانة</Text>
           <View style={styles.row}>
-            <Text style={styles.label}>Work Order Report:</Text>
+            <Text style={styles.label}>أمر العمل:</Text>
             <Text style={styles.value}>{data.workOrder.title}</Text>
           </View>
           <View style={styles.row}>
-            <Text style={styles.label}>Maintenance Date:</Text>
+            <Text style={styles.label}>تاريخ الصيانة:</Text>
             <Text style={styles.value}>{formatDate(data.workOrder.date)}</Text>
           </View>
           <View style={styles.row}>
-            <Text style={styles.label}>Equipment Condition:</Text>
+            <Text style={styles.label}>حالة المعدة:</Text>
             <Text style={[styles.badge, getConditionStyle(report.equipmentCondition)]}>
               {report.equipmentCondition.toUpperCase()}
             </Text>
@@ -267,7 +267,7 @@ export function MaintenanceReportDocument({ data }: { data: MaintenanceReportDoc
         {/* Tasks Performed */}
         {report.tasksPerformed && report.tasksPerformed.length > 0 && (
           <View style={styles.section}>
-            <Text style={styles.sectionTitle}>TASKS PERFORMED</Text>
+            <Text style={styles.sectionTitle}>المهام المنفذة</Text>
             {report.tasksPerformed.map((task, index) => (
               <View key={index} style={styles.taskRow}>
                 <View style={[styles.checkbox, task.completed ? styles.checkboxChecked : {}]}>
@@ -289,14 +289,14 @@ export function MaintenanceReportDocument({ data }: { data: MaintenanceReportDoc
         {/* Measurements */}
         {report.measurements && report.measurements.length > 0 && (
           <View style={styles.section}>
-            <Text style={styles.sectionTitle}>MEASUREMENTS & READINGS</Text>
+            <Text style={styles.sectionTitle}>القياسات والقراءات</Text>
             <View style={styles.table}>
               <View style={styles.tableHeader}>
-                <Text style={{ width: '25%' }}>Parameter</Text>
-                <Text style={{ width: '20%', textAlign: 'center' }}>Value</Text>
-                <Text style={{ width: '15%', textAlign: 'center' }}>Unit</Text>
-                <Text style={{ width: '20%', textAlign: 'center' }}>Normal Range</Text>
-                <Text style={{ width: '20%', textAlign: 'center' }}>Status</Text>
+                <Text style={{ width: '25%' }}>المعامل</Text>
+                <Text style={{ width: '20%', textAlign: 'center' }}>القيمة</Text>
+                <Text style={{ width: '15%', textAlign: 'center' }}>الوحدة</Text>
+                <Text style={{ width: '20%', textAlign: 'center' }}>النطاق الطبيعي</Text>
+                <Text style={{ width: '20%', textAlign: 'center' }}>الحالة</Text>
               </View>
               {report.measurements.map((m, index) => (
                 <View key={index} style={styles.tableRow}>
@@ -316,11 +316,11 @@ export function MaintenanceReportDocument({ data }: { data: MaintenanceReportDoc
         {/* Consumables Used */}
         {report.consumablesUsed && report.consumablesUsed.length > 0 && (
           <View style={styles.section}>
-            <Text style={styles.sectionTitle}>CONSUMABLES USED</Text>
+            <Text style={styles.sectionTitle}>المواد المستهلكة</Text>
             <View style={styles.table}>
               <View style={styles.tableHeader}>
-                <Text style={{ width: '70%' }}>Item</Text>
-                <Text style={{ width: '30%', textAlign: 'right' }}>Quantity</Text>
+                <Text style={{ width: '70%' }}>العنصر</Text>
+                <Text style={{ width: '30%', textAlign: 'right' }}>الكمية</Text>
               </View>
               {report.consumablesUsed.map((c, index) => (
                 <View key={index} style={styles.tableRow}>
@@ -336,7 +336,7 @@ export function MaintenanceReportDocument({ data }: { data: MaintenanceReportDoc
         {report.nextMaintenanceDate && (
           <View style={[styles.section, { backgroundColor: '#f0fdf4', padding: 10, borderRadius: 4 }]}>
             <View style={styles.row}>
-              <Text style={[styles.label, { fontSize: 12 }]}>NEXT MAINTENANCE:</Text>
+              <Text style={[styles.label, { fontSize: 12 }]}>الصيانة القادمة:</Text>
               <Text style={[styles.value, { fontSize: 12, fontWeight: 'bold' }]}>
                 {formatDate(report.nextMaintenanceDate)}
               </Text>
@@ -349,26 +349,26 @@ export function MaintenanceReportDocument({ data }: { data: MaintenanceReportDoc
           <View style={styles.signatureBox}>
             <View style={styles.signatureLine}>
               {data.signatures.technician && (
-                <Text style={{ fontSize: 10, color: '#166534', fontWeight: 'bold' }}>✓ Signed</Text>
+                <Text style={{ fontSize: 10, color: '#166534', fontWeight: 'bold' }}>✓ موقّع</Text>
               )}
             </View>
-            <Text style={styles.signatureLabel}>Technician Signature</Text>
+            <Text style={styles.signatureLabel}>توقيع الفني</Text>
             {data.signatures.technicianDate && (
               <Text style={{ fontSize: 8, color: '#9ca3af', marginTop: 2 }}>
-                Signed: {formatDate(data.signatures.technicianDate)}
+                تم التوقيع: {formatDate(data.signatures.technicianDate)}
               </Text>
             )}
           </View>
           <View style={styles.signatureBox}>
             <View style={styles.signatureLine}>
               {data.signatures.supervisor && (
-                <Text style={{ fontSize: 10, color: '#166534', fontWeight: 'bold' }}>✓ Signed</Text>
+                <Text style={{ fontSize: 10, color: '#166534', fontWeight: 'bold' }}>✓ موقّع</Text>
               )}
             </View>
-            <Text style={styles.signatureLabel}>Supervisor Signature</Text>
+            <Text style={styles.signatureLabel}>توقيع المشرف</Text>
             {data.signatures.supervisorDate && (
               <Text style={{ fontSize: 8, color: '#9ca3af', marginTop: 2 }}>
-                Signed: {formatDate(data.signatures.supervisorDate)}
+                تم التوقيع: {formatDate(data.signatures.supervisorDate)}
               </Text>
             )}
           </View>
@@ -376,7 +376,7 @@ export function MaintenanceReportDocument({ data }: { data: MaintenanceReportDoc
 
         {/* Footer */}
         <Text style={styles.footer}>
-          This report was generated by {data.contractor.name} • Report #{data.reportNumber} • {formatDate(data.generatedDate)}
+          تم إنشاء هذا التقرير بواسطة {data.contractor.name} • تقرير #{data.reportNumber} • {formatDate(data.generatedDate)}
         </Text>
       </Page>
     </Document>

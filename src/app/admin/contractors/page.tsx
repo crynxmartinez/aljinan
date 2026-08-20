@@ -335,16 +335,16 @@ export default function ContractorsPage() {
         </div>
         <div className="flex items-center gap-3">
           <div className="relative">
-            <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+            <Search className="absolute start-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
             <Input
               placeholder={tc.search}
               value={search}
               onChange={(e) => setSearch(e.target.value)}
-              className="pl-9 w-64"
+              className="ps-9 w-64"
             />
           </div>
           <Button onClick={() => setCreateDialogOpen(true)}>
-            <Plus className="h-4 w-4 mr-2" />
+            <Plus className="h-4 w-4 me-2" />
             {tc.addContractor}
           </Button>
         </div>
@@ -427,7 +427,7 @@ export default function ContractorsPage() {
                 <TableHead className="text-center">{tc.activeWOs}</TableHead>
                 <TableHead className="text-center">{tc.totalReq}</TableHead>
                 <TableHead className="text-center">{tc.totalWOs}</TableHead>
-                <TableHead className="text-right">{tc.actions}</TableHead>
+                <TableHead className="text-end">{tc.actions}</TableHead>
               </TableRow>
             </TableHeader>
             <TableBody>
@@ -498,7 +498,7 @@ export default function ContractorsPage() {
                         <TableCell className="text-center text-muted-foreground">
                           {contractor.stats.totalWorkOrders}
                         </TableCell>
-                        <TableCell className="text-right">
+                        <TableCell className="text-end">
                           <div className="flex items-center justify-end gap-2">
                             {contractor.status === 'PENDING' ? (
                               <>
@@ -507,7 +507,7 @@ export default function ContractorsPage() {
                                   size="sm"
                                   onClick={() => handleResendVerificationAdmin(contractor.userId, contractor.email)}
                                 >
-                                  <Mail className="h-4 w-4 mr-1" />
+                                  <Mail className="h-4 w-4 me-1" />
                                   {tc.resendEmail}
                                 </Button>
                                 <Button
@@ -515,7 +515,7 @@ export default function ContractorsPage() {
                                   size="sm"
                                   onClick={() => handleManualActivate(contractor.userId, contractor.email)}
                                 >
-                                  <Key className="h-4 w-4 mr-1" />
+                                  <Key className="h-4 w-4 me-1" />
                                   {tc.activate}
                                 </Button>
                               </>
@@ -533,7 +533,7 @@ export default function ContractorsPage() {
                                 }}
                                 title={tc.loginAsContractor}
                               >
-                                <LogIn className="h-4 w-4 mr-1" />
+                                <LogIn className="h-4 w-4 me-1" />
                                 {tc.loginAs}
                               </Button>
                             )}
@@ -548,7 +548,7 @@ export default function ContractorsPage() {
                             <TableRow>
                               <TableCell></TableCell>
                               <TableCell colSpan={9} className="py-3">
-                                <div className="flex items-center gap-2 text-sm text-muted-foreground pl-4">
+                                <div className="flex items-center gap-2 text-sm text-muted-foreground ps-4">
                                   <AlertCircle className="h-4 w-4" />
                                   {tc.noClientsAdded}
                                 </div>
@@ -558,18 +558,18 @@ export default function ContractorsPage() {
                             contractor.clients.map((client) => (
                               <TableRow
                                 key={client.id}
-                                className="bg-muted/30 border-l-2 border-l-blue-200"
+                                className="bg-muted/30 border-s-2 border-s-blue-200"
                               >
                                 <TableCell></TableCell>
                                 <TableCell>
-                                  <div className="pl-4">
+                                  <div className="ps-4">
                                     <div className="flex items-center gap-2">
                                       <Users className="h-3.5 w-3.5 text-muted-foreground" />
                                       <p className="font-medium text-sm">
                                         {client.companyName || client.name || tc.unnamedClient}
                                       </p>
                                     </div>
-                                    <p className="text-xs text-muted-foreground pl-5.5 ml-0.5">
+                                    <p className="text-xs text-muted-foreground ps-5.5 ms-0.5">
                                       {client.email}
                                     </p>
                                   </div>
@@ -583,7 +583,7 @@ export default function ContractorsPage() {
                                   </div>
                                 </TableCell>
                                 <TableCell colSpan={4}></TableCell>
-                                <TableCell className="text-right">
+                                <TableCell className="text-end">
                                   <div className="flex items-center justify-end gap-2">
                                     {client.status === 'PENDING' ? (
                                       <>
@@ -593,7 +593,7 @@ export default function ContractorsPage() {
                                           className="text-xs"
                                           onClick={() => handleResendVerificationAdmin(client.userId, client.email)}
                                         >
-                                          <Mail className="h-3.5 w-3.5 mr-1" />
+                                          <Mail className="h-3.5 w-3.5 me-1" />
                                           {tc.resendEmail}
                                         </Button>
                                         <Button
@@ -602,7 +602,7 @@ export default function ContractorsPage() {
                                           className="text-xs"
                                           onClick={() => handleManualActivate(client.userId, client.email)}
                                         >
-                                          <Key className="h-3.5 w-3.5 mr-1" />
+                                          <Key className="h-3.5 w-3.5 me-1" />
                                           {tc.activate}
                                         </Button>
                                       </>
@@ -620,7 +620,7 @@ export default function ContractorsPage() {
                                         }
                                         title={tc.loginAsClient}
                                       >
-                                        <LogIn className="h-3.5 w-3.5 mr-1" />
+                                        <LogIn className="h-3.5 w-3.5 me-1" />
                                         {tc.loginAs}
                                       </Button>
                                     )}
@@ -661,12 +661,12 @@ export default function ContractorsPage() {
             <AlertDialogAction onClick={handleImpersonate} disabled={impersonating}>
               {impersonating ? (
                 <>
-                  <Loader2 className="h-4 w-4 mr-2 animate-spin" />
+                  <Loader2 className="h-4 w-4 me-2 animate-spin" />
                   {tc.switching}
                 </>
               ) : (
                 <>
-                  <LogIn className="h-4 w-4 mr-2" />
+                  <LogIn className="h-4 w-4 me-2" />
                   {impersonateTarget?.role === 'CLIENT' ? tc.loginAsClient : tc.loginAsContractor}
                 </>
               )}
@@ -732,12 +732,12 @@ export default function ContractorsPage() {
               <Button type="submit" disabled={creating}>
                 {creating ? (
                   <>
-                    <Loader2 className="h-4 w-4 mr-2 animate-spin" />
+                    <Loader2 className="h-4 w-4 me-2 animate-spin" />
                     {tc.creating}
                   </>
                 ) : (
                   <>
-                    <Plus className="h-4 w-4 mr-2" />
+                    <Plus className="h-4 w-4 me-2" />
                     {tc.createAccount}
                   </>
                 )}

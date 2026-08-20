@@ -415,7 +415,7 @@ export function EquipmentList({ branchId, userRole = 'CONTRACTOR' }: EquipmentLi
     const Icon = config.icon
     return (
       <Badge className={`${config.bg} ${config.text} border-0`}>
-        <Icon className="h-3 w-3 mr-1" />
+        <Icon className="h-3 w-3 me-1" />
         {STATUS_LABELS[status] || status}
       </Badge>
     )
@@ -449,7 +449,7 @@ export function EquipmentList({ branchId, userRole = 'CONTRACTOR' }: EquipmentLi
             </div>
             {userRole !== 'CLIENT' && (
               <Button onClick={() => setAddDialogOpen(true)} className="bg-amber-600 hover:bg-amber-700">
-                <Plus className="h-4 w-4 mr-2" />
+                <Plus className="h-4 w-4 me-2" />
                 {te.addEquipment}
               </Button>
             )}
@@ -489,17 +489,17 @@ export function EquipmentList({ branchId, userRole = 'CONTRACTOR' }: EquipmentLi
           {/* Filters */}
           <div className="flex flex-col md:flex-row gap-4 mb-4">
             <div className="relative flex-1">
-              <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+              <Search className="absolute start-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
               <Input
                 placeholder={te.searchEquipment}
                 value={searchQuery}
                 onChange={(e) => setSearchQuery(e.target.value)}
-                className="pl-10"
+                className="ps-10"
               />
             </div>
             <Select value={statusFilter} onValueChange={setStatusFilter}>
               <SelectTrigger className="w-full md:w-[180px]">
-                <Filter className="h-4 w-4 mr-2" />
+                <Filter className="h-4 w-4 me-2" />
                 <SelectValue placeholder="Status" />
               </SelectTrigger>
               <SelectContent>
@@ -546,7 +546,7 @@ export function EquipmentList({ branchId, userRole = 'CONTRACTOR' }: EquipmentLi
                     <TableHead>{te.lastInspected}</TableHead>
                     <TableHead>{te.status}</TableHead>
                     <TableHead>{te.certificate}</TableHead>
-                    {userRole !== 'CLIENT' && <TableHead className="text-right">{te.actions}</TableHead>}
+                    {userRole !== 'CLIENT' && <TableHead className="text-end">{te.actions}</TableHead>}
                   </TableRow>
                 </TableHeader>
                 <TableBody>
@@ -605,17 +605,17 @@ export function EquipmentList({ branchId, userRole = 'CONTRACTOR' }: EquipmentLi
                                 <div className="flex items-center gap-1">
                                   {isExpired ? (
                                     <Badge variant="destructive" className="text-xs">
-                                      <AlertTriangle className="h-3 w-3 mr-1" />
+                                      <AlertTriangle className="h-3 w-3 me-1" />
                                       {te.expired}
                                     </Badge>
                                   ) : isExpiring ? (
                                     <Badge className="text-xs bg-orange-100 text-orange-700 border-0">
-                                      <Clock className="h-3 w-3 mr-1" />
+                                      <Clock className="h-3 w-3 me-1" />
                                       {te.expiring}
                                     </Badge>
                                   ) : (
                                     <Badge className="text-xs bg-green-100 text-green-700 border-0">
-                                      <CheckCircle className="h-3 w-3 mr-1" />
+                                      <CheckCircle className="h-3 w-3 me-1" />
                                       {te.valid}
                                     </Badge>
                                   )}
@@ -662,7 +662,7 @@ export function EquipmentList({ branchId, userRole = 'CONTRACTOR' }: EquipmentLi
                         </div>
                       </TableCell>
                       {userRole !== 'CLIENT' && (
-                        <TableCell className="text-right">
+                        <TableCell className="text-end">
                           <div className="flex items-center justify-end gap-2">
                             <Button
                               variant="ghost"
@@ -1041,7 +1041,7 @@ export function EquipmentList({ branchId, userRole = 'CONTRACTOR' }: EquipmentLi
                             size="sm"
                             onClick={() => window.open(selectedEquipment.certificate!.fileUrl!, '_blank')}
                           >
-                            <Eye className="h-4 w-4 mr-1" />
+                            <Eye className="h-4 w-4 me-1" />
                             {te.view}
                           </Button>
                           <Button
@@ -1049,7 +1049,7 @@ export function EquipmentList({ branchId, userRole = 'CONTRACTOR' }: EquipmentLi
                             size="sm"
                             onClick={() => window.open(selectedEquipment.certificate!.fileUrl!, '_blank')}
                           >
-                            <Download className="h-4 w-4 mr-1" />
+                            <Download className="h-4 w-4 me-1" />
                             {te.download}
                           </Button>
                         </>

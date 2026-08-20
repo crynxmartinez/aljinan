@@ -84,7 +84,7 @@ export function ExportDialog({
     <Dialog open={isOpen} onOpenChange={setIsOpen}>
       <DialogTrigger asChild>
         <Button variant="outline" size="sm">
-          <Download className="h-4 w-4 mr-2" />
+          <Download className="h-4 w-4 me-2" />
           {ta.export}
         </Button>
       </DialogTrigger>
@@ -238,7 +238,7 @@ export function ExportDialog({
               <>{ta.exporting}</>
             ) : (
               <>
-                <Download className="h-4 w-4 mr-2" />
+                <Download className="h-4 w-4 me-2" />
                 {ta.export}
               </>
             )}

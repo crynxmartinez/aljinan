@@ -149,7 +149,7 @@ export function NotificationsList() {
             onClick={markAllAsRead}
             className="text-sm"
           >
-            <CheckCheck className="h-4 w-4 mr-2" />
+            <CheckCheck className="h-4 w-4 me-2" />
             {tn.markAllAsRead}
           </Button>
         </div>

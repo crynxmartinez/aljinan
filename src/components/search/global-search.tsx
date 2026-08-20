@@ -112,20 +112,20 @@ export function GlobalSearch() {
   return (
     <div ref={searchRef} className="relative w-full max-w-lg">
       <div className="relative">
-        <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground pointer-events-none" />
+        <Search className="absolute start-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground pointer-events-none" />
         <Input
           type="text"
           placeholder="Search clients, branches, work orders, equipment..."
           value={query}
           onChange={(e) => { setQuery(e.target.value); setIsOpen(true) }}
           onFocus={() => setIsOpen(true)}
-          className="pl-9 pr-9"
+          className="ps-9 pe-9"
         />
         {query && (
           <Button
             variant="ghost"
             size="icon"
-            className="absolute right-1 top-1/2 -translate-y-1/2 h-7 w-7"
+            className="absolute end-1 top-1/2 -translate-y-1/2 h-7 w-7"
             onClick={handleClear}
           >
             <X className="h-4 w-4" />
@@ -158,13 +158,13 @@ export function GlobalSearch() {
                       <span className="text-xs font-semibold text-muted-foreground uppercase tracking-wide">
                         {label}
                       </span>
-                      <span className="text-xs text-muted-foreground ml-auto">{items.length}</span>
+                      <span className="text-xs text-muted-foreground ms-auto">{items.length}</span>
                     </div>
                     {items.map((result) => (
                       <button
                         key={result.id}
                         onClick={() => handleResultClick(result)}
-                        className="w-full text-left px-4 py-2.5 hover:bg-muted/50 transition-colors flex items-start gap-3"
+                        className="w-full text-start px-4 py-2.5 hover:bg-muted/50 transition-colors flex items-start gap-3"
                       >
                         <Icon className={cn('h-4 w-4 mt-0.5 flex-shrink-0', color)} />
                         <div className="min-w-0">

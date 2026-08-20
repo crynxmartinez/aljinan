@@ -34,13 +34,13 @@ export function PDFViewer({ url, name, open, onOpenChange }: PDFViewerProps) {
         <DialogHeader className="px-6 pt-6 pb-4 border-b">
           <DialogTitle className="flex items-center justify-between">
             <span className="truncate">{name}</span>
-            <div className="flex gap-2 ml-4">
+            <div className="flex gap-2 ms-4">
               <Button
                 variant="outline"
                 size="sm"
                 onClick={handleOpenNewTab}
               >
-                <ExternalLink className="h-4 w-4 mr-2" />
+                <ExternalLink className="h-4 w-4 me-2" />
                 Open in New Tab
               </Button>
               <Button
@@ -48,7 +48,7 @@ export function PDFViewer({ url, name, open, onOpenChange }: PDFViewerProps) {
                 size="sm"
                 onClick={handleDownload}
               >
-                <Download className="h-4 w-4 mr-2" />
+                <Download className="h-4 w-4 me-2" />
                 Download
               </Button>
             </div>

@@ -47,7 +47,7 @@ function groupWorkOrders(workOrders: WorkOrder[]): Map<string, WorkOrder[]> {
 
 function formatDate(dateString: string | null, notScheduledLabel: string) {
   if (!dateString) return notScheduledLabel
-  return new Date(dateString).toLocaleDateString('en-US', {
+  return new Date(dateString).toLocaleDateString('ar-SA', {
     month: 'short',
     day: 'numeric',
     year: 'numeric',
@@ -154,13 +154,13 @@ export function ContractWorkOrdersDisplay({ workOrders, showStatus = true }: Con
                       )}
                     </div>
                   </div>
-                  <div className="text-right">
+                  <div className="text-end">
                     <span className="font-semibold text-sm text-primary">
                       {formatCurrency(groupTotal)}
                     </span>
                     {showStatus && allCompleted && (
                       <Badge className="ml-2 bg-green-100 text-green-700 text-xs">
-                        <CheckCircle className="h-3 w-3 mr-1" />
+                        <CheckCircle className="h-3 w-3 me-1" />
                         {t.dashboard.contractsList.done}
                       </Badge>
                     )}
@@ -183,7 +183,7 @@ export function ContractWorkOrdersDisplay({ workOrders, showStatus = true }: Con
                       )}
                     >
                       <div className="flex items-center gap-2 text-sm">
-                        <CornerDownRight className="h-3 w-3 text-muted-foreground ml-2" />
+                        <CornerDownRight className="h-3 w-3 text-muted-foreground ms-2" />
                         {suffix && (
                           <span className="text-muted-foreground font-medium min-w-[50px]">
                             {suffix}:
@@ -196,7 +196,7 @@ export function ContractWorkOrdersDisplay({ workOrders, showStatus = true }: Con
                         {showStatus && (
                           <Badge
                             variant="outline"
-                            className={cn("text-xs ml-2", getStageColor(wo.stage))}
+                            className={cn("text-xs ms-2", getStageColor(wo.stage))}
                           >
                             {getStageIcon(wo.stage)}
                             <span className="ml-1">{STAGE_LABELS[wo.stage] || wo.stage.replace('_', ' ')}</span>

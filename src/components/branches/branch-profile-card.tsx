@@ -64,7 +64,7 @@ export function BranchProfileCard({ branch, canEdit }: BranchProfileCardProps) {
 
   const formatDate = (dateString: string | null) => {
     if (!dateString) return null
-    return new Date(dateString).toLocaleDateString('en-US', {
+    return new Date(dateString).toLocaleDateString('ar-SA', {
       year: 'numeric',
       month: 'short',
       day: 'numeric'
@@ -100,7 +100,7 @@ export function BranchProfileCard({ branch, canEdit }: BranchProfileCardProps) {
           <CardTitle>{tb.facilityProfile}</CardTitle>
           {canEdit && (
             <Button variant="outline" size="sm" onClick={() => setEditOpen(true)}>
-              <Edit className="h-4 w-4 mr-1" />
+              <Edit className="h-4 w-4 me-1" />
               {tb.edit}
             </Button>
           )}
@@ -201,13 +201,13 @@ export function BranchProfileCard({ branch, canEdit }: BranchProfileCardProps) {
                     </span>
                     {isCertificateExpired() && (
                       <Badge variant="destructive" className="text-xs">
-                        <AlertTriangle className="h-3 w-3 mr-1" />
+                        <AlertTriangle className="h-3 w-3 me-1" />
                         {tb.expired}
                       </Badge>
                     )}
                     {isCertificateExpiringSoon() && (
                       <Badge className="bg-yellow-100 text-yellow-700 hover:bg-yellow-100 text-xs">
-                        <AlertTriangle className="h-3 w-3 mr-1" />
+                        <AlertTriangle className="h-3 w-3 me-1" />
                         {tb.expiringSoon}
                       </Badge>
                     )}
@@ -299,7 +299,7 @@ export function BranchProfileCard({ branch, canEdit }: BranchProfileCardProps) {
                     className="mt-3 bg-white"
                     onClick={() => setEditOpen(true)}
                   >
-                    <Edit className="h-4 w-4 mr-1" />
+                    <Edit className="h-4 w-4 me-1" />
                     {tb.completeProfile}
                   </Button>
                 </div>

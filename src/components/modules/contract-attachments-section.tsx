@@ -130,7 +130,7 @@ export function ContractAttachmentsSection({
                     className="flex-1"
                     onClick={() => window.open(fileUrl, '_blank')}
                   >
-                    <ExternalLink className="h-3 w-3 mr-1" />
+                    <ExternalLink className="h-3 w-3 me-1" />
                     {tca.view}
                   </Button>
                   <Button
@@ -144,7 +144,7 @@ export function ContractAttachmentsSection({
                       link.click()
                     }}
                   >
-                    <Download className="h-3 w-3 mr-1" />
+                    <Download className="h-3 w-3 me-1" />
                     {tca.download}
                   </Button>
                   {isContractor && (
@@ -164,7 +164,7 @@ export function ContractAttachmentsSection({
                   className="w-full"
                   onClick={openPdfDialog}
                 >
-                  <Upload className="h-3 w-3 mr-1" />
+                  <Upload className="h-3 w-3 me-1" />
                   {tca.attachPdf}
                 </Button>
               ) : (
@@ -210,13 +210,13 @@ export function ContractAttachmentsSection({
               <Label htmlFor="pdfUrl">{tca.pdfUrl}</Label>
               <div className="flex gap-2">
                 <div className="relative flex-1">
-                  <LinkIcon className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+                  <LinkIcon className="absolute start-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
                   <Input
                     id="pdfUrl"
                     value={pdfUrl}
                     onChange={(e) => setPdfUrl(e.target.value)}
                     placeholder="https://..."
-                    className="pl-9"
+                    className="ps-9"
                     required
                   />
                 </div>

@@ -125,7 +125,7 @@ export function BranchWorkspace({ branchId, branch, userRole, teamMemberRole }: 
             size="sm"
             onClick={() => setActivityPanelOpen(!activityPanelOpen)}
           >
-            <MessageSquare className="h-4 w-4 mr-2" />
+            <MessageSquare className="h-4 w-4 me-2" />
             {tw.activity}
           </Button>
         </div>

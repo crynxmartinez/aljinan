@@ -223,7 +223,7 @@ export function WorkOrderPrint({ workOrderId }: WorkOrderPrintProps) {
 
   const formatDate = (dateString: string | null) => {
     if (!dateString) return '-'
-    return new Date(dateString).toLocaleDateString('en-US', {
+    return new Date(dateString).toLocaleDateString('ar-SA', {
       year: 'numeric',
       month: 'long',
       day: 'numeric'
@@ -336,7 +336,7 @@ export function WorkOrderPrint({ workOrderId }: WorkOrderPrintProps) {
               <h1 className="text-4xl font-bold text-primary mb-2">TASHEEL</h1>
               <p className="text-sm text-muted-foreground">{tp.safetyContractorManagement}</p>
             </div>
-            <div className="text-right">
+            <div className="text-end">
               <h2 className="text-2xl font-bold mb-1">{tp.workOrderReport}</h2>
               <p className="text-lg font-semibold">WO #{data.workOrderNumber}</p>
               <p className="text-sm text-muted-foreground mt-1">
@@ -624,10 +624,10 @@ export function WorkOrderPrint({ workOrderId }: WorkOrderPrintProps) {
             <table className="w-full border-collapse border border-gray-300">
               <thead>
                 <tr className="bg-gray-100">
-                  <th className="border border-gray-300 px-3 py-2 text-left text-sm font-semibold">{tp.equipmentNumber}</th>
-                  <th className="border border-gray-300 px-3 py-2 text-left text-sm font-semibold">{tp.type}</th>
-                  <th className="border border-gray-300 px-3 py-2 text-left text-sm font-semibold">{tp.location}</th>
-                  <th className="border border-gray-300 px-3 py-2 text-left text-sm font-semibold">{tp.expiryDate}</th>
+                  <th className="border border-gray-300 px-3 py-2 text-start text-sm font-semibold">{tp.equipmentNumber}</th>
+                  <th className="border border-gray-300 px-3 py-2 text-start text-sm font-semibold">{tp.type}</th>
+                  <th className="border border-gray-300 px-3 py-2 text-start text-sm font-semibold">{tp.location}</th>
+                  <th className="border border-gray-300 px-3 py-2 text-start text-sm font-semibold">{tp.expiryDate}</th>
                 </tr>
               </thead>
               <tbody>
@@ -664,9 +664,9 @@ export function WorkOrderPrint({ workOrderId }: WorkOrderPrintProps) {
                   <table className="w-full border-collapse border border-gray-300">
                     <thead>
                       <tr className="bg-gray-100">
-                        <th className="border border-gray-300 px-3 py-2 text-left text-sm font-semibold w-8">✓</th>
-                        <th className="border border-gray-300 px-3 py-2 text-left text-sm font-semibold">{tp.task}</th>
-                        <th className="border border-gray-300 px-3 py-2 text-left text-sm font-semibold">{tp.notes}</th>
+                        <th className="border border-gray-300 px-3 py-2 text-start text-sm font-semibold w-8">✓</th>
+                        <th className="border border-gray-300 px-3 py-2 text-start text-sm font-semibold">{tp.task}</th>
+                        <th className="border border-gray-300 px-3 py-2 text-start text-sm font-semibold">{tp.notes}</th>
                       </tr>
                     </thead>
                     <tbody>
@@ -691,10 +691,10 @@ export function WorkOrderPrint({ workOrderId }: WorkOrderPrintProps) {
                   <table className="w-full border-collapse border border-gray-300">
                     <thead>
                       <tr className="bg-gray-100">
-                        <th className="border border-gray-300 px-3 py-2 text-left text-sm font-semibold">{tp.parameter}</th>
-                        <th className="border border-gray-300 px-3 py-2 text-left text-sm font-semibold">{tp.value}</th>
-                        <th className="border border-gray-300 px-3 py-2 text-left text-sm font-semibold">{tp.normalRange}</th>
-                        <th className="border border-gray-300 px-3 py-2 text-left text-sm font-semibold">{tp.status}</th>
+                        <th className="border border-gray-300 px-3 py-2 text-start text-sm font-semibold">{tp.parameter}</th>
+                        <th className="border border-gray-300 px-3 py-2 text-start text-sm font-semibold">{tp.value}</th>
+                        <th className="border border-gray-300 px-3 py-2 text-start text-sm font-semibold">{tp.normalRange}</th>
+                        <th className="border border-gray-300 px-3 py-2 text-start text-sm font-semibold">{tp.status}</th>
                       </tr>
                     </thead>
                     <tbody>
@@ -720,8 +720,8 @@ export function WorkOrderPrint({ workOrderId }: WorkOrderPrintProps) {
                   <table className="w-full border-collapse border border-gray-300">
                     <thead>
                       <tr className="bg-gray-100">
-                        <th className="border border-gray-300 px-3 py-2 text-left text-sm font-semibold">{tp.item}</th>
-                        <th className="border border-gray-300 px-3 py-2 text-left text-sm font-semibold">{tp.quantity}</th>
+                        <th className="border border-gray-300 px-3 py-2 text-start text-sm font-semibold">{tp.item}</th>
+                        <th className="border border-gray-300 px-3 py-2 text-start text-sm font-semibold">{tp.quantity}</th>
                       </tr>
                     </thead>
                     <tbody>
@@ -778,10 +778,10 @@ export function WorkOrderPrint({ workOrderId }: WorkOrderPrintProps) {
                   <table className="w-full border-collapse border border-gray-300">
                     <thead>
                       <tr className="bg-gray-100">
-                        <th className="border border-gray-300 px-3 py-2 text-left text-sm font-semibold">{tp.part}</th>
-                        <th className="border border-gray-300 px-3 py-2 text-left text-sm font-semibold">{tp.qty}</th>
-                        <th className="border border-gray-300 px-3 py-2 text-left text-sm font-semibold">{tp.unitCost}</th>
-                        <th className="border border-gray-300 px-3 py-2 text-left text-sm font-semibold">{tp.total}</th>
+                        <th className="border border-gray-300 px-3 py-2 text-start text-sm font-semibold">{tp.part}</th>
+                        <th className="border border-gray-300 px-3 py-2 text-start text-sm font-semibold">{tp.qty}</th>
+                        <th className="border border-gray-300 px-3 py-2 text-start text-sm font-semibold">{tp.unitCost}</th>
+                        <th className="border border-gray-300 px-3 py-2 text-start text-sm font-semibold">{tp.total}</th>
                       </tr>
                     </thead>
                     <tbody>
@@ -807,31 +807,31 @@ export function WorkOrderPrint({ workOrderId }: WorkOrderPrintProps) {
                       {(data.reportData as ServiceReportData).laborHours > 0 && (
                         <tr>
                           <td className="border border-gray-300 px-3 py-2 text-sm">{tp.laborHours}</td>
-                          <td className="border border-gray-300 px-3 py-2 text-sm text-right">{(data.reportData as ServiceReportData).laborHours} {tp.hrs}</td>
+                          <td className="border border-gray-300 px-3 py-2 text-sm text-end">{(data.reportData as ServiceReportData).laborHours} {tp.hrs}</td>
                         </tr>
                       )}
                       {(data.reportData as ServiceReportData).laborRate > 0 && (
                         <tr>
                           <td className="border border-gray-300 px-3 py-2 text-sm">{tp.laborRate}</td>
-                          <td className="border border-gray-300 px-3 py-2 text-sm text-right">{formatCurrency((data.reportData as ServiceReportData).laborRate)}/hr</td>
+                          <td className="border border-gray-300 px-3 py-2 text-sm text-end">{formatCurrency((data.reportData as ServiceReportData).laborRate)}/hr</td>
                         </tr>
                       )}
                       {(data.reportData as ServiceReportData).laborCost > 0 && (
                         <tr>
                           <td className="border border-gray-300 px-3 py-2 text-sm">{tp.laborCost}</td>
-                          <td className="border border-gray-300 px-3 py-2 text-sm text-right">{formatCurrency((data.reportData as ServiceReportData).laborCost)}</td>
+                          <td className="border border-gray-300 px-3 py-2 text-sm text-end">{formatCurrency((data.reportData as ServiceReportData).laborCost)}</td>
                         </tr>
                       )}
                       {(data.reportData as ServiceReportData).totalPartsCost > 0 && (
                         <tr>
                           <td className="border border-gray-300 px-3 py-2 text-sm">{tp.totalPartsCost}</td>
-                          <td className="border border-gray-300 px-3 py-2 text-sm text-right">{formatCurrency((data.reportData as ServiceReportData).totalPartsCost)}</td>
+                          <td className="border border-gray-300 px-3 py-2 text-sm text-end">{formatCurrency((data.reportData as ServiceReportData).totalPartsCost)}</td>
                         </tr>
                       )}
                       {(data.reportData as ServiceReportData).totalCost > 0 && (
                         <tr className="bg-gray-100 font-semibold">
                           <td className="border border-gray-300 px-3 py-2 text-sm">{tp.totalCost}</td>
-                          <td className="border border-gray-300 px-3 py-2 text-sm text-right">{formatCurrency((data.reportData as ServiceReportData).totalCost)}</td>
+                          <td className="border border-gray-300 px-3 py-2 text-sm text-end">{formatCurrency((data.reportData as ServiceReportData).totalCost)}</td>
                         </tr>
                       )}
                     </tbody>
@@ -890,10 +890,10 @@ export function WorkOrderPrint({ workOrderId }: WorkOrderPrintProps) {
                   <table className="w-full border-collapse border border-gray-300">
                     <thead>
                       <tr className="bg-gray-100">
-                        <th className="border border-gray-300 px-3 py-2 text-left text-sm font-semibold">{tp.name}</th>
-                        <th className="border border-gray-300 px-3 py-2 text-left text-sm font-semibold">{tp.model}</th>
-                        <th className="border border-gray-300 px-3 py-2 text-left text-sm font-semibold">{tp.serialNumber}</th>
-                        <th className="border border-gray-300 px-3 py-2 text-left text-sm font-semibold">{tp.location}</th>
+                        <th className="border border-gray-300 px-3 py-2 text-start text-sm font-semibold">{tp.name}</th>
+                        <th className="border border-gray-300 px-3 py-2 text-start text-sm font-semibold">{tp.model}</th>
+                        <th className="border border-gray-300 px-3 py-2 text-start text-sm font-semibold">{tp.serialNumber}</th>
+                        <th className="border border-gray-300 px-3 py-2 text-start text-sm font-semibold">{tp.location}</th>
                       </tr>
                     </thead>
                     <tbody>
@@ -925,9 +925,9 @@ export function WorkOrderPrint({ workOrderId }: WorkOrderPrintProps) {
                   <table className="w-full border-collapse border border-gray-300">
                     <thead>
                       <tr className="bg-gray-100">
-                        <th className="border border-gray-300 px-3 py-2 text-left text-sm font-semibold w-8">✓</th>
-                        <th className="border border-gray-300 px-3 py-2 text-left text-sm font-semibold">{tp.item}</th>
-                        <th className="border border-gray-300 px-3 py-2 text-left text-sm font-semibold">{tp.notes}</th>
+                        <th className="border border-gray-300 px-3 py-2 text-start text-sm font-semibold w-8">✓</th>
+                        <th className="border border-gray-300 px-3 py-2 text-start text-sm font-semibold">{tp.item}</th>
+                        <th className="border border-gray-300 px-3 py-2 text-start text-sm font-semibold">{tp.notes}</th>
                       </tr>
                     </thead>
                     <tbody>
@@ -952,9 +952,9 @@ export function WorkOrderPrint({ workOrderId }: WorkOrderPrintProps) {
                   <table className="w-full border-collapse border border-gray-300">
                     <thead>
                       <tr className="bg-gray-100">
-                        <th className="border border-gray-300 px-3 py-2 text-left text-sm font-semibold">{tp.test}</th>
-                        <th className="border border-gray-300 px-3 py-2 text-left text-sm font-semibold">{tp.result}</th>
-                        <th className="border border-gray-300 px-3 py-2 text-left text-sm font-semibold">{tp.notes}</th>
+                        <th className="border border-gray-300 px-3 py-2 text-start text-sm font-semibold">{tp.test}</th>
+                        <th className="border border-gray-300 px-3 py-2 text-start text-sm font-semibold">{tp.result}</th>
+                        <th className="border border-gray-300 px-3 py-2 text-start text-sm font-semibold">{tp.notes}</th>
                       </tr>
                     </thead>
                     <tbody>
@@ -1052,9 +1052,9 @@ export function WorkOrderPrint({ workOrderId }: WorkOrderPrintProps) {
                   <table className="w-full border-collapse border border-gray-300">
                     <thead>
                       <tr className="bg-gray-100">
-                        <th className="border border-gray-300 px-3 py-2 text-left text-sm font-semibold">{tp.item}</th>
-                        <th className="border border-gray-300 px-3 py-2 text-left text-sm font-semibold w-20">{tp.status}</th>
-                        <th className="border border-gray-300 px-3 py-2 text-left text-sm font-semibold">{tp.notes}</th>
+                        <th className="border border-gray-300 px-3 py-2 text-start text-sm font-semibold">{tp.item}</th>
+                        <th className="border border-gray-300 px-3 py-2 text-start text-sm font-semibold w-20">{tp.status}</th>
+                        <th className="border border-gray-300 px-3 py-2 text-start text-sm font-semibold">{tp.notes}</th>
                       </tr>
                     </thead>
                     <tbody>

@@ -4,6 +4,7 @@ import { useState, useRef, useEffect } from 'react'
 import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle } from '@/components/ui/dialog'
 import { Button } from '@/components/ui/button'
 import { Loader2, PenTool, Eraser } from 'lucide-react'
+import { useTranslation } from '@/lib/i18n/use-translation'
 
 interface SignatureDialogProps {
   open: boolean
@@ -26,6 +27,8 @@ export function SignatureDialog({
   const [isEmpty, setIsEmpty] = useState(true)
   const canvasRef = useRef<HTMLCanvasElement>(null)
   const [isDrawing, setIsDrawing] = useState(false)
+  const { t } = useTranslation()
+  const tu = t.uiComponents
 
   useEffect(() => {
     if (open && canvasRef.current) {
@@ -152,8 +155,8 @@ export function SignatureDialog({
           <div className="space-y-2">
             <div className="flex items-center justify-between">
               <div>
-                <p className="text-sm font-medium">Signing as: <span className="text-primary">{signerName}</span></p>
-                <p className="text-xs text-muted-foreground">Date: {new Date().toLocaleDateString()}</p>
+                <p className="text-sm font-medium">{tu.signatureDialog.signingAs} <span className="text-primary">{signerName}</span></p>
+                <p className="text-xs text-muted-foreground">{tu.signatureDialog.date} {new Date().toLocaleDateString('ar-SA')}</p>
               </div>
               <Button
                 type="button"
@@ -163,7 +166,7 @@ export function SignatureDialog({
                 disabled={isEmpty || signing}
               >
                 <Eraser className="mr-2 h-3 w-3" />
-                Clear
+                {tu.clear}
               </Button>
             </div>
           </div>
@@ -185,7 +188,7 @@ export function SignatureDialog({
           </div>
 
           <p className="text-xs text-muted-foreground text-center">
-            Draw your signature above using mouse or touch
+            {tu.signatureDialog.drawSignature}
           </p>
         </div>
 
@@ -195,7 +198,7 @@ export function SignatureDialog({
             onClick={handleClose}
             disabled={signing}
           >
-            Cancel
+            {tu.cancel}
           </Button>
           <Button
             onClick={handleSign}
@@ -204,12 +207,12 @@ export function SignatureDialog({
             {signing ? (
               <>
                 <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                Signing...
+                {tu.signatureDialog.signing}
               </>
             ) : (
               <>
                 <PenTool className="mr-2 h-4 w-4" />
-                Sign Document
+                {tu.signatureDialog.signDocument}
               </>
             )}
           </Button>

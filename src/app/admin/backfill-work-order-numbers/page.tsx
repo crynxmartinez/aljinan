@@ -49,7 +49,7 @@ export default function BackfillWorkOrderNumbersPage() {
             <p className="text-sm text-yellow-900">
               <strong>⚠️ Important:</strong> This operation will:
             </p>
-            <ul className="text-sm text-yellow-800 mt-2 ml-4 list-disc space-y-1">
+            <ul className="text-sm text-yellow-800 mt-2 ms-4 list-disc space-y-1">
               <li>Find all work orders with <code>workOrderNumber = null</code></li>
               <li>Assign sequential numbers starting from each contractor's current counter</li>
               <li>Update the contractor's counter to the next available number</li>
@@ -121,10 +121,10 @@ export default function BackfillWorkOrderNumbersPage() {
                               <table className="w-full text-sm">
                                 <thead className="bg-muted sticky top-0">
                                   <tr>
-                                    <th className="text-left p-2">WO #</th>
-                                    <th className="text-left p-2">Description</th>
-                                    <th className="text-left p-2">Client</th>
-                                    <th className="text-left p-2">Branch</th>
+                                    <th className="text-start p-2">WO #</th>
+                                    <th className="text-start p-2">Description</th>
+                                    <th className="text-start p-2">Client</th>
+                                    <th className="text-start p-2">Branch</th>
                                   </tr>
                                 </thead>
                                 <tbody>

@@ -62,7 +62,7 @@ export function ImpersonationBanner() {
         className="text-white hover:text-white hover:bg-amber-600 h-7"
         onClick={handleExitImpersonation}
       >
-        <LogOut className="h-3.5 w-3.5 mr-1" />
+        <LogOut className="h-3.5 w-3.5 me-1" />
         {ta.exitToAdmin}
       </Button>
     </div>

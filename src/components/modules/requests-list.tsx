@@ -240,7 +240,7 @@ function WorkOrdersGroupedViewContractor({
             <div className="flex items-center justify-between p-4 hover:bg-muted/50 transition-colors">
               <button
                 onClick={() => !isSingleItem && toggleGroup(groupName)}
-                className={`flex-1 flex items-center gap-2 text-left ${isSingleItem ? 'cursor-default' : 'cursor-pointer'}`}
+                className={`flex-1 flex items-center gap-2 text-start ${isSingleItem ? 'cursor-default' : 'cursor-pointer'}`}
               >
                 {!isSingleItem && (
                   isExpanded ? (
@@ -294,17 +294,17 @@ function WorkOrdersGroupedViewContractor({
                       />
                     </div>
                     <div className="flex items-center">
-                      <span className="text-sm text-muted-foreground mr-1">{tr.sar}</span>
+                      <span className="text-sm text-muted-foreground me-1">{tr.sar}</span>
                       <Input
                         type="number"
                         step="0.01"
                         value={groupPrice}
                         onChange={(e) => setGroupPrice(e.target.value)}
                         placeholder="0.00"
-                        className="w-[100px] text-right"
+                        className="w-[100px] text-end"
                       />
                       {!isSingleItem && (
-                        <span className="text-xs text-muted-foreground ml-1">{tr.each}</span>
+                        <span className="text-xs text-muted-foreground ms-1">{tr.each}</span>
                       )}
                     </div>
                     <Button
@@ -324,7 +324,7 @@ function WorkOrdersGroupedViewContractor({
                   </div>
                 ) : (
                   <>
-                    <div className="text-right">
+                    <div className="text-end">
                       {hasPendingPrice ? (
                         <Badge variant="outline" className="text-orange-600 border-orange-300">
                           {tr.needsPrice}
@@ -340,7 +340,7 @@ function WorkOrdersGroupedViewContractor({
                       variant="ghost"
                       onClick={() => startEditGroup(groupName, items)}
                     >
-                      <Pencil className="h-3 w-3 mr-1" />
+                      <Pencil className="h-3 w-3 me-1" />
                       {tr.edit}
                     </Button>
                   </>
@@ -351,7 +351,7 @@ function WorkOrdersGroupedViewContractor({
             {/* Single Item Details (inline) */}
             {isSingleItem && (
               <div className="px-4 pb-4 pt-0">
-                <div className="flex items-center gap-4 text-sm text-muted-foreground ml-6">
+                <div className="flex items-center gap-4 text-sm text-muted-foreground ms-6">
                   <CornerDownRight className="h-4 w-4 flex-shrink-0" />
                   {items[0].scheduledDate ? (
                     <div className="flex items-center gap-1">
@@ -371,7 +371,7 @@ function WorkOrdersGroupedViewContractor({
                 {items.map((wo, idx) => (
                   <div key={wo.id} className="flex items-center justify-between px-4 py-3 border-b last:border-b-0">
                     <div className="flex items-center gap-3 text-sm">
-                      <CornerDownRight className="h-4 w-4 text-muted-foreground flex-shrink-0 ml-2" />
+                      <CornerDownRight className="h-4 w-4 text-muted-foreground flex-shrink-0 ms-2" />
                       <div>
                         <span className="text-muted-foreground">
                           {wo.title.match(/\((Q\d+|Month\d+)\)/i)?.[1] || `#${idx + 1}`}:
@@ -393,7 +393,7 @@ function WorkOrdersGroupedViewContractor({
                             value={editWorkOrder.price}
                             onChange={(e) => onEditChange('price', e.target.value)}
                             placeholder="0.00"
-                            className="w-[80px] text-right"
+                            className="w-[80px] text-end"
                           />
                           <Button size="sm" onClick={() => onSave(wo.id)} disabled={saving}>
                             {saving ? <Loader2 className="h-3 w-3 animate-spin" /> : <Save className="h-3 w-3" />}
@@ -1470,9 +1470,9 @@ export function RequestsList({ branchId, userRole, userId }: RequestsListProps) 
                         <table className="w-full text-sm">
                           <thead className="bg-muted">
                             <tr>
-                              <th className="px-3 py-2 text-left font-medium w-12">#</th>
-                              <th className="px-3 py-2 text-left font-medium">{tr.visitDate}</th>
-                              <th className="px-3 py-2 text-left font-medium">{tr.priceSarShort}</th>
+                              <th className="px-3 py-2 text-start font-medium w-12">#</th>
+                              <th className="px-3 py-2 text-start font-medium">{tr.visitDate}</th>
+                              <th className="px-3 py-2 text-start font-medium">{tr.priceSarShort}</th>
                             </tr>
                           </thead>
                           <tbody>
@@ -1636,10 +1636,10 @@ export function RequestsList({ branchId, userRole, userId }: RequestsListProps) 
                     <table className="w-full text-sm">
                       <thead className="bg-amber-100">
                         <tr>
-                          <th className="px-3 py-2 text-left text-amber-800">{tr.equipmentNumber}</th>
-                          <th className="px-3 py-2 text-left text-amber-800">{tr.type}</th>
-                          <th className="px-3 py-2 text-left text-amber-800">{tr.location}</th>
-                          <th className="px-3 py-2 text-left text-amber-800">{tr.expiry}</th>
+                          <th className="px-3 py-2 text-start text-amber-800">{tr.equipmentNumber}</th>
+                          <th className="px-3 py-2 text-start text-amber-800">{tr.type}</th>
+                          <th className="px-3 py-2 text-start text-amber-800">{tr.location}</th>
+                          <th className="px-3 py-2 text-start text-amber-800">{tr.expiry}</th>
                         </tr>
                       </thead>
                       <tbody className="bg-white divide-y divide-amber-100">
@@ -1678,9 +1678,9 @@ export function RequestsList({ branchId, userRole, userId }: RequestsListProps) 
                         <table className="w-full text-sm">
                           <thead className="bg-purple-100">
                             <tr>
-                              <th className="px-3 py-2 text-left text-purple-800 font-medium">#</th>
-                              <th className="px-3 py-2 text-left text-purple-800 font-medium">{tr.visitDate}</th>
-                              <th className="px-3 py-2 text-right text-purple-800 font-medium">{tr.priceSarShort}</th>
+                              <th className="px-3 py-2 text-start text-purple-800 font-medium">#</th>
+                              <th className="px-3 py-2 text-start text-purple-800 font-medium">{tr.visitDate}</th>
+                              <th className="px-3 py-2 text-end text-purple-800 font-medium">{tr.priceSarShort}</th>
                             </tr>
                           </thead>
                           <tbody className="divide-y divide-purple-100">
@@ -1690,7 +1690,7 @@ export function RequestsList({ branchId, userRole, userId }: RequestsListProps) 
                                 <td className="px-3 py-2">
                                   {occ.visitDate ? new Date(occ.visitDate).toLocaleDateString() : '-'}
                                 </td>
-                                <td className="px-3 py-2 text-right font-medium">
+                                <td className="px-3 py-2 text-end font-medium">
                                   {occ.price ? occ.price.toLocaleString() : '-'}
                                 </td>
                               </tr>
@@ -1699,7 +1699,7 @@ export function RequestsList({ branchId, userRole, userId }: RequestsListProps) 
                           <tfoot className="bg-purple-50 border-t border-purple-200">
                             <tr>
                               <td colSpan={2} className="px-3 py-2 font-semibold text-purple-800">{tr.total}</td>
-                              <td className="px-3 py-2 text-right font-bold text-purple-900">
+                              <td className="px-3 py-2 text-end font-bold text-purple-900">
                                 SAR {selectedRequest.quotedPrice.toLocaleString()}
                               </td>
                             </tr>
@@ -1946,7 +1946,7 @@ export function RequestsList({ branchId, userRole, userId }: RequestsListProps) 
                           : tr.priceSar}
                       </Label>
                       <div className="relative">
-                        <Banknote className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+                        <Banknote className="absolute start-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
                         <Input
                           id="quotedPrice"
                           type="number"
@@ -1955,7 +1955,7 @@ export function RequestsList({ branchId, userRole, userId }: RequestsListProps) 
                           value={quoteData.quotedPrice}
                           onChange={(e) => setQuoteData({ ...quoteData, quotedPrice: e.target.value })}
                           placeholder="0.00"
-                          className="pl-9"
+                          className="ps-9"
                           required
                         />
                       </div>
@@ -2105,7 +2105,7 @@ export function RequestsList({ branchId, userRole, userId }: RequestsListProps) 
               {/* Warning */}
               <div className="p-4 bg-blue-50 border border-blue-200 rounded-lg">
                 <p className="text-sm text-blue-800 font-medium mb-2">⚡ {tr.thisWill}</p>
-                <ul className="text-sm text-blue-700 space-y-1 ml-4 list-disc">
+                <ul className="text-sm text-blue-700 space-y-1 ms-4 list-disc">
                   <li>{tr.createToday}</li>
                   <li>{tr.moveInProgress}</li>
                   <li>{tr.skipQuotation}</li>

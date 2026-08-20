@@ -100,7 +100,7 @@ export function InstallationReportForm({ data, onChange, readOnly = false }: Ins
             <CardTitle className="text-sm font-medium">{tr.equipmentInstalled}</CardTitle>
             {!readOnly && (
               <Button type="button" variant="outline" size="sm" onClick={addEquipment}>
-                <Plus className="h-4 w-4 mr-1" />
+                <Plus className="h-4 w-4 me-1" />
                 {tr.addEquipment}
               </Button>
             )}
@@ -194,7 +194,7 @@ export function InstallationReportForm({ data, onChange, readOnly = false }: Ins
             <CardTitle className="text-sm font-medium">{tr.commissioningChecklist}</CardTitle>
             {!readOnly && (
               <Button type="button" variant="outline" size="sm" onClick={addCommissioningItem}>
-                <Plus className="h-4 w-4 mr-1" />
+                <Plus className="h-4 w-4 me-1" />
                 {tr.addItem}
               </Button>
             )}
@@ -256,7 +256,7 @@ export function InstallationReportForm({ data, onChange, readOnly = false }: Ins
             <CardTitle className="text-sm font-medium">{tr.testingResults}</CardTitle>
             {!readOnly && (
               <Button type="button" variant="outline" size="sm" onClick={addTestResult}>
-                <Plus className="h-4 w-4 mr-1" />
+                <Plus className="h-4 w-4 me-1" />
                 {tr.addTest}
               </Button>
             )}

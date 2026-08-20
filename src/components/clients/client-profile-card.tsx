@@ -84,7 +84,7 @@ export function ClientProfileCard({ client, canEdit }: ClientProfileCardProps) {
             </div>
             {canEdit && (
               <Button variant="outline" size="sm" onClick={() => setEditOpen(true)}>
-                <Edit className="h-4 w-4 mr-1" />
+                <Edit className="h-4 w-4 me-1" />
                 {tc.editProfile}
               </Button>
             )}
@@ -214,7 +214,7 @@ export function ClientProfileCard({ client, canEdit }: ClientProfileCardProps) {
                 className="bg-white"
                 onClick={() => setEditOpen(true)}
               >
-                <Edit className="h-4 w-4 mr-1" />
+                <Edit className="h-4 w-4 me-1" />
                 {tc.completeProfile}
               </Button>
             </div>

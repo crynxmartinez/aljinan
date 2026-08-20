@@ -236,7 +236,7 @@ export function ColumnDetailModal({
 
   const formatDate = (dateString: string | null) => {
     if (!dateString) return '-'
-    return new Date(dateString).toLocaleDateString('en-US', {
+    return new Date(dateString).toLocaleDateString('ar-SA', {
       month: 'short',
       day: 'numeric',
       year: 'numeric',
@@ -251,21 +251,21 @@ export function ColumnDetailModal({
       case 'overdue':
         return (
           <Badge variant="destructive" className="text-xs">
-            <AlertCircle className="h-3 w-3 mr-1" />
+            <AlertCircle className="h-3 w-3 me-1" />
             {tcd.daysOverdue.replace('{count}', String(daysOverdue))}
           </Badge>
         )
       case 'due-today':
         return (
           <Badge className="text-xs bg-orange-500">
-            <Clock className="h-3 w-3 mr-1" />
+            <Clock className="h-3 w-3 me-1" />
             {tcd.dueToday}
           </Badge>
         )
       case 'due-soon':
         return (
           <Badge className="text-xs bg-yellow-500">
-            <Clock className="h-3 w-3 mr-1" />
+            <Clock className="h-3 w-3 me-1" />
             {tcd.dueSoon}
           </Badge>
         )
@@ -350,12 +350,12 @@ export function ColumnDetailModal({
           {/* Filters and Search */}
           <div className="flex items-center gap-2">
             <div className="relative flex-1">
-              <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+              <Search className="absolute start-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-muted-foreground" />
               <Input
                 placeholder={tcd.searchWorkOrders}
                 value={searchQuery}
                 onChange={(e) => setSearchQuery(e.target.value)}
-                className="pl-9"
+                className="ps-9"
               />
             </div>
 
@@ -405,7 +405,7 @@ export function ColumnDetailModal({
             </Button>
 
             <Button variant="outline" size="sm" onClick={handleExport}>
-              <Download className="h-4 w-4 mr-2" />
+              <Download className="h-4 w-4 me-2" />
               {tcd.export}
             </Button>
           </div>

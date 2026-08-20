@@ -191,8 +191,8 @@ export function RequestComments({ branchId, requestId, currentUserId }: RequestC
             <div
               key={comment.id}
               className={`p-3 rounded-lg border ${comment.createdBy.id === currentUserId
-                  ? 'bg-primary/5 border-primary/20 ml-4'
-                  : 'bg-muted/50 mr-4'
+                  ? 'bg-primary/5 border-primary/20 ms-4'
+                  : 'bg-muted/50 me-4'
                 }`}
             >
               <div className="flex items-start justify-between gap-2">

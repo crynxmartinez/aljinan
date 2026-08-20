@@ -37,7 +37,7 @@ function timeAgo(dateStr: string, ta: { justNow: string; minutesAgo: string; hou
   if (diffMins < 60) return ta.minutesAgo.replace('{count}', String(diffMins))
   if (diffHours < 24) return ta.hoursAgo.replace('{count}', String(diffHours))
   if (diffDays < 7) return ta.daysAgo.replace('{count}', String(diffDays))
-  return date.toLocaleDateString('en-US', { month: 'short', day: 'numeric' })
+  return date.toLocaleDateString('ar-SA', { month: 'short', day: 'numeric' })
 }
 
 export function RecentActivity({ activities }: RecentActivityProps) {

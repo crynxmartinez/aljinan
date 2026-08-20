@@ -112,7 +112,7 @@ export default function MessagesPage() {
     if (diffMins < 60) return `${diffMins}${tm.mAgo}`
     if (diffHours < 24) return `${diffHours}${tm.hAgo}`
     if (diffDays < 7) return `${diffDays}${tm.dAgo}`
-    return date.toLocaleDateString('en-US', { month: 'short', day: 'numeric' })
+    return date.toLocaleDateString('ar-SA', { month: 'short', day: 'numeric' })
   }
 
   if (loading) {
@@ -173,7 +173,7 @@ export default function MessagesPage() {
               <Card
                 key={inquiry.id}
                 className={`cursor-pointer transition-colors hover:bg-muted/50 ${selectedId === inquiry.id ? 'ring-2 ring-primary' : ''
-                  } ${inquiry.status === 'NEW' ? 'border-l-4 border-l-blue-500' : ''}`}
+                  } ${inquiry.status === 'NEW' ? 'border-s-4 border-s-blue-500' : ''}`}
                 onClick={() => {
                   setSelectedId(inquiry.id)
                   setEditingNotes(inquiry.adminNotes || '')
@@ -209,7 +209,7 @@ export default function MessagesPage() {
                   <div>
                     <CardTitle>{selectedInquiry.name}</CardTitle>
                     <p className="text-sm text-muted-foreground mt-1">
-                      {tm.submitted} {new Date(selectedInquiry.createdAt).toLocaleDateString('en-US', {
+                      {tm.submitted} {new Date(selectedInquiry.createdAt).toLocaleDateString('ar-SA', {
                         month: 'long', day: 'numeric', year: 'numeric', hour: '2-digit', minute: '2-digit',
                       })}
                     </p>
@@ -279,7 +279,7 @@ export default function MessagesPage() {
                     onClick={() => updateInquiry(selectedInquiry.id, undefined, editingNotes)}
                     disabled={saving || editingNotes === (selectedInquiry.adminNotes || '')}
                   >
-                    {saving ? <Loader2 className="h-3 w-3 animate-spin mr-1" /> : null}
+                    {saving ? <Loader2 className="h-3 w-3 animate-spin me-1" /> : null}
                     {tm.saveNotes}
                   </Button>
                 </div>
@@ -305,7 +305,7 @@ export default function MessagesPage() {
                           window.location.href = `/admin/contractors?${params.toString()}`
                         }}
                       >
-                        <UserPlus className="h-3.5 w-3.5 mr-1" />
+                        <UserPlus className="h-3.5 w-3.5 me-1" />
                         {tm.createAccount}
                       </Button>
                     </div>

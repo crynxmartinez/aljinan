@@ -200,7 +200,7 @@ function WorkOrdersGroupedView({ workOrders }: { workOrders: WorkOrder[] }) {
             {/* Group Header */}
             <button
               onClick={() => !isSingleItem && toggleGroup(groupName)}
-              className={`w-full flex items-center justify-between p-4 text-left hover:bg-muted/50 transition-colors ${isSingleItem ? 'cursor-default' : 'cursor-pointer'}`}
+              className={`w-full flex items-center justify-between p-4 text-start hover:bg-muted/50 transition-colors ${isSingleItem ? 'cursor-default' : 'cursor-pointer'}`}
             >
               <div className="flex-1">
                 <div className="flex items-center gap-2">
@@ -219,12 +219,12 @@ function WorkOrdersGroupedView({ workOrders }: { workOrders: WorkOrder[] }) {
                   )}
                 </div>
                 {items[0].description && (
-                  <p className="text-sm text-muted-foreground mt-1 ml-6">
+                  <p className="text-sm text-muted-foreground mt-1 ms-6">
                     {items[0].description}
                   </p>
                 )}
               </div>
-              <div className="text-right flex-shrink-0">
+              <div className="text-end flex-shrink-0">
                 {hasPendingPrice ? (
                   <Badge variant="outline" className="text-xs">Pending Price</Badge>
                 ) : (
@@ -238,7 +238,7 @@ function WorkOrdersGroupedView({ workOrders }: { workOrders: WorkOrder[] }) {
             {/* Single Item Details (inline) */}
             {isSingleItem && (
               <div className="px-4 pb-4 pt-0">
-                <div className="flex items-center gap-4 text-sm text-muted-foreground ml-6">
+                <div className="flex items-center gap-4 text-sm text-muted-foreground ms-6">
                   <CornerDownRight className="h-4 w-4 flex-shrink-0" />
                   {items[0].scheduledDate ? (
                     <div className="flex items-center gap-1">
@@ -258,7 +258,7 @@ function WorkOrdersGroupedView({ workOrders }: { workOrders: WorkOrder[] }) {
                 {items.map((wo, idx) => (
                   <div key={wo.id || idx} className="flex items-center justify-between px-4 py-3 border-b last:border-b-0">
                     <div className="flex items-center gap-3 text-sm">
-                      <CornerDownRight className="h-4 w-4 text-muted-foreground flex-shrink-0 ml-2" />
+                      <CornerDownRight className="h-4 w-4 text-muted-foreground flex-shrink-0 ms-2" />
                       <div>
                         <span className="text-muted-foreground">
                           {wo.title.match(/\((Q\d+|Month\d+)\)/i)?.[1] || `#${idx + 1}`}:
@@ -271,7 +271,7 @@ function WorkOrdersGroupedView({ workOrders }: { workOrders: WorkOrder[] }) {
                         )}
                       </div>
                     </div>
-                    <div className="text-right">
+                    <div className="text-end">
                       {wo.price !== null ? (
                         <span className="font-medium">SAR {wo.price.toLocaleString('en-US', { minimumFractionDigits: 2 })}</span>
                       ) : (
@@ -1008,7 +1008,7 @@ export function ClientBranchRequests({ branchId, onDataChange, userId }: ClientB
                       className="border-amber-300 text-amber-700 hover:bg-amber-100"
                       onClick={() => setShowEquipmentForm(true)}
                     >
-                      <Plus className="h-4 w-4 mr-1" />
+                      <Plus className="h-4 w-4 me-1" />
                       Add Equipment
                     </Button>
                   </div>
@@ -1161,11 +1161,11 @@ export function ClientBranchRequests({ branchId, onDataChange, userId }: ClientB
                       <table className="w-full text-sm">
                         <thead className="bg-amber-100">
                           <tr>
-                            <th className="px-3 py-2 text-left text-amber-800">Equipment #</th>
-                            <th className="px-3 py-2 text-left text-amber-800">Type</th>
-                            <th className="px-3 py-2 text-left text-amber-800">Location</th>
-                            <th className="px-3 py-2 text-left text-amber-800">Expiry</th>
-                            <th className="px-3 py-2 text-right text-amber-800">Action</th>
+                            <th className="px-3 py-2 text-start text-amber-800">Equipment #</th>
+                            <th className="px-3 py-2 text-start text-amber-800">Type</th>
+                            <th className="px-3 py-2 text-start text-amber-800">Location</th>
+                            <th className="px-3 py-2 text-start text-amber-800">Expiry</th>
+                            <th className="px-3 py-2 text-end text-amber-800">Action</th>
                           </tr>
                         </thead>
                         <tbody className="bg-white divide-y divide-amber-100">
@@ -1179,7 +1179,7 @@ export function ClientBranchRequests({ branchId, onDataChange, userId }: ClientB
                               <td className="px-3 py-2 text-muted-foreground">
                                 {eq.expectedExpiry ? new Date(eq.expectedExpiry).toLocaleDateString() : '-'}
                               </td>
-                              <td className="px-3 py-2 text-right">
+                              <td className="px-3 py-2 text-end">
                                 <Button
                                   type="button"
                                   size="sm"
@@ -1350,10 +1350,10 @@ export function ClientBranchRequests({ branchId, onDataChange, userId }: ClientB
                     <table className="w-full text-sm">
                       <thead className="bg-amber-100">
                         <tr>
-                          <th className="px-3 py-2 text-left text-amber-800">Equipment #</th>
-                          <th className="px-3 py-2 text-left text-amber-800">Type</th>
-                          <th className="px-3 py-2 text-left text-amber-800">Location</th>
-                          <th className="px-3 py-2 text-left text-amber-800">Expiry</th>
+                          <th className="px-3 py-2 text-start text-amber-800">Equipment #</th>
+                          <th className="px-3 py-2 text-start text-amber-800">Type</th>
+                          <th className="px-3 py-2 text-start text-amber-800">Location</th>
+                          <th className="px-3 py-2 text-start text-amber-800">Expiry</th>
                         </tr>
                       </thead>
                       <tbody className="bg-white divide-y divide-amber-100">
@@ -1392,9 +1392,9 @@ export function ClientBranchRequests({ branchId, onDataChange, userId }: ClientB
                         <table className="w-full text-sm">
                           <thead className="bg-purple-100">
                             <tr>
-                              <th className="px-3 py-2 text-left text-purple-800 font-medium">#</th>
-                              <th className="px-3 py-2 text-left text-purple-800 font-medium">Visit Date</th>
-                              <th className="px-3 py-2 text-right text-purple-800 font-medium">Price (SAR)</th>
+                              <th className="px-3 py-2 text-start text-purple-800 font-medium">#</th>
+                              <th className="px-3 py-2 text-start text-purple-800 font-medium">Visit Date</th>
+                              <th className="px-3 py-2 text-end text-purple-800 font-medium">Price (SAR)</th>
                             </tr>
                           </thead>
                           <tbody className="divide-y divide-purple-100">
@@ -1404,7 +1404,7 @@ export function ClientBranchRequests({ branchId, onDataChange, userId }: ClientB
                                 <td className="px-3 py-2">
                                   {occ.visitDate ? new Date(occ.visitDate).toLocaleDateString() : '-'}
                                 </td>
-                                <td className="px-3 py-2 text-right font-medium">
+                                <td className="px-3 py-2 text-end font-medium">
                                   {occ.price ? occ.price.toLocaleString() : '-'}
                                 </td>
                               </tr>
@@ -1413,7 +1413,7 @@ export function ClientBranchRequests({ branchId, onDataChange, userId }: ClientB
                           <tfoot className="bg-purple-50 border-t border-purple-200">
                             <tr>
                               <td colSpan={2} className="px-3 py-2 font-semibold text-purple-800">Total</td>
-                              <td className="px-3 py-2 text-right font-bold text-purple-900">
+                              <td className="px-3 py-2 text-end font-bold text-purple-900">
                                 SAR {selectedRequest.quotedPrice.toLocaleString()}
                               </td>
                             </tr>
@@ -1666,7 +1666,7 @@ export function ClientBranchRequests({ branchId, onDataChange, userId }: ClientB
                     <h3 className="font-semibold">Work Orders</h3>
                     {selectedProject.status === 'PENDING' && (
                       <Button variant="outline" size="sm" onClick={() => setAddWorkOrderOpen(true)}>
-                        <Plus className="h-4 w-4 mr-1" />
+                        <Plus className="h-4 w-4 me-1" />
                         Request Additional Work
                       </Button>
                     )}
@@ -2110,7 +2110,7 @@ export function ClientBranchRequests({ branchId, onDataChange, userId }: ClientB
                 <p className="text-sm text-blue-900 font-semibold mb-2">
                   ⚠️ Warning: This action will:
                 </p>
-                <ul className="text-sm text-blue-800 space-y-1 ml-4 list-disc">
+                <ul className="text-sm text-blue-800 space-y-1 ms-4 list-disc">
                   <li>Create a work order starting <strong>today ({new Date().toLocaleDateString()})</strong></li>
                   <li>Move it to <strong>IN PROGRESS</strong> status immediately</li>
                   <li>Skip the quotation process (contractor will add pricing later)</li>

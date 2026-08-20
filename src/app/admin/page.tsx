@@ -63,12 +63,12 @@ async function getRequestsByMonth() {
     for (let i = 0; i < 6; i++) {
       const d = new Date()
       d.setMonth(d.getMonth() - (5 - i))
-      const key = d.toLocaleDateString('en-US', { month: 'short', year: '2-digit' })
+      const key = d.toLocaleDateString('ar-SA', { month: 'short', year: '2-digit' })
       monthMap.set(key, 0)
     }
 
     requests.forEach((r) => {
-      const key = r.createdAt.toLocaleDateString('en-US', { month: 'short', year: '2-digit' })
+      const key = r.createdAt.toLocaleDateString('ar-SA', { month: 'short', year: '2-digit' })
       if (monthMap.has(key)) {
         monthMap.set(key, (monthMap.get(key) || 0) + 1)
       }

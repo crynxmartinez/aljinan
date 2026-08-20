@@ -42,7 +42,7 @@ export interface ExportOptions {
 
 function formatDate(dateStr: string | null | undefined): string {
   if (!dateStr) return ''
-  return new Date(dateStr).toLocaleDateString('en-US', {
+  return new Date(dateStr).toLocaleDateString('ar-SA', {
     year: 'numeric',
     month: 'short',
     day: 'numeric',
@@ -60,26 +60,26 @@ export function exportWorkOrdersToExcel(
 ) {
   const rows = data.map(wo => {
     const row: Record<string, string | number> = {}
-    if (wo.workOrderNumber) row['WO #'] = `WO-${String(wo.workOrderNumber).padStart(4, '0')}`
-    row['Description'] = wo.description
+    if (wo.workOrderNumber) row['رقم الأمر'] = `WO-${String(wo.workOrderNumber).padStart(4, '0')}`
+    row['الوصف'] = wo.description
     if (options.includeClient) {
-      row['Client'] = wo.clientName
-      row['Branch'] = wo.branchName
+      row['العميل'] = wo.clientName
+      row['الفرع'] = wo.branchName
     }
-    row['Status'] = formatStatus(wo.stage)
-    row['Type'] = formatStatus(wo.workOrderType)
+    row['الحالة'] = formatStatus(wo.stage)
+    row['النوع'] = formatStatus(wo.workOrderType)
     if (options.includeDates) {
-      row['Scheduled Date'] = formatDate(wo.scheduledDate)
+      row['تاريخ الجدولة'] = formatDate(wo.scheduledDate)
     }
     if (options.includePricing) {
-      row['Price (SAR)'] = wo.price ?? ''
+      row['السعر (ر.س)'] = wo.price ?? ''
     }
     return row
   })
 
   const ws = XLSX.utils.json_to_sheet(rows)
   const wb = XLSX.utils.book_new()
-  XLSX.utils.book_append_sheet(wb, ws, 'Work Orders')
+  XLSX.utils.book_append_sheet(wb, ws, 'أوامر العمل')
 
   const colWidths = Object.keys(rows[0] || {}).map(key => ({
     wch: Math.max(key.length, ...rows.map(r => String(r[key] ?? '').length)) + 2
@@ -97,19 +97,19 @@ export function exportWorkOrdersToCsv(
 ) {
   const rows = data.map(wo => {
     const row: Record<string, string | number> = {}
-    if (wo.workOrderNumber) row['WO #'] = `WO-${String(wo.workOrderNumber).padStart(4, '0')}`
-    row['Description'] = wo.description
+    if (wo.workOrderNumber) row['رقم الأمر'] = `WO-${String(wo.workOrderNumber).padStart(4, '0')}`
+    row['الوصف'] = wo.description
     if (options.includeClient) {
-      row['Client'] = wo.clientName
-      row['Branch'] = wo.branchName
+      row['العميل'] = wo.clientName
+      row['الفرع'] = wo.branchName
     }
-    row['Status'] = formatStatus(wo.stage)
-    row['Type'] = formatStatus(wo.workOrderType)
+    row['الحالة'] = formatStatus(wo.stage)
+    row['النوع'] = formatStatus(wo.workOrderType)
     if (options.includeDates) {
-      row['Scheduled Date'] = formatDate(wo.scheduledDate)
+      row['تاريخ الجدولة'] = formatDate(wo.scheduledDate)
     }
     if (options.includePricing) {
-      row['Price (SAR)'] = wo.price ?? ''
+      row['السعر (ر.س)'] = wo.price ?? ''
     }
     return row
   })
@@ -128,32 +128,32 @@ export function exportWorkOrdersToPdf(
 
   // Header
   doc.setFontSize(18)
-  doc.text('Work Orders Report', doc.internal.pageSize.getWidth() / 2, 15, { align: 'center' })
+  doc.text('تقرير أوامر العمل', doc.internal.pageSize.getWidth() / 2, 15, { align: 'center' })
 
   doc.setFontSize(10)
   doc.text(
-    `Generated on ${new Date().toLocaleDateString('en-US', { year: 'numeric', month: 'long', day: 'numeric' })}`,
+    `تم الإنشاء في ${new Date().toLocaleDateString('ar-SA', { year: 'numeric', month: 'long', day: 'numeric' })}`,
     doc.internal.pageSize.getWidth() / 2,
     22,
     { align: 'center' }
   )
-  doc.text(`Total: ${data.length} work orders`, doc.internal.pageSize.getWidth() / 2, 28, { align: 'center' })
+  doc.text(`المجموع: ${data.length} أمر عمل`, doc.internal.pageSize.getWidth() / 2, 28, { align: 'center' })
 
   // Prepare table columns
   const columns: Array<{ header: string; dataKey: string }> = []
-  columns.push({ header: 'WO #', dataKey: 'woNumber' })
-  columns.push({ header: 'Description', dataKey: 'description' })
+  columns.push({ header: 'رقم الأمر', dataKey: 'woNumber' })
+  columns.push({ header: 'الوصف', dataKey: 'description' })
   if (options.includeClient) {
-    columns.push({ header: 'Client', dataKey: 'client' })
-    columns.push({ header: 'Branch', dataKey: 'branch' })
+    columns.push({ header: 'العميل', dataKey: 'client' })
+    columns.push({ header: 'الفرع', dataKey: 'branch' })
   }
-  columns.push({ header: 'Status', dataKey: 'status' })
-  columns.push({ header: 'Type', dataKey: 'type' })
+  columns.push({ header: 'الحالة', dataKey: 'status' })
+  columns.push({ header: 'النوع', dataKey: 'type' })
   if (options.includeDates) {
-    columns.push({ header: 'Date', dataKey: 'date' })
+    columns.push({ header: 'التاريخ', dataKey: 'date' })
   }
   if (options.includePricing) {
-    columns.push({ header: 'Price (SAR)', dataKey: 'price' })
+    columns.push({ header: 'السعر (ر.س)', dataKey: 'price' })
   }
 
   // Prepare table rows
@@ -197,7 +197,7 @@ export function exportWorkOrdersToPdf(
     doc.setPage(i)
     doc.setFontSize(8)
     doc.text(
-      'Tasheel Safety Management Platform - www.tasheel.live',
+      'منصة تسهيل لإدارة السلامة - www.tasheel.live',
       doc.internal.pageSize.getWidth() / 2,
       doc.internal.pageSize.getHeight() - 10,
       { align: 'center' }
@@ -213,33 +213,33 @@ export function exportRequestsToExcel(
 ) {
   const rows = data.map(req => {
     const row: Record<string, string | number> = {}
-    if (req.requestNumber) row['REQ #'] = `REQ-${String(req.requestNumber).padStart(4, '0')}`
-    row['Title'] = req.title
+    if (req.requestNumber) row['رقم الطلب'] = `REQ-${String(req.requestNumber).padStart(4, '0')}`
+    row['العنوان'] = req.title
     if (options.includeDetails) {
-      row['Description'] = req.description || ''
-      row['Type'] = req.workOrderType ? formatStatus(req.workOrderType) : ''
-      row['Priority'] = formatStatus(req.priority)
-      row['Assigned To'] = req.assignedTo || ''
+      row['الوصف'] = req.description || ''
+      row['النوع'] = req.workOrderType ? formatStatus(req.workOrderType) : ''
+      row['الأولوية'] = formatStatus(req.priority)
+      row['مُسند إلى'] = req.assignedTo || ''
     }
-    row['Status'] = formatStatus(req.status)
+    row['الحالة'] = formatStatus(req.status)
     if (options.includeDates) {
-      row['Created'] = formatDate(req.createdAt)
-      row['Due Date'] = formatDate(req.dueDate)
-      row['Completed'] = formatDate(req.completedAt)
-      row['Quoted Date'] = formatDate(req.quotedDate)
+      row['تاريخ الإنشاء'] = formatDate(req.createdAt)
+      row['تاريخ الاستحقاق'] = formatDate(req.dueDate)
+      row['تاريخ الإكمال'] = formatDate(req.completedAt)
+      row['تاريخ التسعير'] = formatDate(req.quotedDate)
     }
     if (options.includePricing) {
-      row['Quoted Price (SAR)'] = req.quotedPrice ?? ''
+      row['السعر المسعر (ر.س)'] = req.quotedPrice ?? ''
     }
     if (req.recurringType && req.recurringType !== 'ONCE') {
-      row['Frequency'] = formatStatus(req.recurringType)
+      row['التكرار'] = formatStatus(req.recurringType)
     }
     return row
   })
 
   const ws = XLSX.utils.json_to_sheet(rows)
   const wb = XLSX.utils.book_new()
-  XLSX.utils.book_append_sheet(wb, ws, 'Requests')
+  XLSX.utils.book_append_sheet(wb, ws, 'الطلبات')
 
   const colWidths = Object.keys(rows[0] || {}).map(key => ({
     wch: Math.max(key.length, ...rows.map(r => String(r[key] ?? '').length)) + 2
@@ -257,22 +257,22 @@ export function exportRequestsToCsv(
 ) {
   const rows = data.map(req => {
     const row: Record<string, string | number> = {}
-    if (req.requestNumber) row['REQ #'] = `REQ-${String(req.requestNumber).padStart(4, '0')}`
-    row['Title'] = req.title
+    if (req.requestNumber) row['رقم الطلب'] = `REQ-${String(req.requestNumber).padStart(4, '0')}`
+    row['العنوان'] = req.title
     if (options.includeDetails) {
-      row['Description'] = req.description || ''
-      row['Type'] = req.workOrderType ? formatStatus(req.workOrderType) : ''
-      row['Priority'] = formatStatus(req.priority)
-      row['Assigned To'] = req.assignedTo || ''
+      row['الوصف'] = req.description || ''
+      row['النوع'] = req.workOrderType ? formatStatus(req.workOrderType) : ''
+      row['الأولوية'] = formatStatus(req.priority)
+      row['مُسند إلى'] = req.assignedTo || ''
     }
-    row['Status'] = formatStatus(req.status)
+    row['الحالة'] = formatStatus(req.status)
     if (options.includeDates) {
-      row['Created'] = formatDate(req.createdAt)
-      row['Due Date'] = formatDate(req.dueDate)
-      row['Completed'] = formatDate(req.completedAt)
+      row['تاريخ الإنشاء'] = formatDate(req.createdAt)
+      row['تاريخ الاستحقاق'] = formatDate(req.dueDate)
+      row['تاريخ الإكمال'] = formatDate(req.completedAt)
     }
     if (options.includePricing) {
-      row['Quoted Price (SAR)'] = req.quotedPrice ?? ''
+      row['السعر المسعر (ر.س)'] = req.quotedPrice ?? ''
     }
     return row
   })

@@ -212,7 +212,7 @@ interface InspectionReportData {
 
 export function InspectionReportDocument({ data }: { data: InspectionReportData }) {
   const formatDate = (dateStr: string) => {
-    return new Date(dateStr).toLocaleDateString('en-US', {
+    return new Date(dateStr).toLocaleDateString('ar-SA', {
       year: 'numeric',
       month: 'long',
       day: 'numeric',
@@ -231,41 +231,41 @@ export function InspectionReportDocument({ data }: { data: InspectionReportData 
           <View>
             <Text style={styles.companyName}>{data.contractor.name}</Text>
             {data.contractor.address && <Text>{data.contractor.address}</Text>}
-            {data.contractor.phone && <Text>Tel: {data.contractor.phone}</Text>}
-            {data.contractor.email && <Text>Email: {data.contractor.email}</Text>}
+            {data.contractor.phone && <Text>هاتف: {data.contractor.phone}</Text>}
+            {data.contractor.email && <Text>بريد: {data.contractor.email}</Text>}
           </View>
           <View style={styles.companyInfo}>
-            <Text style={{ fontSize: 9, color: '#6b7280' }}>Report No:</Text>
+            <Text style={{ fontSize: 9, color: '#6b7280' }}>رقم التقرير:</Text>
             <Text style={{ fontWeight: 'bold' }}>{data.reportNumber}</Text>
-            <Text style={{ fontSize: 9, color: '#6b7280', marginTop: 4 }}>Generated:</Text>
+            <Text style={{ fontSize: 9, color: '#6b7280', marginTop: 4 }}>تاريخ الإنشاء:</Text>
             <Text>{formatDate(data.generatedDate)}</Text>
           </View>
         </View>
 
         {/* Title */}
-        <Text style={styles.title}>INSPECTION REPORT</Text>
-        <Text style={styles.subtitle}>{formatWorkOrderType(data.inspection.workOrderType)} Report</Text>
+        <Text style={styles.title}>تقرير التفتيش</Text>
+        <Text style={styles.subtitle}>تقرير {formatWorkOrderType(data.inspection.workOrderType)}</Text>
 
         {/* Client Information */}
         <View style={styles.section}>
-          <Text style={styles.sectionTitle}>CLIENT INFORMATION</Text>
+          <Text style={styles.sectionTitle}>معلومات العميل</Text>
           <View style={styles.grid}>
             <View style={styles.gridItem}>
               <View style={styles.row}>
-                <Text style={styles.label}>Company:</Text>
+                <Text style={styles.label}>الشركة:</Text>
                 <Text style={styles.value}>{data.client.name}</Text>
               </View>
             </View>
             <View style={styles.gridItem}>
               <View style={styles.row}>
-                <Text style={styles.label}>Branch:</Text>
+                <Text style={styles.label}>الفرع:</Text>
                 <Text style={styles.value}>{data.client.branch}</Text>
               </View>
             </View>
             {data.client.address && (
               <View style={{ width: '100%' }}>
                 <View style={styles.row}>
-                  <Text style={styles.label}>Address:</Text>
+                  <Text style={styles.label}>العنوان:</Text>
                   <Text style={styles.value}>{data.client.address}</Text>
                 </View>
               </View>
@@ -275,24 +275,24 @@ export function InspectionReportDocument({ data }: { data: InspectionReportData 
 
         {/* Inspection Details */}
         <View style={styles.section}>
-          <Text style={styles.sectionTitle}>INSPECTION DETAILS</Text>
+          <Text style={styles.sectionTitle}>تفاصيل التفتيش</Text>
           <View style={styles.grid}>
             <View style={styles.gridItem}>
               <View style={styles.row}>
-                <Text style={styles.label}>Work Order Report:</Text>
+                <Text style={styles.label}>أمر العمل:</Text>
                 <Text style={styles.value}>{data.inspection.title}</Text>
               </View>
             </View>
             <View style={styles.gridItem}>
               <View style={styles.row}>
-                <Text style={styles.label}>Inspection Date:</Text>
+                <Text style={styles.label}>تاريخ التفتيش:</Text>
                 <Text style={styles.value}>{formatDate(data.inspection.date)}</Text>
               </View>
             </View>
             {data.inspection.systemsChecked && (
               <View style={{ width: '100%' }}>
                 <View style={styles.row}>
-                  <Text style={styles.label}>Systems Checked:</Text>
+                  <Text style={styles.label}>الأنظمة المفحوصة:</Text>
                   <Text style={styles.value}>{data.inspection.systemsChecked}</Text>
                 </View>
               </View>
@@ -303,7 +303,7 @@ export function InspectionReportDocument({ data }: { data: InspectionReportData 
         {/* Findings */}
         {data.inspection.findings && (
           <View style={styles.section}>
-            <Text style={styles.sectionTitle}>FINDINGS</Text>
+            <Text style={styles.sectionTitle}>النتائج</Text>
             <Text style={styles.textBlock}>{data.inspection.findings}</Text>
           </View>
         )}
@@ -311,7 +311,7 @@ export function InspectionReportDocument({ data }: { data: InspectionReportData 
         {/* Deficiencies */}
         {data.inspection.deficiencies && (
           <View style={styles.section}>
-            <Text style={styles.sectionTitle}>DEFICIENCIES</Text>
+            <Text style={styles.sectionTitle}>النواقص</Text>
             <Text style={styles.deficiencyBlock}>{data.inspection.deficiencies}</Text>
           </View>
         )}
@@ -319,7 +319,7 @@ export function InspectionReportDocument({ data }: { data: InspectionReportData 
         {/* Recommendations */}
         {data.inspection.recommendations && (
           <View style={styles.section}>
-            <Text style={styles.sectionTitle}>RECOMMENDATIONS</Text>
+            <Text style={styles.sectionTitle}>التوصيات</Text>
             <Text style={styles.recommendationBlock}>{data.inspection.recommendations}</Text>
           </View>
         )}
@@ -327,7 +327,7 @@ export function InspectionReportDocument({ data }: { data: InspectionReportData 
         {/* Photos */}
         {data.photos && data.photos.length > 0 && (
           <View style={styles.section}>
-            <Text style={styles.sectionTitle}>PHOTOS</Text>
+            <Text style={styles.sectionTitle}>الصور</Text>
             <View style={styles.photoGrid}>
               {data.photos.slice(0, 6).map((photo, index) => photo?.url ? (
                 <View key={index} style={styles.photoItem}>
@@ -344,26 +344,26 @@ export function InspectionReportDocument({ data }: { data: InspectionReportData 
           <View style={styles.signatureBox}>
             <View style={styles.signatureLine}>
               {data.signatures.technician && (
-                <Text style={styles.signedText}>✓ Signed</Text>
+                <Text style={styles.signedText}>✓ موقّع</Text>
               )}
             </View>
-            <Text style={styles.signatureLabel}>Technician Signature</Text>
+            <Text style={styles.signatureLabel}>توقيع الفني</Text>
             {data.signatures.technicianDate && (
               <Text style={styles.signatureDate}>
-                Signed: {formatDate(data.signatures.technicianDate)}
+                تم التوقيع: {formatDate(data.signatures.technicianDate)}
               </Text>
             )}
           </View>
           <View style={styles.signatureBox}>
             <View style={styles.signatureLine}>
               {data.signatures.supervisor && (
-                <Text style={styles.signedText}>✓ Signed</Text>
+                <Text style={styles.signedText}>✓ موقّع</Text>
               )}
             </View>
-            <Text style={styles.signatureLabel}>Supervisor Signature</Text>
+            <Text style={styles.signatureLabel}>توقيع المشرف</Text>
             {data.signatures.supervisorDate && (
               <Text style={styles.signatureDate}>
-                Signed: {formatDate(data.signatures.supervisorDate)}
+                تم التوقيع: {formatDate(data.signatures.supervisorDate)}
               </Text>
             )}
           </View>
@@ -371,7 +371,7 @@ export function InspectionReportDocument({ data }: { data: InspectionReportData 
 
         {/* Footer */}
         <Text style={styles.footer}>
-          This report was generated by {data.contractor.name} • Report #{data.reportNumber} • {formatDate(data.generatedDate)}
+          تم إنشاء هذا التقرير بواسطة {data.contractor.name} • تقرير #{data.reportNumber} • {formatDate(data.generatedDate)}
         </Text>
       </Page>
     </Document>

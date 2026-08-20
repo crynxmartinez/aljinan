@@ -11,8 +11,8 @@ import "./globals.css";
 
 export const metadata: Metadata = {
   metadataBase: new URL('https://tasheel.sa'),
-  title: "Tasheel - Safety Contractor Management Platform",
-  description: "Complete safety management platform for contractors in Saudi Arabia",
+  title: "تسهيل - منصة إدارة مقاولات السلامة",
+  description: "منصة متكاملة لإدارة السلامة للمقاولين في المملكة العربية السعودية",
   manifest: "/manifest.json",
   appleWebApp: {
     capable: true,
@@ -36,8 +36,11 @@ export default async function RootLayout({
   const locale = await getLocale();
 
   return (
-    <html lang={locale}>
+    <html lang={locale} dir={locale === 'ar' ? 'rtl' : 'ltr'}>
       <head>
+        <link rel="preconnect" href="https://fonts.googleapis.com" />
+        <link rel="preconnect" href="https://fonts.gstatic.com" crossOrigin="anonymous" />
+        <link href="https://fonts.googleapis.com/css2?family=Tajawal:wght@400;500;700;800&display=swap" rel="stylesheet" />
         <OrganizationSchema />
       </head>
       <body className="antialiased">
@@ -46,7 +49,7 @@ export default async function RootLayout({
             <ImpersonationBanner />
             {children}
           </SessionProvider>
-          <Toaster position="top-right" richColors />
+          <Toaster position="top-left" richColors />
           <Analytics />
           <SpeedInsights />
         </TranslationProvider>

@@ -153,7 +153,7 @@ export function ClientBranchInvoices({ branchId }: ClientBranchInvoicesProps) {
                         )}
                       </div>
                     </div>
-                    <div className="text-right">
+                    <div className="text-end">
                       <div className="text-lg font-semibold">{formatCurrency(invoice.total)}</div>
                       {invoice.amountPaid > 0 && (
                         <div className="text-sm text-muted-foreground">
@@ -169,44 +169,44 @@ export function ClientBranchInvoices({ branchId }: ClientBranchInvoicesProps) {
                     <table className="w-full text-sm">
                       <thead>
                         <tr className="text-muted-foreground">
-                          <th className="text-left pb-2">Description</th>
-                          <th className="text-right pb-2 w-20">Qty</th>
-                          <th className="text-right pb-2 w-24">Price</th>
-                          <th className="text-right pb-2 w-24">Total</th>
+                          <th className="text-start pb-2">Description</th>
+                          <th className="text-end pb-2 w-20">Qty</th>
+                          <th className="text-end pb-2 w-24">Price</th>
+                          <th className="text-end pb-2 w-24">Total</th>
                         </tr>
                       </thead>
                       <tbody>
                         {invoice.items.map((item) => (
                           <tr key={item.id} className="border-t border-muted">
                             <td className="py-2">{item.description}</td>
-                            <td className="text-right py-2">{item.quantity}</td>
-                            <td className="text-right py-2">{formatCurrency(item.unitPrice)}</td>
-                            <td className="text-right py-2">{formatCurrency(item.total)}</td>
+                            <td className="text-end py-2">{item.quantity}</td>
+                            <td className="text-end py-2">{formatCurrency(item.unitPrice)}</td>
+                            <td className="text-end py-2">{formatCurrency(item.total)}</td>
                           </tr>
                         ))}
                       </tbody>
                       <tfoot className="border-t">
                         <tr>
-                          <td colSpan={3} className="text-right py-2">Subtotal</td>
-                          <td className="text-right py-2">{formatCurrency(invoice.subtotal)}</td>
+                          <td colSpan={3} className="text-end py-2">Subtotal</td>
+                          <td className="text-end py-2">{formatCurrency(invoice.subtotal)}</td>
                         </tr>
                         <tr>
-                          <td colSpan={3} className="text-right py-1">Tax ({invoice.taxRate}%)</td>
-                          <td className="text-right py-1">{formatCurrency(invoice.taxAmount)}</td>
+                          <td colSpan={3} className="text-end py-1">Tax ({invoice.taxRate}%)</td>
+                          <td className="text-end py-1">{formatCurrency(invoice.taxAmount)}</td>
                         </tr>
                         <tr className="font-semibold">
-                          <td colSpan={3} className="text-right py-2">Total</td>
-                          <td className="text-right py-2">{formatCurrency(invoice.total)}</td>
+                          <td colSpan={3} className="text-end py-2">Total</td>
+                          <td className="text-end py-2">{formatCurrency(invoice.total)}</td>
                         </tr>
                         {invoice.amountPaid > 0 && (
                           <>
                             <tr className="text-green-600">
-                              <td colSpan={3} className="text-right py-1">Amount Paid</td>
-                              <td className="text-right py-1">-{formatCurrency(invoice.amountPaid)}</td>
+                              <td colSpan={3} className="text-end py-1">Amount Paid</td>
+                              <td className="text-end py-1">-{formatCurrency(invoice.amountPaid)}</td>
                             </tr>
                             <tr className="font-semibold text-amber-600">
-                              <td colSpan={3} className="text-right py-2">Balance Due</td>
-                              <td className="text-right py-2">{formatCurrency(invoice.total - invoice.amountPaid)}</td>
+                              <td colSpan={3} className="text-end py-2">Balance Due</td>
+                              <td className="text-end py-2">{formatCurrency(invoice.total - invoice.amountPaid)}</td>
                             </tr>
                           </>
                         )}
@@ -256,7 +256,7 @@ export function ClientBranchInvoices({ branchId }: ClientBranchInvoicesProps) {
                       Paid on {invoice.paidAt ? new Date(invoice.paidAt).toLocaleDateString() : 'N/A'}
                     </p>
                   </div>
-                  <div className="text-right">
+                  <div className="text-end">
                     <div className="font-semibold">{formatCurrency(invoice.total)}</div>
                   </div>
                 </div>

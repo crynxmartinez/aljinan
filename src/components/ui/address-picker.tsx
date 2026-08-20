@@ -8,6 +8,7 @@ import { Card } from '@/components/ui/card'
 import { MapPin, Search, Loader2, X } from 'lucide-react'
 import dynamic from 'next/dynamic'
 import { APIProvider } from '@vis.gl/react-google-maps'
+import { useTranslation } from '@/lib/i18n/use-translation'
 
 const MapComponent = dynamic(() => import('./google-map-component'), {
   ssr: false,
@@ -55,6 +56,8 @@ interface NominatimResult {
 }
 
 export function AddressPicker({ value, onChange, showManualFields = true }: AddressPickerProps) {
+  const { t } = useTranslation()
+  const tap = t.uiComponents.addressPicker
   const [searchQuery, setSearchQuery] = useState('')
   const [suggestions, setSuggestions] = useState<NominatimResult[]>([])
   const [isSearching, setIsSearching] = useState(false)
@@ -178,9 +181,7 @@ export function AddressPicker({ value, onChange, showManualFields = true }: Addr
     })
 
     setManualMode(true)
-    setLookupNotice(
-      'We could not confirm the exact location for that address. Please check the fields below and adjust them if needed.'
-    )
+    setLookupNotice(tap.lookupNotice)
   }
 
   const selectAddress = (result: NominatimResult) => {
@@ -332,10 +333,10 @@ export function AddressPicker({ value, onChange, showManualFields = true }: Addr
       <div className="space-y-4">
         <div className="p-4 bg-destructive/10 border border-destructive rounded-lg">
           <p className="text-sm text-destructive font-medium">
-            Google Maps API key is not configured.
+            {tap.apiKeyMissing}
           </p>
           <p className="text-xs text-muted-foreground mt-1">
-            Please add NEXT_PUBLIC_GOOGLE_MAPS_API_KEY to your environment variables.
+            {tap.apiKeyHint}
           </p>
         </div>
       </div>
@@ -347,16 +348,16 @@ export function AddressPicker({ value, onChange, showManualFields = true }: Addr
       <div className="space-y-4">
         {/* Search Box */}
         <div ref={containerRef} className="relative">
-          <Label>Search Address</Label>
+          <Label>{tap.searchAddress}</Label>
           <div className="relative mt-1.5">
-            <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+            <Search className="absolute start-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
             <Input
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
-              placeholder="Type to search for an address..."
-              className="pl-9 pr-16"
+              placeholder={tap.searchPlaceholder}
+              className="ps-9 pe-16"
             />
-            <div className="absolute right-2 top-1/2 -translate-y-1/2 flex items-center gap-1">
+            <div className="absolute end-2 top-1/2 -translate-y-1/2 flex items-center gap-1">
               {isSearching && <Loader2 className="h-4 w-4 animate-spin text-muted-foreground" />}
               {searchQuery && (
                 <Button
@@ -379,7 +380,7 @@ export function AddressPicker({ value, onChange, showManualFields = true }: Addr
                 <button
                   key={result.place_id}
                   type="button"
-                  className="w-full px-3 py-2 text-left text-sm hover:bg-muted flex items-start gap-2 border-b last:border-0"
+                  className="w-full px-3 py-2 text-start text-sm hover:bg-muted flex items-start gap-2 border-b last:border-0"
                   onClick={() => selectAddress(result)}
                 >
                   <MapPin className="h-4 w-4 mt-0.5 flex-shrink-0 text-muted-foreground" />
@@ -398,7 +399,7 @@ export function AddressPicker({ value, onChange, showManualFields = true }: Addr
           {showSuggestions && searchQuery.length >= 3 && suggestions.length === 0 && !isSearching && (
             <Card className="absolute z-50 w-full mt-1 p-3">
               <p className="text-sm text-muted-foreground text-center">
-                No results found. Try a different search or enter manually.
+                {tap.noResults}
               </p>
             </Card>
           )}
@@ -414,7 +415,7 @@ export function AddressPicker({ value, onChange, showManualFields = true }: Addr
         </div>
 
         <p className="text-xs text-muted-foreground">
-          Click on the map to select a location, or search for an address above.
+          {tap.clickMapHint}
         </p>
 
         {/* Manual Entry Toggle */}
@@ -426,45 +427,45 @@ export function AddressPicker({ value, onChange, showManualFields = true }: Addr
               size="sm"
               onClick={() => setManualMode(!manualMode)}
             >
-              {manualMode ? 'Hide' : 'Show'} Manual Entry
+              {manualMode ? tap.hideManual : tap.showManual}
             </Button>
 
             {manualMode && (
               <div className="space-y-4 p-4 border rounded-lg bg-muted/30">
                 <div className="space-y-2">
-                  <Label htmlFor="manual-address">Street Address</Label>
+                  <Label htmlFor="manual-address">{tap.streetAddress}</Label>
                   <Input
                     id="manual-address"
                     value={value.address}
                     onChange={(e) => handleManualChange('address', e.target.value)}
-                    placeholder="123 Main Street"
+                    placeholder={tap.streetPlaceholder}
                   />
                 </div>
 
                 <div className="grid grid-cols-2 gap-4">
                   <div className="space-y-2">
-                    <Label htmlFor="manual-city">City</Label>
+                    <Label htmlFor="manual-city">{tap.city}</Label>
                     <Input
                       id="manual-city"
                       value={value.city}
                       onChange={(e) => handleManualChange('city', e.target.value)}
-                      placeholder="City"
+                      placeholder={tap.city}
                     />
                   </div>
                   <div className="space-y-2">
-                    <Label htmlFor="manual-state">State/Province</Label>
+                    <Label htmlFor="manual-state">{tap.stateProvince}</Label>
                     <Input
                       id="manual-state"
                       value={value.state}
                       onChange={(e) => handleManualChange('state', e.target.value)}
-                      placeholder="State"
+                      placeholder={tap.stateProvince}
                     />
                   </div>
                 </div>
 
                 <div className="grid grid-cols-2 gap-4">
                   <div className="space-y-2">
-                    <Label htmlFor="manual-zip">ZIP/Postal Code</Label>
+                    <Label htmlFor="manual-zip">{tap.zipCode}</Label>
                     <Input
                       id="manual-zip"
                       value={value.zipCode}
@@ -473,12 +474,12 @@ export function AddressPicker({ value, onChange, showManualFields = true }: Addr
                     />
                   </div>
                   <div className="space-y-2">
-                    <Label htmlFor="manual-country">Country</Label>
+                    <Label htmlFor="manual-country">{tap.country}</Label>
                     <Input
                       id="manual-country"
                       value={value.country}
                       onChange={(e) => handleManualChange('country', e.target.value)}
-                      placeholder="Country"
+                      placeholder={tap.country}
                     />
                   </div>
                 </div>
@@ -492,7 +493,7 @@ export function AddressPicker({ value, onChange, showManualFields = true }: Addr
           <div className="p-3 bg-primary/5 border border-primary/20 rounded-lg">
             <p className="text-sm font-medium flex items-center gap-2">
               <MapPin className="h-4 w-4 text-primary" />
-              Selected Address
+              {tap.selectedAddress}
             </p>
             <p className="text-sm text-muted-foreground mt-1">
               {[value.address, value.city, value.state, value.zipCode, value.country]
@@ -501,7 +502,7 @@ export function AddressPicker({ value, onChange, showManualFields = true }: Addr
             </p>
             {value.latitude && value.longitude && (
               <p className="text-xs text-muted-foreground mt-1">
-                Coordinates: {value.latitude.toFixed(6)}, {value.longitude.toFixed(6)}
+                {tap.coordinates} {value.latitude.toFixed(6)}, {value.longitude.toFixed(6)}
               </p>
             )}
           </div>

@@ -85,12 +85,12 @@ export function TeamMemberProfileForm({ teamMember }: TeamMemberProfileFormProps
           <Badge variant={teamMember.teamRole === 'SUPERVISOR' ? 'default' : 'secondary'}>
             {teamMember.teamRole === 'SUPERVISOR' ? (
               <>
-                <Shield className="h-3 w-3 mr-1" />
+                <Shield className="h-3 w-3 me-1" />
                 Supervisor
               </>
             ) : (
               <>
-                <Wrench className="h-3 w-3 mr-1" />
+                <Wrench className="h-3 w-3 me-1" />
                 Technician
               </>
             )}
@@ -105,7 +105,7 @@ export function TeamMemberProfileForm({ teamMember }: TeamMemberProfileFormProps
           {/* Full Name */}
           <div className="space-y-2">
             <Label htmlFor="name">
-              <User className="h-4 w-4 inline mr-1" />
+              <User className="h-4 w-4 inline me-1" />
               Full Name
             </Label>
             <Input
@@ -120,7 +120,7 @@ export function TeamMemberProfileForm({ teamMember }: TeamMemberProfileFormProps
           {/* Email */}
           <div className="space-y-2">
             <Label htmlFor="email">
-              <Mail className="h-4 w-4 inline mr-1" />
+              <Mail className="h-4 w-4 inline me-1" />
               Email
             </Label>
             <Input
@@ -139,7 +139,7 @@ export function TeamMemberProfileForm({ teamMember }: TeamMemberProfileFormProps
           {/* Phone */}
           <div className="space-y-2">
             <Label htmlFor="phone">
-              <Phone className="h-4 w-4 inline mr-1" />
+              <Phone className="h-4 w-4 inline me-1" />
               Phone Number
             </Label>
             <Input
@@ -154,7 +154,7 @@ export function TeamMemberProfileForm({ teamMember }: TeamMemberProfileFormProps
           {/* Job Title */}
           <div className="space-y-2">
             <Label htmlFor="jobTitle">
-              <Briefcase className="h-4 w-4 inline mr-1" />
+              <Briefcase className="h-4 w-4 inline me-1" />
               Job Title
             </Label>
             <Input
@@ -168,7 +168,7 @@ export function TeamMemberProfileForm({ teamMember }: TeamMemberProfileFormProps
           {/* Address */}
           <div className="space-y-2">
             <Label htmlFor="address">
-              <MapPin className="h-4 w-4 inline mr-1" />
+              <MapPin className="h-4 w-4 inline me-1" />
               Address
             </Label>
             <Textarea

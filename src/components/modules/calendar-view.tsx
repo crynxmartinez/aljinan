@@ -21,6 +21,7 @@ import {
 } from 'lucide-react'
 import { cn } from '@/lib/utils'
 import { useTranslation } from '@/lib/i18n/use-translation'
+import { formatMonthYear, formatWeekdayLong, formatDate, getWeekdayNames } from '@/lib/i18n/format-date'
 
 type ChecklistItemStage = 'SCHEDULED' | 'IN_PROGRESS' | 'FOR_REVIEW' | 'COMPLETED'
 type ChecklistItemType = 'SCHEDULED' | 'ADHOC'
@@ -56,7 +57,7 @@ function formatCurrency(amount: number) {
 }
 
 export function CalendarView({ branchId }: CalendarViewProps) {
-  const { t } = useTranslation()
+  const { t, locale } = useTranslation()
   const tc = t.dashboard.calendarView
   const STAGE_LABELS: Record<ChecklistItemStage, string> = {
     SCHEDULED: tc.stageScheduled,
@@ -139,8 +140,8 @@ export function CalendarView({ branchId }: CalendarViewProps) {
   }
 
   const { daysInMonth, startingDayOfWeek, year, month } = getDaysInMonth(currentDate)
-  const monthName = currentDate.toLocaleDateString('en-US', { month: 'long', year: 'numeric' })
-  const weekDays = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat']
+  const monthName = formatMonthYear(currentDate, locale)
+  const weekDays = getWeekdayNames(locale)
 
   // Get tasks for selected date or today
   const displayDate = selectedDate || new Date()
@@ -167,7 +168,7 @@ export function CalendarView({ branchId }: CalendarViewProps) {
   }
 
   if (loadFailed) {
-    return <LoadFailure onRetry={fetchTasks} message="The schedule could not be loaded." />
+    return <LoadFailure onRetry={fetchTasks} message={tc.theScheduleCouldNotBeLoaded} />
   }
 
   return (
@@ -186,7 +187,7 @@ export function CalendarView({ branchId }: CalendarViewProps) {
                   <ChevronLeft className="h-4 w-4" />
                 </Button>
                 <Button variant="outline" size="sm" onClick={() => setCurrentDate(new Date())}>
-                  Today
+                  {tc.today}
                 </Button>
                 <Button variant="outline" size="icon" onClick={() => navigateMonth('next')}>
                   <ChevronRight className="h-4 w-4" />
@@ -280,14 +281,14 @@ export function CalendarView({ branchId }: CalendarViewProps) {
           <CardHeader>
             <CardTitle className="text-lg">
               {selectedDate
-                ? selectedDate.toLocaleDateString('en-US', { weekday: 'long', month: 'long', day: 'numeric' })
-                : 'Upcoming Tasks'
+                ? formatWeekdayLong(selectedDate, locale)
+                : tc.upcomingTasks
               }
             </CardTitle>
             <CardDescription>
               {selectedDate
-                ? `${tasksForSelectedDate.length} task${tasksForSelectedDate.length !== 1 ? 's' : ''} scheduled`
-                : `Next ${upcomingTasks.length} scheduled tasks`
+                ? tc.tasksScheduled.replace('{count}', String(tasksForSelectedDate.length))
+                : tc.nextScheduledTasks.replace('{count}', String(upcomingTasks.length))
               }
             </CardDescription>
           </CardHeader>
@@ -312,11 +313,7 @@ export function CalendarView({ branchId }: CalendarViewProps) {
                           <p className="font-medium text-sm line-clamp-2">{task.description}</p>
                           {!selectedDate && (
                             <p className="text-xs text-muted-foreground mt-1">
-                              {new Date(task.scheduledDate).toLocaleDateString('en-US', {
-                                weekday: 'short',
-                                month: 'short',
-                                day: 'numeric'
-                              })}
+                              {formatDate(task.scheduledDate, locale, { weekday: 'short', month: 'short', day: 'numeric' })}
                             </p>
                           )}
                           <div className="flex items-center gap-2 mt-2">
@@ -385,7 +382,7 @@ export function CalendarView({ branchId }: CalendarViewProps) {
                   <h4 className="text-sm font-medium text-muted-foreground mb-1">{tc.scheduledDate}</h4>
                   <p className="text-sm flex items-center gap-2">
                     <Calendar className="h-4 w-4" />
-                    {new Date(selectedTask.scheduledDate).toLocaleDateString('en-US', {
+                    {formatDate(selectedTask.scheduledDate, locale, {
                       weekday: 'long',
                       year: 'numeric',
                       month: 'long',

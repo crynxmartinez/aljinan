@@ -52,21 +52,21 @@ export function BulkToolbar({
         <div className="flex items-center gap-2">
           {onAssign && (
             <Button variant="outline" size="sm" onClick={onAssign}>
-              <UserPlus className="h-4 w-4 mr-2" />
+              <UserPlus className="h-4 w-4 me-2" />
               {ta.assign}
             </Button>
           )}
 
           {onChangeStatus && (
             <Button variant="outline" size="sm" onClick={onChangeStatus}>
-              <Edit className="h-4 w-4 mr-2" />
+              <Edit className="h-4 w-4 me-2" />
               {ta.changeStatus}
             </Button>
           )}
 
           {onDelete && (
             <Button variant="outline" size="sm" onClick={onDelete}>
-              <Trash2 className="h-4 w-4 mr-2" />
+              <Trash2 className="h-4 w-4 me-2" />
               {ta.delete}
             </Button>
           )}
@@ -82,7 +82,7 @@ export function BulkToolbar({
               <DropdownMenuSeparator />
               {onEdit && (
                 <DropdownMenuItem onClick={onEdit}>
-                  <Edit className="h-4 w-4 mr-2" />
+                  <Edit className="h-4 w-4 me-2" />
                   {ta.bulkEdit}
                 </DropdownMenuItem>
               )}

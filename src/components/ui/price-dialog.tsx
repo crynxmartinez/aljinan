@@ -6,6 +6,7 @@ import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
 import { Banknote } from 'lucide-react'
+import { useTranslation } from '@/lib/i18n/use-translation'
 
 interface PriceDialogProps {
   open: boolean
@@ -15,6 +16,8 @@ interface PriceDialogProps {
 }
 
 export function PriceDialog({ open, onOpenChange, onConfirm, currentPrice }: PriceDialogProps) {
+  const { t } = useTranslation()
+  const tu = t.uiComponents
   const [price, setPrice] = useState('')
   const [error, setError] = useState('')
 
@@ -30,12 +33,12 @@ export function PriceDialog({ open, onOpenChange, onConfirm, currentPrice }: Pri
     const numPrice = parseFloat(price)
 
     if (!price || price.trim() === '') {
-      setError('Please enter a price')
+      setError(tu.priceDialog.enterPrice)
       return
     }
 
     if (isNaN(numPrice) || numPrice <= 0) {
-      setError('Please enter a valid price greater than 0')
+      setError(tu.priceDialog.invalidPrice)
       return
     }
 
@@ -57,18 +60,18 @@ export function PriceDialog({ open, onOpenChange, onConfirm, currentPrice }: Pri
         <DialogHeader>
           <DialogTitle className="flex items-center gap-2">
             <Banknote className="h-5 w-5 text-green-600" />
-            Set Work Order Price
+            {tu.priceDialog.title}
           </DialogTitle>
           <DialogDescription>
-            Enter the price for this work order in SAR (Saudi Riyal)
+            {tu.priceDialog.description}
           </DialogDescription>
         </DialogHeader>
 
         <div className="grid gap-4 py-4">
           <div className="grid gap-2">
-            <Label htmlFor="price">Price (SAR)</Label>
+            <Label htmlFor="price">{tu.priceDialog.priceLabel}</Label>
             <div className="relative">
-              <span className="absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground">
+              <span className="absolute start-3 top-1/2 -translate-y-1/2 text-muted-foreground">
                 SAR
               </span>
               <Input
@@ -85,7 +88,7 @@ export function PriceDialog({ open, onOpenChange, onConfirm, currentPrice }: Pri
                     handleConfirm()
                   }
                 }}
-                className="pl-14"
+                className="ps-14"
                 min="0"
                 step="0.01"
                 autoFocus
@@ -99,10 +102,10 @@ export function PriceDialog({ open, onOpenChange, onConfirm, currentPrice }: Pri
 
         <DialogFooter>
           <Button variant="outline" onClick={handleCancel}>
-            Cancel
+            {tu.cancel}
           </Button>
           <Button onClick={handleConfirm} className="bg-green-600 hover:bg-green-700">
-            Set Price
+            {tu.priceDialog.setPrice}
           </Button>
         </DialogFooter>
       </DialogContent>

@@ -55,7 +55,7 @@ export function ImpersonationBanner({ targetUserName, targetUserEmail, realAdmin
         disabled={exiting}
         className="flex-shrink-0"
       >
-        <LogOut className="h-4 w-4 mr-2" />
+        <LogOut className="h-4 w-4 me-2" />
         {exiting ? ta.exiting : ta.exitImpersonation}
       </Button>
     </div>

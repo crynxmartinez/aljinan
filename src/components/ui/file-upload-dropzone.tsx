@@ -5,6 +5,7 @@ import { Upload, Loader2, X, CheckCircle, Eye } from 'lucide-react'
 import { cn } from '@/lib/utils'
 import { ImageLightbox } from './image-lightbox'
 import { PDFViewer } from './pdf-viewer'
+import { useTranslation } from '@/lib/i18n/use-translation'
 
 interface FileUploadDropzoneProps {
   onFilesSelected: (files: File[]) => void
@@ -31,9 +32,11 @@ export function FileUploadDropzone({
   uploadedFiles = [],
   onRemoveFile,
   maxFiles,
-  label = 'Upload files (PDF, DOC, images)',
+  label,
   showPreview = true,
 }: FileUploadDropzoneProps) {
+  const { t } = useTranslation()
+  const tu = t.uiComponents.fileUpload
   const [isDragging, setIsDragging] = useState(false)
   const inputRef = useRef<HTMLInputElement>(null)
   const [lightboxOpen, setLightboxOpen] = useState(false)
@@ -92,7 +95,7 @@ export function FileUploadDropzone({
 
       // Check max files limit
       if (maxFiles && uploadedFiles.length + filesToUpload.length > maxFiles) {
-        alert(`Maximum ${maxFiles} files allowed`)
+        alert(tu.maxFilesAllowed.replace('{count}', String(maxFiles)))
         return
       }
 
@@ -108,7 +111,7 @@ export function FileUploadDropzone({
 
     // Check max files limit
     if (maxFiles && uploadedFiles.length + fileArray.length > maxFiles) {
-      alert(`Maximum ${maxFiles} files allowed`)
+      alert(tu.maxFilesAllowed.replace('{count}', String(maxFiles)))
       return
     }
 
@@ -155,25 +158,25 @@ export function FileUploadDropzone({
           {uploading ? (
             <>
               <Loader2 className="h-8 w-8 animate-spin text-muted-foreground mb-2" />
-              <span className="text-sm text-muted-foreground">Uploading...</span>
+              <span className="text-sm text-muted-foreground">{tu.uploading}</span>
             </>
           ) : uploadedFiles.length > 0 && !multiple ? (
             <>
               <CheckCircle className="h-8 w-8 text-green-600 mb-2" />
-              <span className="text-sm text-green-700 font-medium">File uploaded</span>
+              <span className="text-sm text-green-700 font-medium">{tu.fileUploaded}</span>
             </>
           ) : (
             <>
               <Upload className="h-8 w-8 text-muted-foreground mb-2" />
-              <span className="text-sm text-muted-foreground font-medium">{label}</span>
+              <span className="text-sm text-muted-foreground font-medium">{label || tu.defaultLabel}</span>
               <span className="text-xs text-muted-foreground mt-1">
                 {accept === 'image/*'
-                  ? 'Images only'
+                  ? tu.imagesOnly
                   : accept.includes('.doc')
-                    ? 'PDF, DOC, JPG, PNG & more'
+                    ? tu.pdfDocImages
                     : accept.includes('.pdf')
-                      ? 'PDF, JPG, PNG'
-                      : 'All files'}
+                      ? tu.pdfJpgPng
+                      : tu.allFiles}
                 {maxFiles && ` (max ${maxFiles})`}
               </span>
             </>
@@ -233,7 +236,7 @@ export function FileUploadDropzone({
                       e.stopPropagation()
                       onRemoveFile(file.url)
                     }}
-                    className="absolute -top-2 -right-2 bg-destructive text-destructive-foreground rounded-full p-1 opacity-0 group-hover:opacity-100 transition-opacity z-10"
+                    className="absolute -top-2 -end-2 bg-destructive text-destructive-foreground rounded-full p-1 opacity-0 group-hover:opacity-100 transition-opacity z-10"
                   >
                     <X className="h-3 w-3" />
                   </button>

@@ -13,6 +13,8 @@ import { Button } from '@/components/ui/button'
 import { Badge } from '@/components/ui/badge'
 import { CalendarClock, Calendar, ArrowRight, AlertCircle } from 'lucide-react'
 import { ScrollArea } from '@/components/ui/scroll-area'
+import { useTranslation } from '@/lib/i18n/use-translation'
+import { formatDate, formatDateTime } from '@/lib/i18n/format-date'
 
 interface RescheduledWorkOrder {
   id: string
@@ -39,6 +41,8 @@ export function RescheduleNotificationModal({
   onAcknowledge,
 }: RescheduleNotificationModalProps) {
   const [acknowledging, setAcknowledging] = useState(false)
+  const { t, locale } = useTranslation()
+  const tr = t.dashboard.rescheduleModal
 
   const handleAcknowledge = async () => {
     setAcknowledging(true)
@@ -58,14 +62,14 @@ export function RescheduleNotificationModal({
         <DialogHeader>
           <DialogTitle className="flex items-center gap-2 text-orange-600">
             <AlertCircle className="h-5 w-5" />
-            Work Orders Rescheduled
+            {tr.title}
           </DialogTitle>
           <DialogDescription>
-            The following work orders have been rescheduled by your contractor.
+            {tr.description}
           </DialogDescription>
         </DialogHeader>
 
-        <ScrollArea className="max-h-[400px] pr-4">
+        <ScrollArea className="max-h-[400px] pe-4">
           <div className="space-y-4 py-4">
             {rescheduledWorkOrders.map((wo) => (
               <div
@@ -78,15 +82,15 @@ export function RescheduleNotificationModal({
                     <p className="text-xs text-muted-foreground">{wo.branchName}</p>
                   </div>
                   <Badge variant="outline" className="text-xs border-orange-300 text-orange-700">
-                    <CalendarClock className="h-3 w-3 mr-1" />
-                    Rescheduled
+                    <CalendarClock className="h-3 w-3 me-1" />
+                    {tr.rescheduled}
                   </Badge>
                 </div>
 
                 <div className="flex items-center gap-2 mt-3 text-sm">
                   <div className="flex items-center gap-1 text-muted-foreground line-through">
                     <Calendar className="h-3 w-3" />
-                    {new Date(wo.previousScheduledDate).toLocaleDateString('en-US', {
+                    {formatDate(wo.previousScheduledDate, locale, {
                       month: 'short',
                       day: 'numeric',
                       year: 'numeric'
@@ -95,7 +99,7 @@ export function RescheduleNotificationModal({
                   <ArrowRight className="h-4 w-4 text-orange-500" />
                   <div className="flex items-center gap-1 font-medium text-orange-700">
                     <Calendar className="h-3 w-3" />
-                    {new Date(wo.scheduledDate).toLocaleDateString('en-US', {
+                    {formatDate(wo.scheduledDate, locale, {
                       weekday: 'short',
                       month: 'short',
                       day: 'numeric',
@@ -106,13 +110,13 @@ export function RescheduleNotificationModal({
 
                 {wo.rescheduledReason && (
                   <div className="mt-3 p-2 bg-white rounded border border-orange-100">
-                    <p className="text-xs text-muted-foreground mb-1">Reason:</p>
+                    <p className="text-xs text-muted-foreground mb-1">{tr.reason}</p>
                     <p className="text-sm">{wo.rescheduledReason}</p>
                   </div>
                 )}
 
                 <p className="text-xs text-muted-foreground mt-2">
-                  Changed on {new Date(wo.rescheduledAt).toLocaleDateString('en-US', {
+                  {tr.changedOn} {formatDateTime(wo.rescheduledAt, locale, {
                     month: 'short',
                     day: 'numeric',
                     year: 'numeric',
@@ -131,7 +135,7 @@ export function RescheduleNotificationModal({
             disabled={acknowledging}
             className="w-full bg-orange-600 hover:bg-orange-700"
           >
-            {acknowledging ? 'Acknowledging...' : 'Acknowledge'}
+            {acknowledging ? tr.acknowledging : tr.acknowledge}
           </Button>
         </DialogFooter>
       </DialogContent>

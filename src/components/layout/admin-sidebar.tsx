@@ -117,7 +117,7 @@ export function AdminSidebar({ adminRole }: AdminSidebarProps) {
   }
 
   return (
-    <div className="flex h-screen w-64 flex-col border-r bg-sidebar text-sidebar-foreground">
+    <div className="flex h-screen w-64 flex-col border-e bg-sidebar text-sidebar-foreground">
       {/* Logo */}
       <div className="flex h-16 items-center border-b px-6">
         <Link href="/admin" className="flex items-center gap-2">
@@ -126,7 +126,7 @@ export function AdminSidebar({ adminRole }: AdminSidebarProps) {
           </div>
           <div>
             <span className="text-xl font-bold">Tasheel</span>
-            <span className="text-xs text-red-500 ml-1 font-medium">Admin</span>
+            <span className="text-xs text-red-500 ms-1 font-medium">Admin</span>
           </div>
         </Link>
       </div>

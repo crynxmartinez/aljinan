@@ -134,12 +134,12 @@ export function ExpiringEquipmentWidget({ contractorId }: ExpiringEquipmentWidge
                   </Badge>
                   {eq.calculatedStatus === 'EXPIRED' ? (
                     <Badge variant="destructive" className="text-xs">
-                      <XCircle className="h-3 w-3 mr-1" />
+                      <XCircle className="h-3 w-3 me-1" />
                       {ta.expired}
                     </Badge>
                   ) : (
                     <Badge className="bg-amber-100 text-amber-700 text-xs">
-                      <Clock className="h-3 w-3 mr-1" />
+                      <Clock className="h-3 w-3 me-1" />
                       {ta.expiringSoon}
                     </Badge>
                   )}

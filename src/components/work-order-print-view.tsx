@@ -126,7 +126,7 @@ export function WorkOrderPrintView({ data, companyName = 'Tasheel', companyLogo 
               <h1 className="text-2xl font-bold text-gray-900">{companyName}</h1>
             )}
           </div>
-          <div className="text-right">
+          <div className="text-end">
             <h2 className="text-xl font-semibold text-gray-800">
               {getWorkOrderTypeLabel(data.workOrderType)}
             </h2>

@@ -16,7 +16,7 @@ const LOCALE_COOKIE = 'tasheel_locale'
 
 export function TranslationProvider({
   children,
-  initialLocale = 'en',
+  initialLocale = 'ar',
 }: {
   children: ReactNode
   /**
@@ -37,6 +37,7 @@ export function TranslationProvider({
       path: '/',
     })
     document.documentElement.lang = newLocale
+    document.documentElement.dir = newLocale === 'ar' ? 'rtl' : 'ltr'
   }
 
   const value = {

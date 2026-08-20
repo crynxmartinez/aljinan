@@ -1069,7 +1069,7 @@ export function ContractsList({ branchId }: ContractsListProps) {
                           : "bg-gray-50 text-gray-500 border-gray-200"
                         }
                       >
-                        <FileText className="h-3 w-3 mr-1" />
+                        <FileText className="h-3 w-3 me-1" />
                         PDF {contract.fileUrl ? '✓' : '—'}
                       </Badge>
                       <Badge
@@ -1079,7 +1079,7 @@ export function ContractsList({ branchId }: ContractsListProps) {
                           : "bg-gray-50 text-gray-500 border-gray-200"
                         }
                       >
-                        <Award className="h-3 w-3 mr-1" />
+                        <Award className="h-3 w-3 me-1" />
                         Cert {contract.certificateUrl ? '✓' : '—'}
                       </Badge>
                       <Badge
@@ -1089,7 +1089,7 @@ export function ContractsList({ branchId }: ContractsListProps) {
                           : "bg-gray-50 text-gray-500 border-gray-200"
                         }
                       >
-                        <PenTool className="h-3 w-3 mr-1" />
+                        <PenTool className="h-3 w-3 me-1" />
                         Signed {contract.startSignedAt ? '✓' : '—'}
                       </Badge>
 
@@ -1141,14 +1141,14 @@ export function ContractsList({ branchId }: ContractsListProps) {
                     <Badge className="bg-blue-100 text-blue-700">Ad-hoc</Badge>
                     <Badge variant="secondary">{standaloneWorkOrders.length}</Badge>
                   </div>
-                  <div className="text-right">
+                  <div className="text-end">
                     <p className="font-semibold text-blue-700">
                       SAR {standaloneWorkOrders.reduce((sum, wo) => sum + (wo.price || 0), 0).toLocaleString('en-US', { minimumFractionDigits: 2 })}
                     </p>
                     <p className="text-xs text-blue-600">Total Value</p>
                   </div>
                 </div>
-                <CardDescription className="text-blue-600 text-left mt-2">
+                <CardDescription className="text-blue-600 text-start mt-2">
                   Work orders from client service requests. No contract signature required.
                 </CardDescription>
               </CardHeader>
@@ -1211,14 +1211,14 @@ export function ContractsList({ branchId }: ContractsListProps) {
                     <Badge className="bg-amber-100 text-amber-700">Equipment</Badge>
                     <Badge variant="secondary">{stickerInspections.length}</Badge>
                   </div>
-                  <div className="text-right">
+                  <div className="text-end">
                     <p className="font-semibold text-amber-700">
                       SAR {stickerInspections.reduce((sum, wo) => sum + (wo.price || 0), 0).toLocaleString('en-US', { minimumFractionDigits: 2 })}
                     </p>
                     <p className="text-xs text-amber-600">Total Value</p>
                   </div>
                 </div>
-                <CardDescription className="text-amber-600 text-left mt-2">
+                <CardDescription className="text-amber-600 text-start mt-2">
                   Equipment sticker inspections. No contract signature required.
                 </CardDescription>
               </CardHeader>
@@ -1332,7 +1332,7 @@ export function ContractsList({ branchId }: ContractsListProps) {
                 <div className="flex items-center justify-between">
                   <h3 className="text-sm font-semibold uppercase tracking-wide">Scope of Work</h3>
                   <Button type="button" variant="outline" size="sm" onClick={addSystem}>
-                    <Plus className="h-4 w-4 mr-1" />
+                    <Plus className="h-4 w-4 me-1" />
                     Add System
                   </Button>
                 </div>
@@ -1618,7 +1618,7 @@ export function ContractsList({ branchId }: ContractsListProps) {
                   <div className="flex items-center justify-between">
                     <h3 className="text-sm font-semibold uppercase tracking-wide">Scope of Work</h3>
                     <Button type="button" variant="outline" size="sm" onClick={addEditSystem}>
-                      <Plus className="h-4 w-4 mr-1" />
+                      <Plus className="h-4 w-4 me-1" />
                       Add System
                     </Button>
                   </div>
@@ -1931,7 +1931,7 @@ export function ContractsList({ branchId }: ContractsListProps) {
                         openEditDialog(selectedContract)
                       }}
                     >
-                      <Edit className="h-3 w-3 mr-1" />
+                      <Edit className="h-3 w-3 me-1" />
                       Edit
                     </Button>
                   </div>

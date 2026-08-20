@@ -74,7 +74,7 @@ function groupWorkOrders(workOrders: BillingWorkOrder[]): Map<string, BillingWor
 
 function formatDate(dateString: string | null, notScheduledLabel: string) {
   if (!dateString) return notScheduledLabel
-  return new Date(dateString).toLocaleDateString('en-US', {
+  return new Date(dateString).toLocaleDateString('ar-SA', {
     month: 'short',
     day: 'numeric',
     year: 'numeric'
@@ -95,21 +95,21 @@ function getPaymentStatusBadge(status: BillingWorkOrder['paymentStatus'], labels
     case 'PAID':
       return (
         <Badge className="bg-green-100 text-green-700 border-green-200">
-          <CheckCircle className="h-3 w-3 mr-1" />
+          <CheckCircle className="h-3 w-3 me-1" />
           {labels.paid}
         </Badge>
       )
     case 'PENDING_VERIFICATION':
       return (
         <Badge className="bg-amber-100 text-amber-700 border-amber-200">
-          <Clock className="h-3 w-3 mr-1" />
+          <Clock className="h-3 w-3 me-1" />
           {labels.pendingVerification}
         </Badge>
       )
     default:
       return (
         <Badge variant="outline" className="bg-gray-50 text-gray-600 border-gray-200">
-          <AlertCircle className="h-3 w-3 mr-1" />
+          <AlertCircle className="h-3 w-3 me-1" />
           {labels.unpaid}
         </Badge>
       )
@@ -228,12 +228,12 @@ export function BillingWorkOrdersDisplay({
                         {/* Payment status summary */}
                         {allPaid ? (
                           <Badge className="bg-green-100 text-green-700">
-                            <CheckCircle className="h-3 w-3 mr-1" />
+                            <CheckCircle className="h-3 w-3 me-1" />
                             {tb.fullyPaid}
                           </Badge>
                         ) : pendingCount > 0 ? (
                           <Badge className="bg-amber-100 text-amber-700">
-                            <Clock className="h-3 w-3 mr-1" />
+                            <Clock className="h-3 w-3 me-1" />
                             {pendingCount} {tb.pending}
                           </Badge>
                         ) : null}
@@ -255,7 +255,7 @@ export function BillingWorkOrdersDisplay({
                               }
                             }}
                           >
-                            <CreditCard className="h-3 w-3 mr-1" />
+                            <CreditCard className="h-3 w-3 me-1" />
                             {isSingleItem ? tb.pay : tb.payAll.replace('{count}', String(unpaidItems.length))}
                           </Button>
                         )}
@@ -339,7 +339,7 @@ export function BillingWorkOrdersDisplay({
 
                               <div className="flex items-center gap-3">
                                 {getPaymentStatusBadge(wo.paymentStatus, { paid: tb.paid, pendingVerification: tb.pendingVerification, unpaid: tb.unpaid })}
-                                <span className="text-sm font-medium min-w-[80px] text-right">
+                                <span className="text-sm font-medium min-w-[80px] text-end">
                                   {formatCurrency(wo.price)}
                                 </span>
 
@@ -350,7 +350,7 @@ export function BillingWorkOrdersDisplay({
                                     variant="outline"
                                     onClick={() => onPaySingle?.(wo.id)}
                                   >
-                                    <CreditCard className="h-3 w-3 mr-1" />
+                                    <CreditCard className="h-3 w-3 me-1" />
                                     {tb.pay}
                                   </Button>
                                 )}
@@ -362,7 +362,7 @@ export function BillingWorkOrdersDisplay({
                                       variant="outline"
                                       onClick={() => onViewProof?.(wo)}
                                     >
-                                      <Eye className="h-3 w-3 mr-1" />
+                                      <Eye className="h-3 w-3 me-1" />
                                       {tb.viewProof}
                                     </Button>
                                     {userRole === 'CONTRACTOR' && (
@@ -370,7 +370,7 @@ export function BillingWorkOrdersDisplay({
                                         size="sm"
                                         onClick={() => onVerifyPayment?.(wo.id)}
                                       >
-                                        <CheckCircle className="h-3 w-3 mr-1" />
+                                        <CheckCircle className="h-3 w-3 me-1" />
                                         {tb.verify}
                                       </Button>
                                     )}
@@ -398,7 +398,7 @@ export function BillingWorkOrdersDisplay({
             {workOrders.filter(wo => wo.paymentStatus === 'PAID').length} {tb.paidCount.replace('{paid}', String(workOrders.filter(wo => wo.paymentStatus === 'PAID').length)).replace('{total}', String(workOrders.length))}
           </p>
         </div>
-        <div className="text-right">
+        <div className="text-end">
           <span className="text-xl font-bold text-primary">
             {formatCurrency(totalValue)}
           </span>

@@ -29,6 +29,7 @@ import {
   SelectValue,
 } from '@/components/ui/select'
 import { useTranslation } from '@/lib/i18n/use-translation'
+import { formatDate as formatDateLocale } from '@/lib/i18n/format-date'
 
 interface WorkOrder {
   id: string
@@ -81,7 +82,7 @@ const WORK_ORDER_TYPE_ICONS: Record<string, React.ReactNode> = {
   OTHER: <FileText className="h-4 w-4" />,
 }
 
-const STAGE_CONFIG: Record<string, { label: string; color: string; icon: React.ReactNode }> = {
+const STAGE_CONFIG_UNUSED: Record<string, { label: string; color: string; icon: React.ReactNode }> = {
   SCHEDULED: { label: 'Scheduled', color: 'bg-blue-100 text-blue-700', icon: <Calendar className="h-3 w-3" /> },
   IN_PROGRESS: { label: 'In Progress', color: 'bg-green-100 text-green-700', icon: <Clock className="h-3 w-3" /> },
   FOR_REVIEW: { label: 'For Review', color: 'bg-yellow-100 text-yellow-700', icon: <AlertCircle className="h-3 w-3" /> },
@@ -90,7 +91,7 @@ const STAGE_CONFIG: Record<string, { label: string; color: string; icon: React.R
 }
 
 export function BranchDashboard({ branchId }: BranchDashboardProps) {
-  const { t } = useTranslation()
+  const { t, locale } = useTranslation()
   const td = t.dashboard.branchDashboard
   const [loading, setLoading] = useState(true)
   const [loadFailed, setLoadFailed] = useState(false)
@@ -155,9 +156,9 @@ export function BranchDashboard({ branchId }: BranchDashboardProps) {
     return new Intl.NumberFormat('en-SA', { style: 'currency', currency: 'SAR' }).format(amount)
   }
 
-  const formatDate = (date: string | null) => {
+  const formatDateLocal = (date: string | null) => {
     if (!date) return '-'
-    return new Date(date).toLocaleDateString('en-US', { month: 'short', day: 'numeric' })
+    return formatDateLocale(date, locale, { month: 'short', day: 'numeric' })
   }
 
   // Filter work orders for detail view
@@ -251,7 +252,7 @@ export function BranchDashboard({ branchId }: BranchDashboardProps) {
             <div className="flex items-center gap-4 mt-2 text-sm text-muted-foreground">
               <span className="flex items-center gap-1">
                 <Calendar className="h-3 w-3" />
-                {formatDate(wo.scheduledDate)}
+                {formatDateLocal(wo.scheduledDate)}
               </span>
               {wo.assignedTeamMember && (
                 <span className="truncate">
@@ -289,7 +290,7 @@ export function BranchDashboard({ branchId }: BranchDashboardProps) {
             <div>
               <h4 className="font-semibold">{contract.title}</h4>
               <p className="text-sm text-muted-foreground">
-                {formatDate(contract.startDate)} - {formatDate(contract.endDate)} • {contractWOs.length} {td.workOrders}
+                {formatDateLocal(contract.startDate)} - {formatDateLocal(contract.endDate)} • {contractWOs.length} {td.workOrders}
               </p>
             </div>
             <span className="font-semibold text-green-600">
@@ -341,7 +342,7 @@ export function BranchDashboard({ branchId }: BranchDashboardProps) {
             </CardTitle>
             {!isContracts && (
               <Button size="sm">
-                <Plus className="h-4 w-4 mr-1" />
+                <Plus className="h-4 w-4 me-1" />
                 {td.newAdhoc}
               </Button>
             )}

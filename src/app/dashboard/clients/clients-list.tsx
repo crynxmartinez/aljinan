@@ -318,7 +318,7 @@ export function ClientsList({ clients }: ClientsListProps) {
                         <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-primary/10">
                           <Building2 className="h-5 w-5 text-primary" />
                         </div>
-                        <div className="text-left">
+                        <div className="text-start">
                           <CardTitle className="text-lg">{client.companyName}</CardTitle>
                           <CardDescription className="flex items-center gap-2">
                             <span>{client.user.email}</span>
@@ -328,7 +328,7 @@ export function ClientsList({ clients }: ClientsListProps) {
                         </div>
                       </div>
                     </CollapsibleTrigger>
-                    <div className="flex items-center gap-2 ml-2">
+                    <div className="flex items-center gap-2 ms-2">
                       {editingClientId === client.id ? (
                         <div className="flex items-center gap-1">
                           <Input
@@ -437,7 +437,7 @@ export function ClientsList({ clients }: ClientsListProps) {
                                 )}
                               </div>
                             </Link>
-                            <div className="flex items-center gap-2 ml-2 shrink-0">
+                            <div className="flex items-center gap-2 ms-2 shrink-0">
                               {editingBranchId === branch.id ? (
                                 <div className="flex items-center gap-1">
                                   <Input

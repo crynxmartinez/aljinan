@@ -375,7 +375,7 @@ export default async function PortalDashboardPage() {
               </p>
               <Link href="/portal/settings">
                 <Button variant="outline" size="sm" className="w-full">
-                  <Edit className="h-4 w-4 mr-1" />
+                  <Edit className="h-4 w-4 me-1" />
                   {tp.viewProfile}
                 </Button>
               </Link>

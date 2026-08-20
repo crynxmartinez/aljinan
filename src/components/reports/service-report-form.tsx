@@ -117,7 +117,7 @@ export function ServiceReportForm({ data, onChange, readOnly = false }: ServiceR
             <CardTitle className="text-sm font-medium">{tr.partsReplaced}</CardTitle>
             {!readOnly && (
               <Button type="button" variant="outline" size="sm" onClick={addPart}>
-                <Plus className="h-4 w-4 mr-1" />
+                <Plus className="h-4 w-4 me-1" />
                 {tr.addPart}
               </Button>
             )}

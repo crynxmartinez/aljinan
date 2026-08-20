@@ -151,7 +151,7 @@ interface ServiceReportDocumentData {
 
 export function ServiceReportDocument({ data }: { data: ServiceReportDocumentData }) {
   const formatDate = (dateStr: string) => {
-    return new Date(dateStr).toLocaleDateString('en-US', {
+    return new Date(dateStr).toLocaleDateString('ar-SA', {
       year: 'numeric',
       month: 'long',
       day: 'numeric',
@@ -168,34 +168,34 @@ export function ServiceReportDocument({ data }: { data: ServiceReportDocumentDat
           <View>
             <Text style={styles.companyName}>{data.contractor.name}</Text>
             {data.contractor.address && <Text>{data.contractor.address}</Text>}
-            {data.contractor.phone && <Text>Tel: {data.contractor.phone}</Text>}
-            {data.contractor.email && <Text>Email: {data.contractor.email}</Text>}
+            {data.contractor.phone && <Text>هاتف: {data.contractor.phone}</Text>}
+            {data.contractor.email && <Text>بريد: {data.contractor.email}</Text>}
           </View>
           <View style={{ textAlign: 'right' }}>
-            <Text style={{ fontSize: 9, color: '#6b7280' }}>Report No:</Text>
+            <Text style={{ fontSize: 9, color: '#6b7280' }}>رقم التقرير:</Text>
             <Text style={{ fontWeight: 'bold' }}>{data.reportNumber}</Text>
-            <Text style={{ fontSize: 9, color: '#6b7280', marginTop: 4 }}>Generated:</Text>
+            <Text style={{ fontSize: 9, color: '#6b7280', marginTop: 4 }}>تاريخ الإنشاء:</Text>
             <Text>{formatDate(data.generatedDate)}</Text>
           </View>
         </View>
 
         {/* Title */}
-        <Text style={styles.title}>SERVICE REPORT</Text>
+        <Text style={styles.title}>تقرير الخدمة</Text>
 
         {/* Client Information */}
         <View style={styles.section}>
-          <Text style={styles.sectionTitle}>CLIENT INFORMATION</Text>
+          <Text style={styles.sectionTitle}>معلومات العميل</Text>
           <View style={styles.row}>
-            <Text style={styles.label}>Company:</Text>
+            <Text style={styles.label}>الشركة:</Text>
             <Text style={styles.value}>{data.client.name}</Text>
           </View>
           <View style={styles.row}>
-            <Text style={styles.label}>Branch:</Text>
+            <Text style={styles.label}>الفرع:</Text>
             <Text style={styles.value}>{data.client.branch}</Text>
           </View>
           {data.client.address && (
             <View style={styles.row}>
-              <Text style={styles.label}>Address:</Text>
+              <Text style={styles.label}>العنوان:</Text>
               <Text style={styles.value}>{data.client.address}</Text>
             </View>
           )}
@@ -203,13 +203,13 @@ export function ServiceReportDocument({ data }: { data: ServiceReportDocumentDat
 
         {/* Work Order Details */}
         <View style={styles.section}>
-          <Text style={styles.sectionTitle}>WORK ORDER DETAILS</Text>
+          <Text style={styles.sectionTitle}>تفاصيل أمر العمل</Text>
           <View style={styles.row}>
-            <Text style={styles.label}>Work Order Report:</Text>
+            <Text style={styles.label}>أمر العمل:</Text>
             <Text style={styles.value}>{data.workOrder.title}</Text>
           </View>
           <View style={styles.row}>
-            <Text style={styles.label}>Service Date:</Text>
+            <Text style={styles.label}>تاريخ الخدمة:</Text>
             <Text style={styles.value}>{formatDate(data.workOrder.date)}</Text>
           </View>
         </View>
@@ -217,7 +217,7 @@ export function ServiceReportDocument({ data }: { data: ServiceReportDocumentDat
         {/* Problem Description */}
         {report.problemDescription && (
           <View style={styles.section}>
-            <Text style={styles.sectionTitle}>PROBLEM DESCRIPTION</Text>
+            <Text style={styles.sectionTitle}>وصف المشكلة</Text>
             <Text style={styles.textBlock}>{report.problemDescription}</Text>
           </View>
         )}
@@ -225,7 +225,7 @@ export function ServiceReportDocument({ data }: { data: ServiceReportDocumentDat
         {/* Root Cause */}
         {report.rootCause && (
           <View style={styles.section}>
-            <Text style={styles.sectionTitle}>ROOT CAUSE ANALYSIS</Text>
+            <Text style={styles.sectionTitle}>تحليل السبب الجذري</Text>
             <Text style={styles.textBlock}>{report.rootCause}</Text>
           </View>
         )}
@@ -233,7 +233,7 @@ export function ServiceReportDocument({ data }: { data: ServiceReportDocumentDat
         {/* Work Performed */}
         {report.workPerformed && (
           <View style={styles.section}>
-            <Text style={styles.sectionTitle}>WORK PERFORMED</Text>
+            <Text style={styles.sectionTitle}>العمل المنفذ</Text>
             <Text style={styles.textBlock}>{report.workPerformed}</Text>
           </View>
         )}
@@ -241,27 +241,27 @@ export function ServiceReportDocument({ data }: { data: ServiceReportDocumentDat
         {/* Parts Replaced */}
         {report.partsReplaced && report.partsReplaced.length > 0 && (
           <View style={styles.section}>
-            <Text style={styles.sectionTitle}>PARTS REPLACED</Text>
+            <Text style={styles.sectionTitle}>القطع المستبدلة</Text>
             <View style={styles.table}>
               <View style={styles.tableHeader}>
-                <Text style={styles.col1}>Part Name</Text>
-                <Text style={styles.col2}>Qty</Text>
-                <Text style={styles.col3}>Unit Cost</Text>
-                <Text style={styles.col4}>Total</Text>
+                <Text style={styles.col1}>اسم القطعة</Text>
+                <Text style={styles.col2}>الكمية</Text>
+                <Text style={styles.col3}>تكلفة الوحدة</Text>
+                <Text style={styles.col4}>الإجمالي</Text>
               </View>
               {report.partsReplaced.map((part, index) => (
                 <View key={index} style={styles.tableRow}>
                   <Text style={styles.col1}>{part.name}</Text>
                   <Text style={styles.col2}>{part.quantity}</Text>
-                  <Text style={styles.col3}>SAR {part.unitCost.toFixed(2)}</Text>
-                  <Text style={styles.col4}>SAR {part.total.toFixed(2)}</Text>
+                  <Text style={styles.col3}>ر.س {part.unitCost.toFixed(2)}</Text>
+                  <Text style={styles.col4}>ر.س {part.total.toFixed(2)}</Text>
                 </View>
               ))}
               <View style={styles.totalRow}>
-                <Text style={styles.col1}>Parts Total</Text>
+                <Text style={styles.col1}>إجمالي القطع</Text>
                 <Text style={styles.col2}></Text>
                 <Text style={styles.col3}></Text>
-                <Text style={styles.col4}>SAR {report.totalPartsCost.toFixed(2)}</Text>
+                <Text style={styles.col4}>ر.س {report.totalPartsCost.toFixed(2)}</Text>
               </View>
             </View>
           </View>
@@ -269,33 +269,33 @@ export function ServiceReportDocument({ data }: { data: ServiceReportDocumentDat
 
         {/* Labor */}
         <View style={styles.section}>
-          <Text style={styles.sectionTitle}>LABOR</Text>
+          <Text style={styles.sectionTitle}>العمالة</Text>
           <View style={styles.row}>
-            <Text style={styles.label}>Hours:</Text>
+            <Text style={styles.label}>الساعات:</Text>
             <Text style={styles.value}>{report.laborHours}</Text>
           </View>
           <View style={styles.row}>
-            <Text style={styles.label}>Rate:</Text>
-            <Text style={styles.value}>SAR {report.laborRate.toFixed(2)}/hr</Text>
+            <Text style={styles.label}>السعر:</Text>
+            <Text style={styles.value}>ر.س {report.laborRate.toFixed(2)}/ساعة</Text>
           </View>
           <View style={styles.row}>
-            <Text style={styles.label}>Labor Cost:</Text>
-            <Text style={styles.value}>SAR {report.laborCost.toFixed(2)}</Text>
+            <Text style={styles.label}>تكلفة العمالة:</Text>
+            <Text style={styles.value}>ر.س {report.laborCost.toFixed(2)}</Text>
           </View>
         </View>
 
         {/* Total Cost */}
         <View style={[styles.section, { backgroundColor: '#fff7ed', padding: 10, borderRadius: 4 }]}>
           <View style={styles.row}>
-            <Text style={[styles.label, { fontSize: 14 }]}>TOTAL COST:</Text>
-            <Text style={[styles.value, { fontSize: 14, fontWeight: 'bold' }]}>SAR {report.totalCost.toFixed(2)}</Text>
+            <Text style={[styles.label, { fontSize: 14 }]}>التكلفة الإجمالية:</Text>
+            <Text style={[styles.value, { fontSize: 14, fontWeight: 'bold' }]}>ر.س {report.totalCost.toFixed(2)}</Text>
           </View>
         </View>
 
         {/* Warranty */}
         {report.warrantyInfo && (
           <View style={styles.section}>
-            <Text style={styles.sectionTitle}>WARRANTY INFORMATION</Text>
+            <Text style={styles.sectionTitle}>معلومات الضمان</Text>
             <Text style={styles.textBlock}>{report.warrantyInfo}</Text>
           </View>
         )}
@@ -305,26 +305,26 @@ export function ServiceReportDocument({ data }: { data: ServiceReportDocumentDat
           <View style={styles.signatureBox}>
             <View style={styles.signatureLine}>
               {data.signatures.technician && (
-                <Text style={{ fontSize: 10, color: '#166534', fontWeight: 'bold' }}>✓ Signed</Text>
+                <Text style={{ fontSize: 10, color: '#166534', fontWeight: 'bold' }}>✓ موقّع</Text>
               )}
             </View>
-            <Text style={styles.signatureLabel}>Technician Signature</Text>
+            <Text style={styles.signatureLabel}>توقيع الفني</Text>
             {data.signatures.technicianDate && (
               <Text style={{ fontSize: 8, color: '#9ca3af', marginTop: 2 }}>
-                Signed: {formatDate(data.signatures.technicianDate)}
+                تم التوقيع: {formatDate(data.signatures.technicianDate)}
               </Text>
             )}
           </View>
           <View style={styles.signatureBox}>
             <View style={styles.signatureLine}>
               {data.signatures.supervisor && (
-                <Text style={{ fontSize: 10, color: '#166534', fontWeight: 'bold' }}>✓ Signed</Text>
+                <Text style={{ fontSize: 10, color: '#166534', fontWeight: 'bold' }}>✓ موقّع</Text>
               )}
             </View>
-            <Text style={styles.signatureLabel}>Supervisor Signature</Text>
+            <Text style={styles.signatureLabel}>توقيع المشرف</Text>
             {data.signatures.supervisorDate && (
               <Text style={{ fontSize: 8, color: '#9ca3af', marginTop: 2 }}>
-                Signed: {formatDate(data.signatures.supervisorDate)}
+                تم التوقيع: {formatDate(data.signatures.supervisorDate)}
               </Text>
             )}
           </View>
@@ -332,7 +332,7 @@ export function ServiceReportDocument({ data }: { data: ServiceReportDocumentDat
 
         {/* Footer */}
         <Text style={styles.footer}>
-          This report was generated by {data.contractor.name} • Report #{data.reportNumber} • {formatDate(data.generatedDate)}
+          تم إنشاء هذا التقرير بواسطة {data.contractor.name} • تقرير #{data.reportNumber} • {formatDate(data.generatedDate)}
         </Text>
       </Page>
     </Document>

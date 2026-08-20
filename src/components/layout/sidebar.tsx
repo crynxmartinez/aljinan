@@ -166,7 +166,7 @@ export function Sidebar({ clients = [], userRole, teamMemberRole }: SidebarProps
   }
 
   return (
-    <div className="flex h-screen w-64 flex-col border-r bg-sidebar text-sidebar-foreground">
+    <div className="flex h-screen w-64 flex-col border-e bg-sidebar text-sidebar-foreground">
       {/* Logo */}
       <div className="flex h-16 items-center border-b px-6">
         <Link href="/dashboard" className="flex items-center gap-2">
@@ -281,7 +281,7 @@ export function Sidebar({ clients = [], userRole, teamMemberRole }: SidebarProps
                       <span className="truncate">{client.displayName || client.companyName}</span>
                     </Link>
                   </div>
-                  <CollapsibleContent className="pl-6">
+                  <CollapsibleContent className="ps-6">
                     {client.branches.map((branch) => (
                       <Link
                         key={branch.id}

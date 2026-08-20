@@ -34,7 +34,7 @@ export function FAQContent() {
               <Accordion type="single" collapsible className="w-full">
                 {category.questions.map((faq, index) => (
                   <AccordionItem key={index} value={`item-${categoryIndex}-${index}`}>
-                    <AccordionTrigger className="text-left">
+                    <AccordionTrigger className="text-start">
                       {faq.q}
                     </AccordionTrigger>
                     <AccordionContent className="text-muted-foreground">

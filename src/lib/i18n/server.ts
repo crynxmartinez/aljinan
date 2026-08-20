@@ -9,7 +9,7 @@ export async function getLocale(): Promise<Locale> {
   if (saved && (saved === 'en' || saved === 'ar')) {
     return saved
   }
-  return 'en'
+  return 'ar'
 }
 
 export async function getTranslations() {

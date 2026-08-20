@@ -498,7 +498,7 @@ export function ClientBranchContracts({ branchId }: ClientBranchContractsProps) 
                           : "bg-gray-50 text-gray-500 border-gray-200"
                         }
                       >
-                        <FileText className="h-3 w-3 mr-1" />
+                        <FileText className="h-3 w-3 me-1" />
                         PDF {contract.fileUrl ? '✓' : '—'}
                       </Badge>
                       <Badge
@@ -508,7 +508,7 @@ export function ClientBranchContracts({ branchId }: ClientBranchContractsProps) 
                           : "bg-gray-50 text-gray-500 border-gray-200"
                         }
                       >
-                        <Award className="h-3 w-3 mr-1" />
+                        <Award className="h-3 w-3 me-1" />
                         Cert {contract.certificateUrl ? '✓' : '—'}
                       </Badge>
 
@@ -520,13 +520,13 @@ export function ClientBranchContracts({ branchId }: ClientBranchContractsProps) 
                             : "bg-blue-50 text-blue-700 border-blue-200"
                           }
                         >
-                          <ClipboardList className="h-3 w-3 mr-1" />
+                          <ClipboardList className="h-3 w-3 me-1" />
                           {completedCount}/{workOrders.length} Work Orders
                         </Badge>
                       )}
 
                       {!canSignContract(contract) && workOrders.length > 0 && (
-                        <span className="text-xs text-muted-foreground ml-auto">
+                        <span className="text-xs text-muted-foreground ms-auto">
                           {!areAllWorkOrdersCompleted(contract)
                             ? 'Complete all work orders to finalize'
                             : !areAllWorkOrdersPaid(contract)

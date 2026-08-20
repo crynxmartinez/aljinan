@@ -101,7 +101,7 @@ export function FilterPanel({
     <Sheet open={isOpen} onOpenChange={setIsOpen}>
       <SheetTrigger asChild>
         <Button variant="outline" size="sm" className="relative">
-          <Filter className="h-4 w-4 mr-2" />
+          <Filter className="h-4 w-4 me-2" />
           {ta.filters}
           {activeFilterCount > 0 && (
             <Badge variant="secondary" className="ml-2 h-5 px-1.5">
@@ -118,7 +118,7 @@ export function FilterPanel({
           </SheetDescription>
         </SheetHeader>
 
-        <ScrollArea className="h-[calc(100vh-200px)] pr-2">
+        <ScrollArea className="h-[calc(100vh-200px)] pe-2">
           <div className="py-6 space-y-6 px-1">
             {/* Date Range Filter */}
             {onDateRangeChange && (
@@ -264,7 +264,7 @@ export function FilterPanel({
 
         <SheetFooter className="flex gap-2 px-1">
           <Button variant="outline" onClick={handleClearAll} className="flex-1">
-            <X className="h-4 w-4 mr-2" />
+            <X className="h-4 w-4 me-2" />
             {ta.clearAll}
           </Button>
           <Button onClick={handleApply} className="flex-1">

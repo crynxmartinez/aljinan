@@ -20,6 +20,7 @@ import {
   AlertCircle,
   MapPin,
 } from 'lucide-react'
+import { useTranslation } from '@/lib/i18n/use-translation'
 
 interface TechnicianDetails {
   id: string
@@ -45,6 +46,8 @@ export function TechnicianDetailsModal({
   const [technician, setTechnician] = useState<TechnicianDetails | null>(null)
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState<string | null>(null)
+  const { t } = useTranslation()
+  const tm = t.uiComponents.technicianModal
 
   useEffect(() => {
     if (open && technicianId) {
@@ -69,7 +72,7 @@ export function TechnicianDetailsModal({
       const data = await response.json()
       setTechnician(data)
     } catch (err) {
-      setError('Unable to load technician details')
+      setError(tm.unableToLoad)
       console.error('Error fetching technician:', err)
     } finally {
       setLoading(false)
@@ -82,10 +85,10 @@ export function TechnicianDetailsModal({
         <DialogHeader>
           <DialogTitle className="flex items-center gap-2">
             <User className="h-5 w-5" />
-            Technician Details
+            {tm.title}
           </DialogTitle>
           <DialogDescription>
-            Contact information for the assigned technician
+            {tm.description}
           </DialogDescription>
         </DialogHeader>
 
@@ -121,21 +124,21 @@ export function TechnicianDetailsModal({
                 </div>
               </div>
               <Badge variant={technician.teamRole === 'SUPERVISOR' ? 'default' : 'secondary'}>
-                {technician.teamRole === 'SUPERVISOR' ? 'Supervisor' : 'Technician'}
+                {technician.teamRole === 'SUPERVISOR' ? tm.supervisor : tm.technician}
               </Badge>
             </div>
 
             {/* Contact Information */}
             <div className="space-y-3">
               <h4 className="text-sm font-semibold text-muted-foreground uppercase tracking-wide">
-                Contact Information
+                {tm.contactInfo}
               </h4>
 
               {/* Email */}
               <div className="flex items-start gap-3 p-3 border rounded-lg">
                 <Mail className="h-4 w-4 text-muted-foreground mt-0.5" />
                 <div className="flex-1">
-                  <p className="text-xs text-muted-foreground">Email</p>
+                  <p className="text-xs text-muted-foreground">{tm.email}</p>
                   <a
                     href={`mailto:${technician.email}`}
                     className="text-sm font-medium text-primary hover:underline"
@@ -149,7 +152,7 @@ export function TechnicianDetailsModal({
               <div className="flex items-start gap-3 p-3 border rounded-lg">
                 <Phone className="h-4 w-4 text-muted-foreground mt-0.5" />
                 <div className="flex-1">
-                  <p className="text-xs text-muted-foreground">Phone</p>
+                  <p className="text-xs text-muted-foreground">{tm.phone}</p>
                   {technician.phone ? (
                     <a
                       href={`tel:${technician.phone}`}
@@ -158,7 +161,7 @@ export function TechnicianDetailsModal({
                       {technician.phone}
                     </a>
                   ) : (
-                    <p className="text-sm text-muted-foreground italic">Not provided</p>
+                    <p className="text-sm text-muted-foreground italic">{tm.notProvided}</p>
                   )}
                 </div>
               </div>
@@ -167,11 +170,11 @@ export function TechnicianDetailsModal({
               <div className="flex items-start gap-3 p-3 border rounded-lg">
                 <MapPin className="h-4 w-4 text-muted-foreground mt-0.5" />
                 <div className="flex-1">
-                  <p className="text-xs text-muted-foreground">Address</p>
+                  <p className="text-xs text-muted-foreground">{tm.address}</p>
                   {technician.address ? (
                     <p className="text-sm font-medium whitespace-pre-line">{technician.address}</p>
                   ) : (
-                    <p className="text-sm text-muted-foreground italic">Not provided</p>
+                    <p className="text-sm text-muted-foreground italic">{tm.notProvided}</p>
                   )}
                 </div>
               </div>
@@ -181,7 +184,7 @@ export function TechnicianDetailsModal({
                 <div className="flex items-start gap-3 p-3 border rounded-lg">
                   <Briefcase className="h-4 w-4 text-muted-foreground mt-0.5" />
                   <div className="flex-1">
-                    <p className="text-xs text-muted-foreground">Position</p>
+                    <p className="text-xs text-muted-foreground">{tm.position}</p>
                     <p className="text-sm font-medium">{technician.jobTitle}</p>
                   </div>
                 </div>

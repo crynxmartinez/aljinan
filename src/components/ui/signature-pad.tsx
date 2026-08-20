@@ -132,7 +132,7 @@ export function SignaturePad({
           onClick={clearSignature}
           disabled={!hasSignature}
         >
-          <Eraser className="h-3 w-3 mr-1" />
+          <Eraser className="h-3 w-3 me-1" />
           Clear
         </Button>
       </div>
