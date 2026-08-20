@@ -173,9 +173,9 @@ export function ClientSidebar({ client }: ClientSidebarProps) {
           >
             {t.dashboard.portal.dashboard}
             {loadingHref === '/portal' ? (
-              <Loader2 className="h-4 w-4 animate-spin" />
+              <Loader2 className="ms-auto h-4 w-4 animate-spin" />
             ) : (
-              <LayoutDashboard className="h-4 w-4" />
+              <LayoutDashboard className="ms-auto h-4 w-4" />
             )}
           </Link>
 
@@ -191,9 +191,9 @@ export function ClientSidebar({ client }: ClientSidebarProps) {
           >
             {t.dashboard.portal.workOrders}
             {loadingHref === '/portal/work-orders' ? (
-              <Loader2 className="h-4 w-4 animate-spin" />
+              <Loader2 className="ms-auto h-4 w-4 animate-spin" />
             ) : (
-              <ClipboardList className="h-4 w-4" />
+              <ClipboardList className="ms-auto h-4 w-4" />
             )}
           </Link>
         </div>
@@ -259,9 +259,9 @@ export function ClientSidebar({ client }: ClientSidebarProps) {
 
                   {/* Branch Icon */}
                   {loadingHref === `/portal/branches/${branch.slug || branch.id}` ? (
-                    <Loader2 className="h-4 w-4 flex-shrink-0 animate-spin" />
+                    <Loader2 className="ms-auto h-4 w-4 flex-shrink-0 animate-spin" />
                   ) : (
-                    <MapPin className="h-4 w-4 flex-shrink-0" />
+                    <MapPin className="ms-auto h-4 w-4 flex-shrink-0" />
                   )}
                 </Link>
               </div>
@@ -285,9 +285,9 @@ export function ClientSidebar({ client }: ClientSidebarProps) {
           >
             {t.dashboard.portal.accountSettings}
             {loadingHref === '/portal/settings' ? (
-              <Loader2 className="h-4 w-4 animate-spin" />
+              <Loader2 className="ms-auto h-4 w-4 animate-spin" />
             ) : (
-              <Settings className="h-4 w-4" />
+              <Settings className="ms-auto h-4 w-4" />
             )}
           </Link>
         </div>

@@ -148,12 +148,12 @@ export function AdminSidebar({ adminRole }: AdminSidebarProps) {
             >
               <span>{t.dashboard.admin[item.titleKey]}</span>
               {loadingHref === item.href ? (
-                <Loader2 className="h-4 w-4 animate-spin" />
+                <Loader2 className="ms-auto h-4 w-4 animate-spin" />
               ) : (
-                <item.icon className="h-4 w-4" />
+                <item.icon className="ms-auto h-4 w-4" />
               )}
               {item.href === '/admin/messages' && unreadCount > 0 && (
-                <Badge variant="destructive" className="ms-auto h-5 px-1.5 text-xs">
+                <Badge variant="destructive" className="h-5 px-1.5 text-xs">
                   {unreadCount > 99 ? '99+' : unreadCount}
                 </Badge>
               )}
@@ -184,9 +184,9 @@ export function AdminSidebar({ adminRole }: AdminSidebarProps) {
             >
               {t.dashboard.admin[item.titleKey]}
               {loadingHref === item.href ? (
-                <Loader2 className="h-4 w-4 animate-spin" />
+                <Loader2 className="ms-auto h-4 w-4 animate-spin" />
               ) : (
-                <item.icon className="h-4 w-4" />
+                <item.icon className="ms-auto h-4 w-4" />
               )}
             </Link>
           ))}
