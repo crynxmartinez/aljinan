@@ -134,10 +134,10 @@ export function ClientSidebar({ client }: ClientSidebarProps) {
       {/* Logo */}
       <div className="flex h-16 items-center border-b px-6">
         <Link href="/portal" className="flex items-center gap-2">
+          <span className="text-xl font-bold">Aljinan</span>
           <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-primary text-primary-foreground font-bold">
             A
           </div>
-          <span className="text-xl font-bold">Aljinan</span>
         </Link>
       </div>
 
@@ -145,14 +145,14 @@ export function ClientSidebar({ client }: ClientSidebarProps) {
         {/* Company Info */}
         <div className="px-3 py-2 mb-2">
           <div className="flex items-center gap-3">
-            <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-primary/10">
-              <Building2 className="h-5 w-5 text-primary" />
-            </div>
             <div className="flex-1 min-w-0">
               <p className="font-medium text-sm truncate">{client.companyName}</p>
               <p className="text-xs text-sidebar-foreground/50 truncate">
                 {t.dashboard.portal.via} {client.contractor.companyName || 'Contractor'}
               </p>
+            </div>
+            <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-primary/10">
+              <Building2 className="h-5 w-5 text-primary" />
             </div>
           </div>
         </div>
@@ -171,12 +171,12 @@ export function ClientSidebar({ client }: ClientSidebarProps) {
                 : 'text-sidebar-foreground/70 hover:bg-sidebar-accent hover:text-sidebar-accent-foreground'
             )}
           >
+            {t.dashboard.portal.dashboard}
             {loadingHref === '/portal' ? (
               <Loader2 className="h-4 w-4 animate-spin" />
             ) : (
               <LayoutDashboard className="h-4 w-4" />
             )}
-            {t.dashboard.portal.dashboard}
           </Link>
 
           <Link
@@ -189,12 +189,12 @@ export function ClientSidebar({ client }: ClientSidebarProps) {
                 : 'text-sidebar-foreground/70 hover:bg-sidebar-accent hover:text-sidebar-accent-foreground'
             )}
           >
+            {t.dashboard.portal.workOrders}
             {loadingHref === '/portal/work-orders' ? (
               <Loader2 className="h-4 w-4 animate-spin" />
             ) : (
               <ClipboardList className="h-4 w-4" />
             )}
-            {t.dashboard.portal.workOrders}
           </Link>
         </div>
 
@@ -238,13 +238,6 @@ export function ClientSidebar({ client }: ClientSidebarProps) {
                     <Pencil className="h-4 w-4 text-primary" />
                   </button>
 
-                  {/* Branch Icon */}
-                  {loadingHref === `/portal/branches/${branch.slug || branch.id}` ? (
-                    <Loader2 className="h-4 w-4 flex-shrink-0 animate-spin" />
-                  ) : (
-                    <MapPin className="h-4 w-4 flex-shrink-0" />
-                  )}
-
                   {/* Branch Name/Address */}
                   <div className="flex-1 min-w-0">
                     {branch.clientNickname ? (
@@ -263,6 +256,13 @@ export function ClientSidebar({ client }: ClientSidebarProps) {
                       </>
                     )}
                   </div>
+
+                  {/* Branch Icon */}
+                  {loadingHref === `/portal/branches/${branch.slug || branch.id}` ? (
+                    <Loader2 className="h-4 w-4 flex-shrink-0 animate-spin" />
+                  ) : (
+                    <MapPin className="h-4 w-4 flex-shrink-0" />
+                  )}
                 </Link>
               </div>
             ))
@@ -283,12 +283,12 @@ export function ClientSidebar({ client }: ClientSidebarProps) {
                 : 'text-sidebar-foreground/70 hover:bg-sidebar-accent hover:text-sidebar-accent-foreground'
             )}
           >
+            {t.dashboard.portal.accountSettings}
             {loadingHref === '/portal/settings' ? (
               <Loader2 className="h-4 w-4 animate-spin" />
             ) : (
               <Settings className="h-4 w-4" />
             )}
-            {t.dashboard.portal.accountSettings}
           </Link>
         </div>
       </ScrollArea>

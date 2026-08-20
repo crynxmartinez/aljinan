@@ -121,12 +121,12 @@ export function AdminSidebar({ adminRole }: AdminSidebarProps) {
       {/* Logo */}
       <div className="flex h-16 items-center border-b px-6">
         <Link href="/admin" className="flex items-center gap-2">
-          <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-red-600 text-white font-bold">
-            <Shield className="h-4 w-4" />
-          </div>
           <div>
             <span className="text-xl font-bold">Tasheel</span>
             <span className="text-xs text-red-500 ms-1 font-medium">Admin</span>
+          </div>
+          <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-red-600 text-white font-bold">
+            <Shield className="h-4 w-4" />
           </div>
         </Link>
       </div>
@@ -146,14 +146,14 @@ export function AdminSidebar({ adminRole }: AdminSidebarProps) {
                   : 'text-sidebar-foreground/70 hover:bg-sidebar-accent hover:text-sidebar-accent-foreground'
               )}
             >
+              <span>{t.dashboard.admin[item.titleKey]}</span>
               {loadingHref === item.href ? (
                 <Loader2 className="h-4 w-4 animate-spin" />
               ) : (
                 <item.icon className="h-4 w-4" />
               )}
-              <span className="flex-1">{t.dashboard.admin[item.titleKey]}</span>
               {item.href === '/admin/messages' && unreadCount > 0 && (
-                <Badge variant="destructive" className="h-5 px-1.5 text-xs">
+                <Badge variant="destructive" className="ms-auto h-5 px-1.5 text-xs">
                   {unreadCount > 99 ? '99+' : unreadCount}
                 </Badge>
               )}
@@ -182,12 +182,12 @@ export function AdminSidebar({ adminRole }: AdminSidebarProps) {
                   : 'text-sidebar-foreground/70 hover:bg-sidebar-accent hover:text-sidebar-accent-foreground'
               )}
             >
+              {t.dashboard.admin[item.titleKey]}
               {loadingHref === item.href ? (
                 <Loader2 className="h-4 w-4 animate-spin" />
               ) : (
                 <item.icon className="h-4 w-4" />
               )}
-              {t.dashboard.admin[item.titleKey]}
             </Link>
           ))}
         </div>

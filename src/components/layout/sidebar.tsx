@@ -170,10 +170,10 @@ export function Sidebar({ clients = [], userRole, teamMemberRole }: SidebarProps
       {/* Logo */}
       <div className="flex h-16 items-center border-b px-6">
         <Link href="/dashboard" className="flex items-center gap-2">
+          <span className="text-xl font-bold">Aljinan</span>
           <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-primary text-primary-foreground font-bold">
             A
           </div>
-          <span className="text-xl font-bold">Aljinan</span>
         </Link>
       </div>
 
@@ -200,12 +200,12 @@ export function Sidebar({ clients = [], userRole, teamMemberRole }: SidebarProps
                     : 'text-sidebar-foreground/70 hover:bg-sidebar-accent hover:text-sidebar-accent-foreground'
                 )}
               >
+                {t.dashboard.nav[item.titleKey]}
                 {loadingHref === item.href ? (
                   <Loader2 className="h-4 w-4 animate-spin" />
                 ) : (
                   <item.icon className="h-4 w-4" />
                 )}
-                {t.dashboard.nav[item.titleKey]}
                 {item.href === '/dashboard/notifications' && unreadNotifications > 0 && (
                   <span className="ml-auto flex h-5 w-5 items-center justify-center rounded-full bg-red-600 text-xs font-medium text-white">
                     {unreadNotifications > 9 ? '9+' : unreadNotifications}
@@ -240,8 +240,8 @@ export function Sidebar({ clients = [], userRole, teamMemberRole }: SidebarProps
               {!isTeamMember && (
                 <Link href="/dashboard/clients">
                   <Button variant="outline" size="sm" className="mt-2">
-                    <Users className="me-2 h-4 w-4" />
                     {t.dashboard.nav.addClient}
+                    <Users className="ms-2 h-4 w-4" />
                   </Button>
                 </Link>
               )}
@@ -273,12 +273,12 @@ export function Sidebar({ clients = [], userRole, teamMemberRole }: SidebarProps
                       )}
                       title={client.displayName ? `${client.displayName} (${client.companyName})` : client.companyName}
                     >
+                      <span className="truncate">{client.displayName || client.companyName}</span>
                       {loadingHref === `/dashboard/clients/${client.slug || client.id}` ? (
                         <Loader2 className="h-4 w-4 animate-spin" />
                       ) : (
                         <Users className="h-4 w-4" />
                       )}
-                      <span className="truncate">{client.displayName || client.companyName}</span>
                     </Link>
                   </div>
                   <CollapsibleContent className="ps-6">
@@ -295,12 +295,12 @@ export function Sidebar({ clients = [], userRole, teamMemberRole }: SidebarProps
                         )}
                         title={branch.displayName ? `${branch.displayName} (${branch.address})` : branch.address}
                       >
+                        <span className="truncate">{branch.displayName || branch.address}</span>
                         {loadingHref === `/dashboard/clients/${client.slug || client.id}/branches/${branch.slug || branch.id}` ? (
                           <Loader2 className="h-3 w-3 animate-spin" />
                         ) : (
                           <MapPin className="h-3 w-3" />
                         )}
-                        <span className="truncate">{branch.displayName || branch.address}</span>
                       </Link>
                     ))}
                   </CollapsibleContent>
@@ -310,8 +310,8 @@ export function Sidebar({ clients = [], userRole, teamMemberRole }: SidebarProps
                 <div className="px-3 pt-2">
                   <Link href="/dashboard/clients">
                     <Button variant="outline" size="sm" className="w-full">
-                      <Users className="me-2 h-4 w-4" />
                       {t.dashboard.nav.addClient}
+                      <Users className="ms-2 h-4 w-4" />
                     </Button>
                   </Link>
                 </div>
@@ -336,12 +336,12 @@ export function Sidebar({ clients = [], userRole, teamMemberRole }: SidebarProps
                   : 'text-sidebar-foreground/70 hover:bg-sidebar-accent hover:text-sidebar-accent-foreground'
               )}
             >
+              {t.dashboard.nav[item.titleKey]}
               {loadingHref === item.href ? (
                 <Loader2 className="h-4 w-4 animate-spin" />
               ) : (
                 <item.icon className="h-4 w-4" />
               )}
-              {t.dashboard.nav[item.titleKey]}
             </Link>
           ))}
           {(isTeamMember ? teamMemberBottomNavItems : contractorBottomNavItems).map((item) => (
@@ -356,12 +356,12 @@ export function Sidebar({ clients = [], userRole, teamMemberRole }: SidebarProps
                   : 'text-sidebar-foreground/70 hover:bg-sidebar-accent hover:text-sidebar-accent-foreground'
               )}
             >
+              {t.dashboard.nav[item.titleKey]}
               {loadingHref === item.href ? (
                 <Loader2 className="h-4 w-4 animate-spin" />
               ) : (
                 <item.icon className="h-4 w-4" />
               )}
-              {t.dashboard.nav[item.titleKey]}
             </Link>
           ))}
         </div>
