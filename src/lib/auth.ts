@@ -182,6 +182,19 @@ export const authOptions: NextAuthOptions = {
       // a 24h JWT survives a password reset, a role change and a branch-access
       // revocation — the holder keeps their old rights for a full day.
       if (!user && token.id) {
+        // Throttle DB checks: only re-validate every 60 seconds per token.
+        // The JWT is reused across multiple server requests on a single page load,
+        // so this prevents N DB hits per page render.
+        const now = Math.floor(Date.now() / 1000)
+        if (token.lastCheckedAt && (now - (token.lastCheckedAt as number)) < 60) {
+          // Still within the throttle window — skip the DB check
+          if (token.invalidated) {
+            return token
+          }
+          return token
+        }
+        token.lastCheckedAt = now
+
         const current = await prisma.user.findUnique({
           where: { id: token.id as string },
           select: { sessionVersion: true, status: true, role: true },
@@ -192,13 +205,10 @@ export const authOptions: NextAuthOptions = {
           current.status === 'ARCHIVED' ||
           (token.sessionVersion ?? 0) !== current.sessionVersion
         ) {
-          // Flag rather than return a partial token: the session callback turns this into
-          // an empty session, which is how getServerSession reports "not signed in".
           token.invalidated = true
           return token
         }
 
-        // Role changes take effect without waiting for re-login.
         token.role = current.role
       }
 

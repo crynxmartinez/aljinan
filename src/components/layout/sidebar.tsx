@@ -119,7 +119,7 @@ export function Sidebar({ clients = [], userRole, teamMemberRole }: SidebarProps
   useEffect(() => {
     fetchUnreadCount()
     // Poll every 30 seconds
-    const interval = setInterval(fetchUnreadCount, 30000)
+    const interval = setInterval(fetchUnreadCount, 60000)
     return () => clearInterval(interval)
   }, [])
 

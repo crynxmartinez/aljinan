@@ -12,15 +12,24 @@ export async function GET() {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
     }
 
+    // Single query: fetch 50 most recent, compute unread count from the result set
+    // plus a separate count only for the total unread (which may exceed 50)
     const notifications = await prisma.notification.findMany({
       where: { userId: session.user.id },
       orderBy: { createdAt: 'desc' },
-      take: 50
+      take: 50,
+      select: { id: true, type: true, title: true, message: true, isRead: true, createdAt: true, link: true }
     })
 
-    const unreadCount = await prisma.notification.count({
-      where: { userId: session.user.id, isRead: false }
-    })
+    // Count unread from the fetched batch — only hit DB again if all 50 are unread
+    const unreadInBatch = notifications.filter(n => !n.isRead).length
+    let unreadCount = unreadInBatch
+    if (notifications.length === 50 && unreadInBatch === 50) {
+      // All 50 fetched are unread, there may be more — get exact count
+      unreadCount = await prisma.notification.count({
+        where: { userId: session.user.id, isRead: false }
+      })
+    }
 
     return NextResponse.json({ notifications, unreadCount })
   } catch (error) {
@@ -51,9 +60,9 @@ export async function PATCH(request: Request) {
       })
     } else if (notificationIds && Array.isArray(notificationIds)) {
       await prisma.notification.updateMany({
-        where: { 
+        where: {
           id: { in: notificationIds },
-          userId: session.user.id 
+          userId: session.user.id
         },
         data: { isRead: true }
       })

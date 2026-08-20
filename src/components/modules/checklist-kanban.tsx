@@ -675,7 +675,7 @@ export function ChecklistKanban({ branchId, readOnly = false, userRole }: Checkl
     // Auto-refresh every 30 seconds to keep board updated
     const refreshInterval = setInterval(() => {
       fetchItems()
-    }, 30000) // 30 seconds
+    }, 60000) // 60 seconds
 
     return () => clearInterval(refreshInterval)
   }, [branchId])

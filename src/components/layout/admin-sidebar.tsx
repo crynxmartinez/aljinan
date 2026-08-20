@@ -74,7 +74,7 @@ export function AdminSidebar({ adminRole }: AdminSidebarProps) {
   useEffect(() => {
     fetchUnreadCount()
     // Poll every 30 seconds
-    const interval = setInterval(fetchUnreadCount, 30000)
+    const interval = setInterval(fetchUnreadCount, 60000)
     return () => clearInterval(interval)
   }, [])
 

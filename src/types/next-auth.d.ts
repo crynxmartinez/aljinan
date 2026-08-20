@@ -49,5 +49,6 @@ declare module 'next-auth/jwt' {
     isImpersonating?: boolean
     realAdminId?: string
     realAdminEmail?: string
+    lastCheckedAt?: number
   }
 }
