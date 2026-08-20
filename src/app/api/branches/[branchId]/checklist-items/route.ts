@@ -5,6 +5,7 @@ import { prisma } from '@/lib/prisma'
 import { verifyBranchAccess } from '@/lib/permissions'
 import { Prisma } from '@prisma/client'
 import { logAuditEvent } from '@/lib/audit-log'
+import { getCached, invalidateCache } from '@/lib/cache'
 import type { EquipmentInspectionResult, WorkOrderInspectionResult } from '@prisma/client'
 import {
   notifyWorkOrderForReview,
@@ -211,154 +212,158 @@ export async function GET(
       return NextResponse.json({ error: 'Access denied' }, { status: 403 })
     }
 
-    // Build the where clause with proper Prisma typing
-    // When contractId is provided, show items for that contract OR adhoc items (no contract)
-    const items = await prisma.checklistItem.findMany({
-      where: {
-        checklist: contractId ? {
-          branchId,
-          OR: [
-            { contractId: contractId },
-            { contractId: null }
-          ]
-        } : {
-          branchId
+    const cacheKey = `checklist-items:${branchId}:${contractId || 'all'}:${stage || 'all'}`
+
+    const transformedItems = await getCached(cacheKey, async () => {
+      // Build the where clause with proper Prisma typing
+      // When contractId is provided, show items for that contract OR adhoc items (no contract)
+      const items = await prisma.checklistItem.findMany({
+        where: {
+          checklist: contractId ? {
+            branchId,
+            OR: [
+              { contractId: contractId },
+              { contractId: null }
+            ]
+          } : {
+            branchId
+          },
+          deletedAt: null, // Exclude archived items
+          ...(stage && { stage: stage as any })
         },
-        deletedAt: null, // Exclude archived items
-        ...(stage && { stage: stage as any })
-      },
-      include: {
-        checklist: {
-          include: {
-            contract: {
-              select: {
-                title: true
+        include: {
+          checklist: {
+            include: {
+              contract: {
+                select: {
+                  title: true
+                }
               }
+            }
+          },
+          photos: true,
+          contractSystem: {
+            select: {
+              id: true,
+              name: true
             }
           }
         },
-        photos: true,
-        contractSystem: {
-          select: {
-            id: true,
-            name: true
-          }
-        }
-      },
-      orderBy: [
-        { stage: 'asc' },
-        { scheduledDate: 'asc' },
-        { createdAt: 'desc' }
-      ]
-    })
-
-    // Fetch equipment for sticker inspections
-    // 1. Equipment linked to requests (from original request)
-    // 2. Equipment linked directly to work orders (added during inspection)
-    const linkedRequestIds = items.map(item => item.linkedRequestId).filter(Boolean) as string[]
-    const workOrderIds = items.map(item => item.id)
-
-    const allEquipment = await prisma.equipment.findMany({
-      where: {
-        OR: [
-          { requestId: { in: linkedRequestIds } },
-          { workOrderId: { in: workOrderIds } }
+        orderBy: [
+          { stage: 'asc' },
+          { scheduledDate: 'asc' },
+          { createdAt: 'desc' }
         ]
-      }
-    })
+      })
 
-    // Transform to flat structure for Kanban
-    const transformedItems = items.map(item => {
-      // Get equipment for this work order (from linked request or directly linked)
-      const itemEquipment = allEquipment.filter(eq =>
-        eq.requestId === item.linkedRequestId || eq.workOrderId === item.id
-      )
+      // Fetch equipment for sticker inspections
+      // 1. Equipment linked to requests (from original request)
+      // 2. Equipment linked directly to work orders (added during inspection)
+      const linkedRequestIds = items.map(item => item.linkedRequestId).filter(Boolean) as string[]
+      const workOrderIds = items.map(item => item.id)
 
-      return {
-        id: item.id,
-        description: item.description,
-        notes: item.notes,
-        stage: item.stage,
-        type: item.type,
-        workOrderType: item.workOrderType,
-        workOrderNumber: item.workOrderNumber,
-        scheduledDate: item.scheduledDate?.toISOString() || null,
-        price: item.price,
-        isCompleted: item.isCompleted,
-        checklistId: item.checklistId,
-        checklistTitle: item.checklist.title,
-        contractTitle: item.checklist.contract?.title || null,
-        contractSystemId: item.contractSystem?.id || null,
-        linkedRequestId: item.linkedRequestId,
-        assignedTo: item.assignedTo,
-        // Report Fields - Universal
-        inspectionDate: item.inspectionDate?.toISOString() || null,
-        problemScope: item.problemScope,
-        findings: item.findings,
-        actionTaken: item.actionTaken,
-        systemStatus: item.systemStatus,
-        technicianNotes: item.technicianNotes,
-        // Report Fields - SERVICE
-        partsReplaced: item.partsReplaced,
-        // Report Fields - INSTALLATION
-        equipmentInstalled: item.equipmentInstalled,
-        installQuantity: item.installQuantity,
-        completionStatus: item.completionStatus,
-        // Report Fields - INSPECTION
-        areasInspected: item.areasInspected,
-        systemsChecked: item.systemsChecked,
-        deficiencies: item.deficiencies,
-        recommendations: item.recommendations,
-        inspectionResult: item.inspectionResult,
-        // Report Fields - MAINTENANCE
-        systemsMaintained: item.systemsMaintained,
-        maintenancePerformed: item.maintenancePerformed,
-        partsServiced: item.partsServiced,
-        testResult: item.testResult,
-        nextMaintenanceDate: item.nextMaintenanceDate?.toISOString() || null,
-        // Signatures
-        technicianSignature: item.technicianSignature,
-        technicianSignedAt: item.technicianSignedAt?.toISOString() || null,
-        supervisorSignature: item.supervisorSignature,
-        supervisorSignedAt: item.supervisorSignedAt?.toISOString() || null,
-        clientSignature: item.clientSignature,
-        clientSignedAt: item.clientSignedAt?.toISOString() || null,
-        reportGeneratedAt: item.reportGeneratedAt?.toISOString() || null,
-        reportUrl: item.reportUrl,
-        reportData: item.reportData,
-        photos: item.photos,
-        // Payment fields
-        paymentStatus: item.paymentStatus,
-        paymentProofUrl: item.paymentProofUrl,
-        paymentProofType: item.paymentProofType,
-        paymentProofFileName: item.paymentProofFileName,
-        paymentSubmittedAt: item.paymentSubmittedAt?.toISOString() || null,
-        // Contract work order fields
-        visitIndex: item.visitIndex,
-        paymentDueDate: item.paymentDueDate?.toISOString() || null,
-        // Equipment for sticker inspections
-        equipment: itemEquipment.map(eq => ({
-          id: eq.id,
-          equipmentNumber: eq.equipmentNumber,
-          equipmentType: eq.equipmentType,
-          brand: eq.brand,
-          model: eq.model,
-          serialNumber: eq.serialNumber,
-          location: eq.location,
-          dateAdded: eq.dateAdded?.toISOString() || null,
-          expectedExpiry: eq.expectedExpiry?.toISOString() || null,
-          lastInspected: eq.lastInspected?.toISOString() || null,
-          status: eq.status,
-          inspectionResult: eq.inspectionResult,
-          isInspected: eq.isInspected,
-          certificateIssued: eq.certificateIssued,
-          stickerApplied: eq.stickerApplied,
-          notes: eq.notes,
-          deficiencies: eq.deficiencies,
-          certificateId: eq.certificateId,
-        })),
-      }
-    })
+      const allEquipment = await prisma.equipment.findMany({
+        where: {
+          OR: [
+            { requestId: { in: linkedRequestIds } },
+            { workOrderId: { in: workOrderIds } }
+          ]
+        }
+      })
+
+      // Transform to flat structure for Kanban
+      return items.map(item => {
+        // Get equipment for this work order (from linked request or directly linked)
+        const itemEquipment = allEquipment.filter(eq =>
+          eq.requestId === item.linkedRequestId || eq.workOrderId === item.id
+        )
+
+        return {
+          id: item.id,
+          description: item.description,
+          notes: item.notes,
+          stage: item.stage,
+          type: item.type,
+          workOrderType: item.workOrderType,
+          workOrderNumber: item.workOrderNumber,
+          scheduledDate: item.scheduledDate?.toISOString() || null,
+          price: item.price,
+          isCompleted: item.isCompleted,
+          checklistId: item.checklistId,
+          checklistTitle: item.checklist.title,
+          contractTitle: item.checklist.contract?.title || null,
+          contractSystemId: item.contractSystem?.id || null,
+          linkedRequestId: item.linkedRequestId,
+          assignedTo: item.assignedTo,
+          // Report Fields - Universal
+          inspectionDate: item.inspectionDate?.toISOString() || null,
+          problemScope: item.problemScope,
+          findings: item.findings,
+          actionTaken: item.actionTaken,
+          systemStatus: item.systemStatus,
+          technicianNotes: item.technicianNotes,
+          // Report Fields - SERVICE
+          partsReplaced: item.partsReplaced,
+          // Report Fields - INSTALLATION
+          equipmentInstalled: item.equipmentInstalled,
+          installQuantity: item.installQuantity,
+          completionStatus: item.completionStatus,
+          // Report Fields - INSPECTION
+          areasInspected: item.areasInspected,
+          systemsChecked: item.systemsChecked,
+          deficiencies: item.deficiencies,
+          recommendations: item.recommendations,
+          inspectionResult: item.inspectionResult,
+          // Report Fields - MAINTENANCE
+          systemsMaintained: item.systemsMaintained,
+          maintenancePerformed: item.maintenancePerformed,
+          partsServiced: item.partsServiced,
+          testResult: item.testResult,
+          nextMaintenanceDate: item.nextMaintenanceDate?.toISOString() || null,
+          // Signatures
+          technicianSignature: item.technicianSignature,
+          technicianSignedAt: item.technicianSignedAt?.toISOString() || null,
+          supervisorSignature: item.supervisorSignature,
+          supervisorSignedAt: item.supervisorSignedAt?.toISOString() || null,
+          clientSignature: item.clientSignature,
+          clientSignedAt: item.clientSignedAt?.toISOString() || null,
+          reportGeneratedAt: item.reportGeneratedAt?.toISOString() || null,
+          reportUrl: item.reportUrl,
+          reportData: item.reportData,
+          photos: item.photos,
+          // Payment fields
+          paymentStatus: item.paymentStatus,
+          paymentProofUrl: item.paymentProofUrl,
+          paymentProofType: item.paymentProofType,
+          paymentProofFileName: item.paymentProofFileName,
+          paymentSubmittedAt: item.paymentSubmittedAt?.toISOString() || null,
+          // Contract work order fields
+          visitIndex: item.visitIndex,
+          paymentDueDate: item.paymentDueDate?.toISOString() || null,
+          // Equipment for sticker inspections
+          equipment: itemEquipment.map(eq => ({
+            id: eq.id,
+            equipmentNumber: eq.equipmentNumber,
+            equipmentType: eq.equipmentType,
+            brand: eq.brand,
+            model: eq.model,
+            serialNumber: eq.serialNumber,
+            location: eq.location,
+            dateAdded: eq.dateAdded?.toISOString() || null,
+            expectedExpiry: eq.expectedExpiry?.toISOString() || null,
+            lastInspected: eq.lastInspected?.toISOString() || null,
+            status: eq.status,
+            inspectionResult: eq.inspectionResult,
+            isInspected: eq.isInspected,
+            certificateIssued: eq.certificateIssued,
+            stickerApplied: eq.stickerApplied,
+            notes: eq.notes,
+            deficiencies: eq.deficiencies,
+            certificateId: eq.certificateId,
+          })),
+        }
+      })
+    }, 30) // Cache for 30 seconds
 
     return NextResponse.json(transformedItems)
   } catch (error) {
@@ -428,6 +433,9 @@ export async function PATCH(
     if (!hasAccess) {
       return NextResponse.json({ error: 'Access denied' }, { status: 403 })
     }
+
+    // Invalidate checklist-items cache for this branch on any modification
+    await invalidateCache(`*checklist-items:${branchId}:*`)
 
     // Handle inspection update for single work order
     if (action === 'update_inspection') {

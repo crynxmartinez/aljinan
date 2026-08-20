@@ -2,6 +2,7 @@ import { NextResponse } from 'next/server'
 import { getServerSession } from 'next-auth'
 import { authOptions } from '@/lib/auth'
 import { prisma } from '@/lib/prisma'
+import { getCached, CACHE_TAGS } from '@/lib/cache'
 
 const LIMIT = 5
 
@@ -19,125 +20,114 @@ export async function GET(request: Request) {
       return NextResponse.json({ results: [] })
     }
 
-    const role = session.user.role
-    const userId = session.user.id
+    const cacheKey = CACHE_TAGS.SEARCH(session.user.id, query.toLowerCase())
 
-    // Extract numeric portion for matching Int fields like workOrderNumber/requestNumber
-    // Handles formats like "WO-0001", "REQ-42", "0007", "7"
-    const numericMatch = query.match(/\d+/)
-    const numericValue = numericMatch ? parseInt(numericMatch[0], 10) : null
+    const results = await getCached(cacheKey, async () => {
+      const role = session.user.role
+      const userId = session.user.id
 
-    // --- Resolve scope ---
-    // Contractor: scoped by their contractorId
-    // Client: scoped by their clientId (only their own branches)
-    let contractorId: string | null = null
-    let clientId: string | null = null
-    let clientBranchIds: string[] = []
+      // Extract numeric portion for matching Int fields like workOrderNumber/requestNumber
+      // Handles formats like "WO-0001", "REQ-42", "0007", "7"
+      const numericMatch = query.match(/\d+/)
+      const numericValue = numericMatch ? parseInt(numericMatch[0], 10) : null
 
-    if (role === 'CONTRACTOR') {
-      const contractor = await prisma.contractor.findUnique({
-        where: { userId },
-        select: { id: true }
-      })
-      contractorId = contractor?.id ?? null
-    } else if (role === 'TEAM_MEMBER') {
-      const teamMember = await prisma.teamMember.findUnique({
-        where: { userId },
-        select: { contractor: { select: { id: true } } }
-      })
-      contractorId = teamMember?.contractor?.id ?? null
-    } else if (role === 'CLIENT') {
-      const client = await prisma.client.findUnique({
-        where: { userId },
-        select: { id: true, branches: { select: { id: true } } }
-      })
-      clientId = client?.id ?? null
-      clientBranchIds = client?.branches.map(b => b.id) ?? []
-    }
+      // --- Resolve scope ---
+      // Contractor: scoped by their contractorId
+      // Client: scoped by their clientId (only their own branches)
+      let contractorId: string | null = null
+      let clientId: string | null = null
+      let clientBranchIds: string[] = []
 
-    // --- Build parallel queries ---
-    const [
-      clients,
-      branches,
-      workOrders,
-      requests,
-      contracts,
-      invoices,
-      equipment,
-      certificates,
-    ] = await Promise.all([
-
-      // 1. Clients — contractor/team member only
-      contractorId && role !== 'CLIENT'
-        ? prisma.client.findMany({
-          where: {
-            contractorId,
-            OR: [
-              { companyName: { contains: query, mode: 'insensitive' } },
-              { displayName: { contains: query, mode: 'insensitive' } },
-              { contactPersonName: { contains: query, mode: 'insensitive' } },
-              { companyEmail: { contains: query, mode: 'insensitive' } },
-              { companyPhone: { contains: query, mode: 'insensitive' } },
-              { contactPersonPhone: { contains: query, mode: 'insensitive' } },
-            ],
-          },
-          select: { id: true, slug: true, companyName: true, displayName: true },
-          take: LIMIT,
+      if (role === 'CONTRACTOR') {
+        const contractor = await prisma.contractor.findUnique({
+          where: { userId },
+          select: { id: true }
         })
-        : Promise.resolve([]),
-
-      // 2. Branches
-      contractorId && role !== 'CLIENT'
-        ? prisma.branch.findMany({
-          where: {
-            client: { contractorId },
-            OR: [
-              { name: { contains: query, mode: 'insensitive' } },
-              { displayName: { contains: query, mode: 'insensitive' } },
-              { clientNickname: { contains: query, mode: 'insensitive' } },
-              { address: { contains: query, mode: 'insensitive' } },
-              { city: { contains: query, mode: 'insensitive' } },
-              { contactPersonPhone: { contains: query, mode: 'insensitive' } },
-            ],
-          },
-          select: { id: true, slug: true, name: true, displayName: true, address: true, client: { select: { id: true, slug: true, companyName: true } } },
-          take: LIMIT,
+        contractorId = contractor?.id ?? null
+      } else if (role === 'TEAM_MEMBER') {
+        const teamMember = await prisma.teamMember.findUnique({
+          where: { userId },
+          select: { contractor: { select: { id: true } } }
         })
-        : clientId
-          ? prisma.branch.findMany({
+        contractorId = teamMember?.contractor?.id ?? null
+      } else if (role === 'CLIENT') {
+        const client = await prisma.client.findUnique({
+          where: { userId },
+          select: { id: true, branches: { select: { id: true } } }
+        })
+        clientId = client?.id ?? null
+        clientBranchIds = client?.branches.map(b => b.id) ?? []
+      }
+
+      // --- Build parallel queries ---
+      const [
+        clients,
+        branches,
+        workOrders,
+        requests,
+        contracts,
+        invoices,
+        equipment,
+        certificates,
+      ] = await Promise.all([
+
+        // 1. Clients — contractor/team member only
+        contractorId && role !== 'CLIENT'
+          ? prisma.client.findMany({
             where: {
-              clientId,
+              contractorId,
               OR: [
-                { name: { contains: query, mode: 'insensitive' } },
-                { clientNickname: { contains: query, mode: 'insensitive' } },
-                { address: { contains: query, mode: 'insensitive' } },
-                { city: { contains: query, mode: 'insensitive' } },
+                { companyName: { contains: query, mode: 'insensitive' } },
+                { displayName: { contains: query, mode: 'insensitive' } },
+                { contactPersonName: { contains: query, mode: 'insensitive' } },
+                { companyEmail: { contains: query, mode: 'insensitive' } },
+                { companyPhone: { contains: query, mode: 'insensitive' } },
+                { contactPersonPhone: { contains: query, mode: 'insensitive' } },
               ],
             },
-            select: { id: true, slug: true, name: true, clientNickname: true, address: true, client: { select: { id: true, slug: true } } },
+            select: { id: true, slug: true, companyName: true, displayName: true },
             take: LIMIT,
           })
           : Promise.resolve([]),
 
-      // 3. Work orders
-      contractorId && role !== 'CLIENT'
-        ? prisma.checklistItem.findMany({
-          where: {
-            checklist: { branch: { client: { contractorId } } },
-            deletedAt: null,
-            stage: { not: 'ARCHIVED' },
-            OR: [
-              { description: { contains: query, mode: 'insensitive' } },
-              ...(numericValue !== null ? [{ workOrderNumber: numericValue }] : []),
-            ],
-          },
-          select: { id: true, description: true, workOrderNumber: true, stage: true, checklist: { select: { branchId: true, branch: { select: { slug: true, client: { select: { id: true, slug: true, companyName: true } } } } } } },
-          take: LIMIT,
-        })
-        : clientBranchIds.length > 0
+        // 2. Branches
+        contractorId && role !== 'CLIENT'
+          ? prisma.branch.findMany({
+            where: {
+              client: { contractorId },
+              OR: [
+                { name: { contains: query, mode: 'insensitive' } },
+                { displayName: { contains: query, mode: 'insensitive' } },
+                { clientNickname: { contains: query, mode: 'insensitive' } },
+                { address: { contains: query, mode: 'insensitive' } },
+                { city: { contains: query, mode: 'insensitive' } },
+                { contactPersonPhone: { contains: query, mode: 'insensitive' } },
+              ],
+            },
+            select: { id: true, slug: true, name: true, displayName: true, address: true, client: { select: { id: true, slug: true, companyName: true } } },
+            take: LIMIT,
+          })
+          : clientId
+            ? prisma.branch.findMany({
+              where: {
+                clientId,
+                OR: [
+                  { name: { contains: query, mode: 'insensitive' } },
+                  { clientNickname: { contains: query, mode: 'insensitive' } },
+                  { address: { contains: query, mode: 'insensitive' } },
+                  { city: { contains: query, mode: 'insensitive' } },
+                ],
+              },
+              select: { id: true, slug: true, name: true, clientNickname: true, address: true, client: { select: { id: true, slug: true } } },
+              take: LIMIT,
+            })
+            : Promise.resolve([]),
+
+        // 3. Work orders
+        contractorId && role !== 'CLIENT'
           ? prisma.checklistItem.findMany({
             where: {
-              checklist: { branchId: { in: clientBranchIds } },
+              checklist: { branch: { client: { contractorId } } },
               deletedAt: null,
               stage: { not: 'ARCHIVED' },
               OR: [
@@ -145,264 +135,281 @@ export async function GET(request: Request) {
                 ...(numericValue !== null ? [{ workOrderNumber: numericValue }] : []),
               ],
             },
-            select: { id: true, description: true, workOrderNumber: true, stage: true, checklist: { select: { branchId: true, branch: { select: { id: true, slug: true } } } } },
+            select: { id: true, description: true, workOrderNumber: true, stage: true, checklist: { select: { branchId: true, branch: { select: { slug: true, client: { select: { id: true, slug: true, companyName: true } } } } } } },
             take: LIMIT,
           })
-          : Promise.resolve([]),
+          : clientBranchIds.length > 0
+            ? prisma.checklistItem.findMany({
+              where: {
+                checklist: { branchId: { in: clientBranchIds } },
+                deletedAt: null,
+                stage: { not: 'ARCHIVED' },
+                OR: [
+                  { description: { contains: query, mode: 'insensitive' } },
+                  ...(numericValue !== null ? [{ workOrderNumber: numericValue }] : []),
+                ],
+              },
+              select: { id: true, description: true, workOrderNumber: true, stage: true, checklist: { select: { branchId: true, branch: { select: { id: true, slug: true } } } } },
+              take: LIMIT,
+            })
+            : Promise.resolve([]),
 
-      // 4. Requests
-      contractorId && role !== 'CLIENT'
-        ? prisma.request.findMany({
-          where: {
-            branch: { client: { contractorId } },
-            OR: [
-              { title: { contains: query, mode: 'insensitive' } },
-              { description: { contains: query, mode: 'insensitive' } },
-              ...(numericValue !== null ? [{ requestNumber: numericValue }] : []),
-            ],
-          },
-          select: { id: true, title: true, status: true, requestNumber: true, branchId: true, branch: { select: { slug: true, client: { select: { id: true, slug: true, companyName: true } } } } },
-          take: LIMIT,
-        })
-        : clientBranchIds.length > 0
+        // 4. Requests
+        contractorId && role !== 'CLIENT'
           ? prisma.request.findMany({
             where: {
-              branchId: { in: clientBranchIds },
+              branch: { client: { contractorId } },
               OR: [
                 { title: { contains: query, mode: 'insensitive' } },
                 { description: { contains: query, mode: 'insensitive' } },
                 ...(numericValue !== null ? [{ requestNumber: numericValue }] : []),
               ],
             },
-            select: { id: true, title: true, status: true, requestNumber: true, branchId: true, branch: { select: { id: true, slug: true } } },
+            select: { id: true, title: true, status: true, requestNumber: true, branchId: true, branch: { select: { slug: true, client: { select: { id: true, slug: true, companyName: true } } } } },
             take: LIMIT,
           })
-          : Promise.resolve([]),
+          : clientBranchIds.length > 0
+            ? prisma.request.findMany({
+              where: {
+                branchId: { in: clientBranchIds },
+                OR: [
+                  { title: { contains: query, mode: 'insensitive' } },
+                  { description: { contains: query, mode: 'insensitive' } },
+                  ...(numericValue !== null ? [{ requestNumber: numericValue }] : []),
+                ],
+              },
+              select: { id: true, title: true, status: true, requestNumber: true, branchId: true, branch: { select: { id: true, slug: true } } },
+              take: LIMIT,
+            })
+            : Promise.resolve([]),
 
-      // 5. Contracts
-      contractorId && role !== 'CLIENT'
-        ? prisma.contract.findMany({
-          where: {
-            branch: { client: { contractorId } },
-            OR: [
-              { title: { contains: query, mode: 'insensitive' } },
-              { description: { contains: query, mode: 'insensitive' } },
-            ],
-          },
-          select: { id: true, title: true, status: true, branchId: true, branch: { select: { slug: true, client: { select: { id: true, slug: true, companyName: true } } } } },
-          take: LIMIT,
-        })
-        : clientBranchIds.length > 0
+        // 5. Contracts
+        contractorId && role !== 'CLIENT'
           ? prisma.contract.findMany({
             where: {
-              branchId: { in: clientBranchIds },
-              OR: [
-                { title: { contains: query, mode: 'insensitive' } },
-              ],
-            },
-            select: { id: true, title: true, status: true, branchId: true, branch: { select: { id: true, slug: true } } },
-            take: LIMIT,
-          })
-          : Promise.resolve([]),
-
-      // 6. Invoices
-      contractorId && role !== 'CLIENT'
-        ? prisma.invoice.findMany({
-          where: {
-            branch: { client: { contractorId } },
-            OR: [
-              { title: { contains: query, mode: 'insensitive' } },
-              { invoiceNumber: { contains: query, mode: 'insensitive' } },
-            ],
-          },
-          select: { id: true, title: true, invoiceNumber: true, status: true, branchId: true, branch: { select: { slug: true, client: { select: { id: true, slug: true, companyName: true } } } } },
-          take: LIMIT,
-        })
-        : clientBranchIds.length > 0
-          ? prisma.invoice.findMany({
-            where: {
-              branchId: { in: clientBranchIds },
-              OR: [
-                { title: { contains: query, mode: 'insensitive' } },
-                { invoiceNumber: { contains: query, mode: 'insensitive' } },
-              ],
-            },
-            select: { id: true, title: true, invoiceNumber: true, status: true, branchId: true, branch: { select: { id: true, slug: true } } },
-            take: LIMIT,
-          })
-          : Promise.resolve([]),
-
-      // 7. Equipment
-      contractorId && role !== 'CLIENT'
-        ? prisma.equipment.findMany({
-          where: {
-            branch: { client: { contractorId } },
-            OR: [
-              { equipmentNumber: { contains: query, mode: 'insensitive' } },
-              { location: { contains: query, mode: 'insensitive' } },
-              { brand: { contains: query, mode: 'insensitive' } },
-              { model: { contains: query, mode: 'insensitive' } },
-              { serialNumber: { contains: query, mode: 'insensitive' } },
-            ],
-          },
-          select: { id: true, equipmentNumber: true, equipmentType: true, location: true, branchId: true, branch: { select: { slug: true, client: { select: { id: true, slug: true, companyName: true } } } } },
-          take: LIMIT,
-        })
-        : clientBranchIds.length > 0
-          ? prisma.equipment.findMany({
-            where: {
-              branchId: { in: clientBranchIds },
-              OR: [
-                { equipmentNumber: { contains: query, mode: 'insensitive' } },
-                { location: { contains: query, mode: 'insensitive' } },
-                { brand: { contains: query, mode: 'insensitive' } },
-              ],
-            },
-            select: { id: true, equipmentNumber: true, equipmentType: true, location: true, branchId: true, branch: { select: { id: true, slug: true } } },
-            take: LIMIT,
-          })
-          : Promise.resolve([]),
-
-      // 8. Certificates
-      contractorId && role !== 'CLIENT'
-        ? prisma.certificate.findMany({
-          where: {
-            branch: { client: { contractorId } },
-            OR: [
-              { title: { contains: query, mode: 'insensitive' } },
-              { description: { contains: query, mode: 'insensitive' } },
-            ],
-          },
-          select: { id: true, title: true, type: true, branchId: true, branch: { select: { slug: true, client: { select: { id: true, slug: true, companyName: true } } } } },
-          take: LIMIT,
-        })
-        : clientBranchIds.length > 0
-          ? prisma.certificate.findMany({
-            where: {
-              branchId: { in: clientBranchIds },
+              branch: { client: { contractorId } },
               OR: [
                 { title: { contains: query, mode: 'insensitive' } },
                 { description: { contains: query, mode: 'insensitive' } },
               ],
             },
-            select: { id: true, title: true, type: true, branchId: true, branch: { select: { id: true, slug: true } } },
+            select: { id: true, title: true, status: true, branchId: true, branch: { select: { slug: true, client: { select: { id: true, slug: true, companyName: true } } } } },
             take: LIMIT,
           })
-          : Promise.resolve([]),
-    ])
+          : clientBranchIds.length > 0
+            ? prisma.contract.findMany({
+              where: {
+                branchId: { in: clientBranchIds },
+                OR: [
+                  { title: { contains: query, mode: 'insensitive' } },
+                ],
+              },
+              select: { id: true, title: true, status: true, branchId: true, branch: { select: { id: true, slug: true } } },
+              take: LIMIT,
+            })
+            : Promise.resolve([]),
 
-    // --- Format results ---
-    type SearchResult = {
-      id: string
-      type: 'client' | 'branch' | 'work_order' | 'request' | 'contract' | 'invoice' | 'equipment' | 'certificate'
-      title: string
-      subtitle: string
-      link: string
-    }
+        // 6. Invoices
+        contractorId && role !== 'CLIENT'
+          ? prisma.invoice.findMany({
+            where: {
+              branch: { client: { contractorId } },
+              OR: [
+                { title: { contains: query, mode: 'insensitive' } },
+                { invoiceNumber: { contains: query, mode: 'insensitive' } },
+              ],
+            },
+            select: { id: true, title: true, invoiceNumber: true, status: true, branchId: true, branch: { select: { slug: true, client: { select: { id: true, slug: true, companyName: true } } } } },
+            take: LIMIT,
+          })
+          : clientBranchIds.length > 0
+            ? prisma.invoice.findMany({
+              where: {
+                branchId: { in: clientBranchIds },
+                OR: [
+                  { title: { contains: query, mode: 'insensitive' } },
+                  { invoiceNumber: { contains: query, mode: 'insensitive' } },
+                ],
+              },
+              select: { id: true, title: true, invoiceNumber: true, status: true, branchId: true, branch: { select: { id: true, slug: true } } },
+              take: LIMIT,
+            })
+            : Promise.resolve([]),
 
-    const isContractor = role === 'CONTRACTOR' || role === 'TEAM_MEMBER'
+        // 7. Equipment
+        contractorId && role !== 'CLIENT'
+          ? prisma.equipment.findMany({
+            where: {
+              branch: { client: { contractorId } },
+              OR: [
+                { equipmentNumber: { contains: query, mode: 'insensitive' } },
+                { location: { contains: query, mode: 'insensitive' } },
+                { brand: { contains: query, mode: 'insensitive' } },
+                { model: { contains: query, mode: 'insensitive' } },
+                { serialNumber: { contains: query, mode: 'insensitive' } },
+              ],
+            },
+            select: { id: true, equipmentNumber: true, equipmentType: true, location: true, branchId: true, branch: { select: { slug: true, client: { select: { id: true, slug: true, companyName: true } } } } },
+            take: LIMIT,
+          })
+          : clientBranchIds.length > 0
+            ? prisma.equipment.findMany({
+              where: {
+                branchId: { in: clientBranchIds },
+                OR: [
+                  { equipmentNumber: { contains: query, mode: 'insensitive' } },
+                  { location: { contains: query, mode: 'insensitive' } },
+                  { brand: { contains: query, mode: 'insensitive' } },
+                ],
+              },
+              select: { id: true, equipmentNumber: true, equipmentType: true, location: true, branchId: true, branch: { select: { id: true, slug: true } } },
+              take: LIMIT,
+            })
+            : Promise.resolve([]),
 
-    const formatted: SearchResult[] = [
-      // Clients
-      ...(clients as typeof clients).map(c => ({
-        id: c.id,
-        type: 'client' as const,
-        title: c.displayName || c.companyName,
-        subtitle: c.companyName,
-        link: `/dashboard/clients/${c.slug || c.id}`,
-      })),
+        // 8. Certificates
+        contractorId && role !== 'CLIENT'
+          ? prisma.certificate.findMany({
+            where: {
+              branch: { client: { contractorId } },
+              OR: [
+                { title: { contains: query, mode: 'insensitive' } },
+                { description: { contains: query, mode: 'insensitive' } },
+              ],
+            },
+            select: { id: true, title: true, type: true, branchId: true, branch: { select: { slug: true, client: { select: { id: true, slug: true, companyName: true } } } } },
+            take: LIMIT,
+          })
+          : clientBranchIds.length > 0
+            ? prisma.certificate.findMany({
+              where: {
+                branchId: { in: clientBranchIds },
+                OR: [
+                  { title: { contains: query, mode: 'insensitive' } },
+                  { description: { contains: query, mode: 'insensitive' } },
+                ],
+              },
+              select: { id: true, title: true, type: true, branchId: true, branch: { select: { id: true, slug: true } } },
+              take: LIMIT,
+            })
+            : Promise.resolve([]),
+      ])
 
-      // Branches
-      ...(branches as any[]).map(b => ({
-        id: b.id,
-        type: 'branch' as const,
-        title: b.displayName || b.clientNickname || b.name,
-        subtitle: `${isContractor ? (b.client?.companyName + ' · ') : ''}${b.address}`,
-        link: isContractor
-          ? `/dashboard/clients/${b.client?.slug || b.client?.id}/branches/${b.slug || b.id}`
-          : `/portal/branches/${b.slug || b.id}`,
-      })),
+      // --- Format results ---
+      type SearchResult = {
+        id: string
+        type: 'client' | 'branch' | 'work_order' | 'request' | 'contract' | 'invoice' | 'equipment' | 'certificate'
+        title: string
+        subtitle: string
+        link: string
+      }
 
-      // Work Orders
-      ...(workOrders as any[]).map(wo => ({
-        id: wo.id,
-        type: 'work_order' as const,
-        title: wo.workOrderNumber ? `WO-${String(wo.workOrderNumber).padStart(4, '0')} ${wo.description}` : wo.description,
-        subtitle: isContractor
-          ? `${wo.checklist?.branch?.client?.companyName} · ${wo.stage}`
-          : wo.stage,
-        link: isContractor
-          ? `/dashboard/clients/${wo.checklist?.branch?.client?.slug || wo.checklist?.branch?.client?.id}/branches/${wo.checklist?.branch?.slug || wo.checklist?.branchId}?tab=checklists`
-          : `/portal/branches/${wo.checklist?.branch?.slug || wo.checklist?.branchId}?tab=checklist`,
-      })),
+      const isContractor = role === 'CONTRACTOR' || role === 'TEAM_MEMBER'
 
-      // Requests
-      ...(requests as any[]).map(r => ({
-        id: r.id,
-        type: 'request' as const,
-        title: r.requestNumber ? `REQ-${String(r.requestNumber).padStart(4, '0')} ${r.title}` : r.title,
-        subtitle: isContractor
-          ? `${r.branch?.client?.companyName} · ${r.status}`
-          : r.status,
-        link: isContractor
-          ? `/dashboard/clients/${r.branch?.client?.slug || r.branch?.client?.id}/branches/${r.branch?.slug || r.branchId}?tab=requests`
-          : `/portal/branches/${r.branch?.slug || r.branchId}?tab=requests`,
-      })),
+      const formatted: SearchResult[] = [
+        // Clients
+        ...(clients as typeof clients).map(c => ({
+          id: c.id,
+          type: 'client' as const,
+          title: c.displayName || c.companyName,
+          subtitle: c.companyName,
+          link: `/dashboard/clients/${c.slug || c.id}`,
+        })),
 
-      // Contracts
-      ...(contracts as any[]).map(c => ({
-        id: c.id,
-        type: 'contract' as const,
-        title: c.title,
-        subtitle: isContractor
-          ? `${c.branch?.client?.companyName} · ${c.status}`
-          : c.status,
-        link: isContractor
-          ? `/dashboard/clients/${c.branch?.client?.slug || c.branch?.client?.id}/branches/${c.branch?.slug || c.branchId}?tab=contracts`
-          : `/portal/branches/${c.branch?.slug || c.branchId}?tab=contracts`,
-      })),
+        // Branches
+        ...(branches as any[]).map(b => ({
+          id: b.id,
+          type: 'branch' as const,
+          title: b.displayName || b.clientNickname || b.name,
+          subtitle: `${isContractor ? (b.client?.companyName + ' · ') : ''}${b.address}`,
+          link: isContractor
+            ? `/dashboard/clients/${b.client?.slug || b.client?.id}/branches/${b.slug || b.id}`
+            : `/portal/branches/${b.slug || b.id}`,
+        })),
 
-      // Invoices
-      ...(invoices as any[]).map(inv => ({
-        id: inv.id,
-        type: 'invoice' as const,
-        title: inv.invoiceNumber ? `${inv.invoiceNumber} — ${inv.title}` : inv.title,
-        subtitle: isContractor
-          ? `${inv.branch?.client?.companyName} · ${inv.status}`
-          : inv.status,
-        link: isContractor
-          ? `/dashboard/clients/${inv.branch?.client?.slug || inv.branch?.client?.id}/branches/${inv.branch?.slug || inv.branchId}?tab=billing`
-          : `/portal/branches/${inv.branch?.slug || inv.branchId}?tab=billing`,
-      })),
+        // Work Orders
+        ...(workOrders as any[]).map(wo => ({
+          id: wo.id,
+          type: 'work_order' as const,
+          title: wo.workOrderNumber ? `WO-${String(wo.workOrderNumber).padStart(4, '0')} ${wo.description}` : wo.description,
+          subtitle: isContractor
+            ? `${wo.checklist?.branch?.client?.companyName} · ${wo.stage}`
+            : wo.stage,
+          link: isContractor
+            ? `/dashboard/clients/${wo.checklist?.branch?.client?.slug || wo.checklist?.branch?.client?.id}/branches/${wo.checklist?.branch?.slug || wo.checklist?.branchId}?tab=checklists`
+            : `/portal/branches/${wo.checklist?.branch?.slug || wo.checklist?.branchId}?tab=checklist`,
+        })),
 
-      // Equipment
-      ...(equipment as any[]).map(eq => ({
-        id: eq.id,
-        type: 'equipment' as const,
-        title: `${eq.equipmentNumber} — ${eq.equipmentType.replace(/_/g, ' ')}`,
-        subtitle: isContractor
-          ? `${eq.branch?.client?.companyName}${eq.location ? ' · ' + eq.location : ''}`
-          : eq.location || eq.equipmentType.replace(/_/g, ' '),
-        link: isContractor
-          ? `/dashboard/clients/${eq.branch?.client?.slug || eq.branch?.client?.id}/branches/${eq.branch?.slug || eq.branchId}?tab=equipment`
-          : `/portal/branches/${eq.branch?.slug || eq.branchId}?tab=equipment`,
-      })),
+        // Requests
+        ...(requests as any[]).map(r => ({
+          id: r.id,
+          type: 'request' as const,
+          title: r.requestNumber ? `REQ-${String(r.requestNumber).padStart(4, '0')} ${r.title}` : r.title,
+          subtitle: isContractor
+            ? `${r.branch?.client?.companyName} · ${r.status}`
+            : r.status,
+          link: isContractor
+            ? `/dashboard/clients/${r.branch?.client?.slug || r.branch?.client?.id}/branches/${r.branch?.slug || r.branchId}?tab=requests`
+            : `/portal/branches/${r.branch?.slug || r.branchId}?tab=requests`,
+        })),
 
-      // Certificates
-      ...(certificates as any[]).map(cert => ({
-        id: cert.id,
-        type: 'certificate' as const,
-        title: cert.title,
-        subtitle: isContractor
-          ? `${cert.branch?.client?.companyName} · ${cert.type.replace(/_/g, ' ')}`
-          : cert.type.replace(/_/g, ' '),
-        link: isContractor
-          ? `/dashboard/clients/${cert.branch?.client?.slug || cert.branch?.client?.id}/branches/${cert.branch?.slug || cert.branchId}?tab=certificates`
-          : `/portal/branches/${cert.branch?.slug || cert.branchId}?tab=certificates`,
-      })),
-    ]
+        // Contracts
+        ...(contracts as any[]).map(c => ({
+          id: c.id,
+          type: 'contract' as const,
+          title: c.title,
+          subtitle: isContractor
+            ? `${c.branch?.client?.companyName} · ${c.status}`
+            : c.status,
+          link: isContractor
+            ? `/dashboard/clients/${c.branch?.client?.slug || c.branch?.client?.id}/branches/${c.branch?.slug || c.branchId}?tab=contracts`
+            : `/portal/branches/${c.branch?.slug || c.branchId}?tab=contracts`,
+        })),
 
-    return NextResponse.json({ results: formatted })
+        // Invoices
+        ...(invoices as any[]).map(inv => ({
+          id: inv.id,
+          type: 'invoice' as const,
+          title: inv.invoiceNumber ? `${inv.invoiceNumber} — ${inv.title}` : inv.title,
+          subtitle: isContractor
+            ? `${inv.branch?.client?.companyName} · ${inv.status}`
+            : inv.status,
+          link: isContractor
+            ? `/dashboard/clients/${inv.branch?.client?.slug || inv.branch?.client?.id}/branches/${inv.branch?.slug || inv.branchId}?tab=billing`
+            : `/portal/branches/${inv.branch?.slug || inv.branchId}?tab=billing`,
+        })),
+
+        // Equipment
+        ...(equipment as any[]).map(eq => ({
+          id: eq.id,
+          type: 'equipment' as const,
+          title: `${eq.equipmentNumber} — ${eq.equipmentType.replace(/_/g, ' ')}`,
+          subtitle: isContractor
+            ? `${eq.branch?.client?.companyName}${eq.location ? ' · ' + eq.location : ''}`
+            : eq.location || eq.equipmentType.replace(/_/g, ' '),
+          link: isContractor
+            ? `/dashboard/clients/${eq.branch?.client?.slug || eq.branch?.client?.id}/branches/${eq.branch?.slug || eq.branchId}?tab=equipment`
+            : `/portal/branches/${eq.branch?.slug || eq.branchId}?tab=equipment`,
+        })),
+
+        // Certificates
+        ...(certificates as any[]).map(cert => ({
+          id: cert.id,
+          type: 'certificate' as const,
+          title: cert.title,
+          subtitle: isContractor
+            ? `${cert.branch?.client?.companyName} · ${cert.type.replace(/_/g, ' ')}`
+            : cert.type.replace(/_/g, ' '),
+          link: isContractor
+            ? `/dashboard/clients/${cert.branch?.client?.slug || cert.branch?.client?.id}/branches/${cert.branch?.slug || cert.branchId}?tab=certificates`
+            : `/portal/branches/${cert.branch?.slug || cert.branchId}?tab=certificates`,
+        })),
+      ]
+
+      return formatted
+    }, 30) // Cache search results for 30 seconds
+
+    return NextResponse.json({ results })
   } catch (error) {
     console.error('Search error:', error)
     return NextResponse.json({ error: 'Search failed' }, { status: 500 })

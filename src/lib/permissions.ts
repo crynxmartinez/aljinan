@@ -110,10 +110,13 @@ export async function canAccessContract(
   userRole: UserRole,
   contractId: string
 ): Promise<boolean> {
-  const contract = await prisma.contract.findUnique({
-    where: { id: contractId },
-    select: { branchId: true }
-  })
+  const cacheKey = `entity:branchId:contract:${contractId}`
+  const contract = await getCached(cacheKey, async () => {
+    return prisma.contract.findUnique({
+      where: { id: contractId },
+      select: { branchId: true }
+    })
+  }, 60)
 
   if (!contract) return false
 
@@ -211,10 +214,13 @@ export async function canAccessRequest(
   userRole: UserRole,
   requestId: string
 ): Promise<boolean> {
-  const request = await prisma.request.findUnique({
-    where: { id: requestId },
-    select: { branchId: true }
-  })
+  const cacheKey = `entity:branchId:request:${requestId}`
+  const request = await getCached(cacheKey, async () => {
+    return prisma.request.findUnique({
+      where: { id: requestId },
+      select: { branchId: true }
+    })
+  }, 60)
 
   if (!request) return false
 
@@ -265,10 +271,13 @@ export async function canAccessInvoice(
   userRole: UserRole,
   invoiceId: string
 ): Promise<boolean> {
-  const invoice = await prisma.invoice.findUnique({
-    where: { id: invoiceId },
-    select: { branchId: true }
-  })
+  const cacheKey = `entity:branchId:invoice:${invoiceId}`
+  const invoice = await getCached(cacheKey, async () => {
+    return prisma.invoice.findUnique({
+      where: { id: invoiceId },
+      select: { branchId: true }
+    })
+  }, 60)
 
   if (!invoice) return false
 
@@ -334,10 +343,13 @@ export async function canAccessEquipment(
   userRole: UserRole,
   equipmentId: string
 ): Promise<boolean> {
-  const equipment = await prisma.equipment.findUnique({
-    where: { id: equipmentId },
-    select: { branchId: true }
-  })
+  const cacheKey = `entity:branchId:equipment:${equipmentId}`
+  const equipment = await getCached(cacheKey, async () => {
+    return prisma.equipment.findUnique({
+      where: { id: equipmentId },
+      select: { branchId: true }
+    })
+  }, 60)
 
   if (!equipment) return false
 

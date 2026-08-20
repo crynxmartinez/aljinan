@@ -6,174 +6,183 @@ import { Users, Building2, MapPin, FileText, ClipboardList, Shield } from 'lucid
 import { AdminCharts } from '@/components/admin/admin-charts'
 import { RecentActivity } from '@/components/admin/recent-activity'
 import { getTranslations } from '@/lib/i18n/server'
+import { getCached } from '@/lib/cache'
 
 async function getAdminStats() {
-  try {
-    const [
-      contractorCount,
-      clientCount,
-      branchCount,
-      requestCount,
-      workOrderCount,
-      adminCount,
-    ] = await Promise.all([
-      prisma.contractor.count().catch(() => 0),
-      prisma.client.count().catch(() => 0),
-      prisma.branch.count({ where: { isActive: true } }).catch(() => 0),
-      prisma.request.count().catch(() => 0),
-      prisma.checklistItem.count().catch(() => 0),
-      prisma.adminUser.count().catch(() => 0),
-    ])
+  return getCached('admin-stats', async () => {
+    try {
+      const [
+        contractorCount,
+        clientCount,
+        branchCount,
+        requestCount,
+        workOrderCount,
+        adminCount,
+      ] = await Promise.all([
+        prisma.contractor.count().catch(() => 0),
+        prisma.client.count().catch(() => 0),
+        prisma.branch.count({ where: { isActive: true } }).catch(() => 0),
+        prisma.request.count().catch(() => 0),
+        prisma.checklistItem.count().catch(() => 0),
+        prisma.adminUser.count().catch(() => 0),
+      ])
 
-    return {
-      contractors: contractorCount,
-      clients: clientCount,
-      branches: branchCount,
-      requests: requestCount,
-      workOrders: workOrderCount,
-      admins: adminCount,
+      return {
+        contractors: contractorCount,
+        clients: clientCount,
+        branches: branchCount,
+        requests: requestCount,
+        workOrders: workOrderCount,
+        admins: adminCount,
+      }
+    } catch (error) {
+      console.error('Error fetching admin stats:', error)
+      return {
+        contractors: 0,
+        clients: 0,
+        branches: 0,
+        requests: 0,
+        workOrders: 0,
+        admins: 0,
+      }
     }
-  } catch (error) {
-    console.error('Error fetching admin stats:', error)
-    return {
-      contractors: 0,
-      clients: 0,
-      branches: 0,
-      requests: 0,
-      workOrders: 0,
-      admins: 0,
-    }
-  }
+  }, 300) // Cache for 5 minutes
 }
 
 async function getRequestsByMonth() {
-  try {
-    const sixMonthsAgo = new Date()
-    sixMonthsAgo.setMonth(sixMonthsAgo.getMonth() - 5)
-    sixMonthsAgo.setDate(1)
-    sixMonthsAgo.setHours(0, 0, 0, 0)
+  return getCached('admin-requests-by-month', async () => {
+    try {
+      const sixMonthsAgo = new Date()
+      sixMonthsAgo.setMonth(sixMonthsAgo.getMonth() - 5)
+      sixMonthsAgo.setDate(1)
+      sixMonthsAgo.setHours(0, 0, 0, 0)
 
-    const requests = await prisma.request.findMany({
-      where: { createdAt: { gte: sixMonthsAgo } },
-      select: { createdAt: true },
-      orderBy: { createdAt: 'asc' },
-    })
+      const requests = await prisma.request.findMany({
+        where: { createdAt: { gte: sixMonthsAgo } },
+        select: { createdAt: true },
+        orderBy: { createdAt: 'asc' },
+      })
 
-    const monthMap = new Map<string, number>()
-    for (let i = 0; i < 6; i++) {
-      const d = new Date()
-      d.setMonth(d.getMonth() - (5 - i))
-      const key = d.toLocaleDateString('ar-SA', { month: 'short', year: '2-digit' })
-      monthMap.set(key, 0)
-    }
-
-    requests.forEach((r) => {
-      const key = r.createdAt.toLocaleDateString('ar-SA', { month: 'short', year: '2-digit' })
-      if (monthMap.has(key)) {
-        monthMap.set(key, (monthMap.get(key) || 0) + 1)
+      const monthMap = new Map<string, number>()
+      for (let i = 0; i < 6; i++) {
+        const d = new Date()
+        d.setMonth(d.getMonth() - (5 - i))
+        const key = d.toLocaleDateString('ar-SA', { month: 'short', year: '2-digit' })
+        monthMap.set(key, 0)
       }
-    })
 
-    return Array.from(monthMap.entries()).map(([month, count]) => ({ month, count }))
-  } catch (error) {
-    console.error('Error fetching requests by month:', error)
-    return []
-  }
+      requests.forEach((r) => {
+        const key = r.createdAt.toLocaleDateString('ar-SA', { month: 'short', year: '2-digit' })
+        if (monthMap.has(key)) {
+          monthMap.set(key, (monthMap.get(key) || 0) + 1)
+        }
+      })
+
+      return Array.from(monthMap.entries()).map(([month, count]) => ({ month, count }))
+    } catch (error) {
+      console.error('Error fetching requests by month:', error)
+      return []
+    }
+  }, 300)
 }
 
 async function getRequestsByStatus() {
-  try {
-    const statusGroups = await prisma.request.groupBy({
-      by: ['status'],
-      _count: { id: true },
-    })
+  return getCached('admin-requests-by-status', async () => {
+    try {
+      const statusGroups = await prisma.request.groupBy({
+        by: ['status'],
+        _count: { id: true },
+      })
 
-    const statusLabels: Record<string, string> = {
-      REQUESTED: 'Requested',
-      QUOTED: 'Quoted',
-      SCHEDULED: 'Scheduled',
-      IN_PROGRESS: 'In Progress',
-      COMPLETED: 'Completed',
-      REJECTED: 'Rejected',
-      CANCELLED: 'Cancelled',
-      FOR_REVIEW: 'For Review',
-      PENDING_APPROVAL: 'Pending Approval',
-      CLOSED: 'Closed',
+      const statusLabels: Record<string, string> = {
+        REQUESTED: 'Requested',
+        QUOTED: 'Quoted',
+        SCHEDULED: 'Scheduled',
+        IN_PROGRESS: 'In Progress',
+        COMPLETED: 'Completed',
+        REJECTED: 'Rejected',
+        CANCELLED: 'Cancelled',
+        FOR_REVIEW: 'For Review',
+        PENDING_APPROVAL: 'Pending Approval',
+        CLOSED: 'Closed',
+      }
+
+      return statusGroups.map((g) => ({
+        status: statusLabels[g.status] || g.status,
+        count: g._count.id,
+      }))
+    } catch (error) {
+      console.error('Error fetching requests by status:', error)
+      return []
     }
-
-    return statusGroups.map((g) => ({
-      status: statusLabels[g.status] || g.status,
-      count: g._count.id,
-    }))
-  } catch (error) {
-    console.error('Error fetching requests by status:', error)
-    return []
-  }
+  }, 300)
 }
 
 async function getRecentActivity() {
-  try {
-    const activities: {
-      id: string
-      type: 'contractor_registered' | 'client_added' | 'request_created' | 'request_completed'
-      title: string
-      description: string
-      timestamp: string
-      contractorName?: string
-    }[] = []
+  return getCached('admin-recent-activity', async () => {
+    try {
+      const activities: {
+        id: string
+        type: 'contractor_registered' | 'client_added' | 'request_created' | 'request_completed'
+        title: string
+        description: string
+        timestamp: string
+        contractorName?: string
+      }[] = []
 
-    // Recent contractors
-    const recentContractors = await prisma.contractor.findMany({
-      take: 5,
-      orderBy: { createdAt: 'desc' },
-      include: { user: { select: { email: true, name: true, createdAt: true } } },
-    }).catch(() => [])
+      // Recent contractors
+      const recentContractors = await prisma.contractor.findMany({
+        take: 5,
+        orderBy: { createdAt: 'desc' },
+        include: { user: { select: { email: true, name: true, createdAt: true } } },
+      }).catch(() => [])
 
-    recentContractors.forEach((c) => {
-      activities.push({
-        id: `c-${c.id}`,
-        type: 'contractor_registered',
-        title: c.companyName || c.user.name || 'New Contractor',
-        description: c.user.email,
-        timestamp: c.createdAt.toISOString(),
+      recentContractors.forEach((c) => {
+        activities.push({
+          id: `c-${c.id}`,
+          type: 'contractor_registered',
+          title: c.companyName || c.user.name || 'New Contractor',
+          description: c.user.email,
+          timestamp: c.createdAt.toISOString(),
+        })
       })
-    })
 
-    // Recent requests
-    const recentRequests = await prisma.request.findMany({
-      take: 5,
-      orderBy: { createdAt: 'desc' },
-      include: {
-        branch: {
-          include: {
-            client: {
-              include: {
-                contractor: { select: { companyName: true } },
+      // Recent requests
+      const recentRequests = await prisma.request.findMany({
+        take: 5,
+        orderBy: { createdAt: 'desc' },
+        include: {
+          branch: {
+            include: {
+              client: {
+                include: {
+                  contractor: { select: { companyName: true } },
+                },
               },
             },
           },
         },
-      },
-    }).catch(() => [])
+      }).catch(() => [])
 
-    recentRequests.forEach((r) => {
-      activities.push({
-        id: `r-${r.id}`,
-        type: r.status === 'COMPLETED' ? 'request_completed' : 'request_created',
-        title: r.title,
-        description: `Branch: ${r.branch.name}`,
-        timestamp: r.createdAt.toISOString(),
-        contractorName: r.branch.client.contractor.companyName || undefined,
+      recentRequests.forEach((r) => {
+        activities.push({
+          id: `r-${r.id}`,
+          type: r.status === 'COMPLETED' ? 'request_completed' : 'request_created',
+          title: r.title,
+          description: `Branch: ${r.branch.name}`,
+          timestamp: r.createdAt.toISOString(),
+          contractorName: r.branch.client.contractor.companyName || undefined,
+        })
       })
-    })
 
-    // Sort by timestamp desc and take top 10
-    activities.sort((a, b) => new Date(b.timestamp).getTime() - new Date(a.timestamp).getTime())
-    return activities.slice(0, 10)
-  } catch (error) {
-    console.error('Error fetching recent activity:', error)
-    return []
-  }
+      // Sort by timestamp desc and take top 10
+      activities.sort((a, b) => new Date(b.timestamp).getTime() - new Date(a.timestamp).getTime())
+      return activities.slice(0, 10)
+    } catch (error) {
+      console.error('Error fetching recent activity:', error)
+      return []
+    }
+  }, 300)
 }
 
 export default async function AdminDashboardPage() {

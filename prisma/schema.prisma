@@ -771,6 +771,8 @@ model Contract {
 
   @@index([branchId])
   @@index([status])
+  @@index([endDate])
+  @@index([branchId, status])
 }
 
 // Frequency for contract system visits
@@ -1019,6 +1021,8 @@ model ChecklistItem {
   @@index([linkedRequestId])
   @@index([workOrderNumber])
   @@index([contractSystemId])
+  @@index([updatedAt])
+  @@index([stage, updatedAt])
 }
 
 // Photos attached to work order inspections

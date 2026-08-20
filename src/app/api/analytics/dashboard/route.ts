@@ -2,6 +2,7 @@ import { NextResponse } from 'next/server'
 import { getServerSession } from 'next-auth'
 import { authOptions } from '@/lib/auth'
 import { prisma } from '@/lib/prisma'
+import { getCached } from '@/lib/cache'
 
 export async function GET() {
   try {
@@ -11,220 +12,205 @@ export async function GET() {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
     }
 
-    // Only contractors and team members can access analytics
     if (session.user.role !== 'CONTRACTOR' && session.user.role !== 'TEAM_MEMBER') {
       return NextResponse.json({ error: 'Access denied' }, { status: 403 })
     }
 
-    // Get date ranges
-    const now = new Date()
-    const firstDayThisMonth = new Date(now.getFullYear(), now.getMonth(), 1)
-    const firstDayLastMonth = new Date(now.getFullYear(), now.getMonth() - 1, 1)
-    const lastDayLastMonth = new Date(now.getFullYear(), now.getMonth(), 0)
-    const sixMonthsAgo = new Date(now.getFullYear(), now.getMonth() - 6, 1)
+    const cacheKey = `analytics:${session.user.id}`
 
-    // Get work orders based on role (exclude archived clients)
-    let allWorkOrders
-    if (session.user.role === 'TEAM_MEMBER' && session.user.assignedBranchIds) {
-      // Team members: only get work orders from assigned branches (exclude archived)
-      allWorkOrders = await prisma.checklistItem.findMany({
-        where: {
+    const data = await getCached(cacheKey, async () => {
+      const now = new Date()
+      const firstDayThisMonth = new Date(now.getFullYear(), now.getMonth(), 1)
+      const firstDayLastMonth = new Date(now.getFullYear(), now.getMonth() - 1, 1)
+      const lastDayLastMonth = new Date(now.getFullYear(), now.getMonth(), 0)
+
+      // Build base where clause based on role
+      const isTeamMember = session.user.role === 'TEAM_MEMBER' && session.user.assignedBranchIds
+      const branchIds = isTeamMember ? session.user.assignedBranchIds! : undefined
+
+      const baseWhere = branchIds
+        ? {
           checklist: {
-            branchId: { in: session.user.assignedBranchIds },
-            branch: {
-              client: {
-                user: {
-                  status: { not: 'ARCHIVED' }
-                }
-              }
-            }
+            branchId: { in: branchIds },
+            branch: { client: { user: { status: { not: 'ARCHIVED' as const } } } }
           },
           deletedAt: null
-        },
-        include: {
-          checklist: {
-            include: {
-              branch: {
-                include: {
-                  client: {
-                    include: {
-                      user: {
-                        select: { status: true }
-                      }
-                    }
-                  }
-                }
-              }
-            }
-          }
         }
-      })
-    } else {
-      // Contractors: get all work orders (exclude archived clients)
-      allWorkOrders = await prisma.checklistItem.findMany({
-        where: {
+        : {
           checklist: {
-            branch: {
-              client: {
-                user: {
-                  status: { not: 'ARCHIVED' }
-                }
-              }
-            }
+            branch: { client: { user: { status: { not: 'ARCHIVED' as const } } } }
           },
           deletedAt: null
-        },
-        include: {
-          checklist: {
-            include: {
-              branch: {
-                include: {
-                  client: {
-                    include: {
-                      user: {
-                        select: { status: true }
-                      }
-                    }
-                  }
-                }
-              }
-            }
-          }
         }
-      })
-    }
 
-    // Calculate total revenue this month (completed work orders)
-    const thisMonthRevenue = allWorkOrders
-      .filter(wo => {
-        return wo.updatedAt >= firstDayThisMonth && wo.stage === 'COMPLETED' && wo.price
-      })
-      .reduce((sum, wo) => sum + Number(wo.price || 0), 0)
-
-    // Calculate total revenue last month
-    const lastMonthRevenue = allWorkOrders
-      .filter(wo => {
-        return wo.updatedAt >= firstDayLastMonth && wo.updatedAt <= lastDayLastMonth && wo.stage === 'COMPLETED' && wo.price
-      })
-      .reduce((sum, wo) => sum + Number(wo.price || 0), 0)
-
-    // Calculate revenue change percentage
-    const revenueChange = lastMonthRevenue > 0
-      ? ((thisMonthRevenue - lastMonthRevenue) / lastMonthRevenue) * 100
-      : 0
-
-    // Count active work orders (not completed or archived)
-    const activeWorkOrders = allWorkOrders.filter(
-      wo => wo.stage !== 'COMPLETED' && wo.stage !== 'ARCHIVED'
-    ).length
-
-    // Count overdue work orders
-    const overdueWorkOrders = allWorkOrders.filter(wo => {
-      if (!wo.scheduledDate || wo.stage === 'COMPLETED' || wo.stage === 'ARCHIVED') return false
-      return new Date(wo.scheduledDate) < now
-    }).length
-
-    // Calculate completion rate
-    const completedCount = allWorkOrders.filter(wo => wo.stage === 'COMPLETED').length
-    const totalCount = allWorkOrders.length
-    const completionRate = totalCount > 0 ? (completedCount / totalCount) * 100 : 0
-
-    // Get work orders by status
-    const statusCounts = {
-      SCHEDULED: allWorkOrders.filter(wo => wo.stage === 'SCHEDULED').length,
-      IN_PROGRESS: allWorkOrders.filter(wo => wo.stage === 'IN_PROGRESS').length,
-      FOR_REVIEW: allWorkOrders.filter(wo => wo.stage === 'FOR_REVIEW').length,
-      COMPLETED: allWorkOrders.filter(wo => wo.stage === 'COMPLETED').length,
-    }
-
-    // Get work orders by type
-    const typeCounts = {
-      SERVICE: allWorkOrders.filter(wo => wo.workOrderType === 'SERVICE').length,
-      INSPECTION: allWorkOrders.filter(wo => wo.workOrderType === 'INSPECTION').length,
-      MAINTENANCE: allWorkOrders.filter(wo => wo.workOrderType === 'MAINTENANCE').length,
-      INSTALLATION: allWorkOrders.filter(wo => wo.workOrderType === 'INSTALLATION').length,
-    }
-
-    // Get revenue by month for last 6 months
-    const revenueByMonth = []
-    for (let i = 5; i >= 0; i--) {
-      const monthStart = new Date(now.getFullYear(), now.getMonth() - i, 1)
-      const monthEnd = new Date(now.getFullYear(), now.getMonth() - i + 1, 0)
-
-      const monthRevenue = allWorkOrders
-        .filter(wo => {
-          return wo.updatedAt >= monthStart && wo.updatedAt <= monthEnd && wo.stage === 'COMPLETED' && wo.price
+      // 1. Revenue aggregations (replaces fetching ALL work orders)
+      const [thisMonthAgg, lastMonthAgg] = await Promise.all([
+        prisma.checklistItem.aggregate({
+          where: {
+            ...baseWhere,
+            stage: 'COMPLETED',
+            updatedAt: { gte: firstDayThisMonth }
+          },
+          _sum: { price: true }
+        }),
+        prisma.checklistItem.aggregate({
+          where: {
+            ...baseWhere,
+            stage: 'COMPLETED',
+            updatedAt: { gte: firstDayLastMonth, lte: lastDayLastMonth }
+          },
+          _sum: { price: true }
         })
-        .reduce((sum, wo) => sum + Number(wo.price || 0), 0)
+      ])
 
-      revenueByMonth.push({
-        month: monthStart.toLocaleDateString('ar-SA', { month: 'short' }),
-        revenue: monthRevenue
-      })
-    }
+      const thisMonthRevenue = Number(thisMonthAgg._sum.price || 0)
+      const lastMonthRevenue = Number(lastMonthAgg._sum.price || 0)
+      const revenueChange = lastMonthRevenue > 0
+        ? ((thisMonthRevenue - lastMonthRevenue) / lastMonthRevenue) * 100
+        : 0
 
-    // Get top clients by revenue
-    const clientRevenue = new Map<string, { name: string; revenue: number }>()
+      // 2. Counts via groupBy (single query instead of filtering in JS)
+      const [statusGroups, typeGroups, activeCount, overdueCount, completedCount, totalCount] = await Promise.all([
+        // Status counts
+        prisma.checklistItem.groupBy({
+          by: ['stage'],
+          where: baseWhere,
+          _count: { id: true }
+        }),
+        // Type counts
+        prisma.checklistItem.groupBy({
+          by: ['workOrderType'],
+          where: baseWhere,
+          _count: { id: true }
+        }),
+        // Active count
+        prisma.checklistItem.count({
+          where: { ...baseWhere, stage: { notIn: ['COMPLETED', 'ARCHIVED'] } }
+        }),
+        // Overdue count
+        prisma.checklistItem.count({
+          where: {
+            ...baseWhere,
+            scheduledDate: { lt: now },
+            stage: { notIn: ['COMPLETED', 'ARCHIVED'] }
+          }
+        }),
+        // Completed count
+        prisma.checklistItem.count({
+          where: { ...baseWhere, stage: 'COMPLETED' }
+        }),
+        // Total count
+        prisma.checklistItem.count({ where: baseWhere })
+      ])
 
-    allWorkOrders.forEach(wo => {
-      if (wo.price && wo.checklist?.branch?.client) {
-        const client = wo.checklist.branch.client
-        const current = clientRevenue.get(client.id) || { name: client.companyName, revenue: 0 }
-        current.revenue += Number(wo.price)
-        clientRevenue.set(client.id, current)
+      const completionRate = totalCount > 0 ? (completedCount / totalCount) * 100 : 0
+
+      // Build status counts map
+      const statusMap = new Map(statusGroups.map(g => [g.stage, g._count.id]))
+      const statusCounts = {
+        SCHEDULED: statusMap.get('SCHEDULED') || 0,
+        IN_PROGRESS: statusMap.get('IN_PROGRESS') || 0,
+        FOR_REVIEW: statusMap.get('FOR_REVIEW') || 0,
+        COMPLETED: statusMap.get('COMPLETED') || 0,
       }
-    })
 
-    const topClients = Array.from(clientRevenue.values())
-      .sort((a, b) => b.revenue - a.revenue)
-      .slice(0, 5)
+      // Build type counts map
+      const typeMap = new Map(typeGroups.map(g => [g.workOrderType, g._count.id]))
+      const typeCounts = {
+        SERVICE: typeMap.get('SERVICE') || 0,
+        INSPECTION: typeMap.get('INSPECTION') || 0,
+        MAINTENANCE: typeMap.get('MAINTENANCE') || 0,
+        INSTALLATION: typeMap.get('INSTALLATION') || 0,
+      }
 
-    return NextResponse.json({
-      stats: {
-        revenue: {
-          current: thisMonthRevenue,
-          change: revenueChange,
-          label: 'مقارنة بالشهر الماضي'
+      // 3. Revenue by month (6 queries but aggregated, not fetching rows)
+      const revenueByMonthPromises = []
+      for (let i = 5; i >= 0; i--) {
+        const monthStart = new Date(now.getFullYear(), now.getMonth() - i, 1)
+        const monthEnd = new Date(now.getFullYear(), now.getMonth() - i + 1, 0)
+        revenueByMonthPromises.push(
+          prisma.checklistItem.aggregate({
+            where: {
+              ...baseWhere,
+              stage: 'COMPLETED',
+              updatedAt: { gte: monthStart, lte: monthEnd }
+            },
+            _sum: { price: true }
+          }).then(agg => ({
+            month: monthStart.toLocaleDateString('ar-SA', { month: 'short' }),
+            revenue: Number(agg._sum.price || 0)
+          }))
+        )
+      }
+      const revenueByMonth = await Promise.all(revenueByMonthPromises)
+
+      // 4. Top clients by revenue (aggregated, not fetching all work orders)
+      const topClientRevenue = await prisma.checklistItem.findMany({
+        where: {
+          ...baseWhere,
+          stage: 'COMPLETED',
+          price: { not: null }
         },
-        activeWorkOrders: {
-          count: activeWorkOrders,
-          label: 'نشط'
+        select: {
+          price: true,
+          checklist: {
+            select: {
+              branch: {
+                select: {
+                  client: {
+                    select: { id: true, companyName: true }
+                  }
+                }
+              }
+            }
+          }
         },
-        overdueWorkOrders: {
-          count: overdueWorkOrders,
-          label: 'متأخر'
+        take: 500 // Limit to recent completed work orders with prices
+      })
+
+      const clientRevenue = new Map<string, { name: string; revenue: number }>()
+      topClientRevenue.forEach(wo => {
+        const client = wo.checklist?.branch?.client
+        if (!client) return
+        const current = clientRevenue.get(client.id) || { name: client.companyName, revenue: 0 }
+        current.revenue += Number(wo.price || 0)
+        clientRevenue.set(client.id, current)
+      })
+
+      const topClients = Array.from(clientRevenue.values())
+        .sort((a, b) => b.revenue - a.revenue)
+        .slice(0, 5)
+
+      return {
+        stats: {
+          revenue: {
+            current: thisMonthRevenue,
+            change: revenueChange,
+            label: 'مقارنة بالشهر الماضي'
+          },
+          activeWorkOrders: { count: activeCount, label: 'نشط' },
+          overdueWorkOrders: { count: overdueCount, label: 'متأخر' },
+          completionRate: { rate: completionRate, label: 'معدل الإكمال' }
         },
-        completionRate: {
-          rate: completionRate,
-          label: 'معدل الإكمال'
-        }
-      },
-      charts: {
-        revenueByMonth: {
-          labels: revenueByMonth.map(m => m.month),
-          values: revenueByMonth.map(m => m.revenue)
+        charts: {
+          revenueByMonth: {
+            labels: revenueByMonth.map(m => m.month),
+            values: revenueByMonth.map(m => m.revenue)
+          },
+          workOrdersByStatus: {
+            labels: ['مجدول', 'قيد التنفيذ', 'للمراجعة', 'مكتمل'],
+            values: [statusCounts.SCHEDULED, statusCounts.IN_PROGRESS, statusCounts.FOR_REVIEW, statusCounts.COMPLETED]
+          },
+          workOrdersByType: {
+            labels: ['خدمة', 'تفتيش', 'صيانة', 'تركيب'],
+            values: [typeCounts.SERVICE, typeCounts.INSPECTION, typeCounts.MAINTENANCE, typeCounts.INSTALLATION]
+          }
         },
-        workOrdersByStatus: {
-          labels: ['مجدول', 'قيد التنفيذ', 'للمراجعة', 'مكتمل'],
-          values: [
-            statusCounts.SCHEDULED,
-            statusCounts.IN_PROGRESS,
-            statusCounts.FOR_REVIEW,
-            statusCounts.COMPLETED
-          ]
-        },
-        workOrdersByType: {
-          labels: ['خدمة', 'تفتيش', 'صيانة', 'تركيب'],
-          values: [
-            typeCounts.SERVICE,
-            typeCounts.INSPECTION,
-            typeCounts.MAINTENANCE,
-            typeCounts.INSTALLATION
-          ]
-        }
-      },
-      topClients
-    })
+        topClients
+      }
+    }, 300) // Cache for 5 minutes
+
+    return NextResponse.json(data)
   } catch (error) {
     console.error('Analytics error:', error)
     return NextResponse.json(
