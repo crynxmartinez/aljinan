@@ -171,11 +171,11 @@ export function ClientSidebar({ client }: ClientSidebarProps) {
                 : 'text-sidebar-foreground/70 hover:bg-sidebar-accent hover:text-sidebar-accent-foreground'
             )}
           >
-            {t.dashboard.portal.dashboard}
+            <span className="flex-1 text-start">{t.dashboard.portal.dashboard}</span>
             {loadingHref === '/portal' ? (
-              <Loader2 className="ms-auto h-4 w-4 animate-spin" />
+              <Loader2 className="h-4 w-4 animate-spin" />
             ) : (
-              <LayoutDashboard className="ms-auto h-4 w-4" />
+              <LayoutDashboard className="h-4 w-4" />
             )}
           </Link>
 
@@ -189,11 +189,11 @@ export function ClientSidebar({ client }: ClientSidebarProps) {
                 : 'text-sidebar-foreground/70 hover:bg-sidebar-accent hover:text-sidebar-accent-foreground'
             )}
           >
-            {t.dashboard.portal.workOrders}
+            <span className="flex-1 text-start">{t.dashboard.portal.workOrders}</span>
             {loadingHref === '/portal/work-orders' ? (
-              <Loader2 className="ms-auto h-4 w-4 animate-spin" />
+              <Loader2 className="h-4 w-4 animate-spin" />
             ) : (
-              <ClipboardList className="ms-auto h-4 w-4" />
+              <ClipboardList className="h-4 w-4" />
             )}
           </Link>
         </div>
@@ -259,9 +259,9 @@ export function ClientSidebar({ client }: ClientSidebarProps) {
 
                   {/* Branch Icon */}
                   {loadingHref === `/portal/branches/${branch.slug || branch.id}` ? (
-                    <Loader2 className="ms-auto h-4 w-4 flex-shrink-0 animate-spin" />
+                    <Loader2 className="h-4 w-4 flex-shrink-0 animate-spin" />
                   ) : (
-                    <MapPin className="ms-auto h-4 w-4 flex-shrink-0" />
+                    <MapPin className="h-4 w-4 flex-shrink-0" />
                   )}
                 </Link>
               </div>
@@ -283,11 +283,11 @@ export function ClientSidebar({ client }: ClientSidebarProps) {
                 : 'text-sidebar-foreground/70 hover:bg-sidebar-accent hover:text-sidebar-accent-foreground'
             )}
           >
-            {t.dashboard.portal.accountSettings}
+            <span className="flex-1 text-start">{t.dashboard.portal.accountSettings}</span>
             {loadingHref === '/portal/settings' ? (
-              <Loader2 className="ms-auto h-4 w-4 animate-spin" />
+              <Loader2 className="h-4 w-4 animate-spin" />
             ) : (
-              <Settings className="ms-auto h-4 w-4" />
+              <Settings className="h-4 w-4" />
             )}
           </Link>
         </div>

@@ -200,11 +200,11 @@ export function Sidebar({ clients = [], userRole, teamMemberRole }: SidebarProps
                     : 'text-sidebar-foreground/70 hover:bg-sidebar-accent hover:text-sidebar-accent-foreground'
                 )}
               >
-                {t.dashboard.nav[item.titleKey]}
+                <span className="flex-1 text-start">{t.dashboard.nav[item.titleKey]}</span>
                 {loadingHref === item.href ? (
-                  <Loader2 className="ms-auto h-4 w-4 animate-spin" />
+                  <Loader2 className="h-4 w-4 animate-spin" />
                 ) : (
-                  <item.icon className="ms-auto h-4 w-4" />
+                  <item.icon className="h-4 w-4" />
                 )}
                 {item.href === '/dashboard/notifications' && unreadNotifications > 0 && (
                   <span className="ml-auto flex h-5 w-5 items-center justify-center rounded-full bg-red-600 text-xs font-medium text-white">
@@ -240,8 +240,8 @@ export function Sidebar({ clients = [], userRole, teamMemberRole }: SidebarProps
               {!isTeamMember && (
                 <Link href="/dashboard/clients">
                   <Button variant="outline" size="sm" className="mt-2">
-                    {t.dashboard.nav.addClient}
-                    <Users className="ms-auto h-4 w-4" />
+                    <span className="flex-1 text-start">{t.dashboard.nav.addClient}</span>
+                    <Users className="h-4 w-4" />
                   </Button>
                 </Link>
               )}
@@ -273,11 +273,11 @@ export function Sidebar({ clients = [], userRole, teamMemberRole }: SidebarProps
                       )}
                       title={client.displayName ? `${client.displayName} (${client.companyName})` : client.companyName}
                     >
-                      <span className="truncate">{client.displayName || client.companyName}</span>
+                      <span className="flex-1 truncate text-start">{client.displayName || client.companyName}</span>
                       {loadingHref === `/dashboard/clients/${client.slug || client.id}` ? (
-                        <Loader2 className="ms-auto h-4 w-4 animate-spin" />
+                        <Loader2 className="h-4 w-4 animate-spin" />
                       ) : (
-                        <Users className="ms-auto h-4 w-4" />
+                        <Users className="h-4 w-4" />
                       )}
                     </Link>
                   </div>
@@ -295,11 +295,11 @@ export function Sidebar({ clients = [], userRole, teamMemberRole }: SidebarProps
                         )}
                         title={branch.displayName ? `${branch.displayName} (${branch.address})` : branch.address}
                       >
-                        <span className="truncate">{branch.displayName || branch.address}</span>
+                        <span className="flex-1 truncate text-start">{branch.displayName || branch.address}</span>
                         {loadingHref === `/dashboard/clients/${client.slug || client.id}/branches/${branch.slug || branch.id}` ? (
-                          <Loader2 className="ms-auto h-3 w-3 animate-spin" />
+                          <Loader2 className="h-3 w-3 animate-spin" />
                         ) : (
-                          <MapPin className="ms-auto h-3 w-3" />
+                          <MapPin className="h-3 w-3" />
                         )}
                       </Link>
                     ))}
@@ -310,8 +310,8 @@ export function Sidebar({ clients = [], userRole, teamMemberRole }: SidebarProps
                 <div className="px-3 pt-2">
                   <Link href="/dashboard/clients">
                     <Button variant="outline" size="sm" className="w-full">
-                      {t.dashboard.nav.addClient}
-                      <Users className="ms-auto h-4 w-4" />
+                      <span className="flex-1 text-start">{t.dashboard.nav.addClient}</span>
+                      <Users className="h-4 w-4" />
                     </Button>
                   </Link>
                 </div>
@@ -336,11 +336,11 @@ export function Sidebar({ clients = [], userRole, teamMemberRole }: SidebarProps
                   : 'text-sidebar-foreground/70 hover:bg-sidebar-accent hover:text-sidebar-accent-foreground'
               )}
             >
-              {t.dashboard.nav[item.titleKey]}
+              <span className="flex-1 text-start">{t.dashboard.nav[item.titleKey]}</span>
               {loadingHref === item.href ? (
-                <Loader2 className="ms-auto h-4 w-4 animate-spin" />
+                <Loader2 className="h-4 w-4 animate-spin" />
               ) : (
-                <item.icon className="ms-auto h-4 w-4" />
+                <item.icon className="h-4 w-4" />
               )}
             </Link>
           ))}
@@ -356,11 +356,11 @@ export function Sidebar({ clients = [], userRole, teamMemberRole }: SidebarProps
                   : 'text-sidebar-foreground/70 hover:bg-sidebar-accent hover:text-sidebar-accent-foreground'
               )}
             >
-              {t.dashboard.nav[item.titleKey]}
+              <span className="flex-1 text-start">{t.dashboard.nav[item.titleKey]}</span>
               {loadingHref === item.href ? (
-                <Loader2 className="ms-auto h-4 w-4 animate-spin" />
+                <Loader2 className="h-4 w-4 animate-spin" />
               ) : (
-                <item.icon className="ms-auto h-4 w-4" />
+                <item.icon className="h-4 w-4" />
               )}
             </Link>
           ))}
