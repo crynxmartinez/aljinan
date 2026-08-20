@@ -104,7 +104,7 @@ export default function AnalyticsPage() {
         {!isTechnician && (
           <StatsCard
             title={ta.totalRevenue}
-            value={`ر.س ${data.stats.revenue.current.toLocaleString()}`}
+            value={`ر.س ${data.stats.revenue.current.toLocaleString('ar-SA', { minimumFractionDigits: 2 })}`}
             change={{
               value: data.stats.revenue.change,
               label: data.stats.revenue.label,
@@ -187,7 +187,7 @@ export default function AnalyticsPage() {
                         </div>
                       </div>
                       <p className="text-sm font-semibold">
-                        ر.س {client.revenue.toLocaleString()}
+                        ر.س {client.revenue.toLocaleString('ar-SA', { minimumFractionDigits: 2 })}
                       </p>
                     </div>
                   ))}

@@ -79,8 +79,8 @@ export async function notifyNewRequest(contractorId: string, requestId: string, 
   return createNotification({
     userId: contractorId,
     type: 'NEW_REQUEST',
-    title: 'New Service Request',
-    message: `New request: ${requestTitle}`,
+    title: 'طلب خدمة جديد',
+    message: `طلب جديد: ${requestTitle}`,
     link: `/dashboard/branches/${branchId}/requests`,
     relatedId: requestId,
     relatedType: 'REQUEST',
@@ -96,8 +96,8 @@ export async function notifyWorkOrderForReview(clientId: string, workOrderDescri
   return createNotification({
     userId: clientId,
     type: 'WORK_ORDER_FOR_REVIEW',
-    title: 'Work Order Ready for Review',
-    message: `Work order "${workOrderDescription}" is ready for your review`,
+    title: 'أمر عمل جاهز للمراجعة',
+    message: `أمر العمل "${workOrderDescription}" جاهز للمراجعة`,
     link: `/portal/branches/${branchId}?tab=checklist`,
     relatedId: workOrderId,
     relatedType: 'WORK_ORDER',
@@ -113,8 +113,8 @@ export async function notifyWorkOrderStarted(clientId: string, workOrderDescript
   return createNotification({
     userId: clientId,
     type: 'WORK_ORDER_STARTED',
-    title: 'Work Order Started',
-    message: `Work on "${workOrderDescription}" has started`,
+    title: 'بدء أمر العمل',
+    message: `بدأ العمل على "${workOrderDescription}"`,
     link: `/portal/branches/${branchId}?tab=checklist`,
     relatedId: workOrderId,
     relatedType: 'WORK_ORDER',
@@ -130,8 +130,8 @@ export async function notifyWorkOrderCompleted(clientId: string, workOrderDescri
   return createNotification({
     userId: clientId,
     type: 'WORK_ORDER_COMPLETED',
-    title: 'Work Order Completed',
-    message: `Work order "${workOrderDescription}" has been completed`,
+    title: 'إكمال أمر العمل',
+    message: `تم إكمال أمر العمل "${workOrderDescription}"`,
     link: `/portal/branches/${branchId}?tab=checklist`,
     relatedId: workOrderId,
     relatedType: 'WORK_ORDER',
@@ -147,8 +147,8 @@ export async function notifyWorkOrderRejected(contractorId: string, workOrderDes
   return createNotification({
     userId: contractorId,
     type: 'WORK_ORDER_REJECTED',
-    title: 'Work Order Rejected',
-    message: `Client rejected work order "${workOrderDescription}"`,
+    title: 'رفض أمر العمل',
+    message: `رفض العميل أمر العمل "${workOrderDescription}"`,
     link: `/dashboard/branches/${branchId}/work-orders`,
     relatedId: workOrderId,
     relatedType: 'WORK_ORDER',
@@ -164,8 +164,8 @@ export async function notifyWorkOrderAssigned(technicianId: string, workOrderDes
   return createNotification({
     userId: technicianId,
     type: 'WORK_ORDER_ASSIGNED',
-    title: 'New Work Order Assigned',
-    message: `You have been assigned: "${workOrderDescription}"`,
+    title: 'تعيين أمر عمل جديد',
+    message: `تم تعيينك: "${workOrderDescription}"`,
     link: `/dashboard/branches/${branchId}/work-orders`,
     relatedId: workOrderId,
     relatedType: 'WORK_ORDER',
@@ -181,8 +181,8 @@ export async function notifyPriceSet(clientId: string, workOrderDescription: str
   return createNotification({
     userId: clientId,
     type: 'WORK_ORDER_PRICE_SET',
-    title: 'Price Set for Work Order',
-    message: `Price of SAR ${price.toFixed(2)} set for "${workOrderDescription}"`,
+    title: 'تحديد سعر أمر العمل',
+    message: `تم تحديد سعر ر.س ${price.toFixed(2)} لـ "${workOrderDescription}"`,
     link: `/portal/branches/${branchId}?tab=checklist`,
     relatedId: workOrderId,
     relatedType: 'WORK_ORDER',
@@ -195,15 +195,15 @@ export async function notifyPriceSet(clientId: string, workOrderDescription: str
  * Create notification for signature required
  */
 export async function notifySignatureRequired(userId: string, workOrderDescription: string, workOrderId: string, branchId: string, role: 'CLIENT' | 'CONTRACTOR') {
-  const link = role === 'CLIENT' 
+  const link = role === 'CLIENT'
     ? `/portal/branches/${branchId}?tab=checklist`
     : `/dashboard/branches/${branchId}?tab=checklist`
 
   return createNotification({
     userId,
     type: 'SIGNATURE_REQUIRED',
-    title: 'Signature Required',
-    message: `Your signature is required for "${workOrderDescription}"`,
+    title: 'التوقيع مطلوب',
+    message: `توقيعك مطلوب لـ "${workOrderDescription}"`,
     link,
     relatedId: workOrderId,
     relatedType: 'WORK_ORDER',

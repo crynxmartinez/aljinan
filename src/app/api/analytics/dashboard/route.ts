@@ -158,7 +158,7 @@ export async function GET() {
         .reduce((sum, wo) => sum + Number(wo.price || 0), 0)
 
       revenueByMonth.push({
-        month: monthStart.toLocaleDateString('en-US', { month: 'short' }),
+        month: monthStart.toLocaleDateString('ar-SA', { month: 'short' }),
         revenue: monthRevenue
       })
     }
@@ -184,19 +184,19 @@ export async function GET() {
         revenue: {
           current: thisMonthRevenue,
           change: revenueChange,
-          label: 'vs last month'
+          label: 'مقارنة بالشهر الماضي'
         },
         activeWorkOrders: {
           count: activeWorkOrders,
-          label: 'active'
+          label: 'نشط'
         },
         overdueWorkOrders: {
           count: overdueWorkOrders,
-          label: 'overdue'
+          label: 'متأخر'
         },
         completionRate: {
           rate: completionRate,
-          label: 'completion rate'
+          label: 'معدل الإكمال'
         }
       },
       charts: {
@@ -205,7 +205,7 @@ export async function GET() {
           values: revenueByMonth.map(m => m.revenue)
         },
         workOrdersByStatus: {
-          labels: ['Scheduled', 'In Progress', 'For Review', 'Completed'],
+          labels: ['مجدول', 'قيد التنفيذ', 'للمراجعة', 'مكتمل'],
           values: [
             statusCounts.SCHEDULED,
             statusCounts.IN_PROGRESS,
@@ -214,7 +214,7 @@ export async function GET() {
           ]
         },
         workOrdersByType: {
-          labels: ['Service', 'Inspection', 'Maintenance', 'Installation'],
+          labels: ['خدمة', 'تفتيش', 'صيانة', 'تركيب'],
           values: [
             typeCounts.SERVICE,
             typeCounts.INSPECTION,

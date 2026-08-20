@@ -393,12 +393,18 @@ export default function WorkOrdersPage() {
                   </div>
                   <div className="col-span-2 flex items-center">
                     <Badge className={getStatusColor(wo.stage)} variant="secondary">
-                      {wo.stage.replace('_', ' ')}
+                      {wo.stage === 'SCHEDULED' ? tw.statusScheduled :
+                        wo.stage === 'IN_PROGRESS' ? tw.statusInProgress :
+                          wo.stage === 'FOR_REVIEW' ? tw.statusForReview :
+                            wo.stage === 'COMPLETED' ? tw.statusCompleted : wo.stage.replace('_', ' ')}
                     </Badge>
                   </div>
                   <div className="col-span-1 flex items-center">
                     <Badge className={getTypeColor(wo.workOrderType)} variant="outline">
-                      {wo.workOrderType}
+                      {wo.workOrderType === 'SERVICE' ? tw.typeService :
+                        wo.workOrderType === 'INSPECTION' ? tw.typeInspection :
+                          wo.workOrderType === 'MAINTENANCE' ? tw.typeMaintenance :
+                            wo.workOrderType === 'INSTALLATION' ? tw.typeInstallation : wo.workOrderType}
                     </Badge>
                   </div>
                   <div className="col-span-1 flex items-center">
@@ -408,7 +414,7 @@ export default function WorkOrdersPage() {
                   </div>
                   <div className="col-span-1 flex items-center justify-end">
                     <p className="text-sm font-medium">
-                      {wo.price ? `ر.س ${wo.price.toLocaleString()}` : '-'}
+                      {wo.price ? `ر.س ${wo.price.toLocaleString('ar-SA', { minimumFractionDigits: 2 })}` : '-'}
                     </p>
                   </div>
                 </div>

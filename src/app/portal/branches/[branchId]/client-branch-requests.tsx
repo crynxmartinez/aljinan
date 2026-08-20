@@ -637,8 +637,15 @@ export function ClientBranchRequests({ branchId, onDataChange, userId }: ClientB
 
   // Format work order type for display
   const formatWorkOrderType = (type: string | null | undefined): string => {
-    if (!type) return 'Service'
-    return type.charAt(0) + type.slice(1).toLowerCase()
+    if (!type) return 'خدمة'
+    switch (type) {
+      case 'SERVICE': return 'خدمة'
+      case 'INSPECTION': return 'تفتيش'
+      case 'MAINTENANCE': return 'صيانة'
+      case 'INSTALLATION': return 'تركيب'
+      case 'STICKER_INSPECTION': return 'تفتيش ملصقات'
+      default: return type.charAt(0) + type.slice(1).toLowerCase()
+    }
   }
 
   const handleExportRequests = async (
@@ -763,15 +770,15 @@ export function ClientBranchRequests({ branchId, onDataChange, userId }: ClientB
           </div>
           <div className="flex items-center gap-2">
             <ExportDialog
-              title="Export Request History"
-              description="Download your request history as Excel or CSV"
+              title="تصدير سجل الطلبات"
+              description="قم بتنزيل سجل طلباتك كملف Excel أو CSV"
               itemCount={allRequests.length}
               onExport={handleExportRequests}
               showDateRange={true}
             />
             <Button onClick={() => setCreateDialogOpen(true)}>
               <Plus className="me-2 h-4 w-4" />
-              Submit Request
+              إرسال طلب
             </Button>
           </div>
         </CardHeader>
@@ -1046,12 +1053,12 @@ export function ClientBranchRequests({ branchId, onDataChange, userId }: ClientB
                               <SelectItem value="EXIT_SIGN">لاحصة الخروج</SelectItem>
                               <SelectItem value="FIRE_DOOR">باب مقاوم للحريق</SelectItem>
                               <SelectItem value="SMOKE_DETECTOR">كاشف الدخان</SelectItem>
-                              <SelectItem value="HEAT_DETECTOR">Heat Detector</SelectItem>
-                              <SelectItem value="GAS_DETECTOR">Gas Detector</SelectItem>
-                              <SelectItem value="KITCHEN_HOOD_SUPPRESSION">Kitchen Hood Suppression</SelectItem>
-                              <SelectItem value="FIRE_PUMP">Fire Pump</SelectItem>
-                              <SelectItem value="FIRE_HOSE_REEL">Fire Hose Reel</SelectItem>
-                              <SelectItem value="OTHER">Other</SelectItem>
+                              <SelectItem value="HEAT_DETECTOR">كاشف الحرارة</SelectItem>
+                              <SelectItem value="GAS_DETECTOR">كاشف الغاز</SelectItem>
+                              <SelectItem value="KITCHEN_HOOD_SUPPRESSION">نظام إخماد غطاء المطبخ</SelectItem>
+                              <SelectItem value="FIRE_PUMP">مضخة الحريق</SelectItem>
+                              <SelectItem value="FIRE_HOSE_REEL">خرطوم الحريق</SelectItem>
+                              <SelectItem value="OTHER">أخرى</SelectItem>
                             </SelectContent>
                           </Select>
                         </div>
@@ -1059,9 +1066,9 @@ export function ClientBranchRequests({ branchId, onDataChange, userId }: ClientB
                       {/* Custom Equipment Type - Show when OTHER is selected */}
                       {newEquipment.equipmentType === 'OTHER' && (
                         <div className="space-y-1">
-                          <Label className="text-xs">Specify Equipment Type *</Label>
+                          <Label className="text-xs">حدد نوع المعدات *</Label>
                           <Input
-                            placeholder="e.g., CO2 Detector, Water Sprayer"
+                            placeholder="مثال: كاشف CO2، رشاش ماء"
                             value={newEquipment.customEquipmentType}
                             onChange={(e) => setNewEquipment({ ...newEquipment, customEquipmentType: e.target.value })}
                           />
@@ -1077,7 +1084,7 @@ export function ClientBranchRequests({ branchId, onDataChange, userId }: ClientB
                       </div>
                       <div className="grid grid-cols-2 gap-3">
                         <div className="space-y-1">
-                          <Label className="text-xs">Date Added</Label>
+                          <Label className="text-xs">تاريخ الإضافة</Label>
                           <Input
                             type="date"
                             value={newEquipment.dateAdded}
@@ -1085,7 +1092,7 @@ export function ClientBranchRequests({ branchId, onDataChange, userId }: ClientB
                           />
                         </div>
                         <div className="space-y-1">
-                          <Label className="text-xs">Expected Expiry</Label>
+                          <Label className="text-xs">تاريخ الانتهاء المتوقع</Label>
                           <Input
                             type="date"
                             value={newEquipment.expectedExpiry}
@@ -1094,9 +1101,9 @@ export function ClientBranchRequests({ branchId, onDataChange, userId }: ClientB
                         </div>
                       </div>
                       <div className="space-y-1">
-                        <Label className="text-xs">Notes (Optional)</Label>
+                        <Label className="text-xs">ملاحظات (اختياري)</Label>
                         <Input
-                          placeholder="Any additional notes..."
+                          placeholder="أي ملاحظات إضافية..."
                           value={newEquipment.notes}
                           onChange={(e) => setNewEquipment({ ...newEquipment, notes: e.target.value })}
                         />
@@ -1161,11 +1168,11 @@ export function ClientBranchRequests({ branchId, onDataChange, userId }: ClientB
                       <table className="w-full text-sm">
                         <thead className="bg-amber-100">
                           <tr>
-                            <th className="px-3 py-2 text-start text-amber-800">Equipment #</th>
+                            <th className="px-3 py-2 text-start text-amber-800">رقم المعدة</th>
                             <th className="px-3 py-2 text-start text-amber-800">النوع</th>
                             <th className="px-3 py-2 text-start text-amber-800">الموقع</th>
-                            <th className="px-3 py-2 text-start text-amber-800">Expiry</th>
-                            <th className="px-3 py-2 text-end text-amber-800">Action</th>
+                            <th className="px-3 py-2 text-start text-amber-800">الانتهاء</th>
+                            <th className="px-3 py-2 text-end text-amber-800">إجراء</th>
                           </tr>
                         </thead>
                         <tbody className="bg-white divide-y divide-amber-100">
@@ -1208,7 +1215,7 @@ export function ClientBranchRequests({ branchId, onDataChange, userId }: ClientB
               {/* Preferred Date & Time Row */}
               <div className="grid grid-cols-2 gap-4">
                 <div className="space-y-2">
-                  <Label htmlFor="preferredDate">Preferred Date</Label>
+                  <Label htmlFor="preferredDate">التاريخ المفضل</Label>
                   <Input
                     id="preferredDate"
                     type="date"
@@ -1218,19 +1225,19 @@ export function ClientBranchRequests({ branchId, onDataChange, userId }: ClientB
                   />
                 </div>
                 <div className="space-y-2">
-                  <Label htmlFor="preferredTimeSlot">Preferred Time</Label>
+                  <Label htmlFor="preferredTimeSlot">الوقت المفضل</Label>
                   <Select
                     value={newRequest.preferredTimeSlot}
                     onValueChange={(value) => setNewRequest({ ...newRequest, preferredTimeSlot: value })}
                   >
                     <SelectTrigger>
-                      <SelectValue placeholder="Any time" />
+                      <SelectValue placeholder="أي وقت" />
                     </SelectTrigger>
                     <SelectContent>
-                      <SelectItem value="MORNING">Morning (8AM-12PM)</SelectItem>
-                      <SelectItem value="AFTERNOON">Afternoon (12PM-5PM)</SelectItem>
-                      <SelectItem value="EVENING">Evening (5PM-8PM)</SelectItem>
-                      <SelectItem value="ANYTIME">Any time</SelectItem>
+                      <SelectItem value="MORNING">صباحاً (8ص-12ظ)</SelectItem>
+                      <SelectItem value="AFTERNOON">ظهيرة (12ظ-5م)</SelectItem>
+                      <SelectItem value="EVENING">مساءً (5م-8م)</SelectItem>
+                      <SelectItem value="ANYTIME">أي وقت</SelectItem>
                     </SelectContent>
                   </Select>
                 </div>
@@ -1238,9 +1245,9 @@ export function ClientBranchRequests({ branchId, onDataChange, userId }: ClientB
 
               {/* Photo Upload */}
               <div className="space-y-2">
-                <Label>Attachments (Optional)</Label>
+                <Label>المرفقات (اختياري)</Label>
                 <p className="text-xs text-muted-foreground mb-2">
-                  Upload files to help the technician understand the problem
+                  قم برفع الملفات لمساعدة الفني على فهم المشكلة
                 </p>
                 <FileUploadDropzone
                   onFilesSelected={(files) => {
@@ -1307,18 +1314,18 @@ export function ClientBranchRequests({ branchId, onDataChange, userId }: ClientB
               {/* Request Details Grid */}
               <div className="grid grid-cols-2 md:grid-cols-3 gap-4 text-sm">
                 <div>
-                  <p className="text-muted-foreground">Created</p>
+                  <p className="text-muted-foreground">تاريخ الإنشاء</p>
                   <p className="font-medium">{new Date(selectedRequest.createdAt).toLocaleDateString('ar-SA')}</p>
                 </div>
                 {selectedRequest.preferredDate && (
                   <div>
-                    <p className="text-muted-foreground">Preferred Date</p>
+                    <p className="text-muted-foreground">التاريخ المفضل</p>
                     <p className="font-medium">{new Date(selectedRequest.preferredDate).toLocaleDateString('ar-SA')}</p>
                   </div>
                 )}
                 {selectedRequest.preferredTimeSlot && (
                   <div>
-                    <p className="text-muted-foreground">Preferred Time</p>
+                    <p className="text-muted-foreground">الوقت المفضل</p>
                     <p className="font-medium">{selectedRequest.preferredTimeSlot}</p>
                   </div>
                 )}
@@ -1327,7 +1334,7 @@ export function ClientBranchRequests({ branchId, onDataChange, userId }: ClientB
               {/* Photos */}
               {selectedRequest.photos && selectedRequest.photos.length > 0 && (
                 <div>
-                  <p className="text-sm font-medium text-muted-foreground mb-2">Attached Photos</p>
+                  <p className="text-sm font-medium text-muted-foreground mb-2">الصور المرفقة</p>
                   <div className="grid grid-cols-3 gap-2">
                     {selectedRequest.photos.map((photo, idx) => photo?.url ? (
                       <img
@@ -1345,15 +1352,15 @@ export function ClientBranchRequests({ branchId, onDataChange, userId }: ClientB
               {/* Equipment List - For Sticker Inspections */}
               {selectedRequest.workOrderType === 'STICKER_INSPECTION' && selectedRequest.equipment && selectedRequest.equipment.length > 0 && (
                 <div className="space-y-2 p-4 bg-amber-50 border border-amber-200 rounded-lg">
-                  <p className="text-sm font-medium text-amber-800">Equipment for Inspection ({selectedRequest.equipment.length} items)</p>
+                  <p className="text-sm font-medium text-amber-800">معدات للتفتيش ({selectedRequest.equipment.length} عناصر)</p>
                   <div className="border border-amber-200 rounded-lg overflow-hidden">
                     <table className="w-full text-sm">
                       <thead className="bg-amber-100">
                         <tr>
-                          <th className="px-3 py-2 text-start text-amber-800">Equipment #</th>
+                          <th className="px-3 py-2 text-start text-amber-800">رقم المعدة</th>
                           <th className="px-3 py-2 text-start text-amber-800">النوع</th>
                           <th className="px-3 py-2 text-start text-amber-800">الموقع</th>
-                          <th className="px-3 py-2 text-start text-amber-800">Expiry</th>
+                          <th className="px-3 py-2 text-start text-amber-800">الانتهاء</th>
                         </tr>
                       </thead>
                       <tbody className="bg-white divide-y divide-amber-100">
@@ -1378,23 +1385,23 @@ export function ClientBranchRequests({ branchId, onDataChange, userId }: ClientB
               {/* Quote Response Section - If contractor has quoted */}
               {selectedRequest.status === 'QUOTED' && selectedRequest.quotedPrice && (
                 <div className="bg-purple-50 border border-purple-200 p-4 rounded-lg">
-                  <p className="text-sm font-medium text-purple-800 mb-2">Quote from Contractor</p>
+                  <p className="text-sm font-medium text-purple-800 mb-2">عرض سعر من المقاول</p>
 
                   {/* For recurring requests with occurrences - show table */}
                   {selectedRequest.recurringType && selectedRequest.recurringType !== 'ONCE' && selectedRequest.occurrences && selectedRequest.occurrences.length > 0 ? (
                     <div className="space-y-3">
                       <p className="text-sm text-purple-700">
-                        {selectedRequest.recurringType === 'MONTHLY' ? '12 Monthly' :
-                          selectedRequest.recurringType === 'QUARTERLY' ? '4 Quarterly' :
-                            selectedRequest.recurringType === 'SEMI_ANNUALLY' ? '2 Semi-Annual' : ''} Work Orders
+                        {selectedRequest.recurringType === 'MONTHLY' ? '12 شهري' :
+                          selectedRequest.recurringType === 'QUARTERLY' ? '4 ربع سنوي' :
+                            selectedRequest.recurringType === 'SEMI_ANNUALLY' ? '2 نصف سنوي' : ''} أوامر عمل
                       </p>
                       <div className="border border-purple-200 rounded-lg overflow-hidden bg-white">
                         <table className="w-full text-sm">
                           <thead className="bg-purple-100">
                             <tr>
                               <th className="px-3 py-2 text-start text-purple-800 font-medium">#</th>
-                              <th className="px-3 py-2 text-start text-purple-800 font-medium">Visit Date</th>
-                              <th className="px-3 py-2 text-end text-purple-800 font-medium">Price (SAR)</th>
+                              <th className="px-3 py-2 text-start text-purple-800 font-medium">تاريخ الزيارة</th>
+                              <th className="px-3 py-2 text-end text-purple-800 font-medium">السعر (ر.س)</th>
                             </tr>
                           </thead>
                           <tbody className="divide-y divide-purple-100">
@@ -1405,7 +1412,7 @@ export function ClientBranchRequests({ branchId, onDataChange, userId }: ClientB
                                   {occ.visitDate ? new Date(occ.visitDate).toLocaleDateString('ar-SA') : '-'}
                                 </td>
                                 <td className="px-3 py-2 text-end font-medium">
-                                  {occ.price ? occ.price.toLocaleString() : '-'}
+                                  {occ.price ? occ.price.toLocaleString('ar-SA') : '-'}
                                 </td>
                               </tr>
                             ))}
@@ -1414,7 +1421,7 @@ export function ClientBranchRequests({ branchId, onDataChange, userId }: ClientB
                             <tr>
                               <td colSpan={2} className="px-3 py-2 font-semibold text-purple-800">الإجمالي</td>
                               <td className="px-3 py-2 text-end font-bold text-purple-900">
-                                ر.س {selectedRequest.quotedPrice.toLocaleString()}
+                                ر.س {selectedRequest.quotedPrice.toLocaleString('ar-SA', { minimumFractionDigits: 2 })}
                               </td>
                             </tr>
                           </tfoot>
@@ -1425,12 +1432,12 @@ export function ClientBranchRequests({ branchId, onDataChange, userId }: ClientB
                     /* For one-time requests - show simple view */
                     <div className="grid grid-cols-2 gap-4 text-sm mb-3">
                       <div>
-                        <p className="text-purple-600">Quoted Price</p>
-                        <p className="font-bold text-lg">ر.س {selectedRequest.quotedPrice.toLocaleString()}</p>
+                        <p className="text-purple-600">السعر المعروض</p>
+                        <p className="font-bold text-lg">ر.س {selectedRequest.quotedPrice.toLocaleString('ar-SA', { minimumFractionDigits: 2 })}</p>
                       </div>
                       {selectedRequest.quotedDate && (
                         <div>
-                          <p className="text-purple-600">Scheduled Date</p>
+                          <p className="text-purple-600">التاريخ المجدول</p>
                           <p className="font-semibold">{new Date(selectedRequest.quotedDate).toLocaleDateString('ar-SA')}</p>
                         </div>
                       )}
@@ -1439,7 +1446,7 @@ export function ClientBranchRequests({ branchId, onDataChange, userId }: ClientB
 
                   {selectedRequest.quotedNotes && (
                     <div className="mt-3 pt-3 border-t border-purple-200">
-                      <p className="text-purple-600 text-sm mb-1">Notes from Contractor</p>
+                      <p className="text-purple-600 text-sm mb-1">ملاحظات من المقاول</p>
                       <p className="text-sm text-purple-900 whitespace-pre-wrap">{selectedRequest.quotedNotes}</p>
                     </div>
                   )}
@@ -1452,7 +1459,7 @@ export function ClientBranchRequests({ branchId, onDataChange, userId }: ClientB
                         className="inline-flex items-center gap-1.5 text-sm font-medium text-purple-800 hover:text-purple-900 underline"
                       >
                         <FileText className="h-4 w-4" />
-                        {selectedRequest.quotationFileName || 'View Quotation'}
+                        {selectedRequest.quotationFileName || 'عرض عرض السعر'}
                       </a>
                     </div>
                   )}
@@ -1466,7 +1473,7 @@ export function ClientBranchRequests({ branchId, onDataChange, userId }: ClientB
                       className="bg-green-600 hover:bg-green-700"
                     >
                       <ThumbsUp className="me-2 h-4 w-4" />
-                      Accept Quote
+                      قبول عرض السعر
                     </Button>
                     <Button
                       size="sm"
@@ -1478,7 +1485,7 @@ export function ClientBranchRequests({ branchId, onDataChange, userId }: ClientB
                       className="border-red-300 text-red-600 hover:bg-red-50"
                     >
                       <ThumbsDown className="me-2 h-4 w-4" />
-                      Reject Quote
+                      رفض عرض السعر
                     </Button>
                   </div>
                 </div>
@@ -1489,13 +1496,13 @@ export function ClientBranchRequests({ branchId, onDataChange, userId }: ClientB
                 <div className="space-y-3">
                   <div className="bg-yellow-50 border border-yellow-200 p-3 rounded-lg">
                     <p className="text-sm text-yellow-800">
-                      ⏳ Waiting for contractor to review your request...
+                      ⏳ بانتظار المقاول لمراجعة طلبك...
                     </p>
                   </div>
                   <div className="bg-blue-50 border border-blue-200 p-4 rounded-lg">
-                    <p className="text-sm font-medium text-blue-900 mb-2">Need this done urgently?</p>
+                    <p className="text-sm font-medium text-blue-900 mb-2">هل تحتاج هذا بشكل عاجل؟</p>
                     <p className="text-sm text-blue-700 mb-3">
-                      Skip the quotation process and start work immediately. The contractor will add pricing later.
+                      تخطى عملية التسعير وابدأ العمل فوراً. سيقوم المقاول بإضافة التسعير لاحقاً.
                     </p>
                     <Button
                       size="sm"
@@ -1505,7 +1512,7 @@ export function ClientBranchRequests({ branchId, onDataChange, userId }: ClientB
                       className="bg-blue-600 hover:bg-blue-700"
                     >
                       <Calendar className="me-2 h-4 w-4" />
-                      Start Immediately
+                      ابدأ فوراً
                     </Button>
                   </div>
                 </div>
@@ -1513,21 +1520,21 @@ export function ClientBranchRequests({ branchId, onDataChange, userId }: ClientB
               {selectedRequest.status === 'SCHEDULED' && (
                 <div className="bg-blue-50 border border-blue-200 p-3 rounded-lg">
                   <p className="text-sm text-blue-800">
-                    📅 Your request has been scheduled. The contractor will begin work soon.
+                    📅 تم جدولة طلبك. سيبدأ المقاول العمل قريباً.
                   </p>
                 </div>
               )}
               {selectedRequest.status === 'IN_PROGRESS' && (
                 <div className="bg-blue-50 border border-blue-200 p-3 rounded-lg">
                   <p className="text-sm text-blue-800">
-                    🔧 Work is currently in progress...
+                    🔧 العمل قيد التنفيذ حالياً...
                   </p>
                 </div>
               )}
               {selectedRequest.status === 'COMPLETED' && (
                 <div className="bg-green-50 border border-green-200 p-3 rounded-lg">
                   <p className="text-sm text-green-800">
-                    ✅ This request has been completed.
+                    ✅ تم إكمال هذا الطلب.
                   </p>
                 </div>
               )}
@@ -1549,11 +1556,11 @@ export function ClientBranchRequests({ branchId, onDataChange, userId }: ClientB
                 size="sm"
                 onClick={() => setCancelDialogOpen(true)}
               >
-                Cancel Request
+                إلغاء الطلب
               </Button>
             )}
             <Button variant="outline" onClick={() => setSelectedRequest(null)}>
-              Close
+              إغلاق
             </Button>
           </DialogFooter>
         </DialogContent>
@@ -1563,9 +1570,9 @@ export function ClientBranchRequests({ branchId, onDataChange, userId }: ClientB
       <AlertDialog open={cancelDialogOpen} onOpenChange={setCancelDialogOpen}>
         <AlertDialogContent>
           <AlertDialogHeader>
-            <AlertDialogTitle>Cancel Request</AlertDialogTitle>
+            <AlertDialogTitle>إلغاء الطلب</AlertDialogTitle>
             <AlertDialogDescription>
-              Are you sure you want to cancel this request? This action cannot be undone.
+              هل أنت متأكد من إلغاء هذا الطلب؟ لا يمكن التراجع عن هذا الإجراء.
               {selectedRequest && (
                 <span className="block mt-2 font-medium text-foreground">
                   &quot;{selectedRequest.title}&quot;
@@ -1574,7 +1581,7 @@ export function ClientBranchRequests({ branchId, onDataChange, userId }: ClientB
             </AlertDialogDescription>
           </AlertDialogHeader>
           <AlertDialogFooter>
-            <AlertDialogCancel disabled={cancelling}>Keep Request</AlertDialogCancel>
+            <AlertDialogCancel disabled={cancelling}>إبقاء الطلب</AlertDialogCancel>
             <AlertDialogAction
               disabled={cancelling}
               className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
@@ -1601,10 +1608,10 @@ export function ClientBranchRequests({ branchId, onDataChange, userId }: ClientB
               {cancelling ? (
                 <>
                   <Loader2 className="me-2 h-4 w-4 animate-spin" />
-                  Cancelling...
+                  جاري الإلغاء...
                 </>
               ) : (
-                'Yes, Cancel Request'
+                'نعم، إلغاء الطلب'
               )}
             </AlertDialogAction>
           </AlertDialogFooter>
@@ -1617,7 +1624,7 @@ export function ClientBranchRequests({ branchId, onDataChange, userId }: ClientB
           <DialogHeader>
             <DialogTitle className="text-xl">{selectedProject?.title}</DialogTitle>
             <DialogDescription>
-              Project proposal from your contractor - Review the work orders and pricing below
+              عرض مشروع من المقاول - راجع أوامر العمل والتسعير أدناه
             </DialogDescription>
           </DialogHeader>
 
@@ -1637,23 +1644,23 @@ export function ClientBranchRequests({ branchId, onDataChange, userId }: ClientB
                   <div>
                     <p className="text-xs text-muted-foreground">الحالة</p>
                     <Badge className={selectedProject.status === 'PENDING' ? 'bg-amber-100 text-amber-700' : 'bg-green-100 text-green-700'}>
-                      {selectedProject.status === 'PENDING' ? 'Pending Review' : selectedProject.status}
+                      {selectedProject.status === 'PENDING' ? 'بانتظار المراجعة' : selectedProject.status}
                     </Badge>
                   </div>
                   {selectedProject.startDate && (
                     <div>
-                      <p className="text-xs text-muted-foreground">Start Date</p>
+                      <p className="text-xs text-muted-foreground">تاريخ البدء</p>
                       <p className="font-medium text-sm">{new Date(selectedProject.startDate).toLocaleDateString('ar-SA')}</p>
                     </div>
                   )}
                   {selectedProject.endDate && (
                     <div>
-                      <p className="text-xs text-muted-foreground">End Date</p>
+                      <p className="text-xs text-muted-foreground">تاريخ الانتهاء</p>
                       <p className="font-medium text-sm">{new Date(selectedProject.endDate).toLocaleDateString('ar-SA')}</p>
                     </div>
                   )}
                   <div>
-                    <p className="text-xs text-muted-foreground">Total Value</p>
+                    <p className="text-xs text-muted-foreground">القيمة الإجمالية</p>
                     <p className="font-bold text-lg text-primary">
                       ر.س {calculatedTotal.toLocaleString('ar-SA', { minimumFractionDigits: 2 })}
                     </p>
@@ -1663,11 +1670,11 @@ export function ClientBranchRequests({ branchId, onDataChange, userId }: ClientB
                 {/* Work Orders - Grouped Collapsible View */}
                 <div>
                   <div className="flex items-center justify-between mb-3">
-                    <h3 className="font-semibold">Work Orders</h3>
+                    <h3 className="font-semibold">أوامر العمل</h3>
                     {selectedProject.status === 'PENDING' && (
                       <Button variant="outline" size="sm" onClick={() => setAddWorkOrderOpen(true)}>
                         <Plus className="h-4 w-4 me-1" />
-                        Request Additional Work
+                        طلب عمل إضافي
                       </Button>
                     )}
                   </div>
@@ -1686,7 +1693,7 @@ export function ClientBranchRequests({ branchId, onDataChange, userId }: ClientB
                     </div>
                   ) : (
                     <div className="text-center py-8 text-muted-foreground border rounded-lg">
-                      No work orders defined yet
+                      لم يتم تحديد أوامر عمل بعد
                     </div>
                   )}
                 </div>
@@ -1699,22 +1706,22 @@ export function ClientBranchRequests({ branchId, onDataChange, userId }: ClientB
                       {hasPendingPrices ? (
                         <div className="p-4 bg-orange-50 border border-orange-200 rounded-lg">
                           <p className="text-sm text-orange-800">
-                            <strong>Waiting for pricing.</strong> Some work orders are pending price from your contractor.
-                            You cannot accept the project until all work orders have been priced.
+                            <strong>بانتظار التسعير.</strong> بعض أوامر العمل بانتظار السعر من المقاول.
+                            لا يمكنك قبول المشروع حتى يتم تسعير جميع أوامر العمل.
                           </p>
                         </div>
                       ) : (
                         <div className="p-4 bg-amber-50 border border-amber-200 rounded-lg">
                           <p className="text-sm text-amber-800">
-                            <strong>Ready to proceed?</strong> By accepting this project, a contract will be created and work can begin.
-                            You can also request additional work orders above - your contractor will add pricing for any new items.
+                            <strong>جاهز للمتابعة؟</strong> بقبول هذا المشروع، سيتم إنشاء عقد ويمكن بدء العمل.
+                            يمكنك أيضاً طلب أوامر عمل إضافية أعلاه - سيقوم المقاول بإضافة التسعير لأي عناصر جديدة.
                           </p>
                         </div>
                       )}
 
                       <div className="flex gap-3 justify-end">
                         <Button variant="outline" onClick={() => { setSelectedProject(null); setSelectedRequest(null); }}>
-                          Review Later
+                          مراجعة لاحقاً
                         </Button>
                         <Button
                           onClick={() => handleApproveProject(selectedProject.id)}
@@ -1724,12 +1731,12 @@ export function ClientBranchRequests({ branchId, onDataChange, userId }: ClientB
                           {approving ? (
                             <>
                               <Loader2 className="me-2 h-4 w-4 animate-spin" />
-                              Approving...
+                              جاري القبول...
                             </>
                           ) : (
                             <>
                               <CheckCircle className="me-2 h-4 w-4" />
-                              Accept Project
+                              قبول المشروع
                             </>
                           )}
                         </Button>
@@ -1742,7 +1749,7 @@ export function ClientBranchRequests({ branchId, onDataChange, userId }: ClientB
                 {selectedProject.status === 'ACTIVE' && (
                   <div className="p-4 bg-green-50 border border-green-200 rounded-lg">
                     <p className="text-sm text-green-800">
-                      <strong>Project is active.</strong> Work is in progress. Check the Appointments tab for scheduled visits.
+                      <strong>المشروع نشط.</strong> العمل قيد التنفيذ. تحقق من تبويب المواعيد للزيارات المجدولة.
                     </p>
                   </div>
                 )}
@@ -1756,19 +1763,19 @@ export function ClientBranchRequests({ branchId, onDataChange, userId }: ClientB
       <Dialog open={addWorkOrderOpen} onOpenChange={setAddWorkOrderOpen}>
         <DialogContent>
           <DialogHeader>
-            <DialogTitle>Request Additional Work</DialogTitle>
+            <DialogTitle>طلب عمل إضافي</DialogTitle>
             <DialogDescription>
-              Add a work order request. Your contractor will review and add pricing.
+              أضف طلب أمر عمل. سيقوم المقاول بالمراجعة وإضافة التسعير.
             </DialogDescription>
           </DialogHeader>
           <div className="space-y-4">
             <div className="space-y-2">
-              <Label htmlFor="wo-name">Work Order Name *</Label>
+              <Label htmlFor="wo-name">اسم أمر العمل *</Label>
               <Input
                 id="wo-name"
                 value={newWorkOrder.name}
                 onChange={(e) => setNewWorkOrder({ ...newWorkOrder, name: e.target.value })}
-                placeholder="e.g., Additional pest inspection"
+                placeholder="مثال: تفتيش إضافي للآفات"
               />
             </div>
             <div className="space-y-2">
@@ -1777,18 +1784,18 @@ export function ClientBranchRequests({ branchId, onDataChange, userId }: ClientB
                 id="wo-desc"
                 value={newWorkOrder.description}
                 onChange={(e) => setNewWorkOrder({ ...newWorkOrder, description: e.target.value })}
-                placeholder="Describe what you need..."
+                placeholder="صف ما تحتاجه..."
                 rows={3}
               />
             </div>
             <div className="space-y-2">
-              <Label htmlFor="wo-recurring">Recurring</Label>
+              <Label htmlFor="wo-recurring">متكرر</Label>
               <Select
                 value={newWorkOrder.recurringType}
                 onValueChange={(value) => setNewWorkOrder({ ...newWorkOrder, recurringType: value as 'ONCE' | 'MONTHLY' | 'QUARTERLY' })}
               >
                 <SelectTrigger>
-                  <SelectValue placeholder="Select frequency" />
+                  <SelectValue placeholder="اختر التكرار" />
                 </SelectTrigger>
                 <SelectContent>
                   <SelectItem value="ONCE">مرة واحدة</SelectItem>
@@ -1800,18 +1807,18 @@ export function ClientBranchRequests({ branchId, onDataChange, userId }: ClientB
           </div>
           <DialogFooter>
             <Button variant="outline" onClick={() => setAddWorkOrderOpen(false)}>
-              Cancel
+              إلغاء
             </Button>
             <Button onClick={handleAddWorkOrder} disabled={addingWorkOrder || !newWorkOrder.name.trim()}>
               {addingWorkOrder ? (
                 <>
                   <Loader2 className="me-2 h-4 w-4 animate-spin" />
-                  Adding...
+                  جاري الإضافة...
                 </>
               ) : (
                 <>
                   <Send className="me-2 h-4 w-4" />
-                  Submit Request
+                  إرسال الطلب
                 </>
               )}
             </Button>
@@ -1823,9 +1830,9 @@ export function ClientBranchRequests({ branchId, onDataChange, userId }: ClientB
       <Dialog open={quoteResponseDialogOpen} onOpenChange={(open) => { if (!open) { setQuoteResponseDialogOpen(false); setQuoteResponseRequest(null); setShowRejectionForm(false); setRejectionReason(''); setError(''); } }}>
         <DialogContent className="sm:max-w-[500px] max-h-[90vh] overflow-y-auto">
           <DialogHeader>
-            <DialogTitle>Review Quote</DialogTitle>
+            <DialogTitle>مراجعة عرض السعر</DialogTitle>
             <DialogDescription>
-              Your contractor has provided a quote for your request
+              قدم المقاول عرض سعر لطلبك
             </DialogDescription>
           </DialogHeader>
 
@@ -1856,13 +1863,13 @@ export function ClientBranchRequests({ branchId, onDataChange, userId }: ClientB
 
               {/* Quote Details */}
               <div className="p-4 bg-purple-50 border border-purple-200 rounded-lg space-y-3">
-                <h4 className="font-semibold text-purple-800">Contractor&apos;s Quote</h4>
+                <h4 className="font-semibold text-purple-800">عرض سعر المقاول</h4>
                 <div className="grid grid-cols-2 gap-4">
                   <div>
                     <p className="text-xs text-purple-600 mb-1">
                       {quoteResponseRequest.recurringType && quoteResponseRequest.recurringType !== 'ONCE'
-                        ? 'Total Price'
-                        : 'Price'}
+                        ? 'السعر الإجمالي'
+                        : 'السعر'}
                     </p>
                     <p className="text-2xl font-bold text-purple-800">
                       ر.س {quoteResponseRequest.quotedPrice?.toLocaleString('ar-SA', { minimumFractionDigits: 2 })}
@@ -1871,31 +1878,31 @@ export function ClientBranchRequests({ branchId, onDataChange, userId }: ClientB
                   <div>
                     <p className="text-xs text-purple-600 mb-1">
                       {quoteResponseRequest.recurringType && quoteResponseRequest.recurringType !== 'ONCE'
-                        ? 'First Scheduled Date'
-                        : 'Scheduled Date'}
+                        ? 'أول تاريخ مجدول'
+                        : 'التاريخ المجدول'}
                     </p>
                     <p className="text-lg font-semibold text-purple-800">
-                      {quoteResponseRequest.quotedDate ? new Date(quoteResponseRequest.quotedDate).toLocaleDateString('ar-SA') : 'TBD'}
+                      {quoteResponseRequest.quotedDate ? new Date(quoteResponseRequest.quotedDate).toLocaleDateString('ar-SA') : 'بانتظار التحديد'}
                     </p>
                   </div>
                 </div>
                 {quoteResponseRequest.assignedTo && (
                   <div>
-                    <p className="text-xs text-purple-600 mb-1">Assigned Technician</p>
+                    <p className="text-xs text-purple-600 mb-1">الفني المعين</p>
                     <p className="text-sm font-medium text-purple-800">
-                      {quoteResponseRequest.assignedToUser?.name || quoteResponseRequest.assignedToUser?.email || 'Assigned'}
+                      {quoteResponseRequest.assignedToUser?.name || quoteResponseRequest.assignedToUser?.email || 'معين'}
                     </p>
                   </div>
                 )}
                 {quoteResponseRequest.quotedNotes && (
                   <div className="pt-3 border-t border-purple-200">
-                    <p className="text-xs text-purple-600 mb-1">Notes from Contractor</p>
+                    <p className="text-xs text-purple-600 mb-1">ملاحظات من المقاول</p>
                     <p className="text-sm text-purple-900 whitespace-pre-wrap">{quoteResponseRequest.quotedNotes}</p>
                   </div>
                 )}
                 {quoteResponseRequest.quotationUrl && (
                   <div>
-                    <p className="text-xs text-purple-600 mb-1">Quotation Document</p>
+                    <p className="text-xs text-purple-600 mb-1">مستند عرض السعر</p>
                     <a
                       href={quoteResponseRequest.quotationUrl}
                       target="_blank"
@@ -1903,7 +1910,7 @@ export function ClientBranchRequests({ branchId, onDataChange, userId }: ClientB
                       className="inline-flex items-center gap-1.5 text-sm font-medium text-purple-800 hover:text-purple-900 underline"
                     >
                       <FileText className="h-4 w-4" />
-                      {quoteResponseRequest.quotationFileName || 'View Quotation'}
+                      {quoteResponseRequest.quotationFileName || 'عرض عرض السعر'}
                     </a>
                   </div>
                 )}
@@ -1913,8 +1920,8 @@ export function ClientBranchRequests({ branchId, onDataChange, userId }: ClientB
               {quoteResponseRequest.recurringType && quoteResponseRequest.recurringType !== 'ONCE' && quoteResponseRequest.quotedDate && quoteResponseRequest.quotedPrice && (
                 <div className="p-4 bg-blue-50 border border-blue-200 rounded-lg">
                   <h5 className="font-medium text-blue-800 mb-3">
-                    Work Orders ({quoteResponseRequest.recurringType === 'MONTHLY' ? 'Monthly' :
-                      quoteResponseRequest.recurringType === 'QUARTERLY' ? 'Quarterly' : 'Semi-Annually'})
+                    أوامر العمل ({quoteResponseRequest.recurringType === 'MONTHLY' ? 'شهري' :
+                      quoteResponseRequest.recurringType === 'QUARTERLY' ? 'ربع سنوي' : 'نصف سنوي'})
                   </h5>
                   <div className="space-y-1 text-sm">
                     {(() => {
@@ -1925,16 +1932,16 @@ export function ClientBranchRequests({ branchId, onDataChange, userId }: ClientB
                             {quoteResponseRequest.occurrences.map((occ, idx) => (
                               <div key={idx} className="flex justify-between items-center py-1 border-b border-blue-100 last:border-0">
                                 <span className="text-blue-700">
-                                  └ #{occ.order}: {occ.visitDate ? new Date(occ.visitDate).toLocaleDateString('ar-SA') : 'TBD'}
+                                  └ #{occ.order}: {occ.visitDate ? new Date(occ.visitDate).toLocaleDateString('ar-SA') : 'بانتظار التحديد'}
                                 </span>
                                 <span className="font-medium text-blue-800">
-                                  {occ.price ? `ر.س ${occ.price.toLocaleString()}` : '-'}
+                                  {occ.price ? `ر.س ${occ.price.toLocaleString('ar-SA')}` : '-'}
                                 </span>
                               </div>
                             ))}
                             <div className="flex justify-between items-center pt-3 mt-2 border-t border-blue-300 font-semibold">
-                              <span className="text-blue-800">Total ({quoteResponseRequest.occurrences.length} work orders)</span>
-                              <span className="text-blue-900 text-lg">ر.س {quoteResponseRequest.quotedPrice?.toLocaleString()}</span>
+                              <span className="text-blue-800">الإجمالي ({quoteResponseRequest.occurrences.length} أمر عمل)</span>
+                              <span className="text-blue-900 text-lg">ر.س {quoteResponseRequest.quotedPrice?.toLocaleString('ar-SA', { minimumFractionDigits: 2 })}</span>
                             </div>
                           </>
                         )
@@ -1960,12 +1967,12 @@ export function ClientBranchRequests({ branchId, onDataChange, userId }: ClientB
                               <span className="text-blue-700">
                                 └ #{idx + 1}: {date.toLocaleDateString('ar-SA')}
                               </span>
-                              <span className="font-medium text-blue-800">ر.س {pricePerOccurrence.toLocaleString()}</span>
+                              <span className="font-medium text-blue-800">ر.س {pricePerOccurrence.toLocaleString('ar-SA')}</span>
                             </div>
                           ))}
                           <div className="flex justify-between items-center pt-3 mt-2 border-t border-blue-300 font-semibold">
-                            <span className="text-blue-800">Total ({dates.length} work orders)</span>
-                            <span className="text-blue-900 text-lg">ر.س {quoteResponseRequest.quotedPrice?.toLocaleString()}</span>
+                            <span className="text-blue-800">الإجمالي ({dates.length} أمر عمل)</span>
+                            <span className="text-blue-900 text-lg">ر.س {quoteResponseRequest.quotedPrice?.toLocaleString('ar-SA', { minimumFractionDigits: 2 })}</span>
                           </div>
                         </>
                       )
@@ -1977,12 +1984,12 @@ export function ClientBranchRequests({ branchId, onDataChange, userId }: ClientB
               {/* Rejection Form */}
               {showRejectionForm ? (
                 <div className="space-y-3">
-                  <Label htmlFor="rejectionReason">Reason for rejection (optional)</Label>
+                  <Label htmlFor="rejectionReason">سبب الرفض (اختياري)</Label>
                   <Textarea
                     id="rejectionReason"
                     value={rejectionReason}
                     onChange={(e) => setRejectionReason(e.target.value)}
-                    placeholder="Let the contractor know why you're rejecting this quote..."
+                    placeholder="أخبر المقاول لماذا ترفض هذا العرض..."
                     rows={3}
                   />
                   <div className="flex gap-2">
@@ -1991,7 +1998,7 @@ export function ClientBranchRequests({ branchId, onDataChange, userId }: ClientB
                       onClick={() => setShowRejectionForm(false)}
                       className="flex-1"
                     >
-                      Back
+                      رجوع
                     </Button>
                     <Button
                       variant="destructive"
@@ -2001,7 +2008,7 @@ export function ClientBranchRequests({ branchId, onDataChange, userId }: ClientB
                     >
                       {respondingToQuote && <Loader2 className="me-2 h-4 w-4 animate-spin" />}
                       <ThumbsDown className="me-2 h-4 w-4" />
-                      Confirm Rejection
+                      تأكيد الرفض
                     </Button>
                   </div>
                 </div>
@@ -2009,9 +2016,9 @@ export function ClientBranchRequests({ branchId, onDataChange, userId }: ClientB
                 <div className="space-y-4">
                   <div className="p-4 bg-blue-50 border border-blue-200 rounded-lg">
                     <p className="text-sm text-blue-800">
-                      <strong>Sign to Accept</strong> - By signing below, you agree to the quoted price and schedule.
+                      <strong>وقّع للقبول</strong> - بالتوقيع أدناه، أنت توافق على السعر المجدول والمواعيد.
                       {quoteResponseRequest.recurringType && quoteResponseRequest.recurringType !== 'ONCE'
-                        ? ` ${quoteResponseRequest.recurringType === 'MONTHLY' ? '12 monthly' : '4 quarterly'} work orders will be created.`
+                        ? ` سيتم إنشاء ${quoteResponseRequest.recurringType === 'MONTHLY' ? '12 شهري' : '4 ربع سنوي'} أمر عمل.`
                         : ''}
                     </p>
                   </div>
@@ -2019,7 +2026,7 @@ export function ClientBranchRequests({ branchId, onDataChange, userId }: ClientB
                   <div className="space-y-2">
                     <Label className="flex items-center gap-2">
                       <PenTool className="h-4 w-4" />
-                      Your Signature
+                      توقيعك
                     </Label>
                     <div className="border rounded-lg p-2 bg-white">
                       <SignaturePad
@@ -2039,7 +2046,7 @@ export function ClientBranchRequests({ branchId, onDataChange, userId }: ClientB
                       }}
                       className="flex-1"
                     >
-                      Back
+                      رجوع
                     </Button>
                     <Button
                       onClick={handleAcceptQuote}
@@ -2048,7 +2055,7 @@ export function ClientBranchRequests({ branchId, onDataChange, userId }: ClientB
                     >
                       {respondingToQuote && <Loader2 className="me-2 h-4 w-4 animate-spin" />}
                       <CheckCircle className="me-2 h-4 w-4" />
-                      Confirm & Accept
+                      تأكيد وقبول
                     </Button>
                   </div>
                 </div>
@@ -2056,11 +2063,11 @@ export function ClientBranchRequests({ branchId, onDataChange, userId }: ClientB
                 <>
                   <div className="p-4 bg-green-50 border border-green-200 rounded-lg">
                     <p className="text-sm text-green-800">
-                      <strong>What happens next?</strong> If you accept,
+                      <strong>ماذا يحدث بعد ذلك؟</strong> إذا قبلت،
                       {quoteResponseRequest.recurringType && quoteResponseRequest.recurringType !== 'ONCE'
-                        ? ` ${quoteResponseRequest.recurringType === 'MONTHLY' ? '12 monthly' : '4 quarterly'} work orders will be created and scheduled automatically.`
-                        : ' a work order will be created and your contractor will schedule the service.'}
-                      {' '}If you reject, the contractor will be notified and may provide a revised quote.
+                        ? ` سيتم إنشاء وجدولة ${quoteResponseRequest.recurringType === 'MONTHLY' ? '12 شهري' : '4 ربع سنوي'} أمر عمل تلقائياً.`
+                        : ' سيتم إنشاء أمر عمل وسيقوم المقاول بجدولة الخدمة.'}
+                      {' '}إذا رفضت، سيتم إخطار المقاول وقد يقدم عرض سعر معدل.
                     </p>
                   </div>
 
@@ -2071,14 +2078,14 @@ export function ClientBranchRequests({ branchId, onDataChange, userId }: ClientB
                       className="flex-1"
                     >
                       <ThumbsDown className="me-2 h-4 w-4" />
-                      Reject
+                      رفض
                     </Button>
                     <Button
                       onClick={() => setShowSignatureForm(true)}
                       className="flex-1 bg-green-600 hover:bg-green-700"
                     >
                       <PenTool className="me-2 h-4 w-4" />
-                      Accept & Sign
+                      قبول وتوقيع
                     </Button>
                   </div>
                 </>
@@ -2092,9 +2099,9 @@ export function ClientBranchRequests({ branchId, onDataChange, userId }: ClientB
       <Dialog open={startImmediatelyDialogOpen} onOpenChange={(open) => { if (!open) { setStartImmediatelyDialogOpen(false); setStartImmediatelyRequest(null); setStartImmediatelyDate(''); setError(''); setSelectedRequest(null); } }}>
         <DialogContent className="sm:max-w-[500px]">
           <DialogHeader>
-            <DialogTitle>Start Work Immediately</DialogTitle>
+            <DialogTitle>بدء العمل فوراً</DialogTitle>
             <DialogDescription>
-              This work order will start today and move to IN PROGRESS immediately.
+              سيبدأ هذا أمر العمل اليوم وينتقل إلى قيد التنفيذ فوراً.
             </DialogDescription>
           </DialogHeader>
 
@@ -2108,21 +2115,21 @@ export function ClientBranchRequests({ branchId, onDataChange, userId }: ClientB
 
               <div className="p-4 bg-blue-50 border border-blue-200 rounded-lg">
                 <p className="text-sm text-blue-900 font-semibold mb-2">
-                  ⚠️ Warning: This action will:
+                  ⚠️ تحذير: هذا الإجراء سيقوم بـ:
                 </p>
                 <ul className="text-sm text-blue-800 space-y-1 ms-4 list-disc">
-                  <li>Create a work order starting <strong>today ({new Date().toLocaleDateString('ar-SA')})</strong></li>
-                  <li>Move it to <strong>IN PROGRESS</strong> status immediately</li>
-                  <li>Skip the quotation process (contractor will add pricing later)</li>
+                  <li>إنشاء أمر عمل يبدأ <strong>اليوم ({new Date().toLocaleDateString('ar-SA')})</strong></li>
+                  <li>نقله إلى حالة <strong>قيد التنفيذ</strong> فوراً</li>
+                  <li>تخطي عملية التسعير (سيضيف المقاول التسعير لاحقاً)</li>
                   {startImmediatelyRequest.recurringType && startImmediatelyRequest.recurringType !== 'ONCE' && (
-                    <li>Create <strong>{startImmediatelyRequest.recurringType === 'MONTHLY' ? '12 monthly' : '4 quarterly'}</strong> work orders</li>
+                    <li>إنشاء <strong>{startImmediatelyRequest.recurringType === 'MONTHLY' ? '12 شهري' : '4 ربع سنوي'}</strong> أمر عمل</li>
                   )}
                 </ul>
               </div>
 
               <div className="p-4 bg-muted rounded-lg">
                 <p className="text-sm">
-                  <strong>Request:</strong> {startImmediatelyRequest.title}
+                  <strong>الطلب:</strong> {startImmediatelyRequest.title}
                 </p>
                 {startImmediatelyRequest.description && (
                   <p className="text-sm text-muted-foreground mt-1">
@@ -2135,13 +2142,13 @@ export function ClientBranchRequests({ branchId, onDataChange, userId }: ClientB
 
               <div className="p-4 bg-blue-50 border border-blue-200 rounded-lg">
                 <p className="text-sm text-blue-800">
-                  <strong>What happens next?</strong>
+                  <strong>ماذا يحدث بعد ذلك؟</strong>
                 </p>
                 <ul className="text-sm text-blue-700 mt-2 space-y-1 list-disc list-inside">
-                  <li>Work order will be created and appear in the Checklist tab</li>
-                  <li>Contractor can start work on the scheduled date</li>
-                  <li>Contractor will add pricing before submitting for review</li>
-                  <li>You'll review and approve the work when completed</li>
+                  <li>سيتم إنشاء أمر العمل وسيظهر في تبويب القائمة</li>
+                  <li>يمكن للمقاول بدء العمل في التاريخ المجدول</li>
+                  <li>سيضيف المقاول التسعير قبل الإرسال للمراجعة</li>
+                  <li>ستقوم بمراجعة وقبول العمل عند إكماله</li>
                 </ul>
               </div>
 
@@ -2156,7 +2163,7 @@ export function ClientBranchRequests({ branchId, onDataChange, userId }: ClientB
                   className="flex-1"
                   disabled={startingImmediately}
                 >
-                  Cancel
+                  إلغاء
                 </Button>
                 <Button
                   onClick={handleStartImmediately}
@@ -2166,12 +2173,12 @@ export function ClientBranchRequests({ branchId, onDataChange, userId }: ClientB
                   {startingImmediately ? (
                     <>
                       <Loader2 className="me-2 h-4 w-4 animate-spin" />
-                      Creating...
+                      جاري الإنشاء...
                     </>
                   ) : (
                     <>
                       <CheckCircle className="me-2 h-4 w-4" />
-                      Create Work Order
+                      إنشاء أمر عمل
                     </>
                   )}
                 </Button>

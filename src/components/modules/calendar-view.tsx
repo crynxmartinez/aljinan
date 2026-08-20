@@ -50,10 +50,7 @@ const STAGE_COLORS: Record<ChecklistItemStage, string> = {
 }
 
 function formatCurrency(amount: number) {
-  return new Intl.NumberFormat('en-SA', {
-    style: 'currency',
-    currency: 'SAR'
-  }).format(amount)
+  return `ر.س ${amount.toLocaleString('ar-SA', { minimumFractionDigits: 2 })}`
 }
 
 export function CalendarView({ branchId }: CalendarViewProps) {
@@ -255,7 +252,7 @@ export function CalendarView({ branchId }: CalendarViewProps) {
                       ))}
                       {dayTasks.length > 3 && (
                         <div className="text-xs text-muted-foreground px-1">
-                          +{dayTasks.length - 3} more
+                          +{dayTasks.length - 3} أخرى
                         </div>
                       )}
                     </div>
