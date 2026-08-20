@@ -184,12 +184,12 @@ export function TeamMemberProfileForm({ teamMember }: TeamMemberProfileFormProps
           <Button type="submit" disabled={loading} className="w-full">
             {loading ? (
               <>
-                <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                <Loader2 className="me-2 h-4 w-4 animate-spin" />
                 Saving...
               </>
             ) : (
               <>
-                <Save className="mr-2 h-4 w-4" />
+                <Save className="me-2 h-4 w-4" />
                 Save Changes
               </>
             )}

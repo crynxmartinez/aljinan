@@ -23,7 +23,7 @@ const LoadingButton = React.forwardRef<HTMLButtonElement, LoadingButtonProps>(
         ref={ref}
         {...props}
       >
-        {loading && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
+        {loading && <Loader2 className="me-2 h-4 w-4 animate-spin" />}
         {loading && loadingText ? loadingText : children}
       </Button>
     )

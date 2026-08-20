@@ -144,7 +144,7 @@ export function BranchRequestForm() {
       <Dialog open={open} onOpenChange={setOpen}>
         <DialogTrigger asChild>
           <Button>
-            <Plus className="mr-2 h-4 w-4" />
+            <Plus className="me-2 h-4 w-4" />
             Request New Branch
           </Button>
         </DialogTrigger>
@@ -187,7 +187,7 @@ export function BranchRequestForm() {
 
               <div className="grid grid-cols-2 gap-4">
                 <div className="space-y-2">
-                  <Label htmlFor="phone">Phone</Label>
+                  <Label htmlFor="phone">الهاتف</Label>
                   <Input
                     id="phone"
                     value={phone}
@@ -198,7 +198,7 @@ export function BranchRequestForm() {
               </div>
 
               <div className="space-y-2">
-                <Label htmlFor="notes">Notes</Label>
+                <Label htmlFor="notes">ملاحظات</Label>
                 <Textarea
                   id="notes"
                   value={notes}
@@ -213,7 +213,7 @@ export function BranchRequestForm() {
                 Cancel
               </Button>
               <Button type="submit" disabled={loading || !addressData.address || !name}>
-                {loading && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
+                {loading && <Loader2 className="me-2 h-4 w-4 animate-spin" />}
                 Submit Request
               </Button>
             </DialogFooter>

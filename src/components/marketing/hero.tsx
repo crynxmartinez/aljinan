@@ -58,7 +58,7 @@ export function Hero() {
             <Button size="lg" className="bg-orange-500 hover:bg-orange-600 text-white" asChild>
               <Link href="/contact">
                 {t.hero.ctaPrimary}
-                <ArrowRight className="ml-2 h-4 w-4" />
+                <ArrowRight className="ms-2 h-4 w-4" />
               </Link>
             </Button>
             <Button size="lg" variant="outline" className="bg-white/10 border-white/20 text-white hover:bg-white/20" asChild>

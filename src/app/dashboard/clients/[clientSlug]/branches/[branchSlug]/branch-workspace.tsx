@@ -140,12 +140,12 @@ export function BranchWorkspace({ branchId, branch, userRole, teamMemberRole }: 
               <module.icon className="h-4 w-4" />
               {module.label}
               {module.id === 'requests' && pendingRequestsCount > 0 && (
-                <Badge variant="destructive" className="ml-1 h-5 w-5 p-0 flex items-center justify-center text-xs">
+                <Badge variant="destructive" className="ms-1 h-5 w-5 p-0 flex items-center justify-center text-xs">
                   {pendingRequestsCount}
                 </Badge>
               )}
               {module.id === 'billing' && pendingPaymentsCount > 0 && (
-                <Badge className="ml-1 h-5 w-5 p-0 flex items-center justify-center text-xs bg-amber-500 hover:bg-amber-500">
+                <Badge className="ms-1 h-5 w-5 p-0 flex items-center justify-center text-xs bg-amber-500 hover:bg-amber-500">
                   {pendingPaymentsCount}
                 </Badge>
               )}

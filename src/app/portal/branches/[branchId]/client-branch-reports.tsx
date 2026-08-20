@@ -131,7 +131,7 @@ export function ClientBranchReports({ branchId }: ClientBranchReportsProps) {
                       <span>{report.items.length} items checked</span>
                       <span>{getCompletionRate(report.items)}% passed</span>
                       {report.completedAt && (
-                        <span>Completed {new Date(report.completedAt).toLocaleDateString()}</span>
+                        <span>Completed {new Date(report.completedAt).toLocaleDateString('ar-SA')}</span>
                       )}
                     </div>
                   </div>
@@ -140,7 +140,7 @@ export function ClientBranchReports({ branchId }: ClientBranchReportsProps) {
                     size="sm"
                     onClick={() => handleViewReport(report)}
                   >
-                    <Eye className="mr-2 h-4 w-4" />
+                    <Eye className="me-2 h-4 w-4" />
                     View Report
                   </Button>
                 </div>
@@ -157,7 +157,7 @@ export function ClientBranchReports({ branchId }: ClientBranchReportsProps) {
             <DialogTitle>{selectedReport?.title}</DialogTitle>
             <DialogDescription>
               {selectedReport?.completedAt && (
-                <>Completed on {new Date(selectedReport.completedAt).toLocaleDateString()}</>
+                <>Completed on {new Date(selectedReport.completedAt).toLocaleDateString('ar-SA')}</>
               )}
             </DialogDescription>
           </DialogHeader>

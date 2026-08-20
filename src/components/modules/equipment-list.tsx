@@ -574,7 +574,7 @@ export function EquipmentList({ branchId, userRole = 'CONTRACTOR' }: EquipmentLi
                         {eq.expectedExpiry ? (
                           <span className="flex items-center gap-1 text-sm">
                             <Calendar className="h-3 w-3" />
-                            {new Date(eq.expectedExpiry).toLocaleDateString()}
+                            {new Date(eq.expectedExpiry).toLocaleDateString('ar-SA')}
                           </span>
                         ) : (
                           <span className="text-muted-foreground">-</span>
@@ -583,7 +583,7 @@ export function EquipmentList({ branchId, userRole = 'CONTRACTOR' }: EquipmentLi
                       <TableCell>
                         {eq.lastInspected ? (
                           <span className="text-sm">
-                            {new Date(eq.lastInspected).toLocaleDateString()}
+                            {new Date(eq.lastInspected).toLocaleDateString('ar-SA')}
                           </span>
                         ) : (
                           <span className="text-muted-foreground">{te.never}</span>
@@ -622,7 +622,7 @@ export function EquipmentList({ branchId, userRole = 'CONTRACTOR' }: EquipmentLi
                                 </div>
                                 {certExpiry && (
                                   <span className="text-xs text-muted-foreground">
-                                    {certExpiry.toLocaleDateString()}
+                                    {certExpiry.toLocaleDateString('ar-SA')}
                                   </span>
                                 )}
                                 <div className="flex items-center gap-1">
@@ -810,7 +810,7 @@ export function EquipmentList({ branchId, userRole = 'CONTRACTOR' }: EquipmentLi
               {te.cancel}
             </Button>
             <Button onClick={handleAddEquipment} disabled={saving} className="bg-amber-600 hover:bg-amber-700">
-              {saving && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
+              {saving && <Loader2 className="me-2 h-4 w-4 animate-spin" />}
               {te.addEquipment}
             </Button>
           </DialogFooter>
@@ -1058,7 +1058,7 @@ export function EquipmentList({ branchId, userRole = 'CONTRACTOR' }: EquipmentLi
                   </div>
                   {selectedEquipment.certificate.expiryDate && (
                     <p className="text-xs text-muted-foreground mt-1">
-                      {te.expires}: {new Date(selectedEquipment.certificate.expiryDate).toLocaleDateString()}
+                      {te.expires}: {new Date(selectedEquipment.certificate.expiryDate).toLocaleDateString('ar-SA')}
                     </p>
                   )}
                 </div>
@@ -1134,7 +1134,7 @@ export function EquipmentList({ branchId, userRole = 'CONTRACTOR' }: EquipmentLi
               {te.cancel}
             </Button>
             <Button onClick={handleUpdateEquipment} disabled={saving || uploadingCertificate}>
-              {(saving || uploadingCertificate) && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
+              {(saving || uploadingCertificate) && <Loader2 className="me-2 h-4 w-4 animate-spin" />}
               {uploadingCertificate ? te.uploading : te.saveChanges}
             </Button>
           </DialogFooter>

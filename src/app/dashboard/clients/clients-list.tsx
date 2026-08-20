@@ -279,7 +279,7 @@ export function ClientsList({ clients }: ClientsListProps) {
           </p>
         </div>
         <Button onClick={() => setCreateDialogOpen(true)}>
-          <Plus className="mr-2 h-4 w-4" />
+          <Plus className="me-2 h-4 w-4" />
           {tc.addClient}
         </Button>
       </div>
@@ -293,7 +293,7 @@ export function ClientsList({ clients }: ClientsListProps) {
               {tc.noClientsDesc}
             </p>
             <Button onClick={() => setCreateDialogOpen(true)}>
-              <Plus className="mr-2 h-4 w-4" />
+              <Plus className="me-2 h-4 w-4" />
               {tc.addFirstClient}
             </Button>
           </CardContent>
@@ -382,13 +382,13 @@ export function ClientsList({ clients }: ClientsListProps) {
                           </DropdownMenuItem>
                           <DropdownMenuItem asChild>
                             <Link href={`/dashboard/clients/${client.slug || client.id}/branches/new`}>
-                              <MapPin className="mr-2 h-4 w-4" />
+                              <MapPin className="me-2 h-4 w-4" />
                               {tc.addBranch}
                             </Link>
                           </DropdownMenuItem>
                           {client.user.status === 'PENDING' && (
                             <DropdownMenuItem onClick={() => handleResendInvite(client.id, client.user.email)}>
-                              <Mail className="mr-2 h-4 w-4" />
+                              <Mail className="me-2 h-4 w-4" />
                               {tc.resendVerification}
                             </DropdownMenuItem>
                           )}
@@ -397,7 +397,7 @@ export function ClientsList({ clients }: ClientsListProps) {
                             className="text-destructive"
                             onClick={() => handleArchiveClient(client.id)}
                           >
-                            <Archive className="mr-2 h-4 w-4" />
+                            <Archive className="me-2 h-4 w-4" />
                             {tc.archiveClient}
                           </DropdownMenuItem>
                         </DropdownMenuContent>
@@ -413,7 +413,7 @@ export function ClientsList({ clients }: ClientsListProps) {
                         <p className="text-sm text-muted-foreground mb-2">{tc.noBranchesYet}</p>
                         <Link href={`/dashboard/clients/${client.slug || client.id}/branches/new`}>
                           <Button variant="outline" size="sm">
-                            <Plus className="mr-2 h-4 w-4" />
+                            <Plus className="me-2 h-4 w-4" />
                             {tc.addBranch}
                           </Button>
                         </Link>
@@ -482,7 +482,7 @@ export function ClientsList({ clients }: ClientsListProps) {
                         ))}
                         <Link href={`/dashboard/clients/${client.slug || client.id}/branches/new`}>
                           <Button variant="ghost" size="sm" className="w-full mt-2">
-                            <Plus className="mr-2 h-4 w-4" />
+                            <Plus className="me-2 h-4 w-4" />
                             {tc.addAnotherBranch}
                           </Button>
                         </Link>
@@ -502,9 +502,9 @@ export function ClientsList({ clients }: ClientsListProps) {
                 className="mb-4"
               >
                 {showArchived ? (
-                  <ChevronDown className="mr-2 h-4 w-4" />
+                  <ChevronDown className="me-2 h-4 w-4" />
                 ) : (
-                  <ChevronRight className="mr-2 h-4 w-4" />
+                  <ChevronRight className="me-2 h-4 w-4" />
                 )}
                 {tc.archivedClients} ({archivedClients.length})
               </Button>
@@ -531,7 +531,7 @@ export function ClientsList({ clients }: ClientsListProps) {
                               size="sm"
                               onClick={() => handleUnarchiveClient(client.id)}
                             >
-                              <RotateCcw className="mr-2 h-4 w-4" />
+                              <RotateCcw className="me-2 h-4 w-4" />
                               {tc.restore}
                             </Button>
                           </div>

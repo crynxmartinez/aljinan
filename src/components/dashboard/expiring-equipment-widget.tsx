@@ -153,7 +153,7 @@ export function ExpiringEquipmentWidget({ contractorId }: ExpiringEquipmentWidge
                   )}
                   {eq.expectedExpiry && (
                     <span>
-                      {ta.expires} {new Date(eq.expectedExpiry).toLocaleDateString()}
+                      {ta.expires} {new Date(eq.expectedExpiry).toLocaleDateString('ar-SA')}
                     </span>
                   )}
                 </div>

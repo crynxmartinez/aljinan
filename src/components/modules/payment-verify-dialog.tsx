@@ -207,7 +207,7 @@ export function PaymentVerifyDialog({
                   className="w-full"
                   onClick={() => window.open(proofWorkOrder.paymentProofUrl!, '_blank')}
                 >
-                  <FileText className="mr-2 h-4 w-4" />
+                  <FileText className="me-2 h-4 w-4" />
                   {tv.viewDocument}
                 </Button>
               ) : null}
@@ -241,9 +241,9 @@ export function PaymentVerifyDialog({
             className="bg-green-600 hover:bg-green-700"
           >
             {verifying ? (
-              <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+              <Loader2 className="me-2 h-4 w-4 animate-spin" />
             ) : (
-              <CheckCircle className="mr-2 h-4 w-4" />
+              <CheckCircle className="me-2 h-4 w-4" />
             )}
             {tv.confirmPaymentReceived}
           </Button>

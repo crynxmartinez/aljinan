@@ -40,7 +40,7 @@ export function BulkToolbar({
         <div className="flex items-center gap-2 px-2">
           <CheckSquare className="h-4 w-4 text-primary" />
           <span className="text-sm font-medium">
-            <Badge variant="secondary" className="mr-2">
+            <Badge variant="secondary" className="me-2">
               {selectedCount}
             </Badge>
             {selectedCount === 1 ? ta.itemSelected : ta.itemsSelected}

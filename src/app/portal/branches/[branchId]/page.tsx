@@ -64,7 +64,7 @@ export default async function ClientBranchPage({
           href="/portal"
           className="inline-flex items-center text-sm text-muted-foreground hover:text-foreground"
         >
-          <ArrowLeft className="mr-2 h-4 w-4" />
+          <ArrowLeft className="me-2 h-4 w-4" />
           {tb.backToDashboard}
         </Link>
       </div>

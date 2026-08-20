@@ -305,7 +305,7 @@ function DraggableCard({
         <div className="flex-1 min-w-0">
           {item.workOrderNumber && (
             <span className="text-xs font-mono bg-muted px-1.5 py-0.5 rounded text-muted-foreground mb-1 inline-block">
-              WO-{String(item.workOrderNumber).padStart(4, '0')}
+              أمر-{String(item.workOrderNumber).padStart(4, '0')}
             </span>
           )}
           <p className="font-medium text-sm line-clamp-2 mb-2">
@@ -1251,9 +1251,9 @@ export function ChecklistKanban({ branchId, readOnly = false, userRole }: Checkl
           {items.length === 0 ? (
             <div className="text-center py-12 bg-muted/50 rounded-lg">
               <ClipboardList className="h-12 w-12 text-muted-foreground/50 mx-auto mb-4" />
-              <p className="text-muted-foreground mb-2">No work orders yet</p>
+              <p className="text-muted-foreground mb-2">لا توجد أوامر عمل بعد</p>
               <p className="text-sm text-muted-foreground">
-                Work orders will appear here once quotations are approved
+                ستظهر أوامر العمل هنا بعد الموافقة على التسعيرات
               </p>
             </div>
           ) : (
@@ -1364,10 +1364,10 @@ export function ChecklistKanban({ branchId, readOnly = false, userRole }: Checkl
               <div className="grid grid-cols-2 md:grid-cols-3 gap-4 text-sm">
                 {selectedItem.scheduledDate && (
                   <div>
-                    <p className="text-muted-foreground">Scheduled</p>
+                    <p className="text-muted-foreground">مجدول</p>
                     <p className="font-medium flex items-center gap-1">
                       <Calendar className="h-4 w-4" />
-                      {new Date(selectedItem.scheduledDate).toLocaleDateString()}
+                      {new Date(selectedItem.scheduledDate).toLocaleDateString('ar-SA')}
                     </p>
                     {/* Reschedule button - only for SCHEDULED stage and contractors */}
                     {!readOnly && userRole !== 'CLIENT' && selectedItem.stage === 'SCHEDULED' && (
@@ -1390,7 +1390,7 @@ export function ChecklistKanban({ branchId, readOnly = false, userRole }: Checkl
                   </div>
                 )}
                 <div>
-                  <p className="text-muted-foreground">Price</p>
+                  <p className="text-muted-foreground">السعر</p>
                   {selectedItem.price ? (
                     <p className="font-semibold text-green-700">{formatCurrency(selectedItem.price)}</p>
                   ) : (
@@ -1420,7 +1420,7 @@ export function ChecklistKanban({ branchId, readOnly = false, userRole }: Checkl
                 </div>
                 {selectedItem.projectTitle && (
                   <div>
-                    <p className="text-muted-foreground">Project</p>
+                    <p className="text-muted-foreground">المشروع</p>
                     <p className="font-medium">{selectedItem.projectTitle}</p>
                   </div>
                 )}
@@ -1428,17 +1428,17 @@ export function ChecklistKanban({ branchId, readOnly = false, userRole }: Checkl
 
               {/* Assigned Personnel */}
               <div className="p-4 bg-muted/50 rounded-lg">
-                <Label className="text-sm text-muted-foreground mb-2 block">Assigned Personnel</Label>
+                <Label className="text-sm text-muted-foreground mb-2 block">الموظفون المعينون</Label>
                 {userRole === 'CONTRACTOR' ? (
                   <Select
                     value={selectedItem.assignedTo || 'unassigned'}
                     onValueChange={(value) => handleAssignPersonnel(selectedItem.id, value === 'unassigned' ? null : value)}
                   >
                     <SelectTrigger className="w-full">
-                      <SelectValue placeholder="Unassigned" />
+                      <SelectValue placeholder="غير معين" />
                     </SelectTrigger>
                     <SelectContent>
-                      <SelectItem value="unassigned">Unassigned</SelectItem>
+                      <SelectItem value="unassigned">غير معين</SelectItem>
                       {teamMembers.map((member) => (
                         <SelectItem key={member.userId} value={member.userId}>
                           {member.user.name || member.user.email} ({member.teamRole.toLowerCase()})
@@ -1483,7 +1483,7 @@ export function ChecklistKanban({ branchId, readOnly = false, userRole }: Checkl
 
                       {/* Date Field - Universal */}
                       <div className="space-y-2">
-                        <Label htmlFor="inspectionDate">Date</Label>
+                        <Label htmlFor="inspectionDate">التاريخ</Label>
                         <Input
                           id="inspectionDate"
                           type="date"
@@ -1496,7 +1496,7 @@ export function ChecklistKanban({ branchId, readOnly = false, userRole }: Checkl
                       {selectedItem.workOrderType === 'SERVICE' && (
                         <>
                           <div className="space-y-2">
-                            <Label htmlFor="problemScope">Issue Reported</Label>
+                            <Label htmlFor="problemScope">المشكلة المبلغة</Label>
                             <Textarea
                               id="problemScope"
                               value={inspectionData.problemScope}
@@ -1506,7 +1506,7 @@ export function ChecklistKanban({ branchId, readOnly = false, userRole }: Checkl
                             />
                           </div>
                           <div className="space-y-2">
-                            <Label htmlFor="findings">Findings</Label>
+                            <Label htmlFor="findings">النتائج</Label>
                             <Textarea
                               id="findings"
                               value={inspectionData.findings}
@@ -1516,7 +1516,7 @@ export function ChecklistKanban({ branchId, readOnly = false, userRole }: Checkl
                             />
                           </div>
                           <div className="space-y-2">
-                            <Label htmlFor="actionTaken">Action Taken</Label>
+                            <Label htmlFor="actionTaken">الإجراء المتخذ</Label>
                             <Textarea
                               id="actionTaken"
                               value={inspectionData.actionTaken}
@@ -1526,7 +1526,7 @@ export function ChecklistKanban({ branchId, readOnly = false, userRole }: Checkl
                             />
                           </div>
                           <div className="space-y-2">
-                            <Label htmlFor="partsReplaced">Parts Replaced</Label>
+                            <Label htmlFor="partsReplaced">القطع المستبدلة</Label>
                             <Input
                               id="partsReplaced"
                               value={inspectionData.partsReplaced}
@@ -1535,7 +1535,7 @@ export function ChecklistKanban({ branchId, readOnly = false, userRole }: Checkl
                             />
                           </div>
                           <div className="space-y-2">
-                            <Label>System Status</Label>
+                            <Label>حالة النظام</Label>
                             <div className="flex gap-2">
                               {[
                                 { value: 'WORKING', label: '✅ Working', color: 'bg-green-100 border-green-500 text-green-700' },
@@ -1563,7 +1563,7 @@ export function ChecklistKanban({ branchId, readOnly = false, userRole }: Checkl
                       {selectedItem.workOrderType === 'INSTALLATION' && (
                         <>
                           <div className="space-y-2">
-                            <Label htmlFor="problemScope">Scope of Installation</Label>
+                            <Label htmlFor="problemScope">نطاق التركيب</Label>
                             <Textarea
                               id="problemScope"
                               value={inspectionData.problemScope}
@@ -1574,7 +1574,7 @@ export function ChecklistKanban({ branchId, readOnly = false, userRole }: Checkl
                           </div>
                           <div className="grid grid-cols-2 gap-4">
                             <div className="space-y-2">
-                              <Label htmlFor="equipmentInstalled">Equipment Installed</Label>
+                              <Label htmlFor="equipmentInstalled">المعدات المركبة</Label>
                               <Input
                                 id="equipmentInstalled"
                                 value={inspectionData.equipmentInstalled}
@@ -1583,7 +1583,7 @@ export function ChecklistKanban({ branchId, readOnly = false, userRole }: Checkl
                               />
                             </div>
                             <div className="space-y-2">
-                              <Label htmlFor="installQuantity">Quantity</Label>
+                              <Label htmlFor="installQuantity">الكمية</Label>
                               <Input
                                 id="installQuantity"
                                 value={inspectionData.installQuantity}
@@ -1593,7 +1593,7 @@ export function ChecklistKanban({ branchId, readOnly = false, userRole }: Checkl
                             </div>
                           </div>
                           <div className="space-y-2">
-                            <Label htmlFor="findings">Testing Result</Label>
+                            <Label htmlFor="findings">نتيجة الاختبار</Label>
                             <Textarea
                               id="findings"
                               value={inspectionData.findings}
@@ -1603,7 +1603,7 @@ export function ChecklistKanban({ branchId, readOnly = false, userRole }: Checkl
                             />
                           </div>
                           <div className="space-y-2">
-                            <Label>Completion Status</Label>
+                            <Label>حالة الإكمال</Label>
                             <div className="flex gap-2">
                               {[
                                 { value: 'COMPLETED', label: '✅ Completed', color: 'bg-green-100 border-green-500 text-green-700' },
@@ -1632,7 +1632,7 @@ export function ChecklistKanban({ branchId, readOnly = false, userRole }: Checkl
                         <>
                           <div className="grid grid-cols-2 gap-4">
                             <div className="space-y-2">
-                              <Label htmlFor="areasInspected">Areas Inspected</Label>
+                              <Label htmlFor="areasInspected">المناطق المفحوصة</Label>
                               <Input
                                 id="areasInspected"
                                 value={inspectionData.areasInspected}
@@ -1641,7 +1641,7 @@ export function ChecklistKanban({ branchId, readOnly = false, userRole }: Checkl
                               />
                             </div>
                             <div className="space-y-2">
-                              <Label htmlFor="systemsChecked">Systems Checked</Label>
+                              <Label htmlFor="systemsChecked">الأنظمة المفحوصة</Label>
                               <Input
                                 id="systemsChecked"
                                 value={inspectionData.systemsChecked}
@@ -1651,7 +1651,7 @@ export function ChecklistKanban({ branchId, readOnly = false, userRole }: Checkl
                             </div>
                           </div>
                           <div className="space-y-2">
-                            <Label htmlFor="findings">Findings</Label>
+                            <Label htmlFor="findings">النتائج</Label>
                             <Textarea
                               id="findings"
                               value={inspectionData.findings}
@@ -1894,7 +1894,7 @@ export function ChecklistKanban({ branchId, readOnly = false, userRole }: Checkl
                           Cancel
                         </Button>
                         <Button onClick={handleSaveInspection} disabled={savingInspection} className="flex-1">
-                          {savingInspection && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
+                          {savingInspection && <Loader2 className="me-2 h-4 w-4 animate-spin" />}
                           Save Report
                         </Button>
                       </div>
@@ -1902,7 +1902,7 @@ export function ChecklistKanban({ branchId, readOnly = false, userRole }: Checkl
                   ) : (
                     <div className="flex gap-2 pt-4 border-t">
                       <Button variant="outline" onClick={() => setInspectionMode(true)} className="flex-1">
-                        <FileText className="mr-2 h-4 w-4" />
+                        <FileText className="me-2 h-4 w-4" />
                         Fill Report
                       </Button>
                       <Button
@@ -1911,9 +1911,9 @@ export function ChecklistKanban({ branchId, readOnly = false, userRole }: Checkl
                         className="flex-1 bg-purple-600 hover:bg-purple-700"
                       >
                         {updating ? (
-                          <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                          <Loader2 className="me-2 h-4 w-4 animate-spin" />
                         ) : (
-                          <Send className="mr-2 h-4 w-4" />
+                          <Send className="me-2 h-4 w-4" />
                         )}
                         Send to Review
                       </Button>
@@ -1946,20 +1946,20 @@ export function ChecklistKanban({ branchId, readOnly = false, userRole }: Checkl
                                 selectedItem.workOrderType === 'INSPECTION' || selectedItem.workOrderType === 'STICKER_INSPECTION' ? 'Inspection Date' :
                                   'Date'}
                         </p>
-                        <p className="text-sm">{new Date(selectedItem.inspectionDate).toLocaleDateString()}</p>
+                        <p className="text-sm">{new Date(selectedItem.inspectionDate).toLocaleDateString('ar-SA')}</p>
                       </div>
                     )}
 
                     {selectedItem.systemsChecked && (
                       <div>
-                        <p className="text-sm text-muted-foreground">Systems Checked</p>
+                        <p className="text-sm text-muted-foreground">الأنظمة المفحوصة</p>
                         <p className="text-sm">{selectedItem.systemsChecked}</p>
                       </div>
                     )}
 
                     {selectedItem.findings && (
                       <div>
-                        <p className="text-sm text-muted-foreground">Findings</p>
+                        <p className="text-sm text-muted-foreground">النتائج</p>
                         <p className="text-sm whitespace-pre-wrap">{selectedItem.findings}</p>
                       </div>
                     )}
@@ -2002,14 +2002,14 @@ export function ChecklistKanban({ branchId, readOnly = false, userRole }: Checkl
               {/* Signatures Section - Show for FOR_REVIEW and COMPLETED stages */}
               {(selectedItem.stage === 'FOR_REVIEW' || selectedItem.stage === 'COMPLETED') && (
                 <div className="border-t pt-4">
-                  <h4 className="font-semibold mb-3">Signatures</h4>
+                  <h4 className="font-semibold mb-3">التوقيعات</h4>
                   <div className="grid grid-cols-2 gap-4">
                     <div>
                       <p className="text-sm text-muted-foreground mb-2">Supervisor</p>
                       {selectedItem.supervisorSignature ? (
                         <div className="flex items-center gap-2 text-green-700">
                           <CheckCircle className="h-4 w-4" />
-                          <span className="text-sm">Signed {selectedItem.supervisorSignedAt && new Date(selectedItem.supervisorSignedAt).toLocaleDateString()}</span>
+                          <span className="text-sm">Signed {selectedItem.supervisorSignedAt && new Date(selectedItem.supervisorSignedAt).toLocaleDateString('ar-SA')}</span>
                         </div>
                       ) : userRole === 'CONTRACTOR' ? (
                         <Button
@@ -2026,11 +2026,11 @@ export function ChecklistKanban({ branchId, readOnly = false, userRole }: Checkl
                           }}
                           disabled={updating}
                         >
-                          {updating ? <Loader2 className="mr-2 h-3 w-3 animate-spin" /> : <PenTool className="mr-2 h-3 w-3" />}
+                          {updating ? <Loader2 className="me-2 h-3 w-3 animate-spin" /> : <PenTool className="me-2 h-3 w-3" />}
                           Sign
                         </Button>
                       ) : (
-                        <span className="text-sm text-muted-foreground">Not signed</span>
+                        <span className="text-sm text-muted-foreground">غير موقّع</span>
                       )}
                     </div>
                     <div>
@@ -2038,7 +2038,7 @@ export function ChecklistKanban({ branchId, readOnly = false, userRole }: Checkl
                       {selectedItem.clientSignature ? (
                         <div className="flex items-center gap-2 text-green-700">
                           <CheckCircle className="h-4 w-4" />
-                          <span className="text-sm">Signed {selectedItem.clientSignedAt && new Date(selectedItem.clientSignedAt).toLocaleDateString()}</span>
+                          <span className="text-sm">Signed {selectedItem.clientSignedAt && new Date(selectedItem.clientSignedAt).toLocaleDateString('ar-SA')}</span>
                         </div>
                       ) : userRole === 'CLIENT' ? (
                         <Button
@@ -2055,11 +2055,11 @@ export function ChecklistKanban({ branchId, readOnly = false, userRole }: Checkl
                           }}
                           disabled={updating}
                         >
-                          {updating ? <Loader2 className="mr-2 h-3 w-3 animate-spin" /> : <PenTool className="mr-2 h-3 w-3" />}
+                          {updating ? <Loader2 className="me-2 h-3 w-3 animate-spin" /> : <PenTool className="me-2 h-3 w-3" />}
                           Sign
                         </Button>
                       ) : (
-                        <span className="text-sm text-muted-foreground">Not signed</span>
+                        <span className="text-sm text-muted-foreground">غير موقّع</span>
                       )}
                     </div>
                   </div>
@@ -2075,7 +2075,7 @@ export function ChecklistKanban({ branchId, readOnly = false, userRole }: Checkl
                   </div>
                   {selectedItem.deletedAt && (
                     <p className="text-sm text-gray-600 mb-2">
-                      Archived on: {new Date(selectedItem.deletedAt).toLocaleDateString()} at {new Date(selectedItem.deletedAt).toLocaleTimeString()}
+                      Archived on: {new Date(selectedItem.deletedAt).toLocaleDateString('ar-SA')} at {new Date(selectedItem.deletedAt).toLocaleTimeString()}
                     </p>
                   )}
                   {selectedItem.deletedReason && (
@@ -2094,7 +2094,7 @@ export function ChecklistKanban({ branchId, readOnly = false, userRole }: Checkl
                           disabled={updating}
                           className="text-blue-700 border-blue-300 hover:bg-blue-50"
                         >
-                          <Calendar className="mr-2 h-4 w-4" />
+                          <Calendar className="me-2 h-4 w-4" />
                           Scheduled
                         </Button>
                         <Button
@@ -2104,7 +2104,7 @@ export function ChecklistKanban({ branchId, readOnly = false, userRole }: Checkl
                           disabled={updating}
                           className="text-orange-700 border-orange-300 hover:bg-orange-50"
                         >
-                          <Clock className="mr-2 h-4 w-4" />
+                          <Clock className="me-2 h-4 w-4" />
                           In Progress
                         </Button>
                         <Button
@@ -2114,7 +2114,7 @@ export function ChecklistKanban({ branchId, readOnly = false, userRole }: Checkl
                           disabled={updating}
                           className="text-purple-700 border-purple-300 hover:bg-purple-50"
                         >
-                          <FileText className="mr-2 h-4 w-4" />
+                          <FileText className="me-2 h-4 w-4" />
                           For Review
                         </Button>
                         <Button
@@ -2124,7 +2124,7 @@ export function ChecklistKanban({ branchId, readOnly = false, userRole }: Checkl
                           disabled={updating}
                           className="text-green-700 border-green-300 hover:bg-green-50"
                         >
-                          <CheckCircle className="mr-2 h-4 w-4" />
+                          <CheckCircle className="me-2 h-4 w-4" />
                           Completed
                         </Button>
                       </div>
@@ -2136,7 +2136,7 @@ export function ChecklistKanban({ branchId, readOnly = false, userRole }: Checkl
               {/* Notes */}
               {selectedItem.notes && (
                 <div className="border-t pt-4">
-                  <p className="text-sm text-muted-foreground">Notes</p>
+                  <p className="text-sm text-muted-foreground">ملاحظات</p>
                   <p className="text-sm">{selectedItem.notes}</p>
                 </div>
               )}
@@ -2148,7 +2148,7 @@ export function ChecklistKanban({ branchId, readOnly = false, userRole }: Checkl
                   className="w-full"
                   onClick={() => window.open(`/print/work-orders/${selectedItem.id}`, '_blank', 'noopener,noreferrer')}
                 >
-                  <Printer className="mr-2 h-4 w-4" />
+                  <Printer className="me-2 h-4 w-4" />
                   Print Work Order
                 </Button>
               </div>
@@ -2164,7 +2164,7 @@ export function ChecklistKanban({ branchId, readOnly = false, userRole }: Checkl
                       window.open(`/dashboard/clients/${branchId.split('/')[0]}/branches/${branchId}?tab=certificates`, '_blank')
                     }}
                   >
-                    <Award className="mr-2 h-4 w-4" />
+                    <Award className="me-2 h-4 w-4" />
                     View Certificate
                   </Button>
                 </div>
@@ -2209,13 +2209,13 @@ export function ChecklistKanban({ branchId, readOnly = false, userRole }: Checkl
                 <div className="grid grid-cols-2 gap-2 text-sm">
                   {selectedItem.scheduledDate && (
                     <div>
-                      <p className="text-muted-foreground">Scheduled</p>
-                      <p className="font-medium">{new Date(selectedItem.scheduledDate).toLocaleDateString()}</p>
+                      <p className="text-muted-foreground">مجدول</p>
+                      <p className="font-medium">{new Date(selectedItem.scheduledDate).toLocaleDateString('ar-SA')}</p>
                     </div>
                   )}
                   {selectedItem.price && (
                     <div>
-                      <p className="text-muted-foreground">Price</p>
+                      <p className="text-muted-foreground">السعر</p>
                       <p className="font-semibold text-green-700">{formatCurrency(selectedItem.price)}</p>
                     </div>
                   )}
@@ -2231,7 +2231,7 @@ export function ChecklistKanban({ branchId, readOnly = false, userRole }: Checkl
                   </h4>
                   {selectedItem.inspectionDate && (
                     <p className="text-sm mb-1">
-                      <span className="text-muted-foreground">Date:</span> {new Date(selectedItem.inspectionDate).toLocaleDateString()}
+                      <span className="text-muted-foreground">Date:</span> {new Date(selectedItem.inspectionDate).toLocaleDateString('ar-SA')}
                     </p>
                   )}
                   {selectedItem.systemsChecked && (
@@ -2296,7 +2296,7 @@ export function ChecklistKanban({ branchId, readOnly = false, userRole }: Checkl
               disabled={updating}
               className="bg-green-600 hover:bg-green-700"
             >
-              <CheckCircle className="mr-2 h-4 w-4" />
+              <CheckCircle className="me-2 h-4 w-4" />
               Sign & Complete
             </Button>
           </DialogFooter>

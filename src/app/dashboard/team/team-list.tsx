@@ -193,7 +193,7 @@ export function TeamList({ teamMembers: initialTeamMembers, clients }: TeamListP
           </p>
         </div>
         <Button onClick={handleCreate}>
-          <Plus className="mr-2 h-4 w-4" />
+          <Plus className="me-2 h-4 w-4" />
           {tt.addTeamMember}
         </Button>
       </div>
@@ -208,7 +208,7 @@ export function TeamList({ teamMembers: initialTeamMembers, clients }: TeamListP
               {tt.noTeamMembersDesc}
             </p>
             <Button onClick={handleCreate} className="mt-4">
-              <Plus className="mr-2 h-4 w-4" />
+              <Plus className="me-2 h-4 w-4" />
               {tt.addTeamMember}
             </Button>
           </CardContent>
@@ -244,14 +244,14 @@ export function TeamList({ teamMembers: initialTeamMembers, clients }: TeamListP
                       </DropdownMenuTrigger>
                       <DropdownMenuContent align="end">
                         <DropdownMenuItem onClick={() => handleEdit(member)}>
-                          <Pencil className="mr-2 h-4 w-4" />
+                          <Pencil className="me-2 h-4 w-4" />
                           {tt.edit}
                         </DropdownMenuItem>
                         <DropdownMenuItem
                           onClick={() => handleDeleteClick(member)}
                           className="text-destructive"
                         >
-                          <Trash2 className="mr-2 h-4 w-4" />
+                          <Trash2 className="me-2 h-4 w-4" />
                           {tt.delete}
                         </DropdownMenuItem>
                       </DropdownMenuContent>
@@ -282,7 +282,7 @@ export function TeamList({ teamMembers: initialTeamMembers, clients }: TeamListP
                           <div className="flex flex-wrap gap-1 mt-1">
                             {group.branches.map((branch, bIdx) => (
                               <Badge key={bIdx} variant="outline" className="text-xs py-0">
-                                <MapPin className="mr-1 h-3 w-3" />
+                                <MapPin className="me-1 h-3 w-3" />
                                 {branch}
                               </Badge>
                             ))}

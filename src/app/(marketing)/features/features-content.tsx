@@ -46,7 +46,7 @@ export function FeaturesContent() {
           <Button size="lg" asChild>
             <Link href="/contact">
               {t.pages.features.ctaButton}
-              <ArrowRight className="ml-2 h-4 w-4" />
+              <ArrowRight className="ms-2 h-4 w-4" />
             </Link>
           </Button>
         </div>
@@ -111,7 +111,7 @@ export function FeaturesContent() {
           <Button size="lg" className="bg-white text-orange-600 hover:bg-gray-100" asChild>
             <Link href="/contact">
               {t.cta.button}
-              <ArrowRight className="ml-2 h-4 w-4" />
+              <ArrowRight className="ms-2 h-4 w-4" />
             </Link>
           </Button>
         </div>

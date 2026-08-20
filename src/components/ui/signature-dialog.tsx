@@ -165,7 +165,7 @@ export function SignatureDialog({
                 onClick={clearSignature}
                 disabled={isEmpty || signing}
               >
-                <Eraser className="mr-2 h-3 w-3" />
+                <Eraser className="me-2 h-3 w-3" />
                 {tu.clear}
               </Button>
             </div>
@@ -206,12 +206,12 @@ export function SignatureDialog({
           >
             {signing ? (
               <>
-                <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                <Loader2 className="me-2 h-4 w-4 animate-spin" />
                 {tu.signatureDialog.signing}
               </>
             ) : (
               <>
-                <PenTool className="mr-2 h-4 w-4" />
+                <PenTool className="me-2 h-4 w-4" />
                 {tu.signatureDialog.signDocument}
               </>
             )}

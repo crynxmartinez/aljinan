@@ -140,7 +140,7 @@ export function RequestComments({ branchId, requestId, currentUserId }: RequestC
     if (diffMins < 60) return trc.minutesAgo.replace('{count}', String(diffMins))
     if (diffHours < 24) return trc.hoursAgo.replace('{count}', String(diffHours))
     if (diffDays < 7) return trc.daysAgo.replace('{count}', String(diffDays))
-    return date.toLocaleDateString()
+    return date.toLocaleDateString('ar-SA')
   }
 
   const getRoleBadge = (role: string) => {
@@ -209,7 +209,7 @@ export function RequestComments({ branchId, requestId, currentUserId }: RequestC
                     </div>
                     <span className="text-xs text-muted-foreground">
                       {formatDate(comment.createdAt)}
-                      {comment.isEdited && <span className="ml-1 italic">{trc.edited}</span>}
+                      {comment.isEdited && <span className="ms-1 italic">{trc.edited}</span>}
                     </span>
                   </div>
                 </div>
@@ -240,7 +240,7 @@ export function RequestComments({ branchId, requestId, currentUserId }: RequestC
                       disabled={saving || !editContent.trim()}
                     >
                       {saving ? <Loader2 className="h-3 w-3 animate-spin" /> : <Check className="h-3 w-3" />}
-                      <span className="ml-1">{trc.save}</span>
+                      <span className="ms-1">{trc.save}</span>
                     </Button>
                     <Button
                       size="sm"
@@ -248,7 +248,7 @@ export function RequestComments({ branchId, requestId, currentUserId }: RequestC
                       onClick={cancelEdit}
                     >
                       <X className="h-3 w-3" />
-                      <span className="ml-1">{trc.cancel}</span>
+                      <span className="ms-1">{trc.cancel}</span>
                     </Button>
                   </div>
                 </div>

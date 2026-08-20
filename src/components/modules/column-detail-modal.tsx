@@ -305,7 +305,7 @@ export function ColumnDetailModal({
           <DialogTitle className="flex items-center gap-2">
             <StageIcon className={stage.color} />
             {stage.label} {tcd.workOrders}
-            <Badge variant="secondary" className="ml-2">
+            <Badge variant="secondary" className="ms-2">
               {stats.total} {stats.total === 1 ? tcd.item : tcd.items}
             </Badge>
           </DialogTitle>

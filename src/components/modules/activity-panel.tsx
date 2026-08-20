@@ -107,7 +107,7 @@ export function ActivityPanel({ branchId, isOpen, onClose }: ActivityPanelProps)
     if (minutes < 60) return `${minutes}${ta.mAgo}`
     if (hours < 24) return `${hours}${ta.hAgo}`
     if (days < 7) return `${days}${ta.dAgo}`
-    return date.toLocaleDateString()
+    return date.toLocaleDateString('ar-SA')
   }
 
   if (!isOpen) return null

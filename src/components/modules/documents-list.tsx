@@ -309,7 +309,7 @@ export function DocumentsList({ branchId }: DocumentsListProps) {
                                 <p className="text-sm text-muted-foreground">{doc.uploadedBy}</p>
                               </TableCell>
                               <TableCell>
-                                <p className="text-sm">{new Date(doc.uploadedAt).toLocaleDateString()}</p>
+                                <p className="text-sm">{new Date(doc.uploadedAt).toLocaleDateString('ar-SA')}</p>
                               </TableCell>
                               <TableCell>
                                 {expiryInfo.status === 'expired' && (

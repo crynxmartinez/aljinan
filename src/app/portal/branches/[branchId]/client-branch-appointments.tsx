@@ -220,7 +220,7 @@ export function ClientBranchAppointments({ branchId }: ClientBranchAppointmentsP
                         size="sm"
                         onClick={() => openActionDialog(appointment, 'request_reschedule')}
                       >
-                        <RefreshCw className="mr-2 h-4 w-4" />
+                        <RefreshCw className="me-2 h-4 w-4" />
                         Request Reschedule
                       </Button>
                       <Button
@@ -228,14 +228,14 @@ export function ClientBranchAppointments({ branchId }: ClientBranchAppointmentsP
                         size="sm"
                         onClick={() => openActionDialog(appointment, 'cancel')}
                       >
-                        <CalendarX className="mr-2 h-4 w-4" />
+                        <CalendarX className="me-2 h-4 w-4" />
                         Cancel
                       </Button>
                       <Button
                         size="sm"
                         onClick={() => openActionDialog(appointment, 'confirm')}
                       >
-                        <CalendarCheck className="mr-2 h-4 w-4" />
+                        <CalendarCheck className="me-2 h-4 w-4" />
                         Confirm
                       </Button>
                     </div>
@@ -391,7 +391,7 @@ export function ClientBranchAppointments({ branchId }: ClientBranchAppointmentsP
               disabled={processing}
               variant={actionType === 'cancel' ? 'destructive' : 'default'}
             >
-              {processing && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
+              {processing && <Loader2 className="me-2 h-4 w-4 animate-spin" />}
               {actionType === 'confirm' && 'Confirm Appointment'}
               {actionType === 'cancel' && 'Cancel Appointment'}
               {actionType === 'request_reschedule' && 'Request Reschedule'}

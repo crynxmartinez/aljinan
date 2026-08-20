@@ -403,7 +403,7 @@ export function ContractorProfileForm({ contractor, open, onOpenChange }: Contra
                     <button
                       type="button"
                       onClick={() => removeServiceArea(area)}
-                      className="ml-2 hover:text-destructive"
+                      className="ms-2 hover:text-destructive"
                     >
                       <X className="h-3 w-3" />
                     </button>

@@ -331,7 +331,7 @@ function WorkOrdersGroupedViewContractor({
                         </Badge>
                       ) : (
                         <span className="font-semibold text-primary">
-                          SAR {groupTotal.toLocaleString('en-US', { minimumFractionDigits: 2 })}
+                          ر.س {groupTotal.toLocaleString('ar-SA', { minimumFractionDigits: 2 })}
                         </span>
                       )}
                     </div>
@@ -356,7 +356,7 @@ function WorkOrdersGroupedViewContractor({
                   {items[0].scheduledDate ? (
                     <div className="flex items-center gap-1">
                       <Calendar className="h-3 w-3" />
-                      {new Date(items[0].scheduledDate).toLocaleDateString()}
+                      {new Date(items[0].scheduledDate).toLocaleDateString('ar-SA')}
                     </div>
                   ) : (
                     <span>{tr.noDateScheduled}</span>
@@ -377,9 +377,9 @@ function WorkOrdersGroupedViewContractor({
                           {wo.title.match(/\((Q\d+|Month\d+)\)/i)?.[1] || `#${idx + 1}`}:
                         </span>
                         {wo.scheduledDate && (
-                          <span className="ml-2 inline-flex items-center gap-1">
+                          <span className="ms-2 inline-flex items-center gap-1">
                             <Calendar className="h-3 w-3" />
-                            {new Date(wo.scheduledDate).toLocaleDateString()}
+                            {new Date(wo.scheduledDate).toLocaleDateString('ar-SA')}
                           </span>
                         )}
                       </div>
@@ -405,7 +405,7 @@ function WorkOrdersGroupedViewContractor({
                       ) : (
                         <>
                           {wo.price !== null ? (
-                            <span className="font-medium">{tr.sar} {wo.price.toLocaleString('en-US', { minimumFractionDigits: 2 })}</span>
+                            <span className="font-medium">{tr.sar} {wo.price.toLocaleString('ar-SA', { minimumFractionDigits: 2 })}</span>
                           ) : (
                             <Badge variant="outline" className="text-xs text-orange-600">{tr.pending}</Badge>
                           )}
@@ -1035,14 +1035,14 @@ export function RequestsList({ branchId, userRole, userId }: RequestsListProps) 
                   showDateRange={true}
                 />
                 <Button onClick={() => setContractorCreateDialogOpen(true)}>
-                  <Plus className="mr-2 h-4 w-4" />
+                  <Plus className="me-2 h-4 w-4" />
                   {tr.createWorkOrderRequest}
                 </Button>
               </>
             )}
             {userRole !== 'CONTRACTOR' && (
               <Button onClick={() => setCreateDialogOpen(true)}>
-                <Plus className="mr-2 h-4 w-4" />
+                <Plus className="me-2 h-4 w-4" />
                 {tr.newRequest}
               </Button>
             )}
@@ -1062,7 +1062,7 @@ export function RequestsList({ branchId, userRole, userId }: RequestsListProps) 
               </p>
               {userRole !== 'CONTRACTOR' && requests.length === 0 && (
                 <Button onClick={() => setCreateDialogOpen(true)}>
-                  <Plus className="mr-2 h-4 w-4" />
+                  <Plus className="me-2 h-4 w-4" />
                   {tr.createRequest}
                 </Button>
               )}
@@ -1100,9 +1100,9 @@ export function RequestsList({ branchId, userRole, userId }: RequestsListProps) 
                       </p>
                     )}
                     <p className="text-xs text-muted-foreground">
-                      Created {new Date(request.createdAt).toLocaleDateString()}
+                      Created {new Date(request.createdAt).toLocaleDateString('ar-SA')}
                       {request.dueDate && (
-                        <> · Due {new Date(request.dueDate).toLocaleDateString()}</>
+                        <> · Due {new Date(request.dueDate).toLocaleDateString('ar-SA')}</>
                       )}
                     </p>
                   </div>
@@ -1115,7 +1115,7 @@ export function RequestsList({ branchId, userRole, userId }: RequestsListProps) 
                     <DropdownMenuContent align="end">
                       {userRole === 'CONTRACTOR' && request.status === 'REQUESTED' && request.createdByRole === 'CLIENT' && (
                         <DropdownMenuItem onClick={(e) => { e.stopPropagation(); openQuoteDialog(request); }}>
-                          <Send className="mr-2 h-4 w-4" />
+                          <Send className="me-2 h-4 w-4" />
                           {tr.reviewAndQuote}
                         </DropdownMenuItem>
                       )}
@@ -1221,7 +1221,7 @@ export function RequestsList({ branchId, userRole, userId }: RequestsListProps) 
                 {tr.cancel}
               </Button>
               <Button type="submit" disabled={creating}>
-                {creating && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
+                {creating && <Loader2 className="me-2 h-4 w-4 animate-spin" />}
                 {tr.createRequest}
               </Button>
             </DialogFooter>
@@ -1509,7 +1509,7 @@ export function RequestsList({ branchId, userRole, userId }: RequestsListProps) 
                       {/* Total */}
                       <div className="p-3 bg-blue-50 border border-blue-200 rounded-lg">
                         <p className="text-sm text-blue-800">
-                          <strong>{tr.totalLabel}</strong> {tr.sar} {occurrences.reduce((sum, o) => sum + (o.price ? parseFloat(o.price) : 0), 0).toLocaleString('en-US', { minimumFractionDigits: 2 })}
+                          <strong>{tr.totalLabel}</strong> {tr.sar} {occurrences.reduce((sum, o) => sum + (o.price ? parseFloat(o.price) : 0), 0).toLocaleString('ar-SA', { minimumFractionDigits: 2 })}
                           {' '}({occurrences.length} {tr.workOrdersCount})
                         </p>
                       </div>
@@ -1529,13 +1529,13 @@ export function RequestsList({ branchId, userRole, userId }: RequestsListProps) 
                 disabled={startingImmediately || contractorCreating || !contractorNewRequest.title}
                 className="bg-blue-600 hover:bg-blue-700 text-white"
               >
-                {startingImmediately && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
-                <Zap className="mr-2 h-4 w-4" />
+                {startingImmediately && <Loader2 className="me-2 h-4 w-4 animate-spin" />}
+                <Zap className="me-2 h-4 w-4" />
                 {tr.startImmediately}
               </Button>
               <Button type="submit" disabled={contractorCreating || startingImmediately}>
-                {contractorCreating && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
-                <Send className="mr-2 h-4 w-4" />
+                {contractorCreating && <Loader2 className="me-2 h-4 w-4 animate-spin" />}
+                <Send className="me-2 h-4 w-4" />
                 {tr.sendToClient}
               </Button>
             </DialogFooter>
@@ -1580,12 +1580,12 @@ export function RequestsList({ branchId, userRole, userId }: RequestsListProps) 
               <div className="grid grid-cols-2 md:grid-cols-3 gap-4 text-sm">
                 <div>
                   <p className="font-medium text-muted-foreground">{tr.created}</p>
-                  <p>{new Date(selectedRequest.createdAt).toLocaleDateString()}</p>
+                  <p>{new Date(selectedRequest.createdAt).toLocaleDateString('ar-SA')}</p>
                 </div>
                 {selectedRequest.preferredDate && (
                   <div>
                     <p className="font-medium text-muted-foreground">{tr.preferredDate}</p>
-                    <p>{new Date(selectedRequest.preferredDate).toLocaleDateString()}</p>
+                    <p>{new Date(selectedRequest.preferredDate).toLocaleDateString('ar-SA')}</p>
                   </div>
                 )}
                 {selectedRequest.preferredTimeSlot && (
@@ -1651,7 +1651,7 @@ export function RequestsList({ branchId, userRole, userId }: RequestsListProps) 
                             </td>
                             <td className="px-3 py-2 text-muted-foreground">{eq.location || '-'}</td>
                             <td className="px-3 py-2 text-muted-foreground">
-                              {eq.expectedExpiry ? new Date(eq.expectedExpiry).toLocaleDateString() : '-'}
+                              {eq.expectedExpiry ? new Date(eq.expectedExpiry).toLocaleDateString('ar-SA') : '-'}
                             </td>
                           </tr>
                         ))}
@@ -1688,7 +1688,7 @@ export function RequestsList({ branchId, userRole, userId }: RequestsListProps) 
                               <tr key={idx}>
                                 <td className="px-3 py-2 text-muted-foreground">{occ.order}</td>
                                 <td className="px-3 py-2">
-                                  {occ.visitDate ? new Date(occ.visitDate).toLocaleDateString() : '-'}
+                                  {occ.visitDate ? new Date(occ.visitDate).toLocaleDateString('ar-SA') : '-'}
                                 </td>
                                 <td className="px-3 py-2 text-end font-medium">
                                   {occ.price ? occ.price.toLocaleString() : '-'}
@@ -1700,7 +1700,7 @@ export function RequestsList({ branchId, userRole, userId }: RequestsListProps) 
                             <tr>
                               <td colSpan={2} className="px-3 py-2 font-semibold text-purple-800">{tr.total}</td>
                               <td className="px-3 py-2 text-end font-bold text-purple-900">
-                                SAR {selectedRequest.quotedPrice.toLocaleString()}
+                                ر.س {selectedRequest.quotedPrice.toLocaleString()}
                               </td>
                             </tr>
                           </tfoot>
@@ -1717,7 +1717,7 @@ export function RequestsList({ branchId, userRole, userId }: RequestsListProps) 
                       {selectedRequest.quotedDate && (
                         <div>
                           <p className="text-purple-600">{tr.scheduledDate.replace(' *', '')}</p>
-                          <p className="font-semibold">{new Date(selectedRequest.quotedDate).toLocaleDateString()}</p>
+                          <p className="font-semibold">{new Date(selectedRequest.quotedDate).toLocaleDateString('ar-SA')}</p>
                         </div>
                       )}
                     </div>
@@ -1748,7 +1748,7 @@ export function RequestsList({ branchId, userRole, userId }: RequestsListProps) 
                         }}
                         className="flex-1"
                       >
-                        <Banknote className="mr-2 h-4 w-4" />
+                        <Banknote className="me-2 h-4 w-4" />
                         {tr.sendQuote}
                       </Button>
                       <Button
@@ -1759,7 +1759,7 @@ export function RequestsList({ branchId, userRole, userId }: RequestsListProps) 
                         }}
                         className="bg-blue-600 hover:bg-blue-700 text-white"
                       >
-                        <CheckCircle className="mr-2 h-4 w-4" />
+                        <CheckCircle className="me-2 h-4 w-4" />
                         {tr.startImmediately}
                       </Button>
                     </>
@@ -1772,7 +1772,7 @@ export function RequestsList({ branchId, userRole, userId }: RequestsListProps) 
                       }}
                       className="flex-1"
                     >
-                      <CheckCircle className="mr-2 h-4 w-4" />
+                      <CheckCircle className="me-2 h-4 w-4" />
                       {tr.startWork}
                     </Button>
                   )}
@@ -1784,7 +1784,7 @@ export function RequestsList({ branchId, userRole, userId }: RequestsListProps) 
                       }}
                       className="flex-1"
                     >
-                      <CheckCircle className="mr-2 h-4 w-4" />
+                      <CheckCircle className="me-2 h-4 w-4" />
                       {tr.markComplete}
                     </Button>
                   )}
@@ -1796,7 +1796,7 @@ export function RequestsList({ branchId, userRole, userId }: RequestsListProps) 
                         setDetailDialogOpen(false)
                       }}
                     >
-                      <XCircle className="mr-2 h-4 w-4" />
+                      <XCircle className="me-2 h-4 w-4" />
                       {tr.cancel}
                     </Button>
                   )}
@@ -1811,7 +1811,7 @@ export function RequestsList({ branchId, userRole, userId }: RequestsListProps) 
                     onClick={() => window.open(`/print/branches/${branchId}/requests/${selectedRequest.id}`, '_blank', 'noopener,noreferrer')}
                     className="w-full"
                   >
-                    <Printer className="mr-2 h-4 w-4" />
+                    <Printer className="me-2 h-4 w-4" />
                     {selectedRequest.status === 'QUOTED' ? tr.printQuotation : tr.printWorkOrder}
                   </Button>
                 </div>
@@ -1882,7 +1882,7 @@ export function RequestsList({ branchId, userRole, userId }: RequestsListProps) 
                       {quoteRequest.preferredDate && (
                         <div className="flex items-center gap-1">
                           <Calendar className="h-4 w-4 text-blue-600" />
-                          <span>{new Date(quoteRequest.preferredDate).toLocaleDateString()}</span>
+                          <span>{new Date(quoteRequest.preferredDate).toLocaleDateString('ar-SA')}</span>
                         </div>
                       )}
                       {quoteRequest.preferredTimeSlot && (
@@ -1925,7 +1925,7 @@ export function RequestsList({ branchId, userRole, userId }: RequestsListProps) 
                 <div className="grid grid-cols-2 gap-4 text-sm">
                   <div>
                     <p className="text-muted-foreground">{tr.submitted}</p>
-                    <p className="font-medium">{new Date(quoteRequest.createdAt).toLocaleDateString()}</p>
+                    <p className="font-medium">{new Date(quoteRequest.createdAt).toLocaleDateString('ar-SA')}</p>
                   </div>
                   <div>
                     <p className="text-muted-foreground">{tr.createdBy}</p>
@@ -2015,7 +2015,7 @@ export function RequestsList({ branchId, userRole, userId }: RequestsListProps) 
                               {dates.slice(0, 4).map((date, idx) => (
                                 <div key={idx} className="flex justify-between items-center py-1 border-b border-blue-100 last:border-0">
                                   <span className="text-blue-700">
-                                    └ {quoteRequest.recurringType === 'MONTHLY' ? `${tr.month} ${idx + 1}` : `Q${idx + 1}`}: {date.toLocaleDateString()}
+                                    └ {quoteRequest.recurringType === 'MONTHLY' ? `${tr.month} ${idx + 1}` : `Q${idx + 1}`}: {date.toLocaleDateString('ar-SA')}
                                   </span>
                                   <span className="font-medium text-blue-800">{tr.sar} {price.toLocaleString()}</span>
                                 </div>
@@ -2071,8 +2071,8 @@ export function RequestsList({ branchId, userRole, userId }: RequestsListProps) 
               onClick={handleSubmitQuote}
               disabled={submittingQuote || !quoteData.quotedPrice || !quoteData.quotedDate}
             >
-              {submittingQuote && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
-              <Send className="mr-2 h-4 w-4" />
+              {submittingQuote && <Loader2 className="me-2 h-4 w-4 animate-spin" />}
+              <Send className="me-2 h-4 w-4" />
               {tr.sendQuoteToClient}
             </Button>
           </DialogFooter>
@@ -2129,7 +2129,7 @@ export function RequestsList({ branchId, userRole, userId }: RequestsListProps) 
               onClick={handleStartImmediately}
               className="bg-blue-600 hover:bg-blue-700"
             >
-              <CheckCircle className="mr-2 h-4 w-4" />
+              <CheckCircle className="me-2 h-4 w-4" />
               {tr.startImmediately}
             </Button>
           </DialogFooter>

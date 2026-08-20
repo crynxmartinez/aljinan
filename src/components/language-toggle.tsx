@@ -34,14 +34,14 @@ export function LanguageToggle() {
           onClick={() => changeLocale('en')}
           className={locale === 'en' ? 'bg-accent' : ''}
         >
-          <span className="mr-2">🇬🇧</span>
+          <span className="me-2">🇬🇧</span>
           English
         </DropdownMenuItem>
         <DropdownMenuItem
           onClick={() => changeLocale('ar')}
           className={locale === 'ar' ? 'bg-accent' : ''}
         >
-          <span className="mr-2">🇸🇦</span>
+          <span className="me-2">🇸🇦</span>
           العربية
         </DropdownMenuItem>
       </DropdownMenuContent>

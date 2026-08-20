@@ -191,10 +191,10 @@ export function ClientBranchQuotations({ branchId }: ClientBranchQuotationsProps
                     <table className="w-full text-sm">
                       <thead className="bg-muted/50">
                         <tr>
-                          <th className="text-start p-2">Description</th>
-                          <th className="text-end p-2 w-20">Qty</th>
-                          <th className="text-end p-2 w-24">Price</th>
-                          <th className="text-end p-2 w-24">Total</th>
+                          <th className="text-start p-2">الوصف</th>
+                          <th className="text-end p-2 w-20">الكمية</th>
+                          <th className="text-end p-2 w-24">السعر</th>
+                          <th className="text-end p-2 w-24">الإجمالي</th>
                         </tr>
                       </thead>
                       <tbody>
@@ -209,7 +209,7 @@ export function ClientBranchQuotations({ branchId }: ClientBranchQuotationsProps
                       </tbody>
                       <tfoot className="bg-muted/30">
                         <tr className="border-t">
-                          <td colSpan={3} className="text-end p-2">Subtotal</td>
+                          <td colSpan={3} className="text-end p-2">المجموع الفرعي</td>
                           <td className="text-end p-2">{formatCurrency(quotation.subtotal)}</td>
                         </tr>
                         <tr>
@@ -217,7 +217,7 @@ export function ClientBranchQuotations({ branchId }: ClientBranchQuotationsProps
                           <td className="text-end p-2">{formatCurrency(quotation.taxAmount)}</td>
                         </tr>
                         <tr className="font-semibold">
-                          <td colSpan={3} className="text-end p-2">Total</td>
+                          <td colSpan={3} className="text-end p-2">الإجمالي</td>
                           <td className="text-end p-2">{formatCurrency(quotation.total)}</td>
                         </tr>
                       </tfoot>
@@ -226,9 +226,9 @@ export function ClientBranchQuotations({ branchId }: ClientBranchQuotationsProps
 
                   <div className="flex items-center justify-between">
                     <div className="text-sm text-muted-foreground">
-                      Sent {new Date(quotation.sentAt!).toLocaleDateString()}
+                      Sent {new Date(quotation.sentAt!).toLocaleDateString('ar-SA')}
                       {quotation.validUntil && (
-                        <> · Valid until {new Date(quotation.validUntil).toLocaleDateString()}</>
+                        <> · Valid until {new Date(quotation.validUntil).toLocaleDateString('ar-SA')}</>
                       )}
                     </div>
                     <div className="flex gap-2">
@@ -236,13 +236,13 @@ export function ClientBranchQuotations({ branchId }: ClientBranchQuotationsProps
                         variant="outline"
                         onClick={() => openActionDialog(quotation, 'reject')}
                       >
-                        <ThumbsDown className="mr-2 h-4 w-4" />
+                        <ThumbsDown className="me-2 h-4 w-4" />
                         Reject
                       </Button>
                       <Button
                         onClick={() => openActionDialog(quotation, 'approve')}
                       >
-                        <ThumbsUp className="mr-2 h-4 w-4" />
+                        <ThumbsUp className="me-2 h-4 w-4" />
                         Approve
                       </Button>
                     </div>
@@ -291,10 +291,10 @@ export function ClientBranchQuotations({ branchId }: ClientBranchQuotationsProps
                           <span className="font-semibold text-foreground">{formatCurrency(quotation.total)}</span>
                           <span>{quotation.items.length} item{quotation.items.length !== 1 ? 's' : ''}</span>
                           {quotation.approvedAt && (
-                            <span>Approved {new Date(quotation.approvedAt).toLocaleDateString()}</span>
+                            <span>Approved {new Date(quotation.approvedAt).toLocaleDateString('ar-SA')}</span>
                           )}
                           {quotation.rejectedAt && (
-                            <span>Rejected {new Date(quotation.rejectedAt).toLocaleDateString()}</span>
+                            <span>Rejected {new Date(quotation.rejectedAt).toLocaleDateString('ar-SA')}</span>
                           )}
                         </div>
                         {quotation.rejectionNote && (
@@ -357,7 +357,7 @@ export function ClientBranchQuotations({ branchId }: ClientBranchQuotationsProps
               disabled={processing}
               variant={actionType === 'reject' ? 'destructive' : 'default'}
             >
-              {processing && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
+              {processing && <Loader2 className="me-2 h-4 w-4 animate-spin" />}
               {actionType === 'approve' ? 'Approve' : 'Reject'}
             </Button>
           </DialogFooter>

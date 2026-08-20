@@ -25,7 +25,7 @@ export function CTASection() {
           >
             <Link href="/contact">
               {t.cta.button}
-              <ArrowRight className="ml-2 h-5 w-5" />
+              <ArrowRight className="ms-2 h-5 w-5" />
             </Link>
           </Button>
 

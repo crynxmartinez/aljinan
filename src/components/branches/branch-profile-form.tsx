@@ -337,7 +337,7 @@ export function BranchProfileForm({ branch, open, onOpenChange }: BranchProfileF
               {ta.cancel}
             </Button>
             <Button type="submit" disabled={loading}>
-              {loading && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
+              {loading && <Loader2 className="me-2 h-4 w-4 animate-spin" />}
               {ta.saveChanges}
             </Button>
           </DialogFooter>

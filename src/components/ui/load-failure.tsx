@@ -32,7 +32,7 @@ export function LoadFailure({
         </p>
         {onRetry && (
           <Button variant="outline" size="sm" onClick={onRetry} className="mt-1">
-            <RefreshCw className="mr-2 h-4 w-4" />
+            <RefreshCw className="me-2 h-4 w-4" />
             Try again
           </Button>
         )}

@@ -991,11 +991,11 @@ export function ContractsList({ branchId }: ContractsListProps) {
       <Card>
         <CardHeader className="flex flex-row items-center justify-between">
           <div>
-            <CardTitle>Contracts</CardTitle>
-            <CardDescription>Upload and manage service contracts for this branch</CardDescription>
+            <CardTitle>{tcl.contracts}</CardTitle>
+            <CardDescription>{tcl.contractsDesc}</CardDescription>
           </div>
           <Button onClick={() => setCreateDialogOpen(true)}>
-            <Plus className="mr-2 h-4 w-4" />
+            <Plus className="me-2 h-4 w-4" />
             Add Contract
           </Button>
         </CardHeader>
@@ -1003,12 +1003,12 @@ export function ContractsList({ branchId }: ContractsListProps) {
           {contracts.length === 0 ? (
             <div className="flex flex-col items-center justify-center py-12 text-center">
               <FileCheck className="h-12 w-12 text-muted-foreground/30 mb-4" />
-              <h3 className="text-lg font-semibold mb-2">No contracts yet</h3>
+              <h3 className="text-lg font-semibold mb-2">{tcl.noContractsYet}</h3>
               <p className="text-muted-foreground max-w-md mb-4">
-                Upload service contracts and agreements for this branch.
+                {tcl.noContractsDesc}
               </p>
               <Button onClick={() => setCreateDialogOpen(true)}>
-                <Plus className="mr-2 h-4 w-4" />
+                <Plus className="me-2 h-4 w-4" />
                 Add Contract
               </Button>
             </div>
@@ -1042,18 +1042,18 @@ export function ContractsList({ branchId }: ContractsListProps) {
                           {contract.startDate && contract.endDate && (
                             <span className="flex items-center gap-1">
                               <Calendar className="h-3 w-3" />
-                              {new Date(contract.startDate).toLocaleDateString()} - {new Date(contract.endDate).toLocaleDateString()}
+                              {new Date(contract.startDate).toLocaleDateString('ar-SA')} - {new Date(contract.endDate).toLocaleDateString('ar-SA')}
                             </span>
                           )}
                           {contract.totalValue && (
                             <span className="font-medium text-primary">
-                              SAR {contract.totalValue.toLocaleString('en-US', { minimumFractionDigits: 2 })}
+                              ر.س {contract.totalValue.toLocaleString('ar-SA', { minimumFractionDigits: 2 })}
                             </span>
                           )}
                           {workOrderCount > 0 && (
                             <span className="flex items-center gap-1">
                               <ClipboardList className="h-3 w-3" />
-                              {workOrderCount} work orders
+                              {workOrderCount} {tcl.workOrdersCount.replace("{count}", "")}
                             </span>
                           )}
                         </div>
@@ -1070,7 +1070,7 @@ export function ContractsList({ branchId }: ContractsListProps) {
                         }
                       >
                         <FileText className="h-3 w-3 me-1" />
-                        PDF {contract.fileUrl ? '✓' : '—'}
+                        {tcl.pdf} {contract.fileUrl ? '✓' : '—'}
                       </Badge>
                       <Badge
                         variant="outline"
@@ -1080,7 +1080,7 @@ export function ContractsList({ branchId }: ContractsListProps) {
                         }
                       >
                         <Award className="h-3 w-3 me-1" />
-                        Cert {contract.certificateUrl ? '✓' : '—'}
+                        {tcl.cert} {contract.certificateUrl ? '✓' : '—'}
                       </Badge>
                       <Badge
                         variant="outline"
@@ -1090,7 +1090,7 @@ export function ContractsList({ branchId }: ContractsListProps) {
                         }
                       >
                         <PenTool className="h-3 w-3 me-1" />
-                        Signed {contract.startSignedAt ? '✓' : '—'}
+                        {tcl.signed} {contract.startSignedAt ? '✓' : '—'}
                       </Badge>
 
                       <div className="flex-1" />
@@ -1138,18 +1138,18 @@ export function ContractsList({ branchId }: ContractsListProps) {
                       <ClipboardList className="h-5 w-5" />
                       Service Requests
                     </CardTitle>
-                    <Badge className="bg-blue-100 text-blue-700">Ad-hoc</Badge>
+                    <Badge className="bg-blue-100 text-blue-700">{tcl.adhoc}</Badge>
                     <Badge variant="secondary">{standaloneWorkOrders.length}</Badge>
                   </div>
                   <div className="text-end">
                     <p className="font-semibold text-blue-700">
-                      SAR {standaloneWorkOrders.reduce((sum, wo) => sum + (wo.price || 0), 0).toLocaleString('en-US', { minimumFractionDigits: 2 })}
+                      ر.س {standaloneWorkOrders.reduce((sum, wo) => sum + (wo.price || 0), 0).toLocaleString('ar-SA', { minimumFractionDigits: 2 })}
                     </p>
-                    <p className="text-xs text-blue-600">Total Value</p>
+                    <p className="text-xs text-blue-600">{tcl.totalValue}</p>
                   </div>
                 </div>
                 <CardDescription className="text-blue-600 text-start mt-2">
-                  Work orders from client service requests. No contract signature required.
+                  {tcl.serviceRequestsDesc}
                 </CardDescription>
               </CardHeader>
             </CollapsibleTrigger>
@@ -1167,7 +1167,7 @@ export function ContractsList({ branchId }: ContractsListProps) {
                           {wo.scheduledDate && (
                             <span className="flex items-center gap-1">
                               <Calendar className="h-3 w-3" />
-                              {new Date(wo.scheduledDate).toLocaleDateString()}
+                              {new Date(wo.scheduledDate).toLocaleDateString('ar-SA')}
                             </span>
                           )}
                           <Badge variant="outline" className="text-xs">
@@ -1177,7 +1177,7 @@ export function ContractsList({ branchId }: ContractsListProps) {
                       </div>
                       {wo.price && (
                         <span className="font-semibold text-blue-700">
-                          SAR {wo.price.toLocaleString('en-US', { minimumFractionDigits: 2 })}
+                          ر.س {wo.price.toLocaleString('ar-SA', { minimumFractionDigits: 2 })}
                         </span>
                       )}
                     </div>
@@ -1186,7 +1186,7 @@ export function ContractsList({ branchId }: ContractsListProps) {
                 <div className="flex items-center gap-2 mt-4 p-3 bg-blue-100/50 rounded-lg border border-blue-200">
                   <CheckCircle className="h-4 w-4 text-blue-600" />
                   <p className="text-sm text-blue-700">
-                    These work orders were approved when the client accepted the quote. No additional signature is required.
+                    {tcl.serviceRequestsNote}
                   </p>
                 </div>
               </CardContent>
@@ -1208,18 +1208,18 @@ export function ContractsList({ branchId }: ContractsListProps) {
                       <ClipboardList className="h-5 w-5" />
                       Sticker Inspections
                     </CardTitle>
-                    <Badge className="bg-amber-100 text-amber-700">Equipment</Badge>
+                    <Badge className="bg-amber-100 text-amber-700">{tcl.equipment}</Badge>
                     <Badge variant="secondary">{stickerInspections.length}</Badge>
                   </div>
                   <div className="text-end">
                     <p className="font-semibold text-amber-700">
-                      SAR {stickerInspections.reduce((sum, wo) => sum + (wo.price || 0), 0).toLocaleString('en-US', { minimumFractionDigits: 2 })}
+                      ر.س {stickerInspections.reduce((sum, wo) => sum + (wo.price || 0), 0).toLocaleString('ar-SA', { minimumFractionDigits: 2 })}
                     </p>
-                    <p className="text-xs text-amber-600">Total Value</p>
+                    <p className="text-xs text-amber-600">{tcl.totalValue}</p>
                   </div>
                 </div>
                 <CardDescription className="text-amber-600 text-start mt-2">
-                  Equipment sticker inspections. No contract signature required.
+                  {tcl.stickerInspectionsDesc}
                 </CardDescription>
               </CardHeader>
             </CollapsibleTrigger>
@@ -1237,7 +1237,7 @@ export function ContractsList({ branchId }: ContractsListProps) {
                           {wo.scheduledDate && (
                             <span className="flex items-center gap-1">
                               <Calendar className="h-3 w-3" />
-                              {new Date(wo.scheduledDate).toLocaleDateString()}
+                              {new Date(wo.scheduledDate).toLocaleDateString('ar-SA')}
                             </span>
                           )}
                           <Badge variant="outline" className="text-xs">
@@ -1247,7 +1247,7 @@ export function ContractsList({ branchId }: ContractsListProps) {
                       </div>
                       {wo.price && (
                         <span className="font-semibold text-amber-700">
-                          SAR {wo.price.toLocaleString('en-US', { minimumFractionDigits: 2 })}
+                          ر.س {wo.price.toLocaleString('ar-SA', { minimumFractionDigits: 2 })}
                         </span>
                       )}
                     </div>
@@ -1256,7 +1256,7 @@ export function ContractsList({ branchId }: ContractsListProps) {
                 <div className="flex items-center gap-2 mt-4 p-3 bg-amber-100/50 rounded-lg border border-amber-200">
                   <CheckCircle className="h-4 w-4 text-amber-600" />
                   <p className="text-sm text-amber-700">
-                    These equipment inspections were approved when the client accepted the quote. No additional signature is required.
+                    {tcl.stickerInspectionsNote}
                   </p>
                 </div>
               </CardContent>
@@ -1269,9 +1269,9 @@ export function ContractsList({ branchId }: ContractsListProps) {
       <Dialog open={createDialogOpen} onOpenChange={setCreateDialogOpen}>
         <DialogContent className="sm:max-w-2xl max-h-[90vh] overflow-y-auto">
           <DialogHeader>
-            <DialogTitle>Create Contract</DialogTitle>
+            <DialogTitle>{tcl.createContract}</DialogTitle>
             <DialogDescription>
-              Create a new service contract with scope of work and payment terms.
+              {tcl.createContractDesc}
             </DialogDescription>
           </DialogHeader>
           <form onSubmit={handleCreateContract}>
@@ -1283,12 +1283,12 @@ export function ContractsList({ branchId }: ContractsListProps) {
             <div className="space-y-6">
               {/* Contract Title */}
               <div className="space-y-2">
-                <Label htmlFor="title">Contract Title *</Label>
+                <Label htmlFor="title">{tcl.contractTitle}</Label>
                 <Input
                   id="title"
                   value={newContract.title}
                   onChange={(e) => setNewContract({ ...newContract, title: e.target.value })}
-                  placeholder="e.g., Annual Fire Safety Maintenance Agreement"
+                  placeholder={tcl.titlePlaceholder}
                   required
                 />
               </div>
@@ -1296,7 +1296,7 @@ export function ContractsList({ branchId }: ContractsListProps) {
               {/* Dates and Auto-Renew */}
               <div className="grid grid-cols-3 gap-4">
                 <div className="space-y-2">
-                  <Label htmlFor="startDate">Start Date</Label>
+                  <Label htmlFor="startDate">{tcl.startDate}</Label>
                   <Input
                     id="startDate"
                     type="date"
@@ -1305,7 +1305,7 @@ export function ContractsList({ branchId }: ContractsListProps) {
                   />
                 </div>
                 <div className="space-y-2">
-                  <Label htmlFor="endDate">End Date</Label>
+                  <Label htmlFor="endDate">{tcl.endDate}</Label>
                   <Input
                     id="endDate"
                     type="date"
@@ -1314,14 +1314,14 @@ export function ContractsList({ branchId }: ContractsListProps) {
                   />
                 </div>
                 <div className="space-y-2">
-                  <Label>Auto-Renew</Label>
+                  <Label>{tcl.autoRenew}</Label>
                   <div className="flex items-center h-10">
                     <Switch
                       checked={newContract.autoRenew}
                       onCheckedChange={(checked) => setNewContract({ ...newContract, autoRenew: checked })}
                     />
-                    <span className="ml-2 text-sm text-muted-foreground">
-                      {newContract.autoRenew ? 'Yes' : 'No'}
+                    <span className="ms-2 text-sm text-muted-foreground">
+                      {newContract.autoRenew ? tcl.yes : tcl.no}
                     </span>
                   </div>
                 </div>
@@ -1330,7 +1330,7 @@ export function ContractsList({ branchId }: ContractsListProps) {
               {/* Scope of Work Section */}
               <div className="space-y-4">
                 <div className="flex items-center justify-between">
-                  <h3 className="text-sm font-semibold uppercase tracking-wide">Scope of Work</h3>
+                  <h3 className="text-sm font-semibold uppercase tracking-wide">{tcl.scopeOfWorkTitle}</h3>
                   <Button type="button" variant="outline" size="sm" onClick={addSystem}>
                     <Plus className="h-4 w-4 me-1" />
                     Add System
@@ -1339,7 +1339,7 @@ export function ContractsList({ branchId }: ContractsListProps) {
 
                 {newContract.systems.length === 0 ? (
                   <div className="text-center py-8 border-2 border-dashed rounded-lg">
-                    <p className="text-muted-foreground text-sm">No systems added yet.</p>
+                    <p className="text-muted-foreground text-sm">{tcl.noSystemsAdded}</p>
                     <Button type="button" variant="link" size="sm" onClick={addSystem}>
                       Add your first system
                     </Button>
@@ -1349,7 +1349,7 @@ export function ContractsList({ branchId }: ContractsListProps) {
                     {newContract.systems.map((system, sysIndex) => (
                       <div key={sysIndex} className="border rounded-lg p-4 space-y-4 bg-muted/30">
                         <div className="flex items-start justify-between">
-                          <h4 className="font-medium">System #{sysIndex + 1}</h4>
+                          <h4 className="font-medium">{tcl.systemNumber.replace('{index}', String(sysIndex + 1))}</h4>
                           <Button
                             type="button"
                             variant="ghost"
@@ -1366,43 +1366,43 @@ export function ContractsList({ branchId }: ContractsListProps) {
                           <Input
                             value={system.name}
                             onChange={(e) => updateSystem(sysIndex, 'name', e.target.value)}
-                            placeholder="e.g., Fire Alarm System"
+                            placeholder={tcl.systemPlaceholder}
                           />
                         </div>
 
                         {/* Description */}
                         <div className="space-y-2">
-                          <Label className="text-xs text-muted-foreground">Description (optional)</Label>
+                          <Label className="text-xs text-muted-foreground">{tcl.descriptionOptional}</Label>
                           <Textarea
                             value={system.description}
                             onChange={(e) => updateSystem(sysIndex, 'description', e.target.value)}
-                            placeholder="Optional description..."
+                            placeholder={tcl.descriptionPlaceholder}
                             rows={2}
                           />
                         </div>
 
                         {/* Frequency */}
                         <div className="space-y-2">
-                          <Label>Frequency</Label>
+                          <Label>{tcl.frequency}</Label>
                           <Select
                             value={system.frequency}
                             onValueChange={(value) => updateSystem(sysIndex, 'frequency', value)}
                           >
                             <SelectTrigger>
-                              <SelectValue placeholder="Select frequency" />
+                              <SelectValue placeholder={tcl.selectFrequency} />
                             </SelectTrigger>
                             <SelectContent>
-                              <SelectItem value="MONTHLY">Monthly (12 visits)</SelectItem>
-                              <SelectItem value="QUARTERLY">Quarterly (4 visits)</SelectItem>
-                              <SelectItem value="SEMI_ANNUALLY">Semi-Annually (2 visits)</SelectItem>
-                              <SelectItem value="ANNUALLY">Annually (1 visit)</SelectItem>
+                              <SelectItem value="MONTHLY">{tcl.monthlyVisits}</SelectItem>
+                              <SelectItem value="QUARTERLY">{tcl.quarterlyVisits}</SelectItem>
+                              <SelectItem value="SEMI_ANNUALLY">{tcl.semiAnnuallyVisits}</SelectItem>
+                              <SelectItem value="ANNUALLY">{tcl.annuallyVisits}</SelectItem>
                             </SelectContent>
                           </Select>
                         </div>
 
                         {/* Date Mode Toggle */}
                         <div className="flex items-center gap-3 py-2">
-                          <Label className="text-xs text-muted-foreground">Date Entry:</Label>
+                          <Label className="text-xs text-muted-foreground">{tcl.dateEntry}</Label>
                           <div className="flex items-center gap-2">
                             <button
                               type="button"
@@ -1431,13 +1431,13 @@ export function ContractsList({ branchId }: ContractsListProps) {
                         <div className="space-y-2">
                           <Label className="text-xs text-muted-foreground">
                             {system.dateMode === 'AUTOMATIC'
-                              ? 'Visit Dates (enter first date, others auto-calculated)'
-                              : 'Visit Dates (enter all dates manually)'}
+                              ? tcl.visitDatesAuto
+                              : tcl.visitDatesManual}
                           </Label>
                           <div className="grid grid-cols-2 sm:grid-cols-4 gap-2">
                             {system.visitDates.map((date, dateIndex) => (
                               <div key={dateIndex} className="space-y-1">
-                                <Label className="text-xs">{getOrdinal(dateIndex + 1)} Visit</Label>
+                                <Label className="text-xs">{getOrdinal(dateIndex + 1)} {tcl.visit}</Label>
                                 <Input
                                   type="date"
                                   value={date}
@@ -1453,7 +1453,7 @@ export function ContractsList({ branchId }: ContractsListProps) {
                         {/* Payment Due Dates */}
                         <div className="space-y-2 pt-2 border-t">
                           <div className="flex items-center justify-between">
-                            <Label className="text-xs text-muted-foreground">Payment Due Dates</Label>
+                            <Label className="text-xs text-muted-foreground">{tcl.paymentDueDates}</Label>
                             <div className="flex items-center gap-2">
                               <button
                                 type="button"
@@ -1481,7 +1481,7 @@ export function ContractsList({ branchId }: ContractsListProps) {
                             {system.paymentDueDates.map((date, dateIndex) => (
                               <div key={dateIndex} className="grid grid-cols-3 gap-2 items-end">
                                 <div className="space-y-1">
-                                  <Label className="text-xs">{getOrdinal(dateIndex + 1)} Payment Due</Label>
+                                  <Label className="text-xs">{getOrdinal(dateIndex + 1)} {tcl.paymentDue}</Label>
                                   <Input
                                     type="date"
                                     value={date}
@@ -1491,7 +1491,7 @@ export function ContractsList({ branchId }: ContractsListProps) {
                                   />
                                 </div>
                                 <div className="space-y-1 col-span-2">
-                                  <Label className="text-xs">Amount (SAR)</Label>
+                                  <Label className="text-xs">{tcl.amountSar}</Label>
                                   <Input
                                     type="number"
                                     placeholder="0.00"
@@ -1511,7 +1511,7 @@ export function ContractsList({ branchId }: ContractsListProps) {
 
               {/* Upload Contract Section */}
               <div className="space-y-2">
-                <Label>Upload Contract (optional)</Label>
+                <Label>{tcl.uploadContractOptional}</Label>
                 <FileUploadDropzone
                   onFilesSelected={handleContractFileUpload}
                   accept=".pdf,.doc,.docx,.jpg,.jpeg,.png,.gif,.webp"
@@ -1522,7 +1522,7 @@ export function ContractsList({ branchId }: ContractsListProps) {
                     setContractFile(null)
                     setNewContract({ ...newContract, fileName: '', fileUrl: '' })
                   }}
-                  label="Upload contract (PDF, DOC, images)"
+                  label={tcl.uploadContractLabel}
                 />
               </div>
             </div>
@@ -1539,7 +1539,7 @@ export function ContractsList({ branchId }: ContractsListProps) {
                   handleCreateContract(e, true)
                 }}
               >
-                {creating && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
+                {creating && <Loader2 className="me-2 h-4 w-4 animate-spin" />}
                 Create Contract
               </Button>
             </DialogFooter>
@@ -1554,9 +1554,9 @@ export function ContractsList({ branchId }: ContractsListProps) {
       }}>
         <DialogContent className="sm:max-w-2xl max-h-[90vh] overflow-y-auto">
           <DialogHeader>
-            <DialogTitle>Edit Contract</DialogTitle>
+            <DialogTitle>{tcl.editContract}</DialogTitle>
             <DialogDescription>
-              Update contract details, scope of work, and payment terms.
+              {tcl.editContractDesc}
             </DialogDescription>
           </DialogHeader>
           {editContract && (
@@ -1569,12 +1569,12 @@ export function ContractsList({ branchId }: ContractsListProps) {
               <div className="space-y-6">
                 {/* Contract Title */}
                 <div className="space-y-2">
-                  <Label htmlFor="edit-title">Contract Title *</Label>
+                  <Label htmlFor="edit-title">{tcl.contractTitle}</Label>
                   <Input
                     id="edit-title"
                     value={editContract.title}
                     onChange={(e) => setEditContract({ ...editContract, title: e.target.value })}
-                    placeholder="e.g., Annual Fire Safety Maintenance Agreement"
+                    placeholder={tcl.titlePlaceholder}
                     required
                   />
                 </div>
@@ -1582,7 +1582,7 @@ export function ContractsList({ branchId }: ContractsListProps) {
                 {/* Dates and Auto-Renew */}
                 <div className="grid grid-cols-3 gap-4">
                   <div className="space-y-2">
-                    <Label htmlFor="edit-startDate">Start Date</Label>
+                    <Label htmlFor="edit-startDate">{tcl.startDate}</Label>
                     <Input
                       id="edit-startDate"
                       type="date"
@@ -1591,7 +1591,7 @@ export function ContractsList({ branchId }: ContractsListProps) {
                     />
                   </div>
                   <div className="space-y-2">
-                    <Label htmlFor="edit-endDate">End Date</Label>
+                    <Label htmlFor="edit-endDate">{tcl.endDate}</Label>
                     <Input
                       id="edit-endDate"
                       type="date"
@@ -1600,14 +1600,14 @@ export function ContractsList({ branchId }: ContractsListProps) {
                     />
                   </div>
                   <div className="space-y-2">
-                    <Label>Auto-Renew</Label>
+                    <Label>{tcl.autoRenew}</Label>
                     <div className="flex items-center h-10">
                       <Switch
                         checked={editContract.autoRenew}
                         onCheckedChange={(checked) => setEditContract({ ...editContract, autoRenew: checked })}
                       />
-                      <span className="ml-2 text-sm text-muted-foreground">
-                        {editContract.autoRenew ? 'Yes' : 'No'}
+                      <span className="ms-2 text-sm text-muted-foreground">
+                        {editContract.autoRenew ? tcl.yes : tcl.no}
                       </span>
                     </div>
                   </div>
@@ -1616,7 +1616,7 @@ export function ContractsList({ branchId }: ContractsListProps) {
                 {/* Scope of Work Section */}
                 <div className="space-y-4">
                   <div className="flex items-center justify-between">
-                    <h3 className="text-sm font-semibold uppercase tracking-wide">Scope of Work</h3>
+                    <h3 className="text-sm font-semibold uppercase tracking-wide">{tcl.scopeOfWorkTitle}</h3>
                     <Button type="button" variant="outline" size="sm" onClick={addEditSystem}>
                       <Plus className="h-4 w-4 me-1" />
                       Add System
@@ -1625,7 +1625,7 @@ export function ContractsList({ branchId }: ContractsListProps) {
 
                   {editContract.systems.length === 0 ? (
                     <div className="text-center py-8 border-2 border-dashed rounded-lg">
-                      <p className="text-muted-foreground text-sm">No systems added yet.</p>
+                      <p className="text-muted-foreground text-sm">{tcl.noSystemsAdded}</p>
                       <Button type="button" variant="link" size="sm" onClick={addEditSystem}>
                         Add your first system
                       </Button>
@@ -1635,7 +1635,7 @@ export function ContractsList({ branchId }: ContractsListProps) {
                       {editContract.systems.map((system, sysIndex) => (
                         <div key={sysIndex} className="border rounded-lg p-4 space-y-4 bg-muted/30">
                           <div className="flex items-start justify-between">
-                            <h4 className="font-medium">System #{sysIndex + 1}</h4>
+                            <h4 className="font-medium">{tcl.systemNumber.replace('{index}', String(sysIndex + 1))}</h4>
                             <Button
                               type="button"
                               variant="ghost"
@@ -1652,43 +1652,43 @@ export function ContractsList({ branchId }: ContractsListProps) {
                             <Input
                               value={system.name}
                               onChange={(e) => updateEditSystem(sysIndex, 'name', e.target.value)}
-                              placeholder="e.g., Fire Alarm System"
+                              placeholder={tcl.systemPlaceholder}
                             />
                           </div>
 
                           {/* Description */}
                           <div className="space-y-2">
-                            <Label className="text-xs text-muted-foreground">Description (optional)</Label>
+                            <Label className="text-xs text-muted-foreground">{tcl.descriptionOptional}</Label>
                             <Textarea
                               value={system.description}
                               onChange={(e) => updateEditSystem(sysIndex, 'description', e.target.value)}
-                              placeholder="Optional description..."
+                              placeholder={tcl.descriptionPlaceholder}
                               rows={2}
                             />
                           </div>
 
                           {/* Frequency */}
                           <div className="space-y-2">
-                            <Label>Frequency</Label>
+                            <Label>{tcl.frequency}</Label>
                             <Select
                               value={system.frequency}
                               onValueChange={(value) => updateEditSystem(sysIndex, 'frequency', value)}
                             >
                               <SelectTrigger>
-                                <SelectValue placeholder="Select frequency" />
+                                <SelectValue placeholder={tcl.selectFrequency} />
                               </SelectTrigger>
                               <SelectContent>
-                                <SelectItem value="MONTHLY">Monthly (12 visits)</SelectItem>
-                                <SelectItem value="QUARTERLY">Quarterly (4 visits)</SelectItem>
-                                <SelectItem value="SEMI_ANNUALLY">Semi-Annually (2 visits)</SelectItem>
-                                <SelectItem value="ANNUALLY">Annually (1 visit)</SelectItem>
+                                <SelectItem value="MONTHLY">{tcl.monthlyVisits}</SelectItem>
+                                <SelectItem value="QUARTERLY">{tcl.quarterlyVisits}</SelectItem>
+                                <SelectItem value="SEMI_ANNUALLY">{tcl.semiAnnuallyVisits}</SelectItem>
+                                <SelectItem value="ANNUALLY">{tcl.annuallyVisits}</SelectItem>
                               </SelectContent>
                             </Select>
                           </div>
 
                           {/* Date Mode Toggle */}
                           <div className="flex items-center gap-3 py-2">
-                            <Label className="text-xs text-muted-foreground">Date Entry:</Label>
+                            <Label className="text-xs text-muted-foreground">{tcl.dateEntry}</Label>
                             <div className="flex items-center gap-2">
                               <button
                                 type="button"
@@ -1717,13 +1717,13 @@ export function ContractsList({ branchId }: ContractsListProps) {
                           <div className="space-y-2">
                             <Label className="text-xs text-muted-foreground">
                               {system.dateMode === 'AUTOMATIC'
-                                ? 'Visit Dates (enter first date, others auto-calculated)'
-                                : 'Visit Dates (enter all dates manually)'}
+                                ? tcl.visitDatesAuto
+                                : tcl.visitDatesManual}
                             </Label>
                             <div className="grid grid-cols-2 sm:grid-cols-4 gap-2">
                               {system.visitDates.map((date, dateIndex) => (
                                 <div key={dateIndex} className="space-y-1">
-                                  <Label className="text-xs">{getOrdinal(dateIndex + 1)} Visit</Label>
+                                  <Label className="text-xs">{getOrdinal(dateIndex + 1)} {tcl.visit}</Label>
                                   <Input
                                     type="date"
                                     value={date}
@@ -1739,7 +1739,7 @@ export function ContractsList({ branchId }: ContractsListProps) {
                           {/* Payment Due Dates */}
                           <div className="space-y-2 pt-2 border-t">
                             <div className="flex items-center justify-between">
-                              <Label className="text-xs text-muted-foreground">Payment Due Dates</Label>
+                              <Label className="text-xs text-muted-foreground">{tcl.paymentDueDates}</Label>
                               <div className="flex items-center gap-2">
                                 <button
                                   type="button"
@@ -1767,7 +1767,7 @@ export function ContractsList({ branchId }: ContractsListProps) {
                               {system.paymentDueDates.map((date, dateIndex) => (
                                 <div key={dateIndex} className="grid grid-cols-3 gap-2 items-end">
                                   <div className="space-y-1">
-                                    <Label className="text-xs">{getOrdinal(dateIndex + 1)} Payment Due</Label>
+                                    <Label className="text-xs">{getOrdinal(dateIndex + 1)} {tcl.paymentDue}</Label>
                                     <Input
                                       type="date"
                                       value={date}
@@ -1777,7 +1777,7 @@ export function ContractsList({ branchId }: ContractsListProps) {
                                     />
                                   </div>
                                   <div className="space-y-1 col-span-2">
-                                    <Label className="text-xs">Amount (SAR)</Label>
+                                    <Label className="text-xs">{tcl.amountSar}</Label>
                                     <Input
                                       type="number"
                                       placeholder="0.00"
@@ -1797,7 +1797,7 @@ export function ContractsList({ branchId }: ContractsListProps) {
 
                 {/* Upload Contract Section */}
                 <div className="space-y-2">
-                  <Label>Contract Document (optional)</Label>
+                  <Label>{tcl.contractDocumentOptional}</Label>
                   <FileUploadDropzone
                     onFilesSelected={handleEditContractFileUpload}
                     accept=".pdf,.doc,.docx,.jpg,.jpeg,.png,.gif,.webp"
@@ -1808,7 +1808,7 @@ export function ContractsList({ branchId }: ContractsListProps) {
                       setEditContractFile(null)
                       setEditContract({ ...editContract, fileName: '', fileUrl: '' })
                     }}
-                    label="Upload contract (PDF, DOC, images)"
+                    label={tcl.uploadContractLabel}
                   />
                 </div>
               </div>
@@ -1824,7 +1824,7 @@ export function ContractsList({ branchId }: ContractsListProps) {
                   type="submit"
                   disabled={editing || !editContract.title}
                 >
-                  {editing && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
+                  {editing && <Loader2 className="me-2 h-4 w-4 animate-spin" />}
                   Save Changes
                 </Button>
               </DialogFooter>
@@ -1842,7 +1842,7 @@ export function ContractsList({ branchId }: ContractsListProps) {
               {selectedContract?.title}
             </DialogTitle>
             <DialogDescription>
-              {selectedContract?.description || 'Contract details and work orders'}
+              {selectedContract?.description || tcl.contractDetails}
             </DialogDescription>
           </DialogHeader>
           {selectedContract && (
@@ -1850,30 +1850,30 @@ export function ContractsList({ branchId }: ContractsListProps) {
               {/* Contract Summary */}
               <div className="grid grid-cols-2 md:grid-cols-4 gap-4 p-4 bg-muted/30 rounded-lg">
                 <div>
-                  <p className="text-xs text-muted-foreground mb-1">Status</p>
+                  <p className="text-xs text-muted-foreground mb-1">{tcl.status}</p>
                   {getStatusBadge(selectedContract.status)}
                 </div>
                 <div>
-                  <p className="text-xs text-muted-foreground mb-1">Total Value</p>
+                  <p className="text-xs text-muted-foreground mb-1">{tcl.totalValue}</p>
                   <p className="font-bold text-lg text-primary">
-                    SAR {(selectedContract.totalValue || 0).toLocaleString('en-US', { minimumFractionDigits: 2 })}
+                    ر.س {(selectedContract.totalValue || 0).toLocaleString('ar-SA', { minimumFractionDigits: 2 })}
                   </p>
                 </div>
                 {selectedContract.startDate && (
                   <div>
-                    <p className="text-xs text-muted-foreground mb-1">Start Date</p>
+                    <p className="text-xs text-muted-foreground mb-1">{tcl.startDate}</p>
                     <p className="font-medium text-sm flex items-center gap-1">
                       <Calendar className="h-3 w-3" />
-                      {new Date(selectedContract.startDate).toLocaleDateString()}
+                      {new Date(selectedContract.startDate).toLocaleDateString('ar-SA')}
                     </p>
                   </div>
                 )}
                 {selectedContract.endDate && (
                   <div>
-                    <p className="text-xs text-muted-foreground mb-1">End Date</p>
+                    <p className="text-xs text-muted-foreground mb-1">{tcl.endDate}</p>
                     <p className="font-medium text-sm flex items-center gap-1">
                       <Calendar className="h-3 w-3" />
-                      {new Date(selectedContract.endDate).toLocaleDateString()}
+                      {new Date(selectedContract.endDate).toLocaleDateString('ar-SA')}
                     </p>
                   </div>
                 )}
@@ -1890,12 +1890,12 @@ export function ContractsList({ branchId }: ContractsListProps) {
                     {selectedContract.startSignedAt ? (
                       <>
                         <CheckCircle className="h-4 w-4 text-green-600" />
-                        <span>Start: Signed on {new Date(selectedContract.startSignedAt).toLocaleDateString()}</span>
+                        <span>{tcl.startSigned} {new Date(selectedContract.startSignedAt).toLocaleDateString('ar-SA')}</span>
                       </>
                     ) : (
                       <>
                         <Clock className="h-4 w-4 text-amber-600" />
-                        <span className="text-muted-foreground">Start: Awaiting signature</span>
+                        <span className="text-muted-foreground">{tcl.startAwaiting}</span>
                       </>
                     )}
                   </div>
@@ -1903,12 +1903,12 @@ export function ContractsList({ branchId }: ContractsListProps) {
                     {selectedContract.endSignedAt ? (
                       <>
                         <CheckCircle className="h-4 w-4 text-green-600" />
-                        <span>End: Signed on {new Date(selectedContract.endSignedAt).toLocaleDateString()}</span>
+                        <span>{tcl.endSigned} {new Date(selectedContract.endSignedAt).toLocaleDateString('ar-SA')}</span>
                       </>
                     ) : (
                       <>
                         <Clock className="h-4 w-4 text-muted-foreground" />
-                        <span className="text-muted-foreground">End: Pending completion</span>
+                        <span className="text-muted-foreground">{tcl.endPending}</span>
                       </>
                     )}
                   </div>
@@ -1951,21 +1951,21 @@ export function ContractsList({ branchId }: ContractsListProps) {
                           {system.visitDates && system.visitDates.length > 0 && (
                             <div className="space-y-2 mt-3">
                               <div className="grid grid-cols-3 gap-2 text-xs font-medium text-muted-foreground border-b pb-1">
-                                <span>Visit Date</span>
-                                <span>Payment Due</span>
-                                <span>Amount</span>
+                                <span>{tcl.visitDate}</span>
+                                <span>{tcl.paymentDueCol}</span>
+                                <span>{tcl.amountCol}</span>
                               </div>
                               {system.visitDates.map((date: string, i: number) => (
                                 <div key={i} className="grid grid-cols-3 gap-2 text-sm">
                                   <div className="flex items-center gap-1">
                                     <Calendar className="h-3 w-3 text-muted-foreground" />
-                                    {date ? new Date(date).toLocaleDateString() : '—'}
+                                    {date ? new Date(date).toLocaleDateString('ar-SA') : '—'}
                                   </div>
                                   <div className="text-muted-foreground">
-                                    {paymentDueDates[i] ? new Date(paymentDueDates[i]).toLocaleDateString() : '—'}
+                                    {paymentDueDates[i] ? new Date(paymentDueDates[i]).toLocaleDateString('ar-SA') : '—'}
                                   </div>
                                   <div className="font-medium">
-                                    {paymentAmounts[i] ? `SAR ${paymentAmounts[i]?.toLocaleString('en-US', { minimumFractionDigits: 2 })}` : '—'}
+                                    {paymentAmounts[i] ? `ر.س ${paymentAmounts[i]?.toLocaleString('ar-SA', { minimumFractionDigits: 2 })}` : '—'}
                                   </div>
                                 </div>
                               ))}
@@ -1988,21 +1988,21 @@ export function ContractsList({ branchId }: ContractsListProps) {
                   <Table>
                     <TableHeader>
                       <TableRow>
-                        <TableHead>Payment</TableHead>
-                        <TableHead>Due Date</TableHead>
-                        <TableHead>Amount</TableHead>
-                        <TableHead>Status</TableHead>
+                        <TableHead>{tcl.payment}</TableHead>
+                        <TableHead>{tcl.dueDate}</TableHead>
+                        <TableHead>{tcl.amountCol}</TableHead>
+                        <TableHead>{tcl.status}</TableHead>
                       </TableRow>
                     </TableHeader>
                     <TableBody>
                       {selectedContract.payments.map((payment) => (
                         <TableRow key={payment.id}>
-                          <TableCell className="font-medium">Payment #{payment.paymentNo}</TableCell>
+                          <TableCell className="font-medium">{tcl.payment} #{payment.paymentNo}</TableCell>
                           <TableCell>
-                            {payment.dueDate ? new Date(payment.dueDate).toLocaleDateString() : '—'}
+                            {payment.dueDate ? new Date(payment.dueDate).toLocaleDateString('ar-SA') : '—'}
                           </TableCell>
                           <TableCell>
-                            {payment.amount ? `SAR ${payment.amount.toLocaleString('en-US', { minimumFractionDigits: 2 })}` : '—'}
+                            {payment.amount ? `ر.س ${payment.amount.toLocaleString('ar-SA', { minimumFractionDigits: 2 })}` : '—'}
                           </TableCell>
                           <TableCell>
                             <Badge variant={payment.status === 'PAID' ? 'default' : payment.status === 'OVERDUE' ? 'destructive' : 'secondary'}>
@@ -2057,9 +2057,9 @@ export function ContractsList({ branchId }: ContractsListProps) {
       <Dialog open={attachPdfDialogOpen} onOpenChange={setAttachPdfDialogOpen}>
         <DialogContent>
           <DialogHeader>
-            <DialogTitle>Attach Contract PDF</DialogTitle>
+            <DialogTitle>{tcl.attachContractPdf}</DialogTitle>
             <DialogDescription>
-              Add a PDF document to this contract. The client will be able to view it before signing.
+              {tcl.attachContractPdfDesc}
             </DialogDescription>
           </DialogHeader>
           {error && (
@@ -2069,7 +2069,7 @@ export function ContractsList({ branchId }: ContractsListProps) {
           )}
           <div className="space-y-4">
             <div className="space-y-2">
-              <Label htmlFor="pdfFileName">File Name</Label>
+              <Label htmlFor="pdfFileName">{tcl.fileName}</Label>
               <Input
                 id="pdfFileName"
                 value={pdfFileName}
@@ -2078,7 +2078,7 @@ export function ContractsList({ branchId }: ContractsListProps) {
               />
             </div>
             <div className="space-y-2">
-              <Label htmlFor="pdfUrl">PDF URL *</Label>
+              <Label htmlFor="pdfUrl">{tcl.pdfUrl}</Label>
               <Input
                 id="pdfUrl"
                 value={pdfUrl}
@@ -2087,7 +2087,7 @@ export function ContractsList({ branchId }: ContractsListProps) {
                 required
               />
               <p className="text-xs text-muted-foreground">
-                Enter the URL where the PDF is hosted (Google Drive, Dropbox, etc.)
+                {tcl.pdfUrlHelp}
               </p>
             </div>
           </div>
@@ -2097,9 +2097,9 @@ export function ContractsList({ branchId }: ContractsListProps) {
             </Button>
             <Button onClick={handleAttachPdf} disabled={attaching || !pdfUrl}>
               {attaching ? (
-                <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                <Loader2 className="me-2 h-4 w-4 animate-spin" />
               ) : (
-                <Upload className="mr-2 h-4 w-4" />
+                <Upload className="me-2 h-4 w-4" />
               )}
               Attach PDF
             </Button>
@@ -2111,9 +2111,9 @@ export function ContractsList({ branchId }: ContractsListProps) {
       <Dialog open={attachCertDialogOpen} onOpenChange={setAttachCertDialogOpen}>
         <DialogContent>
           <DialogHeader>
-            <DialogTitle>Attach Certificate</DialogTitle>
+            <DialogTitle>{tcl.attachCertificate}</DialogTitle>
             <DialogDescription>
-              Add a certificate document to this contract. The client will be able to download it after signing.
+              {tcl.attachCertificateDesc}
             </DialogDescription>
           </DialogHeader>
           {error && (
@@ -2123,7 +2123,7 @@ export function ContractsList({ branchId }: ContractsListProps) {
           )}
           <div className="space-y-4">
             <div className="space-y-2">
-              <Label htmlFor="certFileName">File Name</Label>
+              <Label htmlFor="certFileName">{tcl.fileName}</Label>
               <Input
                 id="certFileName"
                 value={certFileName}
@@ -2132,7 +2132,7 @@ export function ContractsList({ branchId }: ContractsListProps) {
               />
             </div>
             <div className="space-y-2">
-              <Label htmlFor="certUrl">Certificate URL *</Label>
+              <Label htmlFor="certUrl">{tcl.certificateUrl}</Label>
               <Input
                 id="certUrl"
                 value={certUrl}
@@ -2141,7 +2141,7 @@ export function ContractsList({ branchId }: ContractsListProps) {
                 required
               />
               <p className="text-xs text-muted-foreground">
-                Enter the URL where the certificate is hosted (Google Drive, Dropbox, etc.)
+                {tcl.certificateUrlHelp}
               </p>
             </div>
           </div>
@@ -2151,9 +2151,9 @@ export function ContractsList({ branchId }: ContractsListProps) {
             </Button>
             <Button onClick={handleAttachCert} disabled={attaching || !certUrl}>
               {attaching ? (
-                <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                <Loader2 className="me-2 h-4 w-4 animate-spin" />
               ) : (
-                <FileCheck className="mr-2 h-4 w-4" />
+                <FileCheck className="me-2 h-4 w-4" />
               )}
               Attach Certificate
             </Button>

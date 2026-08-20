@@ -386,7 +386,7 @@ export function ClientBranchContracts({ branchId }: ClientBranchContractsProps) 
                       {getStatusBadge(contract.status)}
                     </div>
                     <p className="text-sm text-muted-foreground">
-                      Total Value: SAR {(contract.totalValue || 0).toLocaleString('en-US', { minimumFractionDigits: 2 })}
+                      Total Value: ر.س {(contract.totalValue || 0).toLocaleString('ar-SA', { minimumFractionDigits: 2 })}
                     </p>
                   </div>
                   <div className="flex gap-2">
@@ -398,7 +398,7 @@ export function ClientBranchContracts({ branchId }: ClientBranchContractsProps) 
                         setDetailsOpen(true)
                       }}
                     >
-                      <ClipboardList className="mr-2 h-4 w-4" />
+                      <ClipboardList className="me-2 h-4 w-4" />
                       View Details
                     </Button>
                     <Button
@@ -406,7 +406,7 @@ export function ClientBranchContracts({ branchId }: ClientBranchContractsProps) 
                       onClick={() => openSignDialog(contract)}
                       className="bg-amber-600 hover:bg-amber-700"
                     >
-                      <PenTool className="mr-2 h-4 w-4" />
+                      <PenTool className="me-2 h-4 w-4" />
                       Sign Contract
                     </Button>
                   </div>
@@ -455,11 +455,11 @@ export function ClientBranchContracts({ branchId }: ClientBranchContractsProps) 
                         {contract.startDate && contract.endDate && (
                           <span className="flex items-center gap-1">
                             <Calendar className="h-3 w-3" />
-                            {new Date(contract.startDate).toLocaleDateString()} - {new Date(contract.endDate).toLocaleDateString()}
+                            {new Date(contract.startDate).toLocaleDateString('ar-SA')} - {new Date(contract.endDate).toLocaleDateString('ar-SA')}
                           </span>
                         )}
                         <span className="font-medium text-primary">
-                          SAR {(contract.totalValue || 0).toLocaleString('en-US', { minimumFractionDigits: 2 })}
+                          ر.س {(contract.totalValue || 0).toLocaleString('ar-SA', { minimumFractionDigits: 2 })}
                         </span>
                       </div>
                     </div>
@@ -472,7 +472,7 @@ export function ClientBranchContracts({ branchId }: ClientBranchContractsProps) 
                           setDetailsOpen(true)
                         }}
                       >
-                        <ClipboardList className="mr-2 h-4 w-4" />
+                        <ClipboardList className="me-2 h-4 w-4" />
                         View Details
                       </Button>
                       {canSignContract(contract) && (
@@ -481,7 +481,7 @@ export function ClientBranchContracts({ branchId }: ClientBranchContractsProps) 
                           onClick={() => openEndSignDialog(contract)}
                           className="bg-green-600 hover:bg-green-700"
                         >
-                          <PenTool className="mr-2 h-4 w-4" />
+                          <PenTool className="me-2 h-4 w-4" />
                           Sign to Complete
                         </Button>
                       )}
@@ -577,11 +577,11 @@ export function ClientBranchContracts({ branchId }: ClientBranchContractsProps) 
                     <div className="flex items-center gap-4 text-sm text-muted-foreground">
                       {contract.startDate && contract.endDate && (
                         <span>
-                          {new Date(contract.startDate).toLocaleDateString()} - {new Date(contract.endDate).toLocaleDateString()}
+                          {new Date(contract.startDate).toLocaleDateString('ar-SA')} - {new Date(contract.endDate).toLocaleDateString('ar-SA')}
                         </span>
                       )}
                       <span className="font-medium text-green-700">
-                        SAR {(contract.totalValue || 0).toLocaleString('en-US', { minimumFractionDigits: 2 })}
+                        ر.س {(contract.totalValue || 0).toLocaleString('ar-SA', { minimumFractionDigits: 2 })}
                       </span>
                     </div>
                   </div>
@@ -593,7 +593,7 @@ export function ClientBranchContracts({ branchId }: ClientBranchContractsProps) 
                       setDetailsOpen(true)
                     }}
                   >
-                    <ClipboardList className="mr-2 h-4 w-4" />
+                    <ClipboardList className="me-2 h-4 w-4" />
                     View Details
                   </Button>
                 </div>
@@ -607,7 +607,7 @@ export function ClientBranchContracts({ branchId }: ClientBranchContractsProps) 
                         size="sm"
                         onClick={() => window.open(contract.fileUrl!, '_blank')}
                       >
-                        <Download className="mr-2 h-4 w-4" />
+                        <Download className="me-2 h-4 w-4" />
                         {contract.fileName || 'Contract PDF'}
                       </Button>
                     )}
@@ -617,7 +617,7 @@ export function ClientBranchContracts({ branchId }: ClientBranchContractsProps) 
                         size="sm"
                         onClick={() => window.open(contract.certificateUrl!, '_blank')}
                       >
-                        <Download className="mr-2 h-4 w-4" />
+                        <Download className="me-2 h-4 w-4" />
                         {contract.certificateFileName || 'Certificate'}
                       </Button>
                     )}
@@ -670,7 +670,7 @@ export function ClientBranchContracts({ branchId }: ClientBranchContractsProps) 
                       <span>{contract.fileName}</span>
                       {contract.startDate && contract.endDate && (
                         <span>
-                          {new Date(contract.startDate).toLocaleDateString()} - {new Date(contract.endDate).toLocaleDateString()}
+                          {new Date(contract.startDate).toLocaleDateString('ar-SA')} - {new Date(contract.endDate).toLocaleDateString('ar-SA')}
                         </span>
                       )}
                     </div>
@@ -683,7 +683,7 @@ export function ClientBranchContracts({ branchId }: ClientBranchContractsProps) 
                       setDetailsOpen(true)
                     }}
                   >
-                    <ExternalLink className="mr-2 h-4 w-4" />
+                    <ExternalLink className="me-2 h-4 w-4" />
                     View Details
                   </Button>
                 </div>
@@ -711,13 +711,13 @@ export function ClientBranchContracts({ branchId }: ClientBranchContractsProps) 
               {/* Contract Summary */}
               <div className="grid grid-cols-2 md:grid-cols-4 gap-4 p-4 bg-muted/30 rounded-lg">
                 <div>
-                  <p className="text-xs text-muted-foreground mb-1">Status</p>
+                  <p className="text-xs text-muted-foreground mb-1">الحالة</p>
                   {getStatusBadge(selectedContract.status)}
                 </div>
                 <div>
                   <p className="text-xs text-muted-foreground mb-1">Total Value</p>
                   <p className="font-bold text-lg text-primary">
-                    SAR {(selectedContract.totalValue || 0).toLocaleString('en-US', { minimumFractionDigits: 2 })}
+                    ر.س {(selectedContract.totalValue || 0).toLocaleString('ar-SA', { minimumFractionDigits: 2 })}
                   </p>
                 </div>
                 {selectedContract.startDate && (
@@ -725,7 +725,7 @@ export function ClientBranchContracts({ branchId }: ClientBranchContractsProps) 
                     <p className="text-xs text-muted-foreground mb-1">Start Date</p>
                     <p className="font-medium text-sm flex items-center gap-1">
                       <Calendar className="h-3 w-3" />
-                      {new Date(selectedContract.startDate).toLocaleDateString()}
+                      {new Date(selectedContract.startDate).toLocaleDateString('ar-SA')}
                     </p>
                   </div>
                 )}
@@ -734,7 +734,7 @@ export function ClientBranchContracts({ branchId }: ClientBranchContractsProps) 
                     <p className="text-xs text-muted-foreground mb-1">End Date</p>
                     <p className="font-medium text-sm flex items-center gap-1">
                       <Calendar className="h-3 w-3" />
-                      {new Date(selectedContract.endDate).toLocaleDateString()}
+                      {new Date(selectedContract.endDate).toLocaleDateString('ar-SA')}
                     </p>
                   </div>
                 )}
@@ -751,7 +751,7 @@ export function ClientBranchContracts({ branchId }: ClientBranchContractsProps) 
                     {selectedContract.startSignedAt ? (
                       <>
                         <CheckCircle className="h-4 w-4 text-green-600" />
-                        <span>Start: Signed on {new Date(selectedContract.startSignedAt).toLocaleDateString()}</span>
+                        <span>Start: Signed on {new Date(selectedContract.startSignedAt).toLocaleDateString('ar-SA')}</span>
                       </>
                     ) : (
                       <>
@@ -764,7 +764,7 @@ export function ClientBranchContracts({ branchId }: ClientBranchContractsProps) 
                     {selectedContract.endSignedAt ? (
                       <>
                         <CheckCircle className="h-4 w-4 text-green-600" />
-                        <span>End: Signed on {new Date(selectedContract.endSignedAt).toLocaleDateString()}</span>
+                        <span>End: Signed on {new Date(selectedContract.endSignedAt).toLocaleDateString('ar-SA')}</span>
                       </>
                     ) : (
                       <>
@@ -801,19 +801,19 @@ export function ClientBranchContracts({ branchId }: ClientBranchContractsProps) 
                               <div className="grid grid-cols-3 gap-2 text-xs font-medium text-muted-foreground border-b pb-1">
                                 <span>Visit Date</span>
                                 <span>Payment Due</span>
-                                <span>Amount</span>
+                                <span>المبلغ</span>
                               </div>
                               {system.visitDates.map((date, i) => (
                                 <div key={i} className="grid grid-cols-3 gap-2 text-sm">
                                   <div className="flex items-center gap-1">
                                     <Calendar className="h-3 w-3 text-muted-foreground" />
-                                    {date ? new Date(date).toLocaleDateString() : '—'}
+                                    {date ? new Date(date).toLocaleDateString('ar-SA') : '—'}
                                   </div>
                                   <div className="text-muted-foreground">
-                                    {paymentDueDates[i] ? new Date(paymentDueDates[i]).toLocaleDateString() : '—'}
+                                    {paymentDueDates[i] ? new Date(paymentDueDates[i]).toLocaleDateString('ar-SA') : '—'}
                                   </div>
                                   <div className="font-medium">
-                                    {paymentAmounts[i] ? `SAR ${paymentAmounts[i]?.toLocaleString('en-US', { minimumFractionDigits: 2 })}` : '—'}
+                                    {paymentAmounts[i] ? `ر.س ${paymentAmounts[i]?.toLocaleString('ar-SA', { minimumFractionDigits: 2 })}` : '—'}
                                   </div>
                                 </div>
                               ))}
@@ -837,9 +837,9 @@ export function ClientBranchContracts({ branchId }: ClientBranchContractsProps) 
                     <TableHeader>
                       <TableRow>
                         <TableHead>Payment</TableHead>
-                        <TableHead>Due Date</TableHead>
-                        <TableHead>Amount</TableHead>
-                        <TableHead>Status</TableHead>
+                        <TableHead>تاريخ الاستحقاق</TableHead>
+                        <TableHead>المبلغ</TableHead>
+                        <TableHead>الحالة</TableHead>
                       </TableRow>
                     </TableHeader>
                     <TableBody>
@@ -847,10 +847,10 @@ export function ClientBranchContracts({ branchId }: ClientBranchContractsProps) 
                         <TableRow key={payment.id}>
                           <TableCell className="font-medium">Payment #{payment.paymentNo}</TableCell>
                           <TableCell>
-                            {payment.dueDate ? new Date(payment.dueDate).toLocaleDateString() : '—'}
+                            {payment.dueDate ? new Date(payment.dueDate).toLocaleDateString('ar-SA') : '—'}
                           </TableCell>
                           <TableCell>
-                            {payment.amount ? `SAR ${payment.amount.toLocaleString('en-US', { minimumFractionDigits: 2 })}` : '—'}
+                            {payment.amount ? `ر.س ${payment.amount.toLocaleString('ar-SA', { minimumFractionDigits: 2 })}` : '—'}
                           </TableCell>
                           <TableCell>
                             <Badge variant={payment.status === 'PAID' ? 'default' : payment.status === 'OVERDUE' ? 'destructive' : 'secondary'}>
@@ -919,7 +919,7 @@ export function ClientBranchContracts({ branchId }: ClientBranchContractsProps) 
               <div className="p-4 bg-muted/50 rounded-lg">
                 <p className="font-medium">{contractToSign.title}</p>
                 <p className="text-sm text-muted-foreground">
-                  Total Value: SAR {(contractToSign.totalValue || 0).toLocaleString('en-US', { minimumFractionDigits: 2 })}
+                  Total Value: ر.س {(contractToSign.totalValue || 0).toLocaleString('ar-SA', { minimumFractionDigits: 2 })}
                 </p>
               </div>
 
@@ -927,7 +927,7 @@ export function ClientBranchContracts({ branchId }: ClientBranchContractsProps) 
                 <div className="flex items-center justify-between">
                   <p className="text-sm font-medium">Your Signature</p>
                   <Button variant="ghost" size="sm" onClick={clearSignature}>
-                    <RotateCcw className="mr-2 h-4 w-4" />
+                    <RotateCcw className="me-2 h-4 w-4" />
                     Clear
                   </Button>
                 </div>
@@ -955,7 +955,7 @@ export function ClientBranchContracts({ branchId }: ClientBranchContractsProps) 
               Cancel
             </Button>
             <Button onClick={handleSign} disabled={signing}>
-              {signing && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
+              {signing && <Loader2 className="me-2 h-4 w-4 animate-spin" />}
               Accept & Sign
             </Button>
           </DialogFooter>
@@ -980,7 +980,7 @@ export function ClientBranchContracts({ branchId }: ClientBranchContractsProps) 
               <div className="p-4 bg-green-50 rounded-lg border border-green-200">
                 <p className="font-medium text-green-800">{contractToSign.title}</p>
                 <p className="text-sm text-green-700">
-                  Total Value: SAR {(contractToSign.totalValue || 0).toLocaleString('en-US', { minimumFractionDigits: 2 })}
+                  Total Value: ر.س {(contractToSign.totalValue || 0).toLocaleString('ar-SA', { minimumFractionDigits: 2 })}
                 </p>
                 {contractToSign.project && (
                   <p className="text-sm text-green-700 mt-1">
@@ -993,7 +993,7 @@ export function ClientBranchContracts({ branchId }: ClientBranchContractsProps) 
                 <div className="flex items-center justify-between">
                   <p className="text-sm font-medium">Your Final Signature</p>
                   <Button variant="ghost" size="sm" onClick={clearEndSignature}>
-                    <RotateCcw className="mr-2 h-4 w-4" />
+                    <RotateCcw className="me-2 h-4 w-4" />
                     Clear
                   </Button>
                 </div>
@@ -1042,7 +1042,7 @@ export function ClientBranchContracts({ branchId }: ClientBranchContractsProps) 
               Cancel
             </Button>
             <Button onClick={handleEndSign} disabled={signing} className="bg-green-600 hover:bg-green-700">
-              {signing && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
+              {signing && <Loader2 className="me-2 h-4 w-4 animate-spin" />}
               Complete Contract
             </Button>
           </DialogFooter>

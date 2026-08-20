@@ -244,7 +244,7 @@ export function BranchDashboard({ branchId }: BranchDashboardProps) {
               </Badge>
               {wo.workOrderNumber && (
                 <span className="text-xs text-muted-foreground">
-                  #WO-{String(wo.workOrderNumber).padStart(3, '0')}
+                  #أمر-{String(wo.workOrderNumber).padStart(3, '0')}
                 </span>
               )}
             </div>
@@ -264,7 +264,7 @@ export function BranchDashboard({ branchId }: BranchDashboardProps) {
           <div className="flex flex-col items-end gap-2">
             <Badge className={stageConfig.color}>
               {stageConfig.icon}
-              <span className="ml-1">{stageConfig.label}</span>
+              <span className="ms-1">{stageConfig.label}</span>
             </Badge>
             <span className="font-semibold text-green-600">
               {formatCurrency(wo.price)}
@@ -324,7 +324,7 @@ export function BranchDashboard({ branchId }: BranchDashboardProps) {
                 variant="ghost"
                 size="sm"
                 onClick={() => setViewMode('split')}
-                className="mr-2"
+                className="me-2"
               >
                 <ArrowLeft className="h-4 w-4" />
               </Button>

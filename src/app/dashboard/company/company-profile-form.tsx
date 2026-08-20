@@ -202,7 +202,7 @@ export function CompanyProfileForm({ contractor }: CompanyProfileFormProps) {
               </div>
 
               <Button type="submit" disabled={loading} className="mt-6">
-                {loading && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
+                {loading && <Loader2 className="me-2 h-4 w-4 animate-spin" />}
                 Save Changes
               </Button>
             </form>
@@ -221,7 +221,7 @@ export function CompanyProfileForm({ contractor }: CompanyProfileFormProps) {
                 <span className="text-2xl font-bold">{completionPercentage}%</span>
                 {contractor.isVerified && (
                   <Badge variant="default" className="bg-green-600">
-                    <CheckCircle className="mr-1 h-3 w-3" />
+                    <CheckCircle className="me-1 h-3 w-3" />
                     Verified
                   </Badge>
                 )}

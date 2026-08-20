@@ -124,7 +124,7 @@ export function AddBranchForm({ clientId }: AddBranchFormProps) {
               />
             </div>
             <div className="space-y-2">
-              <Label htmlFor="notes">Notes</Label>
+              <Label htmlFor="notes">ملاحظات</Label>
               <Input
                 id="notes"
                 value={notes}
@@ -136,7 +136,7 @@ export function AddBranchForm({ clientId }: AddBranchFormProps) {
 
           <div className="flex gap-3 pt-4">
             <Button type="submit" disabled={loading || !addressData.address || !name}>
-              {loading && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
+              {loading && <Loader2 className="me-2 h-4 w-4 animate-spin" />}
               Add Branch
             </Button>
             <Button

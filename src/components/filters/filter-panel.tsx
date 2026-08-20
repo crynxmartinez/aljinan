@@ -104,7 +104,7 @@ export function FilterPanel({
           <Filter className="h-4 w-4 me-2" />
           {ta.filters}
           {activeFilterCount > 0 && (
-            <Badge variant="secondary" className="ml-2 h-5 px-1.5">
+            <Badge variant="secondary" className="ms-2 h-5 px-1.5">
               {activeFilterCount}
             </Badge>
           )}

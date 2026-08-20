@@ -149,7 +149,7 @@ export function ClientBranchInvoices({ branchId }: ClientBranchInvoicesProps) {
                       <h4 className="font-medium">{invoice.title}</h4>
                       <div className="flex items-center gap-4 text-sm text-muted-foreground">
                         {invoice.dueDate && (
-                          <span>Due: {new Date(invoice.dueDate).toLocaleDateString()}</span>
+                          <span>Due: {new Date(invoice.dueDate).toLocaleDateString('ar-SA')}</span>
                         )}
                       </div>
                     </div>
@@ -169,10 +169,10 @@ export function ClientBranchInvoices({ branchId }: ClientBranchInvoicesProps) {
                     <table className="w-full text-sm">
                       <thead>
                         <tr className="text-muted-foreground">
-                          <th className="text-start pb-2">Description</th>
-                          <th className="text-end pb-2 w-20">Qty</th>
-                          <th className="text-end pb-2 w-24">Price</th>
-                          <th className="text-end pb-2 w-24">Total</th>
+                          <th className="text-start pb-2">الوصف</th>
+                          <th className="text-end pb-2 w-20">الكمية</th>
+                          <th className="text-end pb-2 w-24">السعر</th>
+                          <th className="text-end pb-2 w-24">الإجمالي</th>
                         </tr>
                       </thead>
                       <tbody>
@@ -187,7 +187,7 @@ export function ClientBranchInvoices({ branchId }: ClientBranchInvoicesProps) {
                       </tbody>
                       <tfoot className="border-t">
                         <tr>
-                          <td colSpan={3} className="text-end py-2">Subtotal</td>
+                          <td colSpan={3} className="text-end py-2">المجموع الفرعي</td>
                           <td className="text-end py-2">{formatCurrency(invoice.subtotal)}</td>
                         </tr>
                         <tr>
@@ -195,7 +195,7 @@ export function ClientBranchInvoices({ branchId }: ClientBranchInvoicesProps) {
                           <td className="text-end py-1">{formatCurrency(invoice.taxAmount)}</td>
                         </tr>
                         <tr className="font-semibold">
-                          <td colSpan={3} className="text-end py-2">Total</td>
+                          <td colSpan={3} className="text-end py-2">الإجمالي</td>
                           <td className="text-end py-2">{formatCurrency(invoice.total)}</td>
                         </tr>
                         {invoice.amountPaid > 0 && (
@@ -253,7 +253,7 @@ export function ClientBranchInvoices({ branchId }: ClientBranchInvoicesProps) {
                     </div>
                     <h4 className="font-medium text-sm">{invoice.title}</h4>
                     <p className="text-xs text-muted-foreground">
-                      Paid on {invoice.paidAt ? new Date(invoice.paidAt).toLocaleDateString() : 'N/A'}
+                      Paid on {invoice.paidAt ? new Date(invoice.paidAt).toLocaleDateString('ar-SA') : 'N/A'}
                     </p>
                   </div>
                   <div className="text-end">

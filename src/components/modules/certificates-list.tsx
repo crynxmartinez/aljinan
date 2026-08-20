@@ -303,7 +303,7 @@ export function CertificatesList({ branchId, userRole }: CertificatesListProps) 
             )}
             {userRole === 'CONTRACTOR' && (
               <Button onClick={() => setCreateDialogOpen(true)}>
-                <Plus className="mr-2 h-4 w-4" />
+                <Plus className="me-2 h-4 w-4" />
                 Add Certificate
               </Button>
             )}
@@ -313,7 +313,7 @@ export function CertificatesList({ branchId, userRole }: CertificatesListProps) 
           {certificates.length === 0 ? (
             <div className="flex flex-col items-center justify-center py-12 text-center">
               <Award className="h-12 w-12 text-muted-foreground/30 mb-4" />
-              <h3 className="text-lg font-semibold mb-2">No certificates yet</h3>
+              <h3 className="text-lg font-semibold mb-2">لا توجد شهادات بعد</h3>
               <p className="text-muted-foreground max-w-md mb-4">
                 {userRole === 'CONTRACTOR'
                   ? 'Add certificates to track compliance and maintenance records for this branch.'
@@ -321,7 +321,7 @@ export function CertificatesList({ branchId, userRole }: CertificatesListProps) 
               </p>
               {userRole === 'CONTRACTOR' && (
                 <Button onClick={() => setCreateDialogOpen(true)}>
-                  <Plus className="mr-2 h-4 w-4" />
+                  <Plus className="me-2 h-4 w-4" />
                   Add Certificate
                 </Button>
               )}
@@ -331,11 +331,11 @@ export function CertificatesList({ branchId, userRole }: CertificatesListProps) 
               <TableHeader>
                 <TableRow>
                   <TableHead>Certificate</TableHead>
-                  <TableHead>Type</TableHead>
+                  <TableHead>النوع</TableHead>
                   <TableHead>Equipment</TableHead>
                   <TableHead>Issue Date</TableHead>
                   <TableHead>Expiry</TableHead>
-                  <TableHead>Status</TableHead>
+                  <TableHead>الحالة</TableHead>
                   <TableHead className="w-[80px]"></TableHead>
                 </TableRow>
               </TableHeader>
@@ -367,11 +367,11 @@ export function CertificatesList({ branchId, userRole }: CertificatesListProps) 
                         )}
                       </TableCell>
                       <TableCell>
-                        {new Date(certificate.issueDate).toLocaleDateString()}
+                        {new Date(certificate.issueDate).toLocaleDateString('ar-SA')}
                       </TableCell>
                       <TableCell>
                         {certificate.expiryDate
-                          ? new Date(certificate.expiryDate).toLocaleDateString()
+                          ? new Date(certificate.expiryDate).toLocaleDateString('ar-SA')
                           : <span className="text-muted-foreground">{tcl.noExpiry}</span>
                         }
                       </TableCell>
@@ -407,12 +407,12 @@ export function CertificatesList({ branchId, userRole }: CertificatesListProps) 
                           </DropdownMenuTrigger>
                           <DropdownMenuContent align="end">
                             <DropdownMenuItem onClick={(e) => { e.stopPropagation(); openViewDialog(certificate); }}>
-                              <Eye className="mr-2 h-4 w-4" />
+                              <Eye className="me-2 h-4 w-4" />
                               View Details
                             </DropdownMenuItem>
                             {certificate.fileUrl && (
                               <DropdownMenuItem onClick={(e) => { e.stopPropagation(); window.open(certificate.fileUrl!, '_blank'); }}>
-                                <Download className="mr-2 h-4 w-4" />
+                                <Download className="me-2 h-4 w-4" />
                                 Download
                               </DropdownMenuItem>
                             )}
@@ -421,7 +421,7 @@ export function CertificatesList({ branchId, userRole }: CertificatesListProps) 
                                 onClick={(e) => { e.stopPropagation(); handleDeleteCertificate(certificate.id); }}
                                 className="text-destructive"
                               >
-                                <Trash2 className="mr-2 h-4 w-4" />
+                                <Trash2 className="me-2 h-4 w-4" />
                                 Delete
                               </DropdownMenuItem>
                             )}
@@ -473,7 +473,7 @@ export function CertificatesList({ branchId, userRole }: CertificatesListProps) 
               </div>
 
               <div className="space-y-2">
-                <Label htmlFor="title">Title *</Label>
+                <Label htmlFor="title">العنوان *</Label>
                 <Input
                   id="title"
                   value={newCertificate.title}
@@ -517,7 +517,7 @@ export function CertificatesList({ branchId, userRole }: CertificatesListProps) 
               </div>
 
               <div className="space-y-2">
-                <Label htmlFor="description">Description</Label>
+                <Label htmlFor="description">الوصف</Label>
                 <Textarea
                   id="description"
                   value={newCertificate.description}
@@ -551,7 +551,7 @@ export function CertificatesList({ branchId, userRole }: CertificatesListProps) 
                 Cancel
               </Button>
               <Button type="submit" disabled={creating || uploading}>
-                {creating && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
+                {creating && <Loader2 className="me-2 h-4 w-4 animate-spin" />}
                 Add Certificate
               </Button>
             </DialogFooter>
@@ -590,7 +590,7 @@ export function CertificatesList({ branchId, userRole }: CertificatesListProps) 
                   <p className="text-sm text-muted-foreground">{tcl.issueDate}</p>
                   <p className="font-medium flex items-center gap-1">
                     <Calendar className="h-4 w-4" />
-                    {new Date(selectedCertificate.issueDate).toLocaleDateString()}
+                    {new Date(selectedCertificate.issueDate).toLocaleDateString('ar-SA')}
                   </p>
                 </div>
                 <div>
@@ -599,7 +599,7 @@ export function CertificatesList({ branchId, userRole }: CertificatesListProps) 
                     <>
                       <p className="font-medium flex items-center gap-1">
                         <Calendar className="h-4 w-4" />
-                        {new Date(selectedCertificate.expiryDate).toLocaleDateString()}
+                        {new Date(selectedCertificate.expiryDate).toLocaleDateString('ar-SA')}
                       </p>
                       {(() => {
                         const expiryInfo = getExpiryStatus(selectedCertificate.expiryDate)
@@ -663,7 +663,7 @@ export function CertificatesList({ branchId, userRole }: CertificatesListProps) 
                     className="w-full"
                     variant="default"
                   >
-                    <Eye className="mr-2 h-4 w-4" />
+                    <Eye className="me-2 h-4 w-4" />
                     View Certificate
                   </Button>
                   <Button
@@ -671,7 +671,7 @@ export function CertificatesList({ branchId, userRole }: CertificatesListProps) 
                     className="w-full"
                     variant="outline"
                   >
-                    <Download className="mr-2 h-4 w-4" />
+                    <Download className="me-2 h-4 w-4" />
                     Download Certificate
                   </Button>
                 </div>

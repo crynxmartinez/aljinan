@@ -131,7 +131,7 @@ export function WorkOrderPrintView({ data, companyName = 'Tasheel', companyLogo 
               {getWorkOrderTypeLabel(data.workOrderType)}
             </h2>
             {data.workOrderNumber && (
-              <p className="text-lg font-mono text-gray-600">WO-{String(data.workOrderNumber).padStart(4, '0')}</p>
+              <p className="text-lg font-mono text-gray-600">أمر-{String(data.workOrderNumber).padStart(4, '0')}</p>
             )}
           </div>
         </div>

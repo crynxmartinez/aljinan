@@ -197,7 +197,7 @@ export function PaymentSubmitDialog({
               onClick={() => setPaymentProofType('file')}
               className="flex-1"
             >
-              <Upload className="mr-2 h-4 w-4" />
+              <Upload className="me-2 h-4 w-4" />
               {tp.uploadFile}
             </Button>
             <Button
@@ -206,7 +206,7 @@ export function PaymentSubmitDialog({
               onClick={() => setPaymentProofType('link')}
               className="flex-1"
             >
-              <LinkIcon className="mr-2 h-4 w-4" />
+              <LinkIcon className="me-2 h-4 w-4" />
               {tp.pasteLink}
             </Button>
           </div>
@@ -262,9 +262,9 @@ export function PaymentSubmitDialog({
           </Button>
           <Button onClick={handleSubmit} disabled={submitting}>
             {submitting ? (
-              <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+              <Loader2 className="me-2 h-4 w-4 animate-spin" />
             ) : (
-              <Send className="mr-2 h-4 w-4" />
+              <Send className="me-2 h-4 w-4" />
             )}
             {tp.submitProof}
           </Button>

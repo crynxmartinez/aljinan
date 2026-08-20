@@ -226,7 +226,7 @@ export function RequestQuotePrint({ requestId, branchId }: RequestQuotePrintProp
                 <p className="text-lg font-semibold">REQ #{data.requestNumber}</p>
               )}
               <p className="text-sm text-muted-foreground mt-1">
-                {tp.generated} {new Date().toLocaleDateString()} {new Date().toLocaleTimeString()}
+                {tp.generated} {new Date().toLocaleDateString('ar-SA')} {new Date().toLocaleTimeString()}
               </p>
             </div>
           </div>

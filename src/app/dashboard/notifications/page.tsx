@@ -228,7 +228,7 @@ function formatTimeAgo(date: Date, tn?: { justNow: string; mAgo: string; hAgo: s
   if (diffMins < 60) return `${diffMins}${tn?.mAgo ?? 'm ago'}`
   if (diffHours < 24) return `${diffHours}${tn?.hAgo ?? 'h ago'}`
   if (diffDays < 7) return `${diffDays}${tn?.dAgo ?? 'd ago'}`
-  return date.toLocaleDateString()
+  return date.toLocaleDateString('ar-SA')
 }
 
 export default async function NotificationsPage() {

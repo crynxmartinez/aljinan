@@ -257,11 +257,11 @@ export function InvoicesList({ branchId }: InvoicesListProps) {
       <Card>
         <CardHeader className="flex flex-row items-center justify-between">
           <div>
-            <CardTitle>Invoices</CardTitle>
-            <CardDescription>Create and manage invoices for this branch</CardDescription>
+            <CardTitle>الفواتير</CardTitle>
+            <CardDescription>إنشاء وإدارة الفواتير لهذا الفرع</CardDescription>
           </div>
           <Button onClick={() => setCreateDialogOpen(true)}>
-            <Plus className="mr-2 h-4 w-4" />
+            <Plus className="me-2 h-4 w-4" />
             Create Invoice
           </Button>
         </CardHeader>
@@ -269,12 +269,12 @@ export function InvoicesList({ branchId }: InvoicesListProps) {
           {invoices.length === 0 ? (
             <div className="flex flex-col items-center justify-center py-12 text-center">
               <Banknote className="h-12 w-12 text-muted-foreground/30 mb-4" />
-              <h3 className="text-lg font-semibold mb-2">No invoices yet</h3>
+              <h3 className="text-lg font-semibold mb-2">لا توجد فواتير بعد</h3>
               <p className="text-muted-foreground max-w-md mb-4">
-                Create your first invoice for this branch.
+                أنشئ أول فاتورة لهذا الفرع.
               </p>
               <Button onClick={() => setCreateDialogOpen(true)}>
-                <Plus className="mr-2 h-4 w-4" />
+                <Plus className="me-2 h-4 w-4" />
                 Create Invoice
               </Button>
             </div>
@@ -304,7 +304,7 @@ export function InvoicesList({ branchId }: InvoicesListProps) {
                       )}
                       {invoice.dueDate && (
                         <span className="text-muted-foreground">
-                          Due: {new Date(invoice.dueDate).toLocaleDateString()}
+                          Due: {new Date(invoice.dueDate).toLocaleDateString('ar-SA')}
                         </span>
                       )}
                     </div>
@@ -319,21 +319,21 @@ export function InvoicesList({ branchId }: InvoicesListProps) {
                       {invoice.status === 'DRAFT' && (
                         <>
                           <DropdownMenuItem onClick={() => handleSendInvoice(invoice.id)}>
-                            <Send className="mr-2 h-4 w-4" />
+                            <Send className="me-2 h-4 w-4" />
                             Send to Client
                           </DropdownMenuItem>
                           <DropdownMenuItem
                             onClick={() => handleDeleteInvoice(invoice.id)}
                             className="text-destructive"
                           >
-                            <Trash2 className="mr-2 h-4 w-4" />
+                            <Trash2 className="me-2 h-4 w-4" />
                             Delete
                           </DropdownMenuItem>
                         </>
                       )}
                       {(invoice.status === 'SENT' || invoice.status === 'PARTIAL') && (
                         <DropdownMenuItem onClick={() => handleMarkPaid(invoice.id)}>
-                          <CheckCircle className="mr-2 h-4 w-4" />
+                          <CheckCircle className="me-2 h-4 w-4" />
                           Mark as Paid
                         </DropdownMenuItem>
                       )}
@@ -350,9 +350,9 @@ export function InvoicesList({ branchId }: InvoicesListProps) {
       <Dialog open={createDialogOpen} onOpenChange={setCreateDialogOpen}>
         <DialogContent className="max-w-2xl max-h-[90vh] overflow-y-auto">
           <DialogHeader>
-            <DialogTitle>Create Invoice</DialogTitle>
+            <DialogTitle>إنشاء فاتورة</DialogTitle>
             <DialogDescription>
-              Create a new invoice with line items.
+              إنشاء فاتورة جديدة مع بنود.
             </DialogDescription>
           </DialogHeader>
           <form onSubmit={handleCreateInvoice}>
@@ -363,7 +363,7 @@ export function InvoicesList({ branchId }: InvoicesListProps) {
             )}
             <div className="space-y-4">
               <div className="space-y-2">
-                <Label htmlFor="title">Title *</Label>
+                <Label htmlFor="title">العنوان *</Label>
                 <Input
                   id="title"
                   value={newInvoice.title}
@@ -373,7 +373,7 @@ export function InvoicesList({ branchId }: InvoicesListProps) {
                 />
               </div>
               <div className="space-y-2">
-                <Label htmlFor="description">Description</Label>
+                <Label htmlFor="description">الوصف</Label>
                 <Textarea
                   id="description"
                   value={newInvoice.description}
@@ -385,7 +385,7 @@ export function InvoicesList({ branchId }: InvoicesListProps) {
 
               {/* Line Items */}
               <div className="space-y-2">
-                <Label>Line Items</Label>
+                <Label>البنود</Label>
                 <div className="space-y-2">
                   {newInvoice.items.map((item, index) => (
                     <div key={index} className="grid grid-cols-12 gap-2 items-end">
@@ -433,7 +433,7 @@ export function InvoicesList({ branchId }: InvoicesListProps) {
                   ))}
                 </div>
                 <Button type="button" variant="outline" size="sm" onClick={addItem}>
-                  <Plus className="mr-2 h-4 w-4" />
+                  <Plus className="me-2 h-4 w-4" />
                   Add Item
                 </Button>
               </div>
@@ -441,12 +441,12 @@ export function InvoicesList({ branchId }: InvoicesListProps) {
               {/* Totals */}
               <div className="border-t pt-4 space-y-2">
                 <div className="flex justify-between text-sm">
-                  <span>Subtotal</span>
+                  <span>المجموع الفرعي</span>
                   <span>{formatCurrency(totals.subtotal)}</span>
                 </div>
                 <div className="flex justify-between items-center text-sm">
                   <div className="flex items-center gap-2">
-                    <span>Tax</span>
+                    <span>الضريبة</span>
                     <Input
                       type="number"
                       className="w-20 h-8"
@@ -460,13 +460,13 @@ export function InvoicesList({ branchId }: InvoicesListProps) {
                   <span>{formatCurrency(totals.taxAmount)}</span>
                 </div>
                 <div className="flex justify-between font-semibold text-lg border-t pt-2">
-                  <span>Total</span>
+                  <span>الإجمالي</span>
                   <span>{formatCurrency(totals.total)}</span>
                 </div>
               </div>
 
               <div className="space-y-2">
-                <Label htmlFor="dueDate">Due Date</Label>
+                <Label htmlFor="dueDate">تاريخ الاستحقاق</Label>
                 <Input
                   id="dueDate"
                   type="date"
@@ -485,7 +485,7 @@ export function InvoicesList({ branchId }: InvoicesListProps) {
                 disabled={creating}
                 onClick={(e) => handleCreateInvoice(e, false)}
               >
-                {creating && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
+                {creating && <Loader2 className="me-2 h-4 w-4 animate-spin" />}
                 Save as Draft
               </Button>
               <Button
@@ -496,8 +496,8 @@ export function InvoicesList({ branchId }: InvoicesListProps) {
                   handleCreateInvoice(e, true)
                 }}
               >
-                {creating && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
-                <Send className="mr-2 h-4 w-4" />
+                {creating && <Loader2 className="me-2 h-4 w-4 animate-spin" />}
+                <Send className="me-2 h-4 w-4" />
                 Create & Send
               </Button>
             </DialogFooter>
@@ -513,7 +513,7 @@ export function InvoicesList({ branchId }: InvoicesListProps) {
               <span className="font-mono text-muted-foreground">{selectedInvoice?.invoiceNumber}</span>
               {selectedInvoice?.title}
             </DialogTitle>
-            <DialogDescription>Invoice Details</DialogDescription>
+            <DialogDescription>تفاصيل الفاتورة</DialogDescription>
           </DialogHeader>
           {selectedInvoice && (
             <div className="space-y-4">
@@ -523,15 +523,15 @@ export function InvoicesList({ branchId }: InvoicesListProps) {
               </div>
 
               <div>
-                <p className="text-sm font-medium text-muted-foreground mb-2">Line Items</p>
+                <p className="text-sm font-medium text-muted-foreground mb-2">البنود</p>
                 <div className="border rounded-lg overflow-hidden">
                   <table className="w-full text-sm">
                     <thead className="bg-muted">
                       <tr>
-                        <th className="text-start p-2">Description</th>
-                        <th className="text-end p-2">Qty</th>
-                        <th className="text-end p-2">Unit Price</th>
-                        <th className="text-end p-2">Total</th>
+                        <th className="text-start p-2">الوصف</th>
+                        <th className="text-end p-2">الكمية</th>
+                        <th className="text-end p-2">سعر الوحدة</th>
+                        <th className="text-end p-2">الإجمالي</th>
                       </tr>
                     </thead>
                     <tbody>
@@ -546,7 +546,7 @@ export function InvoicesList({ branchId }: InvoicesListProps) {
                     </tbody>
                     <tfoot className="bg-muted/50">
                       <tr className="border-t">
-                        <td colSpan={3} className="text-end p-2 font-medium">Subtotal</td>
+                        <td colSpan={3} className="text-end p-2 font-medium">المجموع الفرعي</td>
                         <td className="text-end p-2">{formatCurrency(selectedInvoice.subtotal)}</td>
                       </tr>
                       <tr>
@@ -554,12 +554,12 @@ export function InvoicesList({ branchId }: InvoicesListProps) {
                         <td className="text-end p-2">{formatCurrency(selectedInvoice.taxAmount)}</td>
                       </tr>
                       <tr className="font-bold">
-                        <td colSpan={3} className="text-end p-2">Total</td>
+                        <td colSpan={3} className="text-end p-2">الإجمالي</td>
                         <td className="text-end p-2">{formatCurrency(selectedInvoice.total)}</td>
                       </tr>
                       {selectedInvoice.amountPaid > 0 && (
                         <tr>
-                          <td colSpan={3} className="text-end p-2 font-medium text-green-600">Amount Paid</td>
+                          <td colSpan={3} className="text-end p-2 font-medium text-green-600">المبلغ المدفوع</td>
                           <td className="text-end p-2 text-green-600">{formatCurrency(selectedInvoice.amountPaid)}</td>
                         </tr>
                       )}
@@ -570,25 +570,25 @@ export function InvoicesList({ branchId }: InvoicesListProps) {
 
               <div className="grid grid-cols-2 gap-4 text-sm">
                 <div>
-                  <p className="font-medium text-muted-foreground">Created</p>
-                  <p>{new Date(selectedInvoice.createdAt).toLocaleDateString()}</p>
+                  <p className="font-medium text-muted-foreground">تم الإنشاء</p>
+                  <p>{new Date(selectedInvoice.createdAt).toLocaleDateString('ar-SA')}</p>
                 </div>
                 {selectedInvoice.dueDate && (
                   <div>
-                    <p className="font-medium text-muted-foreground">Due Date</p>
-                    <p>{new Date(selectedInvoice.dueDate).toLocaleDateString()}</p>
+                    <p className="font-medium text-muted-foreground">تاريخ الاستحقاق</p>
+                    <p>{new Date(selectedInvoice.dueDate).toLocaleDateString('ar-SA')}</p>
                   </div>
                 )}
                 {selectedInvoice.sentAt && (
                   <div>
-                    <p className="font-medium text-muted-foreground">Sent</p>
-                    <p>{new Date(selectedInvoice.sentAt).toLocaleDateString()}</p>
+                    <p className="font-medium text-muted-foreground">تم الإرسال</p>
+                    <p>{new Date(selectedInvoice.sentAt).toLocaleDateString('ar-SA')}</p>
                   </div>
                 )}
                 {selectedInvoice.paidAt && (
                   <div>
-                    <p className="font-medium text-muted-foreground">Paid</p>
-                    <p>{new Date(selectedInvoice.paidAt).toLocaleDateString()}</p>
+                    <p className="font-medium text-muted-foreground">مدفوع</p>
+                    <p>{new Date(selectedInvoice.paidAt).toLocaleDateString('ar-SA')}</p>
                   </div>
                 )}
               </div>
@@ -602,7 +602,7 @@ export function InvoicesList({ branchId }: InvoicesListProps) {
                     }}
                     className="flex-1"
                   >
-                    <Send className="mr-2 h-4 w-4" />
+                    <Send className="me-2 h-4 w-4" />
                     Send to Client
                   </Button>
                 )}
@@ -614,7 +614,7 @@ export function InvoicesList({ branchId }: InvoicesListProps) {
                     }}
                     className="flex-1"
                   >
-                    <CheckCircle className="mr-2 h-4 w-4" />
+                    <CheckCircle className="me-2 h-4 w-4" />
                     Mark as Paid
                   </Button>
                 )}

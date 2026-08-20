@@ -111,7 +111,7 @@ export function ClientBranchWorkspace({ branchId, branch }: ClientBranchWorkspac
             <FileText className="h-4 w-4" />
             {tw.requests}
             {openRequestsCount > 0 && (
-              <Badge variant="destructive" className="ml-1 h-5 w-5 p-0 flex items-center justify-center text-xs">
+              <Badge variant="destructive" className="ms-1 h-5 w-5 p-0 flex items-center justify-center text-xs">
                 {openRequestsCount}
               </Badge>
             )}

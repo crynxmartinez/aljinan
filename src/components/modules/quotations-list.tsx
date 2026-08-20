@@ -248,13 +248,13 @@ export function QuotationsList({ branchId }: QuotationsListProps) {
       <Card>
         <CardHeader className="flex flex-row items-center justify-between">
           <div>
-            <CardTitle>Quotations</CardTitle>
+            <CardTitle>التسعيرات</CardTitle>
             <CardDescription>
               Create and manage quotes for this branch
             </CardDescription>
           </div>
           <Button onClick={() => setCreateDialogOpen(true)}>
-            <Plus className="mr-2 h-4 w-4" />
+            <Plus className="me-2 h-4 w-4" />
             New Quote
           </Button>
         </CardHeader>
@@ -262,12 +262,12 @@ export function QuotationsList({ branchId }: QuotationsListProps) {
           {quotations.length === 0 ? (
             <div className="flex flex-col items-center justify-center py-12 text-center">
               <Receipt className="h-12 w-12 text-muted-foreground/30 mb-4" />
-              <h3 className="text-lg font-semibold mb-2">No quotations yet</h3>
+              <h3 className="text-lg font-semibold mb-2">لا توجد تسعيرات بعد</h3>
               <p className="text-muted-foreground max-w-md mb-4">
-                Create your first quotation for this branch. Once sent, the client can approve or reject it.
+                أنشئ أول تسعيرة لهذا الفرع. Once sent, the client can approve or reject it.
               </p>
               <Button onClick={() => setCreateDialogOpen(true)}>
-                <Plus className="mr-2 h-4 w-4" />
+                <Plus className="me-2 h-4 w-4" />
                 Create Quote
               </Button>
             </div>
@@ -298,7 +298,7 @@ export function QuotationsList({ branchId }: QuotationsListProps) {
                         {quotation.items.length} item{quotation.items.length !== 1 ? 's' : ''}
                       </span>
                       <span className="text-muted-foreground">
-                        Created {new Date(quotation.createdAt).toLocaleDateString()}
+                        Created {new Date(quotation.createdAt).toLocaleDateString('ar-SA')}
                       </span>
                     </div>
                     {quotation.rejectionNote && (
@@ -317,14 +317,14 @@ export function QuotationsList({ branchId }: QuotationsListProps) {
                       {quotation.status === 'DRAFT' && (
                         <>
                           <DropdownMenuItem onClick={() => handleSendQuotation(quotation.id)}>
-                            <Send className="mr-2 h-4 w-4" />
+                            <Send className="me-2 h-4 w-4" />
                             Send to Client
                           </DropdownMenuItem>
                           <DropdownMenuItem
                             onClick={() => handleDeleteQuotation(quotation.id)}
                             className="text-destructive"
                           >
-                            <Trash2 className="mr-2 h-4 w-4" />
+                            <Trash2 className="me-2 h-4 w-4" />
                             Delete
                           </DropdownMenuItem>
                         </>
@@ -360,7 +360,7 @@ export function QuotationsList({ branchId }: QuotationsListProps) {
             )}
             <div className="space-y-4">
               <div className="space-y-2">
-                <Label htmlFor="title">Title *</Label>
+                <Label htmlFor="title">العنوان *</Label>
                 <Input
                   id="title"
                   value={newQuotation.title}
@@ -370,7 +370,7 @@ export function QuotationsList({ branchId }: QuotationsListProps) {
                 />
               </div>
               <div className="space-y-2">
-                <Label htmlFor="description">Description</Label>
+                <Label htmlFor="description">الوصف</Label>
                 <Textarea
                   id="description"
                   value={newQuotation.description}
@@ -382,7 +382,7 @@ export function QuotationsList({ branchId }: QuotationsListProps) {
 
               {/* Line Items */}
               <div className="space-y-2">
-                <Label>Line Items</Label>
+                <Label>البنود</Label>
                 <div className="space-y-2">
                   {newQuotation.items.map((item, index) => (
                     <div key={index} className="grid grid-cols-12 gap-2 items-end">
@@ -430,7 +430,7 @@ export function QuotationsList({ branchId }: QuotationsListProps) {
                   ))}
                 </div>
                 <Button type="button" variant="outline" size="sm" onClick={addItem}>
-                  <Plus className="mr-2 h-4 w-4" />
+                  <Plus className="me-2 h-4 w-4" />
                   Add Item
                 </Button>
               </div>
@@ -438,12 +438,12 @@ export function QuotationsList({ branchId }: QuotationsListProps) {
               {/* Totals */}
               <div className="border-t pt-4 space-y-2">
                 <div className="flex justify-between text-sm">
-                  <span>Subtotal</span>
+                  <span>المجموع الفرعي</span>
                   <span>{formatCurrency(totals.subtotal)}</span>
                 </div>
                 <div className="flex justify-between items-center text-sm">
                   <div className="flex items-center gap-2">
-                    <span>Tax</span>
+                    <span>الضريبة</span>
                     <Input
                       type="number"
                       className="w-20 h-8"
@@ -457,7 +457,7 @@ export function QuotationsList({ branchId }: QuotationsListProps) {
                   <span>{formatCurrency(totals.taxAmount)}</span>
                 </div>
                 <div className="flex justify-between font-semibold text-lg border-t pt-2">
-                  <span>Total</span>
+                  <span>الإجمالي</span>
                   <span>{formatCurrency(totals.total)}</span>
                 </div>
               </div>
@@ -482,7 +482,7 @@ export function QuotationsList({ branchId }: QuotationsListProps) {
                 disabled={creating}
                 onClick={(e) => handleCreateQuotation(e, false)}
               >
-                {creating && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
+                {creating && <Loader2 className="me-2 h-4 w-4 animate-spin" />}
                 Save as Draft
               </Button>
               <Button
@@ -493,8 +493,8 @@ export function QuotationsList({ branchId }: QuotationsListProps) {
                   handleCreateQuotation(e, true)
                 }}
               >
-                {creating && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
-                <Send className="mr-2 h-4 w-4" />
+                {creating && <Loader2 className="me-2 h-4 w-4 animate-spin" />}
+                <Send className="me-2 h-4 w-4" />
                 Create & Send
               </Button>
             </DialogFooter>
@@ -507,7 +507,7 @@ export function QuotationsList({ branchId }: QuotationsListProps) {
         <DialogContent className="max-w-2xl max-h-[80vh] overflow-y-auto">
           <DialogHeader>
             <DialogTitle>{selectedQuotation?.title}</DialogTitle>
-            <DialogDescription>Quotation Details</DialogDescription>
+            <DialogDescription>تفاصيل التسعيرة</DialogDescription>
           </DialogHeader>
           {selectedQuotation && (
             <div className="space-y-4">
@@ -518,21 +518,21 @@ export function QuotationsList({ branchId }: QuotationsListProps) {
 
               {selectedQuotation.description && (
                 <div>
-                  <p className="text-sm font-medium text-muted-foreground mb-1">Description</p>
+                  <p className="text-sm font-medium text-muted-foreground mb-1">الوصف</p>
                   <p className="text-sm">{selectedQuotation.description}</p>
                 </div>
               )}
 
               <div>
-                <p className="text-sm font-medium text-muted-foreground mb-2">Line Items</p>
+                <p className="text-sm font-medium text-muted-foreground mb-2">البنود</p>
                 <div className="border rounded-lg overflow-hidden">
                   <table className="w-full text-sm">
                     <thead className="bg-muted">
                       <tr>
-                        <th className="text-start p-2">Description</th>
-                        <th className="text-end p-2">Qty</th>
-                        <th className="text-end p-2">Unit Price</th>
-                        <th className="text-end p-2">Total</th>
+                        <th className="text-start p-2">الوصف</th>
+                        <th className="text-end p-2">الكمية</th>
+                        <th className="text-end p-2">سعر الوحدة</th>
+                        <th className="text-end p-2">الإجمالي</th>
                       </tr>
                     </thead>
                     <tbody>
@@ -547,7 +547,7 @@ export function QuotationsList({ branchId }: QuotationsListProps) {
                     </tbody>
                     <tfoot className="bg-muted/50">
                       <tr className="border-t">
-                        <td colSpan={3} className="text-end p-2 font-medium">Subtotal</td>
+                        <td colSpan={3} className="text-end p-2 font-medium">المجموع الفرعي</td>
                         <td className="text-end p-2">{formatCurrency(selectedQuotation.subtotal)}</td>
                       </tr>
                       <tr>
@@ -555,7 +555,7 @@ export function QuotationsList({ branchId }: QuotationsListProps) {
                         <td className="text-end p-2">{formatCurrency(selectedQuotation.taxAmount)}</td>
                       </tr>
                       <tr className="font-bold">
-                        <td colSpan={3} className="text-end p-2">Total</td>
+                        <td colSpan={3} className="text-end p-2">الإجمالي</td>
                         <td className="text-end p-2">{formatCurrency(selectedQuotation.total)}</td>
                       </tr>
                     </tfoot>
@@ -565,25 +565,25 @@ export function QuotationsList({ branchId }: QuotationsListProps) {
 
               <div className="grid grid-cols-2 gap-4 text-sm">
                 <div>
-                  <p className="font-medium text-muted-foreground">Created</p>
-                  <p>{new Date(selectedQuotation.createdAt).toLocaleDateString()}</p>
+                  <p className="font-medium text-muted-foreground">تم الإنشاء</p>
+                  <p>{new Date(selectedQuotation.createdAt).toLocaleDateString('ar-SA')}</p>
                 </div>
                 {selectedQuotation.validUntil && (
                   <div>
                     <p className="font-medium text-muted-foreground">Valid Until</p>
-                    <p>{new Date(selectedQuotation.validUntil).toLocaleDateString()}</p>
+                    <p>{new Date(selectedQuotation.validUntil).toLocaleDateString('ar-SA')}</p>
                   </div>
                 )}
                 {selectedQuotation.sentAt && (
                   <div>
-                    <p className="font-medium text-muted-foreground">Sent</p>
-                    <p>{new Date(selectedQuotation.sentAt).toLocaleDateString()}</p>
+                    <p className="font-medium text-muted-foreground">تم الإرسال</p>
+                    <p>{new Date(selectedQuotation.sentAt).toLocaleDateString('ar-SA')}</p>
                   </div>
                 )}
                 {selectedQuotation.approvedAt && (
                   <div>
-                    <p className="font-medium text-muted-foreground">Approved</p>
-                    <p>{new Date(selectedQuotation.approvedAt).toLocaleDateString()}</p>
+                    <p className="font-medium text-muted-foreground">موافق عليه</p>
+                    <p>{new Date(selectedQuotation.approvedAt).toLocaleDateString('ar-SA')}</p>
                   </div>
                 )}
               </div>
@@ -604,7 +604,7 @@ export function QuotationsList({ branchId }: QuotationsListProps) {
                     }}
                     className="flex-1"
                   >
-                    <Send className="mr-2 h-4 w-4" />
+                    <Send className="me-2 h-4 w-4" />
                     Send to Client
                   </Button>
                 </div>

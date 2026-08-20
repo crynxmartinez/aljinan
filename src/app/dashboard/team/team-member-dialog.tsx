@@ -274,7 +274,7 @@ export function TeamMemberDialog({
 
             {/* Phone */}
             <div className="grid gap-2">
-              <Label htmlFor="phone">Phone</Label>
+              <Label htmlFor="phone">الهاتف</Label>
               <Input
                 id="phone"
                 value={phone}
@@ -320,7 +320,7 @@ export function TeamMemberDialog({
                             {client.companyName}
                           </Label>
                         </div>
-                        <div className="ml-6 space-y-1">
+                        <div className="ms-6 space-y-1">
                           {client.branches.map((branch) => (
                             <div key={branch.id} className="flex items-center gap-2">
                               <Checkbox
@@ -365,7 +365,7 @@ export function TeamMemberDialog({
               Cancel
             </Button>
             <Button type="submit" disabled={loading}>
-              {loading && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
+              {loading && <Loader2 className="me-2 h-4 w-4 animate-spin" />}
               {isEditing ? 'Save Changes' : 'Create Team Member'}
             </Button>
           </DialogFooter>

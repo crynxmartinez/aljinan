@@ -159,7 +159,7 @@ export function ContractWorkOrdersDisplay({ workOrders, showStatus = true }: Con
                       {formatCurrency(groupTotal)}
                     </span>
                     {showStatus && allCompleted && (
-                      <Badge className="ml-2 bg-green-100 text-green-700 text-xs">
+                      <Badge className="ms-2 bg-green-100 text-green-700 text-xs">
                         <CheckCircle className="h-3 w-3 me-1" />
                         {t.dashboard.contractsList.done}
                       </Badge>
@@ -199,7 +199,7 @@ export function ContractWorkOrdersDisplay({ workOrders, showStatus = true }: Con
                             className={cn("text-xs ms-2", getStageColor(wo.stage))}
                           >
                             {getStageIcon(wo.stage)}
-                            <span className="ml-1">{STAGE_LABELS[wo.stage] || wo.stage.replace('_', ' ')}</span>
+                            <span className="ms-1">{STAGE_LABELS[wo.stage] || wo.stage.replace('_', ' ')}</span>
                           </Badge>
                         )}
                       </div>

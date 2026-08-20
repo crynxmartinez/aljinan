@@ -226,10 +226,10 @@ function WorkOrdersGroupedView({ workOrders }: { workOrders: WorkOrder[] }) {
               </div>
               <div className="text-end flex-shrink-0">
                 {hasPendingPrice ? (
-                  <Badge variant="outline" className="text-xs">Pending Price</Badge>
+                  <Badge variant="outline" className="text-xs">بانتظار السعر</Badge>
                 ) : (
                   <span className="font-semibold text-primary">
-                    SAR {groupTotal.toLocaleString('en-US', { minimumFractionDigits: 2 })}
+                    ر.س {groupTotal.toLocaleString('ar-SA', { minimumFractionDigits: 2 })}
                   </span>
                 )}
               </div>
@@ -243,10 +243,10 @@ function WorkOrdersGroupedView({ workOrders }: { workOrders: WorkOrder[] }) {
                   {items[0].scheduledDate ? (
                     <div className="flex items-center gap-1">
                       <Calendar className="h-3 w-3" />
-                      {new Date(items[0].scheduledDate).toLocaleDateString()}
+                      {new Date(items[0].scheduledDate).toLocaleDateString('ar-SA')}
                     </div>
                   ) : (
-                    <span>No date scheduled</span>
+                    <span>لا يوجد تاريخ مجدول</span>
                   )}
                 </div>
               </div>
@@ -264,18 +264,18 @@ function WorkOrdersGroupedView({ workOrders }: { workOrders: WorkOrder[] }) {
                           {wo.title.match(/\((Q\d+|Month\d+)\)/i)?.[1] || `#${idx + 1}`}:
                         </span>
                         {wo.scheduledDate && (
-                          <span className="ml-2 flex items-center gap-1 inline-flex">
+                          <span className="ms-2 flex items-center gap-1 inline-flex">
                             <Calendar className="h-3 w-3" />
-                            {new Date(wo.scheduledDate).toLocaleDateString()}
+                            {new Date(wo.scheduledDate).toLocaleDateString('ar-SA')}
                           </span>
                         )}
                       </div>
                     </div>
                     <div className="text-end">
                       {wo.price !== null ? (
-                        <span className="font-medium">SAR {wo.price.toLocaleString('en-US', { minimumFractionDigits: 2 })}</span>
+                        <span className="font-medium">ر.س {wo.price.toLocaleString('ar-SA', { minimumFractionDigits: 2 })}</span>
                       ) : (
-                        <Badge variant="outline" className="text-xs">Pending</Badge>
+                        <Badge variant="outline" className="text-xs">قيد الانتظار</Badge>
                       )}
                     </div>
                   </div>
@@ -756,9 +756,9 @@ export function ClientBranchRequests({ branchId, onDataChange, userId }: ClientB
       <Card>
         <CardHeader className="flex flex-row items-center justify-between">
           <div>
-            <CardTitle>Service Requests</CardTitle>
+            <CardTitle>طلبات الخدمة</CardTitle>
             <CardDescription>
-              View and submit service requests for this branch
+              عرض وإرسال طلبات الخدمة لهذا الفرع
             </CardDescription>
           </div>
           <div className="flex items-center gap-2">
@@ -770,7 +770,7 @@ export function ClientBranchRequests({ branchId, onDataChange, userId }: ClientB
               showDateRange={true}
             />
             <Button onClick={() => setCreateDialogOpen(true)}>
-              <Plus className="mr-2 h-4 w-4" />
+              <Plus className="me-2 h-4 w-4" />
               Submit Request
             </Button>
           </div>
@@ -784,12 +784,12 @@ export function ClientBranchRequests({ branchId, onDataChange, userId }: ClientB
           {requests.length === 0 ? (
             <div className="flex flex-col items-center justify-center py-12 text-center">
               <FileText className="h-12 w-12 text-muted-foreground/30 mb-4" />
-              <h3 className="text-lg font-semibold mb-2">No requests yet</h3>
+              <h3 className="text-lg font-semibold mb-2">لا توجد طلبات بعد</h3>
               <p className="text-muted-foreground max-w-md mb-4">
-                Submit a service request to your contractor. They will review and respond to your request.
+                أرسل طلب خدمة إلى المقاول الخاص بك. سيقوم بمراجعة طلبك والرد عليه.
               </p>
               <Button onClick={() => setCreateDialogOpen(true)}>
-                <Plus className="mr-2 h-4 w-4" />
+                <Plus className="me-2 h-4 w-4" />
                 Submit Request
               </Button>
             </div>
@@ -825,13 +825,13 @@ export function ClientBranchRequests({ branchId, onDataChange, userId }: ClientB
                       {getPriorityBadge(request.priority)}
                       {getStatusBadge(request.status)}
                       {request.createdByRole === 'CLIENT' && (
-                        <Badge variant="outline" className="text-xs">Submitted by you</Badge>
+                        <Badge variant="outline" className="text-xs">مقدم منك</Badge>
                       )}
                       {request.recurringType && request.recurringType !== 'ONCE' && (
-                        <Badge variant="secondary" className="text-xs">{request.recurringType === 'MONTHLY' ? 'Monthly' : 'Quarterly'}</Badge>
+                        <Badge variant="secondary" className="text-xs">{request.recurringType === 'MONTHLY' ? 'شهري' : 'ربع سنوي'}</Badge>
                       )}
                       {request.needsCertificate && (
-                        <Badge variant="outline" className="text-xs text-green-600">Certificate</Badge>
+                        <Badge variant="outline" className="text-xs text-green-600">شهادة</Badge>
                       )}
                     </div>
                     {request.description && !request.title.startsWith('Project Proposal:') && (
@@ -840,12 +840,12 @@ export function ClientBranchRequests({ branchId, onDataChange, userId }: ClientB
                       </p>
                     )}
                     <p className="text-xs text-muted-foreground">
-                      Created {new Date(request.createdAt).toLocaleDateString()}
+                      Created {new Date(request.createdAt).toLocaleDateString('ar-SA')}
                       {request.dueDate && (
-                        <> · Due {new Date(request.dueDate).toLocaleDateString()}</>
+                        <> · Due {new Date(request.dueDate).toLocaleDateString('ar-SA')}</>
                       )}
                       {request.completedAt && (
-                        <> · Completed {new Date(request.completedAt).toLocaleDateString()}</>
+                        <> · Completed {new Date(request.completedAt).toLocaleDateString('ar-SA')}</>
                       )}
                     </p>
                   </div>
@@ -858,13 +858,13 @@ export function ClientBranchRequests({ branchId, onDataChange, userId }: ClientB
                           <div className="flex items-center gap-1">
                             <Banknote className="h-4 w-4 text-purple-600" />
                             <span className="font-semibold text-purple-700">
-                              SAR {request.quotedPrice.toLocaleString('en-US', { minimumFractionDigits: 2 })}
+                              ر.س {request.quotedPrice.toLocaleString('ar-SA', { minimumFractionDigits: 2 })}
                             </span>
                           </div>
                           {request.quotedDate && (
                             <div className="flex items-center gap-1 text-muted-foreground">
                               <Calendar className="h-4 w-4" />
-                              <span>{new Date(request.quotedDate).toLocaleDateString()}</span>
+                              <span>{new Date(request.quotedDate).toLocaleDateString('ar-SA')}</span>
                             </div>
                           )}
                         </div>
@@ -889,9 +889,9 @@ export function ClientBranchRequests({ branchId, onDataChange, userId }: ClientB
       <Dialog open={createDialogOpen} onOpenChange={setCreateDialogOpen}>
         <DialogContent className="sm:max-w-[600px] max-h-[90vh] overflow-y-auto">
           <DialogHeader>
-            <DialogTitle>Submit Service Request</DialogTitle>
+            <DialogTitle>إرسال طلب خدمة</DialogTitle>
             <DialogDescription>
-              Submit a new service request to your contractor.
+              أرسل طلب خدمة جديد إلى المقاول الخاص بك.
             </DialogDescription>
           </DialogHeader>
           <form onSubmit={handleCreateRequest}>
@@ -903,7 +903,7 @@ export function ClientBranchRequests({ branchId, onDataChange, userId }: ClientB
             <div className="space-y-4">
               {/* Service Type - At Top */}
               <div className="space-y-2">
-                <Label htmlFor="workOrderType">Service Type *</Label>
+                <Label htmlFor="workOrderType">نوع الخدمة *</Label>
                 <Select
                   value={newRequest.workOrderType}
                   onValueChange={(value: 'SERVICE' | 'INSPECTION' | 'MAINTENANCE' | 'INSTALLATION' | 'STICKER_INSPECTION') => {
@@ -932,7 +932,7 @@ export function ClientBranchRequests({ branchId, onDataChange, userId }: ClientB
 
               {/* Title */}
               <div className="space-y-2">
-                <Label htmlFor="title">Brief Description *</Label>
+                <Label htmlFor="title">وصف موجز *</Label>
                 <Input
                   id="title"
                   value={newRequest.title}
@@ -944,7 +944,7 @@ export function ClientBranchRequests({ branchId, onDataChange, userId }: ClientB
 
               {/* Details */}
               <div className="space-y-2">
-                <Label htmlFor="description">Additional Details</Label>
+                <Label htmlFor="description">تفاصيل إضافية</Label>
                 <Textarea
                   id="description"
                   value={newRequest.description}
@@ -957,7 +957,7 @@ export function ClientBranchRequests({ branchId, onDataChange, userId }: ClientB
               {/* Priority & Frequency Row */}
               <div className="grid grid-cols-2 gap-4">
                 <div className="space-y-2">
-                  <Label htmlFor="priority">Priority</Label>
+                  <Label htmlFor="priority">الأولوية</Label>
                   <Select
                     value={newRequest.priority}
                     onValueChange={(value: 'LOW' | 'MEDIUM' | 'HIGH' | 'URGENT') => setNewRequest({ ...newRequest, priority: value })}
@@ -966,15 +966,15 @@ export function ClientBranchRequests({ branchId, onDataChange, userId }: ClientB
                       <SelectValue />
                     </SelectTrigger>
                     <SelectContent>
-                      <SelectItem value="LOW">Low</SelectItem>
-                      <SelectItem value="MEDIUM">Medium</SelectItem>
-                      <SelectItem value="HIGH">High</SelectItem>
-                      <SelectItem value="URGENT">🚨 Urgent</SelectItem>
+                      <SelectItem value="LOW">منخفض</SelectItem>
+                      <SelectItem value="MEDIUM">متوسط</SelectItem>
+                      <SelectItem value="HIGH">عالي</SelectItem>
+                      <SelectItem value="URGENT">🚨 عاجل</SelectItem>
                     </SelectContent>
                   </Select>
                 </div>
                 <div className="space-y-2">
-                  <Label htmlFor="recurringType">Frequency</Label>
+                  <Label htmlFor="recurringType">التكرار</Label>
                   <Select
                     value={newRequest.recurringType}
                     onValueChange={(value: 'ONCE' | 'MONTHLY' | 'QUARTERLY' | 'SEMI_ANNUALLY' | 'ANNUALLY') => setNewRequest({ ...newRequest, recurringType: value })}
@@ -983,11 +983,11 @@ export function ClientBranchRequests({ branchId, onDataChange, userId }: ClientB
                       <SelectValue />
                     </SelectTrigger>
                     <SelectContent>
-                      <SelectItem value="ONCE">One-time</SelectItem>
-                      <SelectItem value="MONTHLY">Monthly</SelectItem>
-                      <SelectItem value="QUARTERLY">Quarterly</SelectItem>
-                      <SelectItem value="SEMI_ANNUALLY">Semi-Annually</SelectItem>
-                      <SelectItem value="ANNUALLY">Annually</SelectItem>
+                      <SelectItem value="ONCE">مرة واحدة</SelectItem>
+                      <SelectItem value="MONTHLY">شهري</SelectItem>
+                      <SelectItem value="QUARTERLY">ربع سنوي</SelectItem>
+                      <SelectItem value="SEMI_ANNUALLY">نصف سنوي</SelectItem>
+                      <SelectItem value="ANNUALLY">سنوي</SelectItem>
                     </SelectContent>
                   </Select>
                 </div>
@@ -998,8 +998,8 @@ export function ClientBranchRequests({ branchId, onDataChange, userId }: ClientB
                 <div className="space-y-3 p-4 bg-amber-50 border border-amber-200 rounded-lg">
                   <div className="flex items-center justify-between">
                     <div>
-                      <Label className="text-amber-800 font-medium">Equipment List</Label>
-                      <p className="text-xs text-amber-600 mt-1">Add equipment items that need sticker inspection</p>
+                      <Label className="text-amber-800 font-medium">قائمة المعدات</Label>
+                      <p className="text-xs text-amber-600 mt-1">أضف عناصر المعدات التي تحتاج إلى تفتيش الملصقات</p>
                     </div>
                     <Button
                       type="button"
@@ -1018,15 +1018,15 @@ export function ClientBranchRequests({ branchId, onDataChange, userId }: ClientB
                     <div className="space-y-3 p-3 bg-white rounded-lg border border-amber-200">
                       <div className="grid grid-cols-2 gap-3">
                         <div className="space-y-1">
-                          <Label className="text-xs">Equipment # *</Label>
+                          <Label className="text-xs">معدات # *</Label>
                           <Input
-                            placeholder="e.g., FE-001"
+                            placeholder="مثال: FE-001"
                             value={newEquipment.equipmentNumber}
                             onChange={(e) => setNewEquipment({ ...newEquipment, equipmentNumber: e.target.value })}
                           />
                         </div>
                         <div className="space-y-1">
-                          <Label className="text-xs">Type *</Label>
+                          <Label className="text-xs">النوع *</Label>
                           <Select
                             value={newEquipment.equipmentType}
                             onValueChange={(value) => setNewEquipment({
@@ -1039,13 +1039,13 @@ export function ClientBranchRequests({ branchId, onDataChange, userId }: ClientB
                               <SelectValue />
                             </SelectTrigger>
                             <SelectContent>
-                              <SelectItem value="FIRE_EXTINGUISHER">Fire Extinguisher</SelectItem>
-                              <SelectItem value="FIRE_ALARM_PANEL">Fire Alarm Panel</SelectItem>
-                              <SelectItem value="SPRINKLER_SYSTEM">Sprinkler System</SelectItem>
-                              <SelectItem value="EMERGENCY_LIGHTING">Emergency Lighting</SelectItem>
-                              <SelectItem value="EXIT_SIGN">Exit Sign</SelectItem>
-                              <SelectItem value="FIRE_DOOR">Fire Door</SelectItem>
-                              <SelectItem value="SMOKE_DETECTOR">Smoke Detector</SelectItem>
+                              <SelectItem value="FIRE_EXTINGUISHER">طفاية حريق</SelectItem>
+                              <SelectItem value="FIRE_ALARM_PANEL">لوحة إنذار الحريق</SelectItem>
+                              <SelectItem value="SPRINKLER_SYSTEM">نظام الرشاشات</SelectItem>
+                              <SelectItem value="EMERGENCY_LIGHTING">إضاءة طوارئ</SelectItem>
+                              <SelectItem value="EXIT_SIGN">لاحصة الخروج</SelectItem>
+                              <SelectItem value="FIRE_DOOR">باب مقاوم للحريق</SelectItem>
+                              <SelectItem value="SMOKE_DETECTOR">كاشف الدخان</SelectItem>
                               <SelectItem value="HEAT_DETECTOR">Heat Detector</SelectItem>
                               <SelectItem value="GAS_DETECTOR">Gas Detector</SelectItem>
                               <SelectItem value="KITCHEN_HOOD_SUPPRESSION">Kitchen Hood Suppression</SelectItem>
@@ -1068,7 +1068,7 @@ export function ClientBranchRequests({ branchId, onDataChange, userId }: ClientB
                         </div>
                       )}
                       <div className="space-y-1">
-                        <Label className="text-xs">Location</Label>
+                        <Label className="text-xs">الموقع</Label>
                         <Input
                           placeholder="e.g., Floor 1, Lobby"
                           value={newEquipment.location}
@@ -1162,8 +1162,8 @@ export function ClientBranchRequests({ branchId, onDataChange, userId }: ClientB
                         <thead className="bg-amber-100">
                           <tr>
                             <th className="px-3 py-2 text-start text-amber-800">Equipment #</th>
-                            <th className="px-3 py-2 text-start text-amber-800">Type</th>
-                            <th className="px-3 py-2 text-start text-amber-800">Location</th>
+                            <th className="px-3 py-2 text-start text-amber-800">النوع</th>
+                            <th className="px-3 py-2 text-start text-amber-800">الموقع</th>
                             <th className="px-3 py-2 text-start text-amber-800">Expiry</th>
                             <th className="px-3 py-2 text-end text-amber-800">Action</th>
                           </tr>
@@ -1177,7 +1177,7 @@ export function ClientBranchRequests({ branchId, onDataChange, userId }: ClientB
                               </td>
                               <td className="px-3 py-2 text-muted-foreground">{eq.location || '-'}</td>
                               <td className="px-3 py-2 text-muted-foreground">
-                                {eq.expectedExpiry ? new Date(eq.expectedExpiry).toLocaleDateString() : '-'}
+                                {eq.expectedExpiry ? new Date(eq.expectedExpiry).toLocaleDateString('ar-SA') : '-'}
                               </td>
                               <td className="px-3 py-2 text-end">
                                 <Button
@@ -1265,7 +1265,7 @@ export function ClientBranchRequests({ branchId, onDataChange, userId }: ClientB
                 Cancel
               </Button>
               <Button type="submit" disabled={creating || uploading}>
-                {creating && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
+                {creating && <Loader2 className="me-2 h-4 w-4 animate-spin" />}
                 Submit Request
               </Button>
             </DialogFooter>
@@ -1292,14 +1292,14 @@ export function ClientBranchRequests({ branchId, onDataChange, userId }: ClientB
                   <Badge variant="outline">{selectedRequest.workOrderType}</Badge>
                 )}
                 {selectedRequest.recurringType && selectedRequest.recurringType !== 'ONCE' && (
-                  <Badge variant="secondary">{selectedRequest.recurringType === 'MONTHLY' ? 'Monthly' : 'Quarterly'}</Badge>
+                  <Badge variant="secondary">{selectedRequest.recurringType === 'MONTHLY' ? 'شهري' : 'ربع سنوي'}</Badge>
                 )}
               </div>
 
               {/* Description */}
               {selectedRequest.description && (
                 <div className="p-4 bg-muted/50 rounded-lg">
-                  <p className="text-sm font-medium text-muted-foreground mb-1">Description</p>
+                  <p className="text-sm font-medium text-muted-foreground mb-1">الوصف</p>
                   <p className="text-sm whitespace-pre-wrap">{selectedRequest.description}</p>
                 </div>
               )}
@@ -1308,12 +1308,12 @@ export function ClientBranchRequests({ branchId, onDataChange, userId }: ClientB
               <div className="grid grid-cols-2 md:grid-cols-3 gap-4 text-sm">
                 <div>
                   <p className="text-muted-foreground">Created</p>
-                  <p className="font-medium">{new Date(selectedRequest.createdAt).toLocaleDateString()}</p>
+                  <p className="font-medium">{new Date(selectedRequest.createdAt).toLocaleDateString('ar-SA')}</p>
                 </div>
                 {selectedRequest.preferredDate && (
                   <div>
                     <p className="text-muted-foreground">Preferred Date</p>
-                    <p className="font-medium">{new Date(selectedRequest.preferredDate).toLocaleDateString()}</p>
+                    <p className="font-medium">{new Date(selectedRequest.preferredDate).toLocaleDateString('ar-SA')}</p>
                   </div>
                 )}
                 {selectedRequest.preferredTimeSlot && (
@@ -1351,8 +1351,8 @@ export function ClientBranchRequests({ branchId, onDataChange, userId }: ClientB
                       <thead className="bg-amber-100">
                         <tr>
                           <th className="px-3 py-2 text-start text-amber-800">Equipment #</th>
-                          <th className="px-3 py-2 text-start text-amber-800">Type</th>
-                          <th className="px-3 py-2 text-start text-amber-800">Location</th>
+                          <th className="px-3 py-2 text-start text-amber-800">النوع</th>
+                          <th className="px-3 py-2 text-start text-amber-800">الموقع</th>
                           <th className="px-3 py-2 text-start text-amber-800">Expiry</th>
                         </tr>
                       </thead>
@@ -1365,7 +1365,7 @@ export function ClientBranchRequests({ branchId, onDataChange, userId }: ClientB
                             </td>
                             <td className="px-3 py-2 text-muted-foreground">{eq.location || '-'}</td>
                             <td className="px-3 py-2 text-muted-foreground">
-                              {eq.expectedExpiry ? new Date(eq.expectedExpiry).toLocaleDateString() : '-'}
+                              {eq.expectedExpiry ? new Date(eq.expectedExpiry).toLocaleDateString('ar-SA') : '-'}
                             </td>
                           </tr>
                         ))}
@@ -1402,7 +1402,7 @@ export function ClientBranchRequests({ branchId, onDataChange, userId }: ClientB
                               <tr key={idx}>
                                 <td className="px-3 py-2 text-muted-foreground">{occ.order}</td>
                                 <td className="px-3 py-2">
-                                  {occ.visitDate ? new Date(occ.visitDate).toLocaleDateString() : '-'}
+                                  {occ.visitDate ? new Date(occ.visitDate).toLocaleDateString('ar-SA') : '-'}
                                 </td>
                                 <td className="px-3 py-2 text-end font-medium">
                                   {occ.price ? occ.price.toLocaleString() : '-'}
@@ -1412,9 +1412,9 @@ export function ClientBranchRequests({ branchId, onDataChange, userId }: ClientB
                           </tbody>
                           <tfoot className="bg-purple-50 border-t border-purple-200">
                             <tr>
-                              <td colSpan={2} className="px-3 py-2 font-semibold text-purple-800">Total</td>
+                              <td colSpan={2} className="px-3 py-2 font-semibold text-purple-800">الإجمالي</td>
                               <td className="px-3 py-2 text-end font-bold text-purple-900">
-                                SAR {selectedRequest.quotedPrice.toLocaleString()}
+                                ر.س {selectedRequest.quotedPrice.toLocaleString()}
                               </td>
                             </tr>
                           </tfoot>
@@ -1426,12 +1426,12 @@ export function ClientBranchRequests({ branchId, onDataChange, userId }: ClientB
                     <div className="grid grid-cols-2 gap-4 text-sm mb-3">
                       <div>
                         <p className="text-purple-600">Quoted Price</p>
-                        <p className="font-bold text-lg">SAR {selectedRequest.quotedPrice.toLocaleString()}</p>
+                        <p className="font-bold text-lg">ر.س {selectedRequest.quotedPrice.toLocaleString()}</p>
                       </div>
                       {selectedRequest.quotedDate && (
                         <div>
                           <p className="text-purple-600">Scheduled Date</p>
-                          <p className="font-semibold">{new Date(selectedRequest.quotedDate).toLocaleDateString()}</p>
+                          <p className="font-semibold">{new Date(selectedRequest.quotedDate).toLocaleDateString('ar-SA')}</p>
                         </div>
                       )}
                     </div>
@@ -1465,7 +1465,7 @@ export function ClientBranchRequests({ branchId, onDataChange, userId }: ClientB
                       }}
                       className="bg-green-600 hover:bg-green-700"
                     >
-                      <ThumbsUp className="mr-2 h-4 w-4" />
+                      <ThumbsUp className="me-2 h-4 w-4" />
                       Accept Quote
                     </Button>
                     <Button
@@ -1477,7 +1477,7 @@ export function ClientBranchRequests({ branchId, onDataChange, userId }: ClientB
                       }}
                       className="border-red-300 text-red-600 hover:bg-red-50"
                     >
-                      <ThumbsDown className="mr-2 h-4 w-4" />
+                      <ThumbsDown className="me-2 h-4 w-4" />
                       Reject Quote
                     </Button>
                   </div>
@@ -1504,7 +1504,7 @@ export function ClientBranchRequests({ branchId, onDataChange, userId }: ClientB
                       }}
                       className="bg-blue-600 hover:bg-blue-700"
                     >
-                      <Calendar className="mr-2 h-4 w-4" />
+                      <Calendar className="me-2 h-4 w-4" />
                       Start Immediately
                     </Button>
                   </div>
@@ -1600,7 +1600,7 @@ export function ClientBranchRequests({ branchId, onDataChange, userId }: ClientB
             >
               {cancelling ? (
                 <>
-                  <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                  <Loader2 className="me-2 h-4 w-4 animate-spin" />
                   Cancelling...
                 </>
               ) : (
@@ -1635,7 +1635,7 @@ export function ClientBranchRequests({ branchId, onDataChange, userId }: ClientB
                 {/* Project Info */}
                 <div className="grid grid-cols-2 md:grid-cols-4 gap-4 p-4 bg-muted/30 rounded-lg">
                   <div>
-                    <p className="text-xs text-muted-foreground">Status</p>
+                    <p className="text-xs text-muted-foreground">الحالة</p>
                     <Badge className={selectedProject.status === 'PENDING' ? 'bg-amber-100 text-amber-700' : 'bg-green-100 text-green-700'}>
                       {selectedProject.status === 'PENDING' ? 'Pending Review' : selectedProject.status}
                     </Badge>
@@ -1643,19 +1643,19 @@ export function ClientBranchRequests({ branchId, onDataChange, userId }: ClientB
                   {selectedProject.startDate && (
                     <div>
                       <p className="text-xs text-muted-foreground">Start Date</p>
-                      <p className="font-medium text-sm">{new Date(selectedProject.startDate).toLocaleDateString()}</p>
+                      <p className="font-medium text-sm">{new Date(selectedProject.startDate).toLocaleDateString('ar-SA')}</p>
                     </div>
                   )}
                   {selectedProject.endDate && (
                     <div>
                       <p className="text-xs text-muted-foreground">End Date</p>
-                      <p className="font-medium text-sm">{new Date(selectedProject.endDate).toLocaleDateString()}</p>
+                      <p className="font-medium text-sm">{new Date(selectedProject.endDate).toLocaleDateString('ar-SA')}</p>
                     </div>
                   )}
                   <div>
                     <p className="text-xs text-muted-foreground">Total Value</p>
                     <p className="font-bold text-lg text-primary">
-                      SAR {calculatedTotal.toLocaleString('en-US', { minimumFractionDigits: 2 })}
+                      ر.س {calculatedTotal.toLocaleString('ar-SA', { minimumFractionDigits: 2 })}
                     </p>
                   </div>
                 </div>
@@ -1678,9 +1678,9 @@ export function ClientBranchRequests({ branchId, onDataChange, userId }: ClientB
 
                       {/* Total Row */}
                       <div className="flex items-center justify-between p-4 bg-primary/5 border-t">
-                        <span className="font-semibold">Total</span>
+                        <span className="font-semibold">الإجمالي</span>
                         <span className="text-xl font-bold">
-                          SAR {calculatedTotal.toLocaleString('en-US', { minimumFractionDigits: 2 })}
+                          ر.س {calculatedTotal.toLocaleString('ar-SA', { minimumFractionDigits: 2 })}
                         </span>
                       </div>
                     </div>
@@ -1723,12 +1723,12 @@ export function ClientBranchRequests({ branchId, onDataChange, userId }: ClientB
                         >
                           {approving ? (
                             <>
-                              <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                              <Loader2 className="me-2 h-4 w-4 animate-spin" />
                               Approving...
                             </>
                           ) : (
                             <>
-                              <CheckCircle className="mr-2 h-4 w-4" />
+                              <CheckCircle className="me-2 h-4 w-4" />
                               Accept Project
                             </>
                           )}
@@ -1772,7 +1772,7 @@ export function ClientBranchRequests({ branchId, onDataChange, userId }: ClientB
               />
             </div>
             <div className="space-y-2">
-              <Label htmlFor="wo-desc">Description</Label>
+              <Label htmlFor="wo-desc">الوصف</Label>
               <Textarea
                 id="wo-desc"
                 value={newWorkOrder.description}
@@ -1791,9 +1791,9 @@ export function ClientBranchRequests({ branchId, onDataChange, userId }: ClientB
                   <SelectValue placeholder="Select frequency" />
                 </SelectTrigger>
                 <SelectContent>
-                  <SelectItem value="ONCE">One-time</SelectItem>
-                  <SelectItem value="MONTHLY">Monthly</SelectItem>
-                  <SelectItem value="QUARTERLY">Quarterly</SelectItem>
+                  <SelectItem value="ONCE">مرة واحدة</SelectItem>
+                  <SelectItem value="MONTHLY">شهري</SelectItem>
+                  <SelectItem value="QUARTERLY">ربع سنوي</SelectItem>
                 </SelectContent>
               </Select>
             </div>
@@ -1805,12 +1805,12 @@ export function ClientBranchRequests({ branchId, onDataChange, userId }: ClientB
             <Button onClick={handleAddWorkOrder} disabled={addingWorkOrder || !newWorkOrder.name.trim()}>
               {addingWorkOrder ? (
                 <>
-                  <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                  <Loader2 className="me-2 h-4 w-4 animate-spin" />
                   Adding...
                 </>
               ) : (
                 <>
-                  <Send className="mr-2 h-4 w-4" />
+                  <Send className="me-2 h-4 w-4" />
                   Submit Request
                 </>
               )}
@@ -1846,7 +1846,7 @@ export function ClientBranchRequests({ branchId, onDataChange, userId }: ClientB
                     <Badge variant="secondary">{formatWorkOrderType(quoteResponseRequest.workOrderType)}</Badge>
                   )}
                   {quoteResponseRequest.recurringType && quoteResponseRequest.recurringType !== 'ONCE' && (
-                    <Badge variant="outline">{quoteResponseRequest.recurringType === 'MONTHLY' ? 'Monthly' : 'Quarterly'}</Badge>
+                    <Badge variant="outline">{quoteResponseRequest.recurringType === 'MONTHLY' ? 'شهري' : 'ربع سنوي'}</Badge>
                   )}
                 </div>
                 {quoteResponseRequest.description && (
@@ -1865,7 +1865,7 @@ export function ClientBranchRequests({ branchId, onDataChange, userId }: ClientB
                         : 'Price'}
                     </p>
                     <p className="text-2xl font-bold text-purple-800">
-                      SAR {quoteResponseRequest.quotedPrice?.toLocaleString('en-US', { minimumFractionDigits: 2 })}
+                      ر.س {quoteResponseRequest.quotedPrice?.toLocaleString('ar-SA', { minimumFractionDigits: 2 })}
                     </p>
                   </div>
                   <div>
@@ -1875,7 +1875,7 @@ export function ClientBranchRequests({ branchId, onDataChange, userId }: ClientB
                         : 'Scheduled Date'}
                     </p>
                     <p className="text-lg font-semibold text-purple-800">
-                      {quoteResponseRequest.quotedDate ? new Date(quoteResponseRequest.quotedDate).toLocaleDateString() : 'TBD'}
+                      {quoteResponseRequest.quotedDate ? new Date(quoteResponseRequest.quotedDate).toLocaleDateString('ar-SA') : 'TBD'}
                     </p>
                   </div>
                 </div>
@@ -1925,16 +1925,16 @@ export function ClientBranchRequests({ branchId, onDataChange, userId }: ClientB
                             {quoteResponseRequest.occurrences.map((occ, idx) => (
                               <div key={idx} className="flex justify-between items-center py-1 border-b border-blue-100 last:border-0">
                                 <span className="text-blue-700">
-                                  └ #{occ.order}: {occ.visitDate ? new Date(occ.visitDate).toLocaleDateString() : 'TBD'}
+                                  └ #{occ.order}: {occ.visitDate ? new Date(occ.visitDate).toLocaleDateString('ar-SA') : 'TBD'}
                                 </span>
                                 <span className="font-medium text-blue-800">
-                                  {occ.price ? `SAR ${occ.price.toLocaleString()}` : '-'}
+                                  {occ.price ? `ر.س ${occ.price.toLocaleString()}` : '-'}
                                 </span>
                               </div>
                             ))}
                             <div className="flex justify-between items-center pt-3 mt-2 border-t border-blue-300 font-semibold">
                               <span className="text-blue-800">Total ({quoteResponseRequest.occurrences.length} work orders)</span>
-                              <span className="text-blue-900 text-lg">SAR {quoteResponseRequest.quotedPrice?.toLocaleString()}</span>
+                              <span className="text-blue-900 text-lg">ر.س {quoteResponseRequest.quotedPrice?.toLocaleString()}</span>
                             </div>
                           </>
                         )
@@ -1958,14 +1958,14 @@ export function ClientBranchRequests({ branchId, onDataChange, userId }: ClientB
                           {dates.map((date, idx) => (
                             <div key={idx} className="flex justify-between items-center py-1 border-b border-blue-100 last:border-0">
                               <span className="text-blue-700">
-                                └ #{idx + 1}: {date.toLocaleDateString()}
+                                └ #{idx + 1}: {date.toLocaleDateString('ar-SA')}
                               </span>
-                              <span className="font-medium text-blue-800">SAR {pricePerOccurrence.toLocaleString()}</span>
+                              <span className="font-medium text-blue-800">ر.س {pricePerOccurrence.toLocaleString()}</span>
                             </div>
                           ))}
                           <div className="flex justify-between items-center pt-3 mt-2 border-t border-blue-300 font-semibold">
                             <span className="text-blue-800">Total ({dates.length} work orders)</span>
-                            <span className="text-blue-900 text-lg">SAR {quoteResponseRequest.quotedPrice?.toLocaleString()}</span>
+                            <span className="text-blue-900 text-lg">ر.س {quoteResponseRequest.quotedPrice?.toLocaleString()}</span>
                           </div>
                         </>
                       )
@@ -1999,8 +1999,8 @@ export function ClientBranchRequests({ branchId, onDataChange, userId }: ClientB
                       disabled={respondingToQuote}
                       className="flex-1"
                     >
-                      {respondingToQuote && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
-                      <ThumbsDown className="mr-2 h-4 w-4" />
+                      {respondingToQuote && <Loader2 className="me-2 h-4 w-4 animate-spin" />}
+                      <ThumbsDown className="me-2 h-4 w-4" />
                       Confirm Rejection
                     </Button>
                   </div>
@@ -2046,8 +2046,8 @@ export function ClientBranchRequests({ branchId, onDataChange, userId }: ClientB
                       disabled={respondingToQuote || !clientSignature}
                       className="flex-1 bg-green-600 hover:bg-green-700"
                     >
-                      {respondingToQuote && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
-                      <CheckCircle className="mr-2 h-4 w-4" />
+                      {respondingToQuote && <Loader2 className="me-2 h-4 w-4 animate-spin" />}
+                      <CheckCircle className="me-2 h-4 w-4" />
                       Confirm & Accept
                     </Button>
                   </div>
@@ -2070,14 +2070,14 @@ export function ClientBranchRequests({ branchId, onDataChange, userId }: ClientB
                       onClick={() => setShowRejectionForm(true)}
                       className="flex-1"
                     >
-                      <ThumbsDown className="mr-2 h-4 w-4" />
+                      <ThumbsDown className="me-2 h-4 w-4" />
                       Reject
                     </Button>
                     <Button
                       onClick={() => setShowSignatureForm(true)}
                       className="flex-1 bg-green-600 hover:bg-green-700"
                     >
-                      <PenTool className="mr-2 h-4 w-4" />
+                      <PenTool className="me-2 h-4 w-4" />
                       Accept & Sign
                     </Button>
                   </div>
@@ -2111,7 +2111,7 @@ export function ClientBranchRequests({ branchId, onDataChange, userId }: ClientB
                   ⚠️ Warning: This action will:
                 </p>
                 <ul className="text-sm text-blue-800 space-y-1 ms-4 list-disc">
-                  <li>Create a work order starting <strong>today ({new Date().toLocaleDateString()})</strong></li>
+                  <li>Create a work order starting <strong>today ({new Date().toLocaleDateString('ar-SA')})</strong></li>
                   <li>Move it to <strong>IN PROGRESS</strong> status immediately</li>
                   <li>Skip the quotation process (contractor will add pricing later)</li>
                   {startImmediatelyRequest.recurringType && startImmediatelyRequest.recurringType !== 'ONCE' && (
@@ -2165,12 +2165,12 @@ export function ClientBranchRequests({ branchId, onDataChange, userId }: ClientB
                 >
                   {startingImmediately ? (
                     <>
-                      <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                      <Loader2 className="me-2 h-4 w-4 animate-spin" />
                       Creating...
                     </>
                   ) : (
                     <>
-                      <CheckCircle className="mr-2 h-4 w-4" />
+                      <CheckCircle className="me-2 h-4 w-4" />
                       Create Work Order
                     </>
                   )}

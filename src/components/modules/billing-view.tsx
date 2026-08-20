@@ -386,7 +386,7 @@ export function BillingView({ branchId, userRole }: BillingViewProps) {
                       <div>
                         <p className="font-medium text-sm">{payment.contractTitle}</p>
                         <p className="text-xs text-muted-foreground">
-                          {tb.payment} {payment.paymentNo} • {tb.due}: {payment.dueDate ? new Date(payment.dueDate).toLocaleDateString() : tb.notSet}
+                          {tb.payment} {payment.paymentNo} • {tb.due}: {payment.dueDate ? new Date(payment.dueDate).toLocaleDateString('ar-SA') : tb.notSet}
                         </p>
                       </div>
                       <div className="flex items-center gap-3">

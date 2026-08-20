@@ -402,12 +402,12 @@ export default function ClientWorkOrdersPage() {
                   </div>
                   <div className="col-span-1 flex items-center">
                     <p className="text-sm">
-                      {wo.scheduledDate ? new Date(wo.scheduledDate).toLocaleDateString() : '-'}
+                      {wo.scheduledDate ? new Date(wo.scheduledDate).toLocaleDateString('ar-SA') : '-'}
                     </p>
                   </div>
                   <div className="col-span-1 flex items-center justify-end">
                     <p className="text-sm font-medium">
-                      {wo.price ? `SAR ${wo.price.toLocaleString()}` : '-'}
+                      {wo.price ? `ر.س ${wo.price.toLocaleString()}` : '-'}
                     </p>
                   </div>
                 </div>

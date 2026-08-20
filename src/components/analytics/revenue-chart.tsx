@@ -77,7 +77,7 @@ export function RevenueChart({ data, title, description }: RevenueChartProps) {
         },
         callbacks: {
           label: function (context: any) {
-            return `SAR ${context.parsed.y.toLocaleString()}`
+            return `ر.س ${context.parsed.y.toLocaleString()}`
           },
         },
       },
@@ -90,7 +90,7 @@ export function RevenueChart({ data, title, description }: RevenueChartProps) {
         },
         ticks: {
           callback: function (value: any) {
-            return `SAR ${value.toLocaleString()}`
+            return `ر.س ${value.toLocaleString()}`
           },
         },
       },

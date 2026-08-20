@@ -177,7 +177,7 @@ export function ActionCenterTable({ userRole }: ActionCenterTableProps) {
               <CalendarX className="h-4 w-4" />
               {ta.delayedWorkOrders}
               {delayedCount > 0 && (
-                <Badge variant="destructive" className="ml-1 h-5 min-w-5 p-0 flex items-center justify-center text-xs">
+                <Badge variant="destructive" className="ms-1 h-5 min-w-5 p-0 flex items-center justify-center text-xs">
                   {delayedCount}
                 </Badge>
               )}
@@ -186,7 +186,7 @@ export function ActionCenterTable({ userRole }: ActionCenterTableProps) {
               <Tag className="h-4 w-4" />
               {ta.expiringEquipment}
               {equipmentCount > 0 && (
-                <Badge className="ml-1 h-5 min-w-5 p-0 flex items-center justify-center text-xs bg-amber-500">
+                <Badge className="ms-1 h-5 min-w-5 p-0 flex items-center justify-center text-xs bg-amber-500">
                   {equipmentCount}
                 </Badge>
               )}
@@ -196,7 +196,7 @@ export function ActionCenterTable({ userRole }: ActionCenterTableProps) {
                 <FileCheck className="h-4 w-4" />
                 {ta.expiringContracts}
                 {contractsCount > 0 && (
-                  <Badge className="ml-1 h-5 min-w-5 p-0 flex items-center justify-center text-xs bg-amber-500">
+                  <Badge className="ms-1 h-5 min-w-5 p-0 flex items-center justify-center text-xs bg-amber-500">
                     {contractsCount}
                   </Badge>
                 )}
@@ -230,7 +230,7 @@ export function ActionCenterTable({ userRole }: ActionCenterTableProps) {
                     {data.delayedWorkOrders.map((wo) => (
                       <TableRow key={wo.id}>
                         <TableCell className="font-medium">
-                          {wo.workOrderNumber ? `WO-${String(wo.workOrderNumber).padStart(4, '0')}` : '-'}
+                          {wo.workOrderNumber ? `أمر-${String(wo.workOrderNumber).padStart(4, '0')}` : '-'}
                         </TableCell>
                         {showClientColumn && (
                           <TableCell>
@@ -250,7 +250,7 @@ export function ActionCenterTable({ userRole }: ActionCenterTableProps) {
                           {wo.description}
                         </TableCell>
                         <TableCell>
-                          {new Date(wo.scheduledDate).toLocaleDateString()}
+                          {new Date(wo.scheduledDate).toLocaleDateString('ar-SA')}
                         </TableCell>
                         <TableCell>
                           <Badge variant="destructive">
@@ -331,7 +331,7 @@ export function ActionCenterTable({ userRole }: ActionCenterTableProps) {
                         )}
                         <TableCell>
                           {eq.expectedExpiry
-                            ? new Date(eq.expectedExpiry).toLocaleDateString()
+                            ? new Date(eq.expectedExpiry).toLocaleDateString('ar-SA')
                             : '-'}
                         </TableCell>
                         <TableCell>
@@ -400,7 +400,7 @@ export function ActionCenterTable({ userRole }: ActionCenterTableProps) {
                           </TableCell>
                           <TableCell>
                             {contract.endDate
-                              ? new Date(contract.endDate).toLocaleDateString()
+                              ? new Date(contract.endDate).toLocaleDateString('ar-SA')
                               : '-'}
                           </TableCell>
                           <TableCell>

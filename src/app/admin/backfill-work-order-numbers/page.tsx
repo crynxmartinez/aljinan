@@ -62,8 +62,8 @@ export default function BackfillWorkOrderNumbersPage() {
             disabled={loading}
             size="lg"
           >
-            {loading && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
-            <Hash className="mr-2 h-4 w-4" />
+            {loading && <Loader2 className="me-2 h-4 w-4 animate-spin" />}
+            <Hash className="me-2 h-4 w-4" />
             Backfill Work Order Numbers
           </Button>
 
@@ -122,9 +122,9 @@ export default function BackfillWorkOrderNumbersPage() {
                                 <thead className="bg-muted sticky top-0">
                                   <tr>
                                     <th className="text-start p-2">WO #</th>
-                                    <th className="text-start p-2">Description</th>
+                                    <th className="text-start p-2">الوصف</th>
                                     <th className="text-start p-2">Client</th>
-                                    <th className="text-start p-2">Branch</th>
+                                    <th className="text-start p-2">الفرع</th>
                                   </tr>
                                 </thead>
                                 <tbody>

@@ -171,7 +171,7 @@ export function PendingBranchRequests() {
                   {processing ? (
                     <Loader2 className="h-4 w-4 animate-spin" />
                   ) : (
-                    <Check className="mr-1 h-4 w-4" />
+                    <Check className="me-1 h-4 w-4" />
                   )}
                   Approve
                 </Button>
@@ -184,7 +184,7 @@ export function PendingBranchRequests() {
                   }}
                   disabled={processing}
                 >
-                  <X className="mr-1 h-4 w-4" />
+                  <X className="me-1 h-4 w-4" />
                   Reject
                 </Button>
               </div>
@@ -222,7 +222,7 @@ export function PendingBranchRequests() {
               Cancel
             </Button>
             <Button variant="destructive" onClick={handleReject} disabled={processing}>
-              {processing && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
+              {processing && <Loader2 className="me-2 h-4 w-4 animate-spin" />}
               Reject Request
             </Button>
           </DialogFooter>

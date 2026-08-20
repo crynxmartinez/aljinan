@@ -319,7 +319,7 @@ export function AppointmentsList({ branchId }: AppointmentsListProps) {
                 disabled={creating}
                 onClick={(e) => handleCreateAppointment(e, false)}
               >
-                {creating && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
+                {creating && <Loader2 className="me-2 h-4 w-4 animate-spin" />}
                 {ta.schedulePending}
               </Button>
               <Button
@@ -330,8 +330,8 @@ export function AppointmentsList({ branchId }: AppointmentsListProps) {
                   handleCreateAppointment(e, true)
                 }}
               >
-                {creating && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
-                <CalendarCheck className="mr-2 h-4 w-4" />
+                {creating && <Loader2 className="me-2 h-4 w-4 animate-spin" />}
+                <CalendarCheck className="me-2 h-4 w-4" />
                 {ta.scheduleAndConfirm}
               </Button>
             </DialogFooter>
@@ -413,7 +413,7 @@ export function AppointmentsList({ branchId }: AppointmentsListProps) {
                     }}
                     className="flex-1"
                   >
-                    <CheckCircle className="mr-2 h-4 w-4" />
+                    <CheckCircle className="me-2 h-4 w-4" />
                     {ta.markComplete}
                   </Button>
                 )}
@@ -425,7 +425,7 @@ export function AppointmentsList({ branchId }: AppointmentsListProps) {
                       setDetailDialogOpen(false)
                     }}
                   >
-                    <XCircle className="mr-2 h-4 w-4" />
+                    <XCircle className="me-2 h-4 w-4" />
                     {ta.cancel}
                   </Button>
                 )}

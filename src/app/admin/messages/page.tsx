@@ -150,7 +150,7 @@ export default function MessagesPage() {
           >
             {s === 'ALL' ? tm.all : statusConfig[s]?.label || s}
             {s !== 'ALL' && (
-              <span className="ml-1.5 text-xs">
+              <span className="ms-1.5 text-xs">
                 ({inquiries.filter((i) => i.status === s).length})
               </span>
             )}

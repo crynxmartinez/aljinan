@@ -240,7 +240,7 @@ export function Sidebar({ clients = [], userRole, teamMemberRole }: SidebarProps
               {!isTeamMember && (
                 <Link href="/dashboard/clients">
                   <Button variant="outline" size="sm" className="mt-2">
-                    <Users className="mr-2 h-4 w-4" />
+                    <Users className="me-2 h-4 w-4" />
                     {t.dashboard.nav.addClient}
                   </Button>
                 </Link>
@@ -310,7 +310,7 @@ export function Sidebar({ clients = [], userRole, teamMemberRole }: SidebarProps
                 <div className="px-3 pt-2">
                   <Link href="/dashboard/clients">
                     <Button variant="outline" size="sm" className="w-full">
-                      <Users className="mr-2 h-4 w-4" />
+                      <Users className="me-2 h-4 w-4" />
                       {t.dashboard.nav.addClient}
                     </Button>
                   </Link>

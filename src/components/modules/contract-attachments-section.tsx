@@ -230,9 +230,9 @@ export function ContractAttachmentsSection({
             </Button>
             <Button onClick={handleSavePdf} disabled={saving || !pdfUrl}>
               {saving ? (
-                <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                <Loader2 className="me-2 h-4 w-4 animate-spin" />
               ) : (
-                <FileCheck className="mr-2 h-4 w-4" />
+                <FileCheck className="me-2 h-4 w-4" />
               )}
               {tca.save}
             </Button>

@@ -105,9 +105,9 @@ export default async function ClientDetailPage({
   const getStatusBadge = (status: string) => {
     switch (status) {
       case 'ACTIVE':
-        return <Badge className="bg-green-100 text-green-700 hover:bg-green-100">Active</Badge>
+        return <Badge className="bg-green-100 text-green-700 hover:bg-green-100">نشط</Badge>
       case 'PENDING':
-        return <Badge className="bg-yellow-100 text-yellow-700 hover:bg-yellow-100">Pending</Badge>
+        return <Badge className="bg-yellow-100 text-yellow-700 hover:bg-yellow-100">قيد الانتظار</Badge>
       case 'ARCHIVED':
         return <Badge className="bg-gray-100 text-gray-700 hover:bg-gray-100">Archived</Badge>
       default:
@@ -122,7 +122,7 @@ export default async function ClientDetailPage({
           href="/dashboard/clients"
           className="inline-flex items-center text-sm text-muted-foreground hover:text-foreground mb-4"
         >
-          <ArrowLeft className="mr-2 h-4 w-4" />
+          <ArrowLeft className="me-2 h-4 w-4" />
           Back to Clients
         </Link>
       </div>
@@ -145,7 +145,7 @@ export default async function ClientDetailPage({
         {!isTeamMember && (
           <Link href={`/dashboard/clients/${client.slug || client.id}/branches/new`}>
             <Button>
-              <Plus className="mr-2 h-4 w-4" />
+              <Plus className="me-2 h-4 w-4" />
               Add Branch
             </Button>
           </Link>
@@ -171,7 +171,7 @@ export default async function ClientDetailPage({
                   {!isTeamMember && (
                     <Link href={`/dashboard/clients/${client.slug || client.id}/branches/new`}>
                       <Button>
-                        <Plus className="mr-2 h-4 w-4" />
+                        <Plus className="me-2 h-4 w-4" />
                         Add First Branch
                       </Button>
                     </Link>
@@ -202,7 +202,7 @@ export default async function ClientDetailPage({
                         </div>
                       </div>
                       {!branch.isActive && (
-                        <Badge variant="secondary">Inactive</Badge>
+                        <Badge variant="secondary">غير نشط</Badge>
                       )}
                     </Link>
                   ))}

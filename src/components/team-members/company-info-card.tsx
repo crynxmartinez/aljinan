@@ -53,7 +53,7 @@ export function CompanyInfoCard({ contractor }: CompanyInfoCardProps) {
           <div className="flex items-start gap-3">
             <Mail className="h-4 w-4 text-muted-foreground mt-0.5" />
             <div>
-              <p className="text-xs text-muted-foreground">Email</p>
+              <p className="text-xs text-muted-foreground">البريد الإلكتروني</p>
               <p className={`text-sm ${contractor.companyEmail ? 'font-medium' : 'text-muted-foreground italic'}`}>
                 {contractor.companyEmail || 'Not set'}
               </p>
@@ -63,7 +63,7 @@ export function CompanyInfoCard({ contractor }: CompanyInfoCardProps) {
           <div className="flex items-start gap-3">
             <Phone className="h-4 w-4 text-muted-foreground mt-0.5" />
             <div>
-              <p className="text-xs text-muted-foreground">Phone</p>
+              <p className="text-xs text-muted-foreground">الهاتف</p>
               <p className={`text-sm ${contractor.companyPhone ? 'font-medium' : 'text-muted-foreground italic'}`}>
                 {contractor.companyPhone || 'Not set'}
               </p>
@@ -95,7 +95,7 @@ export function CompanyInfoCard({ contractor }: CompanyInfoCardProps) {
         <div className="flex items-start gap-3">
           <MapPin className="h-4 w-4 text-muted-foreground mt-0.5" />
           <div className="flex-1">
-            <p className="text-xs text-muted-foreground">Address</p>
+            <p className="text-xs text-muted-foreground">العنوان</p>
             <p className={`text-sm ${contractor.companyAddress ? 'font-medium whitespace-pre-line' : 'text-muted-foreground italic'}`}>
               {contractor.companyAddress || 'Not set'}
             </p>
@@ -131,7 +131,7 @@ export function CompanyInfoCard({ contractor }: CompanyInfoCardProps) {
                 <div className="flex items-start gap-3">
                   <User className="h-4 w-4 text-muted-foreground mt-0.5" />
                   <div>
-                    <p className="text-xs text-muted-foreground">Name</p>
+                    <p className="text-xs text-muted-foreground">الاسم</p>
                     <p className="text-sm font-medium">{contractor.contactPersonName}</p>
                   </div>
                 </div>
@@ -141,7 +141,7 @@ export function CompanyInfoCard({ contractor }: CompanyInfoCardProps) {
                 <div className="flex items-start gap-3">
                   <Phone className="h-4 w-4 text-muted-foreground mt-0.5" />
                   <div>
-                    <p className="text-xs text-muted-foreground">Phone</p>
+                    <p className="text-xs text-muted-foreground">الهاتف</p>
                     <p className="text-sm font-medium">{contractor.contactPersonPhone}</p>
                   </div>
                 </div>
@@ -151,7 +151,7 @@ export function CompanyInfoCard({ contractor }: CompanyInfoCardProps) {
                 <div className="flex items-start gap-3 sm:col-span-2">
                   <Mail className="h-4 w-4 text-muted-foreground mt-0.5" />
                   <div>
-                    <p className="text-xs text-muted-foreground">Email</p>
+                    <p className="text-xs text-muted-foreground">البريد الإلكتروني</p>
                     <p className="text-sm font-medium">{contractor.contactPersonEmail}</p>
                   </div>
                 </div>
