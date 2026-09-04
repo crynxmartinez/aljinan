@@ -1,16 +1,17 @@
 'use client'
 
 import { useState } from 'react'
-import Link from 'next/link'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
 import { Textarea } from '@/components/ui/textarea'
 import { Button } from '@/components/ui/button'
-import { Mail, Phone, MapPin, Clock, Loader2 } from 'lucide-react'
+import { Mail, Phone, MapPin, Clock, Loader2, CheckCircle2 } from 'lucide-react'
 import { useTranslation } from '@/lib/i18n/use-translation'
+import { Reveal } from '@/components/marketing/reveal'
 
 export default function ContactPage() {
   const { t } = useTranslation()
+  const tc = t.pages.contact
   const [formData, setFormData] = useState({
     name: '',
     email: '',
@@ -69,155 +70,168 @@ export default function ContactPage() {
   return (
     <div className="py-16 md:py-24">
       <div className="container mx-auto px-4">
-        <div className="max-w-3xl mx-auto text-center mb-12">
-          <h1 className="text-4xl md:text-5xl font-bold mb-6">Request a Contractor Account</h1>
-          <p className="text-xl text-muted-foreground">
-            Fill out the form below to request access to Tasheel. Our team will review your information and create your account within 24 hours.
+        <Reveal className="max-w-3xl mx-auto text-center mb-12">
+          <h1 className="font-heading text-4xl md:text-5xl font-extrabold tracking-tight mb-6">{tc.title}</h1>
+          <p className="text-xl text-stone-500">
+            {tc.subtitle}
           </p>
-        </div>
+        </Reveal>
 
         <div className="grid md:grid-cols-2 gap-12 max-w-6xl mx-auto">
           {/* Contact Form */}
-          <div className="bg-white p-8 rounded-lg border shadow-sm">
-            <h2 className="text-2xl font-bold mb-6">Account Request Form</h2>
+          <Reveal className="bg-white p-8 rounded-2xl border border-stone-100 shadow-sm">
+            <h2 className="font-heading text-2xl font-bold mb-6">{tc.formTitle}</h2>
 
             {success && (
-              <div className="bg-green-50 text-green-700 p-4 rounded-lg mb-6">
-                <p className="font-medium mb-1">Request Submitted Successfully!</p>
-                <p className="text-sm">Our team will review your request and contact you within 24 hours to set up your account.</p>
+              <div className="flex items-start gap-3 bg-emerald-50 text-emerald-800 p-4 rounded-xl mb-6">
+                <CheckCircle2 className="h-5 w-5 flex-shrink-0 mt-0.5" />
+                <div>
+                  <p className="font-medium mb-1">{tc.successTitle}</p>
+                  <p className="text-sm">{tc.successMessage}</p>
+                </div>
               </div>
             )}
 
             <form onSubmit={handleSubmit} className="space-y-6">
               <div className="space-y-2">
-                <Label htmlFor="name">Full Name *</Label>
+                <Label htmlFor="name">{tc.nameLabel}</Label>
                 <Input
                   id="name"
                   name="name"
                   value={formData.name}
                   onChange={handleChange}
-                  placeholder="Your full name"
+                  placeholder={tc.namePlaceholder}
                   required
                 />
               </div>
 
               <div className="space-y-2">
-                <Label htmlFor="email">Email Address *</Label>
+                <Label htmlFor="email">{tc.emailLabel}</Label>
                 <Input
                   id="email"
                   name="email"
                   type="email"
                   value={formData.email}
                   onChange={handleChange}
-                  placeholder="your.email@company.com"
+                  placeholder={tc.emailPlaceholder}
                   required
                 />
               </div>
 
               <div className="space-y-2">
-                <Label htmlFor="phone">Phone Number *</Label>
+                <Label htmlFor="phone">{tc.phoneLabel}</Label>
                 <Input
                   id="phone"
                   name="phone"
                   type="tel"
                   value={formData.phone}
                   onChange={handleChange}
-                  placeholder="+966 5XX XXX XXXX"
+                  placeholder={tc.phonePlaceholder}
                   required
                 />
               </div>
 
               <div className="space-y-2">
-                <Label htmlFor="company">Company Name</Label>
+                <Label htmlFor="company">{tc.companyLabel}</Label>
                 <Input
                   id="company"
                   name="company"
                   value={formData.company}
                   onChange={handleChange}
-                  placeholder="Your company name (optional)"
+                  placeholder={tc.companyPlaceholder}
                 />
               </div>
 
               <div className="space-y-2">
-                <Label htmlFor="message">Message *</Label>
+                <Label htmlFor="message">{tc.messageLabel}</Label>
                 <Textarea
                   id="message"
                   name="message"
                   value={formData.message}
                   onChange={handleChange}
-                  placeholder="Tell us about your business and how you plan to use Tasheel..."
+                  placeholder={tc.messagePlaceholder}
                   rows={5}
                   required
                 />
               </div>
 
-              <Button type="submit" className="w-full" disabled={loading}>
+              <Button type="submit" className="w-full bg-amber-600 hover:bg-amber-700 text-white" disabled={loading}>
                 {loading && <Loader2 className="me-2 h-4 w-4 animate-spin" />}
-                {loading ? 'Submitting Request...' : 'Submit Account Request'}
+                {loading ? tc.sending : tc.sendButton}
               </Button>
             </form>
-          </div>
+          </Reveal>
 
           {/* Contact Information */}
           <div className="space-y-8">
-            <div>
-              <h2 className="text-2xl font-bold mb-6">{t.pages.contact.infoTitle}</h2>
+            <Reveal delay={0.1}>
+              <h2 className="font-heading text-2xl font-bold mb-6">{tc.infoTitle}</h2>
               <div className="space-y-6">
                 <div className="flex items-start gap-4">
-                  <div className="w-12 h-12 bg-orange-100 rounded-lg flex items-center justify-center flex-shrink-0">
-                    <Mail className="h-6 w-6 text-orange-600" />
+                  <div className="w-12 h-12 bg-amber-50 rounded-lg flex items-center justify-center flex-shrink-0">
+                    <Mail className="h-6 w-6 text-amber-700" />
                   </div>
                   <div>
-                    <h3 className="font-semibold mb-1">{t.pages.contact.emailTitle}</h3>
-                    <p className="text-muted-foreground">{t.pages.contact.emailGeneral}</p>
-                    <p className="text-muted-foreground">{t.pages.contact.emailSupport}</p>
+                    <h3 className="font-semibold mb-1">{tc.emailTitle}</h3>
+                    <p className="text-stone-500">{tc.emailGeneral}</p>
+                    <p className="text-stone-500">{tc.emailSupport}</p>
                   </div>
                 </div>
 
                 <div className="flex items-start gap-4">
-                  <div className="w-12 h-12 bg-orange-100 rounded-lg flex items-center justify-center flex-shrink-0">
-                    <Phone className="h-6 w-6 text-orange-600" />
+                  <div className="w-12 h-12 bg-amber-50 rounded-lg flex items-center justify-center flex-shrink-0">
+                    <Phone className="h-6 w-6 text-amber-700" />
                   </div>
                   <div>
-                    <h3 className="font-semibold mb-1">{t.pages.contact.phoneTitle}</h3>
-                    <p className="text-muted-foreground">{t.footer.phone}</p>
+                    <h3 className="font-semibold mb-1">{tc.phoneTitle}</h3>
+                    <p className="text-stone-500">{t.footer.phone}</p>
                   </div>
                 </div>
 
                 <div className="flex items-start gap-4">
-                  <div className="w-12 h-12 bg-orange-100 rounded-lg flex items-center justify-center flex-shrink-0">
-                    <MapPin className="h-6 w-6 text-orange-600" />
+                  <div className="w-12 h-12 bg-amber-50 rounded-lg flex items-center justify-center flex-shrink-0">
+                    <MapPin className="h-6 w-6 text-amber-700" />
                   </div>
                   <div>
-                    <h3 className="font-semibold mb-1">{t.pages.contact.addressTitle}</h3>
-                    <p className="text-muted-foreground">{t.pages.contact.addressLine1}</p>
-                    <p className="text-muted-foreground">{t.pages.contact.addressLine2}</p>
-                    <p className="text-muted-foreground">{t.pages.contact.addressLine3}</p>
+                    <h3 className="font-semibold mb-1">{tc.addressTitle}</h3>
+                    <p className="text-stone-500">{tc.addressLine1}</p>
+                    <p className="text-stone-500">{tc.addressLine2}</p>
+                    <p className="text-stone-500">{tc.addressLine3}</p>
                   </div>
                 </div>
 
                 <div className="flex items-start gap-4">
-                  <div className="w-12 h-12 bg-orange-100 rounded-lg flex items-center justify-center flex-shrink-0">
-                    <Clock className="h-6 w-6 text-orange-600" />
+                  <div className="w-12 h-12 bg-amber-50 rounded-lg flex items-center justify-center flex-shrink-0">
+                    <Clock className="h-6 w-6 text-amber-700" />
                   </div>
                   <div>
-                    <h3 className="font-semibold mb-1">{t.pages.contact.hoursTitle}</h3>
-                    <p className="text-muted-foreground">{t.pages.contact.hoursWeekdays}</p>
-                    <p className="text-muted-foreground">{t.pages.contact.hoursWeekend}</p>
+                    <h3 className="font-semibold mb-1">{tc.hoursTitle}</h3>
+                    <p className="text-stone-500">{tc.hoursWeekdays}</p>
+                    <p className="text-stone-500">{tc.hoursWeekend}</p>
                   </div>
                 </div>
               </div>
-            </div>
+            </Reveal>
 
-            <div className="bg-gray-50 p-6 rounded-lg border">
-              <h3 className="font-semibold mb-2">What Happens Next?</h3>
-              <p className="text-sm text-muted-foreground mb-4">
-                Once you submit your request, our admin team will review your information and create your contractor account.
+            <Reveal delay={0.15} className="rounded-2xl overflow-hidden border border-stone-100 shadow-sm h-56">
+              <iframe
+                title="Tasheel location — Al Olaya, Riyadh"
+                src="https://www.google.com/maps?q=King+Fahd+Road+Al+Olaya+Riyadh+Saudi+Arabia&output=embed"
+                className="w-full h-full border-0"
+                loading="lazy"
+                referrerPolicy="no-referrer-when-downgrade"
+              />
+            </Reveal>
+
+            <Reveal delay={0.2} className="bg-stone-50 p-6 rounded-2xl border border-stone-100">
+              <h3 className="font-heading font-semibold mb-2">{tc.whatHappensNextTitle}</h3>
+              <p className="text-sm text-stone-500 mb-4">
+                {tc.whatHappensNextText1}
               </p>
-              <p className="text-sm text-muted-foreground">
-                You'll receive an email with your login credentials within 24 hours.
+              <p className="text-sm text-stone-500">
+                {tc.whatHappensNextText2}
               </p>
-            </div>
+            </Reveal>
           </div>
         </div>
       </div>

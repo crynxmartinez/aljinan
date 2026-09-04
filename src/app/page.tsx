@@ -5,11 +5,9 @@ import { Hero } from '@/components/marketing/hero'
 import { ProblemSolution } from '@/components/marketing/problem-solution'
 import { HowItWorks } from '@/components/marketing/how-it-works'
 import { FeaturesGrid } from '@/components/marketing/features-grid'
-import { Benefits } from '@/components/marketing/benefits'
-import { Testimonials } from '@/components/marketing/testimonials'
-import { Stats } from '@/components/marketing/stats'
 import { CTASection } from '@/components/marketing/cta-section'
 import { getLocale, getTranslationsForLocale } from '@/lib/i18n/server'
+import { displayFont } from '@/lib/fonts'
 
 export async function generateMetadata(): Promise<Metadata> {
   const locale = await getLocale()
@@ -52,16 +50,13 @@ export async function generateMetadata(): Promise<Metadata> {
 
 export default function HomePage() {
   return (
-    <div className="min-h-screen flex flex-col">
+    <div className={`min-h-screen flex flex-col ${displayFont.variable}`}>
       <Navbar variant="marketing" />
       <main className="flex-1">
         <Hero />
         <ProblemSolution />
         <HowItWorks />
         <FeaturesGrid />
-        <Benefits />
-        <Testimonials />
-        <Stats />
         <CTASection />
       </main>
       <Footer />

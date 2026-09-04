@@ -64,6 +64,7 @@ const nextConfig: NextConfig = {
               "font-src 'self' data:",
               // ws: and wss: are required for the dev server's hot reload channel.
               "connect-src 'self' ws: wss: https://maps.googleapis.com https://*.amazonaws.com https://*.ingest.sentry.io https://*.upstash.io",
+              "frame-src 'self' https://www.google.com",
               "frame-ancestors 'none'",
               "base-uri 'self'",
               "form-action 'self'",

@@ -4,6 +4,12 @@
 @custom-variant dark (&:is(.dark *));
 
 @theme inline {
+  /* Marketing-only display font. --font-display is set by next/font only inside the
+     marketing layout wrapper; outside it this falls through to Tajawal (Arabic) or the
+     browser's default sans stack, so using font-heading elsewhere is harmless. Tajawal is
+     listed explicitly rather than relying on inherited body font-family, since Plus Jakarta
+     Sans has no Arabic glyphs and glyph-level fallback wouldn't otherwise reach it. */
+  --font-heading: var(--font-display), 'Tajawal', 'Cairo', ui-sans-serif;
   --radius-sm: calc(var(--radius) - 4px);
   --radius-md: calc(var(--radius) - 2px);
   --radius-lg: var(--radius);

@@ -11,13 +11,14 @@ interface LogoProps {
 
 export function Logo({ size = 'md', clickable = true, className }: LogoProps) {
   const sizeClasses = {
-    sm: 'text-xl',
-    md: 'text-2xl',
-    lg: 'text-3xl',
+    sm: 'text-lg',
+    md: 'text-xl',
+    lg: 'text-2xl',
   }
 
   const logo = (
-    <div className={cn('font-bold text-gray-900', sizeClasses[size], className)}>
+    <div className={cn('flex items-center gap-2 font-heading font-extrabold tracking-tight text-stone-900', sizeClasses[size], className)}>
+      <span className="inline-block h-2 w-2 rounded-full bg-amber-600" aria-hidden="true" />
       TASHEEL
     </div>
   )

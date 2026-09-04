@@ -7,33 +7,10 @@ export function OrganizationSchema() {
     "url": "https://tasheel.sa",
     "logo": "https://tasheel.sa/images/logo.png",
     "foundingDate": "2025",
-    "founders": [
-      {
-        "@type": "Person",
-        "name": "Hyper Abtahi",
-        "jobTitle": "Chief Executive Officer"
-      },
-      {
-        "@type": "Person",
-        "name": "Raph-el Martinez",
-        "jobTitle": "Chief Technology Officer"
-      },
-      {
-        "@type": "Person",
-        "name": "Josh Pescadera",
-        "jobTitle": "Chief Financial Officer"
-      },
-      {
-        "@type": "Person",
-        "name": "Abdullah Abtahi",
-        "jobTitle": "UX Designer"
-      }
-    ],
     "parentOrganization": {
       "@type": "Organization",
       "name": "Jinan Agency",
-      "url": "https://www.jinanagency.com",
-      "description": "Digital Growth Partner for Medical Clinics"
+      "url": "https://www.jinanagency.com"
     },
     "address": {
       "@type": "PostalAddress",

@@ -1,13 +1,15 @@
 'use client'
 
 import Link from 'next/link'
+import Image from 'next/image'
 import { Button } from '@/components/ui/button'
 import { Target, Users, Zap, Shield, ArrowRight } from 'lucide-react'
 import { useTranslation } from '@/lib/i18n/use-translation'
+import { Reveal } from '@/components/marketing/reveal'
 
 export function AboutContent() {
   const { t } = useTranslation()
-  
+
   const values = [
     {
       icon: Zap,
@@ -35,101 +37,89 @@ export function AboutContent() {
     <div className="py-16 md:py-24">
       {/* Hero Section */}
       <section className="container mx-auto px-4 mb-16">
-        <div className="max-w-3xl mx-auto text-center">
-          <h1 className="text-4xl md:text-5xl font-bold mb-6">
+        <Reveal className="max-w-3xl mx-auto text-center">
+          <h1 className="font-heading text-4xl md:text-5xl font-extrabold tracking-tight mb-6">
             {t.pages.about.title}
           </h1>
-          <p className="text-xl text-muted-foreground">
+          <p className="text-xl text-stone-500">
             {t.pages.about.subtitle}
           </p>
-        </div>
+        </Reveal>
       </section>
 
       {/* Story Section */}
       <section className="container mx-auto px-4 mb-24">
-        <div className="max-w-4xl mx-auto">
-          <div className="prose prose-lg max-w-none">
-            <p className="text-lg text-muted-foreground mb-6">
+        <div className="max-w-5xl mx-auto grid md:grid-cols-2 gap-12 items-center">
+          <Reveal className="space-y-6 order-2 md:order-1">
+            <p className="text-lg text-stone-600 leading-relaxed">
               {t.pages.about.story[0]}
             </p>
-            <p className="text-lg text-muted-foreground mb-6">
+            <p className="text-lg text-stone-600 leading-relaxed">
               {t.pages.about.story[1]}
             </p>
-            <p className="text-lg text-muted-foreground mb-6">
+            <p className="text-lg text-stone-600 leading-relaxed">
               {t.pages.about.story[2]}
             </p>
-            <p className="text-lg text-muted-foreground">
+            <p className="text-lg text-stone-600 leading-relaxed">
               {t.pages.about.story[3]}
             </p>
-          </div>
+          </Reveal>
+          <Reveal delay={0.1} className="order-1 md:order-2">
+            <div className="relative rounded-2xl overflow-hidden h-72 md:h-96 shadow-[0_20px_60px_-15px_rgba(0,0,0,0.25)]">
+              <Image
+                src="/images/marketing/hero-industrial-safety.jpg"
+                alt={t.pages.about.title}
+                fill
+                className="object-cover"
+              />
+            </div>
+          </Reveal>
         </div>
       </section>
 
       {/* Values Section */}
-      <section className="container mx-auto px-4 mb-24">
-        <div className="text-center mb-12">
-          <h2 className="text-3xl md:text-4xl font-bold mb-4">{t.pages.about.valuesTitle}</h2>
-          <p className="text-lg text-muted-foreground max-w-2xl mx-auto">
+      <section className="container mx-auto px-4">
+        <Reveal className="text-center mb-12">
+          <h2 className="font-heading text-3xl md:text-4xl font-bold tracking-tight mb-4">{t.pages.about.valuesTitle}</h2>
+          <p className="text-lg text-stone-500 max-w-2xl mx-auto">
             {t.pages.about.valuesSubtitle}
           </p>
-        </div>
+        </Reveal>
 
-        <div className="grid md:grid-cols-2 gap-8 max-w-5xl mx-auto">
+        <div className="grid md:grid-cols-2 gap-6 max-w-5xl mx-auto">
           {values.map((value, index) => {
             const Icon = value.icon
             return (
-              <div key={index} className="bg-white p-8 rounded-lg border hover:shadow-md transition-shadow">
-                <div className="w-12 h-12 bg-orange-100 rounded-lg flex items-center justify-center mb-4">
-                  <Icon className="h-6 w-6 text-orange-600" />
+              <Reveal key={index} delay={(index % 2) * 0.1}>
+                <div className="bg-white p-8 rounded-2xl border border-stone-100 hover:shadow-md transition-shadow h-full">
+                  <div className="w-12 h-12 bg-amber-50 rounded-lg flex items-center justify-center mb-4">
+                    <Icon className="h-6 w-6 text-amber-700" />
+                  </div>
+                  <h3 className="text-xl font-bold mb-2 font-heading">{value.title}</h3>
+                  <p className="text-stone-500">{value.description}</p>
                 </div>
-                <h3 className="text-xl font-bold mb-2">{value.title}</h3>
-                <p className="text-muted-foreground">{value.description}</p>
-              </div>
+              </Reveal>
             )
           })}
         </div>
       </section>
 
-      {/* Stats Section */}
-      <section className="bg-gray-900 text-white py-16">
-        <div className="container mx-auto px-4">
-          <div className="grid grid-cols-2 md:grid-cols-4 gap-8 max-w-5xl mx-auto">
-            <div className="text-center">
-              <div className="text-4xl md:text-5xl font-bold text-orange-400 mb-2">50+</div>
-              <div className="text-sm md:text-base text-gray-300">{t.stats.list[2].label}</div>
-            </div>
-            <div className="text-center">
-              <div className="text-4xl md:text-5xl font-bold text-orange-400 mb-2">500+</div>
-              <div className="text-sm md:text-base text-gray-300">{t.stats.list[0].label}</div>
-            </div>
-            <div className="text-center">
-              <div className="text-4xl md:text-5xl font-bold text-orange-400 mb-2">10K+</div>
-              <div className="text-sm md:text-base text-gray-300">{t.stats.list[3].label}</div>
-            </div>
-            <div className="text-center">
-              <div className="text-4xl md:text-5xl font-bold text-orange-400 mb-2">99%</div>
-              <div className="text-sm md:text-base text-gray-300">{t.stats.list[1].label}</div>
-            </div>
-          </div>
-        </div>
-      </section>
-
       {/* CTA Section */}
       <section className="container mx-auto px-4 mt-24">
-        <div className="bg-gradient-to-br from-orange-500 to-orange-600 text-white rounded-2xl p-12 text-center">
-          <h2 className="text-3xl md:text-4xl font-bold mb-4">
+        <Reveal className="bg-gradient-to-br from-amber-600 to-amber-700 text-white rounded-2xl p-12 text-center">
+          <h2 className="font-heading text-3xl md:text-4xl font-bold tracking-tight mb-4">
             {t.pages.about.ctaTitle}
           </h2>
-          <p className="text-xl mb-8 text-orange-50">
+          <p className="text-xl mb-8 text-amber-50">
             {t.pages.about.ctaSubtitle}
           </p>
-          <Button size="lg" className="bg-white text-orange-600 hover:bg-gray-100" asChild>
+          <Button size="lg" className="bg-white text-amber-700 hover:bg-stone-100" asChild>
             <Link href="/contact">
               {t.cta.button}
-              <ArrowRight className="ms-2 h-4 w-4" />
+              <ArrowRight className="ms-2 h-4 w-4 rtl:rotate-180" />
             </Link>
           </Button>
-        </div>
+        </Reveal>
       </section>
     </div>
   )

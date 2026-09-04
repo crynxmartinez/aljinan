@@ -8,25 +8,25 @@ import { useTranslation } from '@/lib/i18n/use-translation'
 export function Footer() {
   const { t } = useTranslation()
   return (
-    <footer className="bg-gray-50 border-t">
+    <footer className="bg-stone-50 border-t border-stone-100">
       <div className="container mx-auto px-4 py-12">
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-8">
           {/* Company Info */}
           <div>
             <Logo size="md" clickable={false} className="mb-4" />
-            <p className="text-sm text-muted-foreground mb-4">
+            <p className="text-sm text-stone-500 mb-4">
               {t.common.tagline}
             </p>
-            <div className="flex flex-col gap-2 text-sm text-muted-foreground">
+            <div className="flex flex-col gap-2 text-sm text-stone-500">
               <div className="flex items-center gap-2">
                 <Mail className="h-4 w-4" />
-                <a href="mailto:info@tasheel.sa" className="hover:text-foreground">
+                <a href="mailto:info@tasheel.sa" className="hover:text-amber-700">
                   {t.footer.email}
                 </a>
               </div>
               <div className="flex items-center gap-2">
                 <Phone className="h-4 w-4" />
-                <a href="tel:+966501234567" className="hover:text-foreground">
+                <a href="tel:+966501234567" className="hover:text-amber-700">
                   {t.footer.phone}
                 </a>
               </div>
@@ -39,15 +39,15 @@ export function Footer() {
 
           {/* Product */}
           <div>
-            <h3 className="font-semibold mb-4">{t.footer.product}</h3>
-            <ul className="space-y-2 text-sm text-muted-foreground">
+            <h3 className="font-heading font-semibold mb-4">{t.footer.product}</h3>
+            <ul className="space-y-2 text-sm text-stone-500">
               <li>
-                <Link href="/features" className="hover:text-foreground">
+                <Link href="/features" className="hover:text-amber-700">
                   {t.footer.features}
                 </Link>
               </li>
               <li>
-                <Link href="/faq" className="hover:text-foreground">
+                <Link href="/faq" className="hover:text-amber-700">
                   {t.footer.faq}
                 </Link>
               </li>
@@ -56,15 +56,15 @@ export function Footer() {
 
           {/* Company */}
           <div>
-            <h3 className="font-semibold mb-4">{t.footer.company}</h3>
-            <ul className="space-y-2 text-sm text-muted-foreground">
+            <h3 className="font-heading font-semibold mb-4">{t.footer.company}</h3>
+            <ul className="space-y-2 text-sm text-stone-500">
               <li>
-                <Link href="/about" className="hover:text-foreground">
+                <Link href="/about" className="hover:text-amber-700">
                   {t.footer.aboutUs}
                 </Link>
               </li>
               <li>
-                <Link href="/contact" className="hover:text-foreground">
+                <Link href="/contact" className="hover:text-amber-700">
                   {t.footer.contact}
                 </Link>
               </li>
@@ -73,15 +73,15 @@ export function Footer() {
 
           {/* Legal */}
           <div>
-            <h3 className="font-semibold mb-4">{t.footer.legal}</h3>
-            <ul className="space-y-2 text-sm text-muted-foreground">
+            <h3 className="font-heading font-semibold mb-4">{t.footer.legal}</h3>
+            <ul className="space-y-2 text-sm text-stone-500">
               <li>
-                <Link href="/privacy" className="hover:text-foreground">
+                <Link href="/privacy" className="hover:text-amber-700">
                   {t.footer.privacyPolicy}
                 </Link>
               </li>
               <li>
-                <Link href="/terms" className="hover:text-foreground">
+                <Link href="/terms" className="hover:text-amber-700">
                   {t.footer.termsOfService}
                 </Link>
               </li>
@@ -89,17 +89,17 @@ export function Footer() {
           </div>
         </div>
 
-        <div className="border-t mt-8 pt-8 text-center text-sm text-muted-foreground">
+        <div className="border-t border-stone-100 mt-8 pt-8 text-center text-sm text-stone-500">
           <div className="flex flex-col md:flex-row items-center justify-center gap-2">
             <p>{t.footer.copyright.replace('{year}', new Date().getFullYear().toString())}</p>
-            <span className="hidden md:inline text-muted-foreground">•</span>
+            <span className="hidden md:inline text-stone-400">•</span>
             <p>
               {t.footer.poweredBy}{' '}
-              <a 
-                href="https://www.jinanagency.com" 
-                target="_blank" 
+              <a
+                href="https://www.jinanagency.com"
+                target="_blank"
                 rel="noopener noreferrer"
-                className="text-primary hover:underline font-medium"
+                className="text-amber-700 hover:underline font-medium"
               >
                 {t.footer.jinanAgency}
               </a>

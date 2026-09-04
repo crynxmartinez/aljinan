@@ -62,10 +62,10 @@ export function Navbar({ variant = 'marketing', showHomeButton = false }: Navbar
                 key={link.href}
                 href={link.href}
                 className={cn(
-                  'text-sm font-medium transition-colors hover:text-primary',
+                  'text-sm font-medium transition-colors hover:text-amber-700',
                   pathname === link.href
-                    ? 'text-primary'
-                    : 'text-muted-foreground'
+                    ? 'text-amber-700'
+                    : 'text-stone-500'
                 )}
               >
                 {link.label}
@@ -80,7 +80,7 @@ export function Navbar({ variant = 'marketing', showHomeButton = false }: Navbar
             <Button variant="ghost" asChild>
               <Link href="/login">{t.navbar.login}</Link>
             </Button>
-            <Button asChild>
+            <Button className="bg-amber-600 hover:bg-amber-700 text-white" asChild>
               <Link href="/contact">{t.navbar.getStarted}</Link>
             </Button>
           </div>
@@ -107,10 +107,10 @@ export function Navbar({ variant = 'marketing', showHomeButton = false }: Navbar
                   key={link.href}
                   href={link.href}
                   className={cn(
-                    'text-sm font-medium transition-colors hover:text-primary px-4 py-2',
+                    'text-sm font-medium transition-colors hover:text-amber-700 px-4 py-2',
                     pathname === link.href
-                      ? 'text-primary bg-primary/5'
-                      : 'text-muted-foreground'
+                      ? 'text-amber-700 bg-amber-50'
+                      : 'text-stone-500'
                   )}
                   onClick={() => setMobileMenuOpen(false)}
                 >
