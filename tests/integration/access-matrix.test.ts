@@ -221,6 +221,7 @@ const CLASSIFIED_ELSEWHERE: Array<[RegExp, string]> = [
   [/^\/api\/reports\//, 'covered by the branch-access check on the work order'],
   [/^\/api\/invoices\//, 'covered by canPayInvoice'],
   [/^\/api\/contractor\//, 'own profile only'],
+  [/^\/api\/dev-seed$/, 'refuses to run outside development (checks NODE_ENV)'],
 ]
 
 describe('coverage guard', () => {
