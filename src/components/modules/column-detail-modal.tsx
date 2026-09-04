@@ -236,7 +236,7 @@ export function ColumnDetailModal({
 
   const formatDate = (dateString: string | null) => {
     if (!dateString) return '-'
-    return new Date(dateString).toLocaleDateString('ar-SA', {
+    return new Date(dateString).toLocaleDateString('ar-SA-u-nu-latn', {
       month: 'short',
       day: 'numeric',
       year: 'numeric',

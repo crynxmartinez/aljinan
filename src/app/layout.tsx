@@ -1,7 +1,8 @@
 import type { Metadata, Viewport } from "next";
 import { SessionProvider } from "@/components/providers/session-provider";
 import { TranslationProvider } from "@/lib/i18n/use-translation";
-import { getLocale } from "@/lib/i18n/server";
+import { getLocale, getTranslationsForLocale } from "@/lib/i18n/server";
+import { getDirection } from "@/lib/i18n/translations";
 import { Analytics } from '@vercel/analytics/react';
 import { SpeedInsights } from '@vercel/speed-insights/next';
 import { OrganizationSchema } from "@/components/seo/organization-schema";
@@ -9,17 +10,33 @@ import { ImpersonationBanner } from "@/components/layout/impersonation-banner";
 import { Toaster } from 'sonner';
 import "./globals.css";
 
-export const metadata: Metadata = {
-  metadataBase: new URL('https://tasheel.sa'),
-  title: "تسهيل - منصة إدارة مقاولات السلامة",
-  description: "منصة متكاملة لإدارة السلامة للمقاولين في المملكة العربية السعودية",
-  manifest: "/manifest.json",
-  appleWebApp: {
-    capable: true,
-    statusBarStyle: "default",
-    title: "Tasheel",
-  },
-};
+export async function generateMetadata(): Promise<Metadata> {
+  const locale = await getLocale();
+  const t = getTranslationsForLocale(locale).seo;
+  const baseUrl = 'https://tasheel.sa';
+
+  return {
+    metadataBase: new URL(baseUrl),
+    title: t.rootTitle,
+    description: t.rootDescription,
+    manifest: "/manifest.json",
+    appleWebApp: {
+      capable: true,
+      statusBarStyle: "default",
+      title: "Tasheel",
+    },
+    alternates: {
+      canonical: baseUrl,
+      // This app serves both languages from the same URL (chosen via cookie), not
+      // separate /en and /ar paths — so these are self-referencing rather than the
+      // distinct-URL-per-language hreflang setup search engines index most reliably.
+      languages: {
+        ar: baseUrl,
+        en: baseUrl,
+      },
+    },
+  };
+}
 
 export const viewport: Viewport = {
   width: "device-width",
@@ -36,7 +53,7 @@ export default async function RootLayout({
   const locale = await getLocale();
 
   return (
-    <html lang={locale} dir={locale === 'ar' ? 'rtl' : 'ltr'}>
+    <html lang={locale} dir={getDirection(locale)}>
       <head>
         <link rel="preconnect" href="https://fonts.googleapis.com" />
         <link rel="preconnect" href="https://fonts.gstatic.com" crossOrigin="anonymous" />

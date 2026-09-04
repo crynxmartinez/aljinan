@@ -39,6 +39,7 @@ import {
 } from 'lucide-react'
 import { ContractWorkOrdersDisplay } from '@/components/modules/contract-work-orders-display'
 import { ContractAttachmentsSection } from '@/components/modules/contract-attachments-section'
+import { useTranslation } from '@/lib/i18n/use-translation'
 
 interface WorkOrder {
   id: string
@@ -112,6 +113,9 @@ interface ClientBranchContractsProps {
 }
 
 export function ClientBranchContracts({ branchId }: ClientBranchContractsProps) {
+  const { t, locale } = useTranslation()
+  const tc = t.dashboard.clientBranchContractsPage
+  const dateLocale = locale === 'ar' ? 'ar-SA-u-nu-latn' : 'en-US'
   const router = useRouter()
   const [contracts, setContracts] = useState<Contract[]>([])
   const [loading, setLoading] = useState(true)
@@ -146,12 +150,12 @@ export function ClientBranchContracts({ branchId }: ClientBranchContractsProps) 
 
   const getStatusBadge = (status: Contract['status']) => {
     const config: Record<string, { style: string; icon: typeof FileText; label: string }> = {
-      DRAFT: { style: 'bg-gray-100 text-gray-700', icon: FileText, label: 'Draft' },
-      PENDING_SIGNATURE: { style: 'bg-amber-100 text-amber-700', icon: PenTool, label: 'Awaiting Start Signature' },
-      SIGNED: { style: 'bg-blue-100 text-blue-700', icon: CheckCircle, label: 'Active' },
-      COMPLETED: { style: 'bg-green-100 text-green-700', icon: CheckCircle, label: 'Completed' },
-      EXPIRED: { style: 'bg-orange-100 text-orange-700', icon: Clock, label: 'Expired' },
-      TERMINATED: { style: 'bg-red-100 text-red-700', icon: XCircle, label: 'Terminated' },
+      DRAFT: { style: 'bg-gray-100 text-gray-700', icon: FileText, label: tc.statusDraft },
+      PENDING_SIGNATURE: { style: 'bg-amber-100 text-amber-700', icon: PenTool, label: tc.statusAwaitingStartSignature },
+      SIGNED: { style: 'bg-blue-100 text-blue-700', icon: CheckCircle, label: tc.statusActive },
+      COMPLETED: { style: 'bg-green-100 text-green-700', icon: CheckCircle, label: tc.statusCompleted },
+      EXPIRED: { style: 'bg-orange-100 text-orange-700', icon: Clock, label: tc.statusExpired },
+      TERMINATED: { style: 'bg-red-100 text-red-700', icon: XCircle, label: tc.statusTerminated },
     }
     const { style, icon: Icon, label } = config[status] || config.DRAFT
     return (
@@ -170,13 +174,23 @@ export function ClientBranchContracts({ branchId }: ClientBranchContractsProps) 
   }
 
   const getFrequencyLabel = (frequency: ContractSystem['frequency']) => {
+    const cr = t.dashboard.clientBranchRequestsPage
     const labels: Record<string, string> = {
-      MONTHLY: 'Monthly',
-      QUARTERLY: 'Quarterly',
-      SEMI_ANNUALLY: 'Semi-Annually',
-      ANNUALLY: 'Annually'
+      MONTHLY: cr.monthly,
+      QUARTERLY: cr.quarterly,
+      SEMI_ANNUALLY: cr.semiAnnually,
+      ANNUALLY: cr.annually,
     }
     return labels[frequency] || frequency
+  }
+
+  const getPaymentStatusLabel = (status: ContractPayment['status']) => {
+    const labels: Record<ContractPayment['status'], string> = {
+      PENDING: tc.paymentPending,
+      PAID: tc.paymentPaid,
+      OVERDUE: tc.paymentOverdue,
+    }
+    return labels[status]
   }
 
   // Canvas drawing functions
@@ -269,7 +283,7 @@ export function ClientBranchContracts({ branchId }: ClientBranchContractsProps) 
     const isEmpty = !imageData.data.some((channel, index) => index % 4 !== 3 ? channel !== 0 : channel !== 0)
 
     if (isEmpty) {
-      alert('Please draw your signature before signing')
+      alert(tc.pleaseSignBeforeSigning)
       return
     }
 
@@ -311,7 +325,7 @@ export function ClientBranchContracts({ branchId }: ClientBranchContractsProps) 
     const isEmpty = !imageData.data.some((channel, index) => index % 4 !== 3 ? channel !== 0 : channel !== 0)
 
     if (isEmpty) {
-      alert('Please draw your signature before signing')
+      alert(tc.pleaseSignBeforeSigning)
       return
     }
 
@@ -334,7 +348,7 @@ export function ClientBranchContracts({ branchId }: ClientBranchContractsProps) 
         router.refresh()
       } else {
         const data = await response.json()
-        alert(data.error || 'Failed to complete contract')
+        alert(data.error || tc.failedToCompleteContract)
       }
     } catch (err) {
       console.error('Failed to complete contract:', err)
@@ -366,10 +380,10 @@ export function ClientBranchContracts({ branchId }: ClientBranchContractsProps) 
           <CardHeader>
             <CardTitle className="flex items-center gap-2 text-amber-800">
               <PenTool className="h-5 w-5" />
-              Awaiting Your Signature
+              {tc.awaitingSignatureTitle}
             </CardTitle>
             <CardDescription>
-              Please review and sign these contracts
+              {tc.awaitingSignatureDesc}
             </CardDescription>
           </CardHeader>
           <CardContent className="space-y-4">
@@ -386,7 +400,7 @@ export function ClientBranchContracts({ branchId }: ClientBranchContractsProps) 
                       {getStatusBadge(contract.status)}
                     </div>
                     <p className="text-sm text-muted-foreground">
-                      Total Value: ر.س {(contract.totalValue || 0).toLocaleString('ar-SA', { minimumFractionDigits: 2 })}
+                      {tc.totalValueLabel} {t.dashboard.requestsList.sar} {(contract.totalValue || 0).toLocaleString(dateLocale, { minimumFractionDigits: 2 })}
                     </p>
                   </div>
                   <div className="flex gap-2">
@@ -399,7 +413,7 @@ export function ClientBranchContracts({ branchId }: ClientBranchContractsProps) 
                       }}
                     >
                       <ClipboardList className="me-2 h-4 w-4" />
-                      View Details
+                      {tc.viewDetailsBtn}
                     </Button>
                     <Button
                       size="sm"
@@ -407,7 +421,7 @@ export function ClientBranchContracts({ branchId }: ClientBranchContractsProps) 
                       className="bg-amber-600 hover:bg-amber-700"
                     >
                       <PenTool className="me-2 h-4 w-4" />
-                      Sign Contract
+                      {tc.signContractBtn}
                     </Button>
                   </div>
                 </div>
@@ -423,10 +437,10 @@ export function ClientBranchContracts({ branchId }: ClientBranchContractsProps) 
           <CardHeader>
             <CardTitle className="flex items-center gap-2 text-green-800">
               <CheckCircle className="h-5 w-5" />
-              Active Contracts
+              {tc.activeContractsTitle}
             </CardTitle>
             <CardDescription>
-              Your current service agreements
+              {tc.activeContractsDesc}
             </CardDescription>
           </CardHeader>
           <CardContent className="space-y-4">
@@ -455,11 +469,11 @@ export function ClientBranchContracts({ branchId }: ClientBranchContractsProps) 
                         {contract.startDate && contract.endDate && (
                           <span className="flex items-center gap-1">
                             <Calendar className="h-3 w-3" />
-                            {new Date(contract.startDate).toLocaleDateString('ar-SA')} - {new Date(contract.endDate).toLocaleDateString('ar-SA')}
+                            {new Date(contract.startDate).toLocaleDateString(dateLocale)} - {new Date(contract.endDate).toLocaleDateString(dateLocale)}
                           </span>
                         )}
                         <span className="font-medium text-primary">
-                          ر.س {(contract.totalValue || 0).toLocaleString('ar-SA', { minimumFractionDigits: 2 })}
+                          {t.dashboard.requestsList.sar} {(contract.totalValue || 0).toLocaleString(dateLocale, { minimumFractionDigits: 2 })}
                         </span>
                       </div>
                     </div>
@@ -473,7 +487,7 @@ export function ClientBranchContracts({ branchId }: ClientBranchContractsProps) 
                         }}
                       >
                         <ClipboardList className="me-2 h-4 w-4" />
-                        View Details
+                        {tc.viewDetailsBtn}
                       </Button>
                       {canSignContract(contract) && (
                         <Button
@@ -482,7 +496,7 @@ export function ClientBranchContracts({ branchId }: ClientBranchContractsProps) 
                           className="bg-green-600 hover:bg-green-700"
                         >
                           <PenTool className="me-2 h-4 w-4" />
-                          Sign to Complete
+                          {tc.signToCompleteBtn}
                         </Button>
                       )}
                     </div>
@@ -499,7 +513,7 @@ export function ClientBranchContracts({ branchId }: ClientBranchContractsProps) 
                         }
                       >
                         <FileText className="h-3 w-3 me-1" />
-                        PDF {contract.fileUrl ? '✓' : '—'}
+                        {tc.pdfBadge} {contract.fileUrl ? '✓' : '—'}
                       </Badge>
                       <Badge
                         variant="outline"
@@ -509,7 +523,7 @@ export function ClientBranchContracts({ branchId }: ClientBranchContractsProps) 
                         }
                       >
                         <Award className="h-3 w-3 me-1" />
-                        Cert {contract.certificateUrl ? '✓' : '—'}
+                        {tc.certBadge} {contract.certificateUrl ? '✓' : '—'}
                       </Badge>
 
                       {workOrders.length > 0 && (
@@ -521,16 +535,16 @@ export function ClientBranchContracts({ branchId }: ClientBranchContractsProps) 
                           }
                         >
                           <ClipboardList className="h-3 w-3 me-1" />
-                          {completedCount}/{workOrders.length} Work Orders
+                          {completedCount}/{workOrders.length} {tc.workOrdersBadge}
                         </Badge>
                       )}
 
                       {!canSignContract(contract) && workOrders.length > 0 && (
                         <span className="text-xs text-muted-foreground ms-auto">
                           {!areAllWorkOrdersCompleted(contract)
-                            ? 'Complete all work orders to finalize'
+                            ? tc.completeAllToFinalize
                             : !areAllWorkOrdersPaid(contract)
-                              ? 'Pay all work orders to finalize'
+                              ? tc.payAllToFinalize
                               : ''
                           }
                         </span>
@@ -550,10 +564,10 @@ export function ClientBranchContracts({ branchId }: ClientBranchContractsProps) 
           <CardHeader>
             <CardTitle className="flex items-center gap-2 text-blue-800">
               <CheckCircle className="h-5 w-5" />
-              Completed Contracts
+              {tc.completedContractsTitle}
             </CardTitle>
             <CardDescription>
-              Finalized contracts with all documents available for download
+              {tc.completedContractsDesc}
             </CardDescription>
           </CardHeader>
           <CardContent className="space-y-4">
@@ -577,11 +591,11 @@ export function ClientBranchContracts({ branchId }: ClientBranchContractsProps) 
                     <div className="flex items-center gap-4 text-sm text-muted-foreground">
                       {contract.startDate && contract.endDate && (
                         <span>
-                          {new Date(contract.startDate).toLocaleDateString('ar-SA')} - {new Date(contract.endDate).toLocaleDateString('ar-SA')}
+                          {new Date(contract.startDate).toLocaleDateString(dateLocale)} - {new Date(contract.endDate).toLocaleDateString(dateLocale)}
                         </span>
                       )}
                       <span className="font-medium text-green-700">
-                        ر.س {(contract.totalValue || 0).toLocaleString('ar-SA', { minimumFractionDigits: 2 })}
+                        {t.dashboard.requestsList.sar} {(contract.totalValue || 0).toLocaleString(dateLocale, { minimumFractionDigits: 2 })}
                       </span>
                     </div>
                   </div>
@@ -594,12 +608,12 @@ export function ClientBranchContracts({ branchId }: ClientBranchContractsProps) 
                     }}
                   >
                     <ClipboardList className="me-2 h-4 w-4" />
-                    View Details
+                    {tc.viewDetailsBtn}
                   </Button>
                 </div>
                 {/* Download Section */}
                 <div className="mt-4 pt-4 border-t">
-                  <p className="text-sm font-medium mb-3">Available Downloads</p>
+                  <p className="text-sm font-medium mb-3">{tc.availableDownloads}</p>
                   <div className="flex flex-wrap gap-2">
                     {contract.fileUrl && (
                       <Button
@@ -608,7 +622,7 @@ export function ClientBranchContracts({ branchId }: ClientBranchContractsProps) 
                         onClick={() => window.open(contract.fileUrl!, '_blank')}
                       >
                         <Download className="me-2 h-4 w-4" />
-                        {contract.fileName || 'Contract PDF'}
+                        {contract.fileName || tc.contractPdfFallback}
                       </Button>
                     )}
                     {contract.certificateUrl && (
@@ -618,11 +632,11 @@ export function ClientBranchContracts({ branchId }: ClientBranchContractsProps) 
                         onClick={() => window.open(contract.certificateUrl!, '_blank')}
                       >
                         <Download className="me-2 h-4 w-4" />
-                        {contract.certificateFileName || 'Certificate'}
+                        {contract.certificateFileName || tc.certificateFallback}
                       </Button>
                     )}
                     {!contract.fileUrl && !contract.certificateUrl && (
-                      <p className="text-sm text-muted-foreground">No documents attached</p>
+                      <p className="text-sm text-muted-foreground">{tc.noDocumentsAttached}</p>
                     )}
                   </div>
                 </div>
@@ -635,23 +649,23 @@ export function ClientBranchContracts({ branchId }: ClientBranchContractsProps) 
       {/* All Contracts */}
       <Card>
         <CardHeader>
-          <CardTitle>All Contracts</CardTitle>
+          <CardTitle>{tc.allContractsTitle}</CardTitle>
           <CardDescription>
-            Service contracts and agreements for this branch
+            {tc.allContractsDesc}
           </CardDescription>
         </CardHeader>
         <CardContent>
           {contracts.length === 0 ? (
             <div className="flex flex-col items-center justify-center py-12 text-center">
               <FileCheck className="h-12 w-12 text-muted-foreground/30 mb-4" />
-              <h3 className="text-lg font-semibold mb-2">No contracts yet</h3>
+              <h3 className="text-lg font-semibold mb-2">{tc.noContractsYet}</h3>
               <p className="text-muted-foreground max-w-md">
-                Service contracts from your contractor will appear here. You can view and download them.
+                {tc.noContractsDesc}
               </p>
             </div>
           ) : otherContracts.length === 0 && activeContracts.length > 0 ? (
             <p className="text-center text-muted-foreground py-4">
-              All contracts are shown in the active section above.
+              {tc.allShownAboveNote}
             </p>
           ) : (
             <div className="space-y-3">
@@ -670,7 +684,7 @@ export function ClientBranchContracts({ branchId }: ClientBranchContractsProps) 
                       <span>{contract.fileName}</span>
                       {contract.startDate && contract.endDate && (
                         <span>
-                          {new Date(contract.startDate).toLocaleDateString('ar-SA')} - {new Date(contract.endDate).toLocaleDateString('ar-SA')}
+                          {new Date(contract.startDate).toLocaleDateString(dateLocale)} - {new Date(contract.endDate).toLocaleDateString(dateLocale)}
                         </span>
                       )}
                     </div>
@@ -684,7 +698,7 @@ export function ClientBranchContracts({ branchId }: ClientBranchContractsProps) 
                     }}
                   >
                     <ExternalLink className="me-2 h-4 w-4" />
-                    View Details
+                    {tc.viewDetailsBtn}
                   </Button>
                 </div>
               ))}
@@ -702,7 +716,7 @@ export function ClientBranchContracts({ branchId }: ClientBranchContractsProps) 
               {selectedContract?.title}
             </DialogTitle>
             <DialogDescription>
-              {selectedContract?.description || 'Contract details and work orders'}
+              {selectedContract?.description || tc.contractDetailsFallbackDesc}
             </DialogDescription>
           </DialogHeader>
 
@@ -711,30 +725,30 @@ export function ClientBranchContracts({ branchId }: ClientBranchContractsProps) 
               {/* Contract Summary */}
               <div className="grid grid-cols-2 md:grid-cols-4 gap-4 p-4 bg-muted/30 rounded-lg">
                 <div>
-                  <p className="text-xs text-muted-foreground mb-1">الحالة</p>
+                  <p className="text-xs text-muted-foreground mb-1">{tc.statusLabel}</p>
                   {getStatusBadge(selectedContract.status)}
                 </div>
                 <div>
-                  <p className="text-xs text-muted-foreground mb-1">Total Value</p>
+                  <p className="text-xs text-muted-foreground mb-1">{tc.totalValueLabel.replace(':', '')}</p>
                   <p className="font-bold text-lg text-primary">
-                    ر.س {(selectedContract.totalValue || 0).toLocaleString('ar-SA', { minimumFractionDigits: 2 })}
+                    {t.dashboard.requestsList.sar} {(selectedContract.totalValue || 0).toLocaleString(dateLocale, { minimumFractionDigits: 2 })}
                   </p>
                 </div>
                 {selectedContract.startDate && (
                   <div>
-                    <p className="text-xs text-muted-foreground mb-1">Start Date</p>
+                    <p className="text-xs text-muted-foreground mb-1">{tc.startDateLabel}</p>
                     <p className="font-medium text-sm flex items-center gap-1">
                       <Calendar className="h-3 w-3" />
-                      {new Date(selectedContract.startDate).toLocaleDateString('ar-SA')}
+                      {new Date(selectedContract.startDate).toLocaleDateString(dateLocale)}
                     </p>
                   </div>
                 )}
                 {selectedContract.endDate && (
                   <div>
-                    <p className="text-xs text-muted-foreground mb-1">End Date</p>
+                    <p className="text-xs text-muted-foreground mb-1">{tc.endDateLabel}</p>
                     <p className="font-medium text-sm flex items-center gap-1">
                       <Calendar className="h-3 w-3" />
-                      {new Date(selectedContract.endDate).toLocaleDateString('ar-SA')}
+                      {new Date(selectedContract.endDate).toLocaleDateString(dateLocale)}
                     </p>
                   </div>
                 )}
@@ -744,19 +758,19 @@ export function ClientBranchContracts({ branchId }: ClientBranchContractsProps) 
               <div className="p-4 border rounded-lg bg-card">
                 <h3 className="font-semibold text-sm flex items-center gap-2 mb-3">
                   <PenTool className="h-4 w-4" />
-                  Signatures
+                  {tc.signaturesHeading}
                 </h3>
                 <div className="grid grid-cols-2 gap-4 text-sm">
                   <div className="flex items-center gap-2">
                     {selectedContract.startSignedAt ? (
                       <>
                         <CheckCircle className="h-4 w-4 text-green-600" />
-                        <span>Start: Signed on {new Date(selectedContract.startSignedAt).toLocaleDateString('ar-SA')}</span>
+                        <span>{tc.startSignedOn.replace('{date}', new Date(selectedContract.startSignedAt).toLocaleDateString(dateLocale))}</span>
                       </>
                     ) : (
                       <>
                         <Clock className="h-4 w-4 text-amber-600" />
-                        <span className="text-muted-foreground">Start: Awaiting your signature</span>
+                        <span className="text-muted-foreground">{tc.startAwaitingSignature}</span>
                       </>
                     )}
                   </div>
@@ -764,12 +778,12 @@ export function ClientBranchContracts({ branchId }: ClientBranchContractsProps) 
                     {selectedContract.endSignedAt ? (
                       <>
                         <CheckCircle className="h-4 w-4 text-green-600" />
-                        <span>End: Signed on {new Date(selectedContract.endSignedAt).toLocaleDateString('ar-SA')}</span>
+                        <span>{tc.endSignedOn.replace('{date}', new Date(selectedContract.endSignedAt).toLocaleDateString(dateLocale))}</span>
                       </>
                     ) : (
                       <>
                         <Clock className="h-4 w-4 text-muted-foreground" />
-                        <span className="text-muted-foreground">End: Complete all work orders first</span>
+                        <span className="text-muted-foreground">{tc.endAwaitingWorkOrders}</span>
                       </>
                     )}
                   </div>
@@ -781,7 +795,7 @@ export function ClientBranchContracts({ branchId }: ClientBranchContractsProps) 
                 <div className="space-y-3">
                   <h3 className="font-semibold text-sm flex items-center gap-2">
                     <Building className="h-4 w-4" />
-                    Scope of Work
+                    {tc.scopeOfWorkHeading}
                   </h3>
                   <div className="space-y-3">
                     {selectedContract.systems.map((system, index) => {
@@ -799,21 +813,21 @@ export function ClientBranchContracts({ branchId }: ClientBranchContractsProps) 
                           {system.visitDates && system.visitDates.length > 0 && (
                             <div className="space-y-2 mt-3">
                               <div className="grid grid-cols-3 gap-2 text-xs font-medium text-muted-foreground border-b pb-1">
-                                <span>Visit Date</span>
-                                <span>Payment Due</span>
-                                <span>المبلغ</span>
+                                <span>{tc.visitDateHeader}</span>
+                                <span>{tc.paymentDueHeader}</span>
+                                <span>{tc.amountHeader}</span>
                               </div>
                               {system.visitDates.map((date, i) => (
                                 <div key={i} className="grid grid-cols-3 gap-2 text-sm">
                                   <div className="flex items-center gap-1">
                                     <Calendar className="h-3 w-3 text-muted-foreground" />
-                                    {date ? new Date(date).toLocaleDateString('ar-SA') : '—'}
+                                    {date ? new Date(date).toLocaleDateString(dateLocale) : '—'}
                                   </div>
                                   <div className="text-muted-foreground">
-                                    {paymentDueDates[i] ? new Date(paymentDueDates[i]).toLocaleDateString('ar-SA') : '—'}
+                                    {paymentDueDates[i] ? new Date(paymentDueDates[i]).toLocaleDateString(dateLocale) : '—'}
                                   </div>
                                   <div className="font-medium">
-                                    {paymentAmounts[i] ? `ر.س ${paymentAmounts[i]?.toLocaleString('ar-SA', { minimumFractionDigits: 2 })}` : '—'}
+                                    {paymentAmounts[i] ? `${t.dashboard.requestsList.sar} ${paymentAmounts[i]?.toLocaleString(dateLocale, { minimumFractionDigits: 2 })}` : '—'}
                                   </div>
                                 </div>
                               ))}
@@ -831,30 +845,30 @@ export function ClientBranchContracts({ branchId }: ClientBranchContractsProps) 
                 <div className="space-y-3">
                   <h3 className="font-semibold text-sm flex items-center gap-2">
                     <FileText className="h-4 w-4" />
-                    Payment Terms
+                    {tc.paymentTermsHeading}
                   </h3>
                   <Table>
                     <TableHeader>
                       <TableRow>
-                        <TableHead>Payment</TableHead>
-                        <TableHead>تاريخ الاستحقاق</TableHead>
-                        <TableHead>المبلغ</TableHead>
-                        <TableHead>الحالة</TableHead>
+                        <TableHead>{tc.paymentColumn}</TableHead>
+                        <TableHead>{tc.dueDateColumn}</TableHead>
+                        <TableHead>{tc.amountColumn}</TableHead>
+                        <TableHead>{tc.statusColumn}</TableHead>
                       </TableRow>
                     </TableHeader>
                     <TableBody>
                       {selectedContract.payments.map((payment) => (
                         <TableRow key={payment.id}>
-                          <TableCell className="font-medium">Payment #{payment.paymentNo}</TableCell>
+                          <TableCell className="font-medium">{tc.paymentNumberLabel.replace('{n}', String(payment.paymentNo))}</TableCell>
                           <TableCell>
-                            {payment.dueDate ? new Date(payment.dueDate).toLocaleDateString('ar-SA') : '—'}
+                            {payment.dueDate ? new Date(payment.dueDate).toLocaleDateString(dateLocale) : '—'}
                           </TableCell>
                           <TableCell>
-                            {payment.amount ? `ر.س ${payment.amount.toLocaleString('ar-SA', { minimumFractionDigits: 2 })}` : '—'}
+                            {payment.amount ? `${t.dashboard.requestsList.sar} ${payment.amount.toLocaleString(dateLocale, { minimumFractionDigits: 2 })}` : '—'}
                           </TableCell>
                           <TableCell>
                             <Badge variant={payment.status === 'PAID' ? 'default' : payment.status === 'OVERDUE' ? 'destructive' : 'secondary'}>
-                              {payment.status}
+                              {getPaymentStatusLabel(payment.status)}
                             </Badge>
                           </TableCell>
                         </TableRow>
@@ -869,7 +883,7 @@ export function ClientBranchContracts({ branchId }: ClientBranchContractsProps) 
                 <div className="space-y-3">
                   <h3 className="font-semibold text-sm flex items-center gap-2">
                     <ClipboardList className="h-4 w-4" />
-                    Work Orders
+                    {tc.workOrdersHeading}
                   </h3>
                   <ContractWorkOrdersDisplay
                     workOrders={selectedContract.project.checklists.flatMap(c => c.items)}
@@ -882,7 +896,7 @@ export function ClientBranchContracts({ branchId }: ClientBranchContractsProps) 
               <div className="space-y-3">
                 <h3 className="font-semibold text-sm flex items-center gap-2">
                   <Award className="h-4 w-4" />
-                  Documents & Attachments
+                  {tc.documentsHeading}
                 </h3>
                 <ContractAttachmentsSection
                   contractId={selectedContract.id}
@@ -907,10 +921,10 @@ export function ClientBranchContracts({ branchId }: ClientBranchContractsProps) 
           <DialogHeader>
             <DialogTitle className="flex items-center gap-2">
               <PenTool className="h-5 w-5" />
-              Accept & Sign Contract
+              {tc.acceptSignContractTitle}
             </DialogTitle>
             <DialogDescription>
-              Draw your signature below to accept and start this contract
+              {tc.acceptSignContractDesc}
             </DialogDescription>
           </DialogHeader>
 
@@ -919,16 +933,16 @@ export function ClientBranchContracts({ branchId }: ClientBranchContractsProps) 
               <div className="p-4 bg-muted/50 rounded-lg">
                 <p className="font-medium">{contractToSign.title}</p>
                 <p className="text-sm text-muted-foreground">
-                  Total Value: ر.س {(contractToSign.totalValue || 0).toLocaleString('ar-SA', { minimumFractionDigits: 2 })}
+                  {tc.totalValueLabel} {t.dashboard.requestsList.sar} {(contractToSign.totalValue || 0).toLocaleString(dateLocale, { minimumFractionDigits: 2 })}
                 </p>
               </div>
 
               <div className="space-y-2">
                 <div className="flex items-center justify-between">
-                  <p className="text-sm font-medium">Your Signature</p>
+                  <p className="text-sm font-medium">{tc.yourSignatureLabel}</p>
                   <Button variant="ghost" size="sm" onClick={clearSignature}>
                     <RotateCcw className="me-2 h-4 w-4" />
-                    Clear
+                    {tc.clearBtn}
                   </Button>
                 </div>
                 <div className="border-2 border-dashed rounded-lg p-1 bg-white">
@@ -944,7 +958,7 @@ export function ClientBranchContracts({ branchId }: ClientBranchContractsProps) 
                   />
                 </div>
                 <p className="text-xs text-muted-foreground">
-                  Draw your signature using your mouse or touchpad
+                  {tc.drawSignatureHint}
                 </p>
               </div>
             </div>
@@ -952,11 +966,11 @@ export function ClientBranchContracts({ branchId }: ClientBranchContractsProps) 
 
           <DialogFooter>
             <Button variant="outline" onClick={() => setSignDialogOpen(false)}>
-              Cancel
+              {tc.cancelBtn}
             </Button>
             <Button onClick={handleSign} disabled={signing}>
               {signing && <Loader2 className="me-2 h-4 w-4 animate-spin" />}
-              Accept & Sign
+              {tc.acceptAndSignBtn}
             </Button>
           </DialogFooter>
         </DialogContent>
@@ -968,10 +982,10 @@ export function ClientBranchContracts({ branchId }: ClientBranchContractsProps) 
           <DialogHeader>
             <DialogTitle className="flex items-center gap-2">
               <CheckCircle className="h-5 w-5 text-green-600" />
-              Complete Contract
+              {tc.completeContractTitle}
             </DialogTitle>
             <DialogDescription>
-              All work orders are completed. Sign below to finalize this contract.
+              {tc.completeContractDesc}
             </DialogDescription>
           </DialogHeader>
 
@@ -980,21 +994,21 @@ export function ClientBranchContracts({ branchId }: ClientBranchContractsProps) 
               <div className="p-4 bg-green-50 rounded-lg border border-green-200">
                 <p className="font-medium text-green-800">{contractToSign.title}</p>
                 <p className="text-sm text-green-700">
-                  Total Value: ر.س {(contractToSign.totalValue || 0).toLocaleString('ar-SA', { minimumFractionDigits: 2 })}
+                  {tc.totalValueLabel} {t.dashboard.requestsList.sar} {(contractToSign.totalValue || 0).toLocaleString(dateLocale, { minimumFractionDigits: 2 })}
                 </p>
                 {contractToSign.project && (
                   <p className="text-sm text-green-700 mt-1">
-                    {contractToSign.project.checklists.flatMap(c => c.items).length} work orders completed
+                    {tc.workOrdersCompletedCount.replace('{count}', String(contractToSign.project.checklists.flatMap(c => c.items).length))}
                   </p>
                 )}
               </div>
 
               <div className="space-y-2">
                 <div className="flex items-center justify-between">
-                  <p className="text-sm font-medium">Your Final Signature</p>
+                  <p className="text-sm font-medium">{tc.yourFinalSignatureLabel}</p>
                   <Button variant="ghost" size="sm" onClick={clearEndSignature}>
                     <RotateCcw className="me-2 h-4 w-4" />
-                    Clear
+                    {tc.clearBtn}
                   </Button>
                 </div>
                 <div className="border-2 border-dashed rounded-lg p-1 bg-white">
@@ -1031,7 +1045,7 @@ export function ClientBranchContracts({ branchId }: ClientBranchContractsProps) 
                   />
                 </div>
                 <p className="text-xs text-muted-foreground">
-                  Draw your signature to confirm completion of all services
+                  {tc.drawFinalSignatureHint}
                 </p>
               </div>
             </div>
@@ -1039,11 +1053,11 @@ export function ClientBranchContracts({ branchId }: ClientBranchContractsProps) 
 
           <DialogFooter>
             <Button variant="outline" onClick={() => setEndSignDialogOpen(false)}>
-              Cancel
+              {tc.cancelBtn}
             </Button>
             <Button onClick={handleEndSign} disabled={signing} className="bg-green-600 hover:bg-green-700">
               {signing && <Loader2 className="me-2 h-4 w-4 animate-spin" />}
-              Complete Contract
+              {tc.completeContractBtn}
             </Button>
           </DialogFooter>
         </DialogContent>

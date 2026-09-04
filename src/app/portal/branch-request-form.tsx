@@ -17,6 +17,7 @@ import {
 } from '@/components/ui/dialog'
 import { Plus, Loader2 } from 'lucide-react'
 import { AddressPicker, AddressData } from '@/components/ui/address-picker'
+import { useTranslation } from '@/lib/i18n/use-translation'
 
 interface BranchRequest {
   id: string
@@ -30,6 +31,8 @@ interface BranchRequest {
 }
 
 export function BranchRequestForm() {
+  const { t } = useTranslation()
+  const tr = t.dashboard.branchRequestForm
   const router = useRouter()
   const [open, setOpen] = useState(false)
   const [loading, setLoading] = useState(false)
@@ -108,7 +111,7 @@ export function BranchRequestForm() {
 
       if (!response.ok) {
         const data = await response.json()
-        throw new Error(data.error || 'Failed to submit request')
+        throw new Error(data.error || tr.submitFailed)
       }
 
       setOpen(false)
@@ -116,14 +119,14 @@ export function BranchRequestForm() {
       fetchRequests()
       router.refresh()
     } catch (err) {
-      setError(err instanceof Error ? err.message : 'An error occurred')
+      setError(err instanceof Error ? err.message : tr.genericError)
     } finally {
       setLoading(false)
     }
   }
 
   const handleCancelRequest = async (requestId: string) => {
-    if (!confirm('Are you sure you want to cancel this request?')) return
+    if (!confirm(tr.cancelRequestConfirm)) return
 
     try {
       await fetch(`/api/branch-requests/${requestId}`, {
@@ -145,14 +148,14 @@ export function BranchRequestForm() {
         <DialogTrigger asChild>
           <Button>
             <Plus className="me-2 h-4 w-4" />
-            Request New Branch
+            {tr.requestNewBranch}
           </Button>
         </DialogTrigger>
         <DialogContent className="max-w-2xl max-h-[90vh] overflow-y-auto">
           <DialogHeader>
-            <DialogTitle>Request New Branch</DialogTitle>
+            <DialogTitle>{tr.requestNewBranch}</DialogTitle>
             <DialogDescription>
-              Submit a request for a new branch location. Your contractor will review and approve it.
+              {tr.requestNewBranchDesc}
             </DialogDescription>
           </DialogHeader>
           <form onSubmit={handleSubmit}>
@@ -163,20 +166,20 @@ export function BranchRequestForm() {
             )}
             <div className="space-y-4">
               <div className="space-y-2">
-                <Label htmlFor="name">Branch Name *</Label>
+                <Label htmlFor="name">{tr.branchNameLabel}</Label>
                 <Input
                   id="name"
                   value={name}
                   onChange={(e) => setName(e.target.value)}
-                  placeholder="e.g., Main Office, Warehouse A"
+                  placeholder={tr.branchNamePlaceholder}
                   required
                 />
               </div>
 
               <div className="space-y-2">
-                <Label>Location *</Label>
+                <Label>{tr.locationLabel}</Label>
                 <p className="text-sm text-muted-foreground mb-2">
-                  Search for an address or click on the map to set the branch location.
+                  {tr.locationDesc}
                 </p>
                 <AddressPicker
                   value={addressData}
@@ -187,34 +190,34 @@ export function BranchRequestForm() {
 
               <div className="grid grid-cols-2 gap-4">
                 <div className="space-y-2">
-                  <Label htmlFor="phone">الهاتف</Label>
+                  <Label htmlFor="phone">{tr.phoneLabel}</Label>
                   <Input
                     id="phone"
                     value={phone}
                     onChange={(e) => setPhone(e.target.value)}
-                    placeholder="Branch phone number"
+                    placeholder={tr.phonePlaceholder}
                   />
                 </div>
               </div>
 
               <div className="space-y-2">
-                <Label htmlFor="notes">ملاحظات</Label>
+                <Label htmlFor="notes">{tr.notesLabel}</Label>
                 <Textarea
                   id="notes"
                   value={notes}
                   onChange={(e) => setNotes(e.target.value)}
-                  placeholder="Any additional information about this branch..."
+                  placeholder={tr.notesPlaceholder}
                   rows={3}
                 />
               </div>
             </div>
             <DialogFooter className="mt-6">
               <Button type="button" variant="outline" onClick={() => setOpen(false)}>
-                Cancel
+                {tr.cancelBtn}
               </Button>
               <Button type="submit" disabled={loading || !addressData.address || !name}>
                 {loading && <Loader2 className="me-2 h-4 w-4 animate-spin" />}
-                Submit Request
+                {tr.submitRequest}
               </Button>
             </DialogFooter>
           </form>

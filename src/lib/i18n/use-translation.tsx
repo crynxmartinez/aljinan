@@ -1,7 +1,8 @@
 'use client'
 
 import { createContext, useContext, useState, ReactNode } from 'react'
-import { translations, Locale } from './translations'
+import { DirectionProvider } from '@radix-ui/react-direction'
+import { translations, getDirection, Locale } from './translations'
 import Cookies from 'js-cookie'
 
 interface TranslationContextType {
@@ -37,7 +38,7 @@ export function TranslationProvider({
       path: '/',
     })
     document.documentElement.lang = newLocale
-    document.documentElement.dir = newLocale === 'ar' ? 'rtl' : 'ltr'
+    document.documentElement.dir = getDirection(newLocale)
   }
 
   const value = {
@@ -48,7 +49,15 @@ export function TranslationProvider({
 
   return (
     <TranslationContext.Provider value={value}>
-      {children}
+      {/*
+        Radix primitives (Select, DropdownMenu, Popover, Dialog...) default their internal
+        keyboard/focus order to LTR and don't read document.documentElement.dir — without
+        this, arrow-key navigation inside menus moves in the wrong logical direction while
+        the UI is visually mirrored for Arabic.
+      */}
+      <DirectionProvider dir={getDirection(locale)}>
+        {children}
+      </DirectionProvider>
     </TranslationContext.Provider>
   )
 }

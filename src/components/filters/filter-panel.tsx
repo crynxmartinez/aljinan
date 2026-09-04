@@ -59,7 +59,7 @@ export function FilterPanel({
   selectedClients,
   onClientChange
 }: FilterPanelProps) {
-  const { t } = useTranslation()
+  const { t, locale } = useTranslation()
   const ta = t.dashboard.filterPanel
   const [localFilters, setLocalFilters] = useState(filters)
   const [isOpen, setIsOpen] = useState(false)
@@ -110,7 +110,7 @@ export function FilterPanel({
           )}
         </Button>
       </SheetTrigger>
-      <SheetContent className="w-80">
+      <SheetContent className="w-80" side={locale === 'ar' ? 'left' : 'right'}>
         <SheetHeader className="px-1">
           <SheetTitle>{ta.filters}</SheetTitle>
           <SheetDescription>

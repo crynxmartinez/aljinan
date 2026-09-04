@@ -4,6 +4,7 @@ import { sendTempPasswordEmail } from '@/lib/email'
 import bcrypt from 'bcryptjs'
 import crypto from 'crypto'
 import { requireAdmin } from '@/lib/admin-auth'
+import { getLocale } from '@/lib/i18n/server'
 
 export async function POST(
   request: Request,
@@ -48,7 +49,7 @@ export async function POST(
     })
 
     // Send temp password email
-    await sendTempPasswordEmail(user.email, user.name || 'there', tempPassword)
+    await sendTempPasswordEmail(user.email, user.name || 'there', tempPassword, await getLocale())
 
     return NextResponse.json({
       success: true,

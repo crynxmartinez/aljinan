@@ -3,6 +3,7 @@ import { prisma } from '@/lib/prisma'
 import { sendVerificationEmail } from '@/lib/email'
 import crypto from 'crypto'
 import { requireAdmin } from '@/lib/admin-auth'
+import { getLocale } from '@/lib/i18n/server'
 
 export async function POST(
   request: Request,
@@ -49,7 +50,9 @@ export async function POST(
     await sendVerificationEmail(
       contractor.user.email,
       contractor.user.name || 'there',
-      verificationToken
+      verificationToken,
+      undefined,
+      await getLocale()
     )
 
     return NextResponse.json({

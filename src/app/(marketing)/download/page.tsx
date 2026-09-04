@@ -1,9 +1,15 @@
 import { Metadata } from 'next'
 import { DownloadContent } from './download-content'
+import { getLocale, getTranslationsForLocale } from '@/lib/i18n/server'
 
-export const metadata: Metadata = {
-  title: 'Download Tasheel App | Mobile & Desktop',
-  description: 'Download Tasheel app for Android, Windows, and Linux. Install the safety management platform on your device.',
+export async function generateMetadata(): Promise<Metadata> {
+  const locale = await getLocale()
+  const seo = getTranslationsForLocale(locale).seo.download
+
+  return {
+    title: seo.title,
+    description: seo.description,
+  }
 }
 
 export default function DownloadPage() {

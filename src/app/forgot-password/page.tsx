@@ -6,8 +6,11 @@ import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
 import { Button } from '@/components/ui/button'
 import { Loader2, ArrowLeft, Mail, CheckCircle } from 'lucide-react'
+import { useTranslation } from '@/lib/i18n/use-translation'
 
 export default function ForgotPasswordPage() {
+  const { t } = useTranslation()
+  const tr = t.pages.forgotPassword
   const [email, setEmail] = useState('')
   const [loading, setLoading] = useState(false)
   const [submitted, setSubmitted] = useState(false)
@@ -33,7 +36,7 @@ export default function ForgotPasswordPage() {
 
       setSubmitted(true)
     } catch (err) {
-      setError(err instanceof Error ? err.message : 'An error occurred')
+      setError(err instanceof Error ? err.message : tr.genericError)
     } finally {
       setLoading(false)
     }
@@ -45,7 +48,7 @@ export default function ForgotPasswordPage() {
         <div className="mb-6">
           <Link href="/login" className="inline-flex items-center text-sm text-muted-foreground hover:text-foreground">
             <ArrowLeft className="h-4 w-4 me-1" />
-            Back to login
+            {tr.backToLogin}
           </Link>
         </div>
 
@@ -55,16 +58,16 @@ export default function ForgotPasswordPage() {
               <div className="mx-auto w-16 h-16 bg-green-100 rounded-full flex items-center justify-center mb-4">
                 <CheckCircle className="h-8 w-8 text-green-600" />
               </div>
-              <h1 className="text-2xl font-bold mb-2">Check Your Email</h1>
+              <h1 className="text-2xl font-bold mb-2">{tr.checkEmailTitle}</h1>
               <p className="text-muted-foreground mb-6">
-                If an account exists with <strong>{email}</strong>, you will receive a password reset link shortly.
+                {tr.checkEmailDesc.split('{email}')[0]}<strong>{email}</strong>{tr.checkEmailDesc.split('{email}')[1]}
               </p>
               <p className="text-sm text-muted-foreground mb-6">
-                The link will expire in 1 hour for security reasons.
+                {tr.expiryNote}
               </p>
               <Link href="/login">
                 <Button variant="outline" className="w-full">
-                  Back to Login
+                  {tr.backToLogin}
                 </Button>
               </Link>
             </div>
@@ -74,9 +77,9 @@ export default function ForgotPasswordPage() {
                 <div className="mx-auto w-12 h-12 bg-primary/10 rounded-full flex items-center justify-center mb-4">
                   <Mail className="h-6 w-6 text-primary" />
                 </div>
-                <h1 className="text-2xl font-bold mb-2">Forgot Password?</h1>
+                <h1 className="text-2xl font-bold mb-2">{tr.title}</h1>
                 <p className="text-sm text-muted-foreground">
-                  No worries! Enter your email address and we'll send you a link to reset your password.
+                  {tr.subtitle}
                 </p>
               </div>
 
@@ -88,7 +91,7 @@ export default function ForgotPasswordPage() {
                 )}
 
                 <div className="space-y-2">
-                  <Label htmlFor="email">Email Address</Label>
+                  <Label htmlFor="email">{tr.emailLabel}</Label>
                   <Input
                     id="email"
                     type="email"
@@ -102,7 +105,7 @@ export default function ForgotPasswordPage() {
 
                 <Button type="submit" className="w-full" disabled={loading}>
                   {loading && <Loader2 className="me-2 h-4 w-4 animate-spin" />}
-                  {loading ? 'Sending...' : 'Send Reset Link'}
+                  {loading ? tr.sending : tr.sendButton}
                 </Button>
               </form>
             </>

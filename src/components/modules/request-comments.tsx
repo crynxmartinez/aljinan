@@ -140,7 +140,7 @@ export function RequestComments({ branchId, requestId, currentUserId }: RequestC
     if (diffMins < 60) return trc.minutesAgo.replace('{count}', String(diffMins))
     if (diffHours < 24) return trc.hoursAgo.replace('{count}', String(diffHours))
     if (diffDays < 7) return trc.daysAgo.replace('{count}', String(diffDays))
-    return date.toLocaleDateString('ar-SA')
+    return date.toLocaleDateString('ar-SA-u-nu-latn')
   }
 
   const getRoleBadge = (role: string) => {

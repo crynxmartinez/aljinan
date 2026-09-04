@@ -3,6 +3,7 @@ import { getServerSession } from 'next-auth'
 import { authOptions } from '@/lib/auth'
 import { prisma } from '@/lib/prisma'
 import { sendVerificationEmail } from '@/lib/email'
+import { getLocale } from '@/lib/i18n/server'
 import crypto from 'crypto'
 
 export async function POST(
@@ -57,7 +58,8 @@ export async function POST(
       client.user.email,
       client.user.name || 'there',
       verificationToken,
-      'CLIENT'
+      'CLIENT',
+      await getLocale()
     )
 
     return NextResponse.json({

@@ -367,11 +367,11 @@ export function CertificatesList({ branchId, userRole }: CertificatesListProps) 
                         )}
                       </TableCell>
                       <TableCell>
-                        {new Date(certificate.issueDate).toLocaleDateString('ar-SA')}
+                        {new Date(certificate.issueDate).toLocaleDateString('ar-SA-u-nu-latn')}
                       </TableCell>
                       <TableCell>
                         {certificate.expiryDate
-                          ? new Date(certificate.expiryDate).toLocaleDateString('ar-SA')
+                          ? new Date(certificate.expiryDate).toLocaleDateString('ar-SA-u-nu-latn')
                           : <span className="text-muted-foreground">{tcl.noExpiry}</span>
                         }
                       </TableCell>
@@ -590,7 +590,7 @@ export function CertificatesList({ branchId, userRole }: CertificatesListProps) 
                   <p className="text-sm text-muted-foreground">{tcl.issueDate}</p>
                   <p className="font-medium flex items-center gap-1">
                     <Calendar className="h-4 w-4" />
-                    {new Date(selectedCertificate.issueDate).toLocaleDateString('ar-SA')}
+                    {new Date(selectedCertificate.issueDate).toLocaleDateString('ar-SA-u-nu-latn')}
                   </p>
                 </div>
                 <div>
@@ -599,7 +599,7 @@ export function CertificatesList({ branchId, userRole }: CertificatesListProps) 
                     <>
                       <p className="font-medium flex items-center gap-1">
                         <Calendar className="h-4 w-4" />
-                        {new Date(selectedCertificate.expiryDate).toLocaleDateString('ar-SA')}
+                        {new Date(selectedCertificate.expiryDate).toLocaleDateString('ar-SA-u-nu-latn')}
                       </p>
                       {(() => {
                         const expiryInfo = getExpiryStatus(selectedCertificate.expiryDate)

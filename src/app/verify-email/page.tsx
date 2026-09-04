@@ -1,13 +1,15 @@
 'use client'
 
 import { useState, useEffect, Suspense } from 'react'
-import { useRouter, useSearchParams } from 'next/navigation'
+import { useSearchParams } from 'next/navigation'
 import Link from 'next/link'
 import { Button } from '@/components/ui/button'
 import { Loader2, CheckCircle, AlertCircle, Mail } from 'lucide-react'
+import { useTranslation } from '@/lib/i18n/use-translation'
 
 function VerifyEmailContent() {
-  const router = useRouter()
+  const { t } = useTranslation()
+  const tr = t.pages.verifyEmail
   const searchParams = useSearchParams()
   const token = searchParams.get('token')
 
@@ -17,7 +19,7 @@ function VerifyEmailContent() {
 
   useEffect(() => {
     if (!token) {
-      setError('Invalid verification link. Please check your email for the correct link.')
+      setError(tr.invalidLinkError)
       setVerifying(false)
       return
     }
@@ -41,7 +43,7 @@ function VerifyEmailContent() {
 
       setSuccess(true)
     } catch (err) {
-      setError(err instanceof Error ? err.message : 'An error occurred')
+      setError(err instanceof Error ? err.message : tr.genericError)
     } finally {
       setVerifying(false)
     }
@@ -54,9 +56,9 @@ function VerifyEmailContent() {
           <div className="bg-white p-8 rounded-lg shadow-sm border">
             <div className="text-center py-8">
               <Loader2 className="h-16 w-16 animate-spin text-primary mx-auto mb-4" />
-              <h1 className="text-2xl font-bold mb-2">Verifying Your Email</h1>
+              <h1 className="text-2xl font-bold mb-2">{tr.verifyingTitle}</h1>
               <p className="text-muted-foreground">
-                Please wait while we verify your email address...
+                {tr.verifyingDesc}
               </p>
             </div>
           </div>
@@ -74,16 +76,16 @@ function VerifyEmailContent() {
               <div className="mx-auto w-16 h-16 bg-red-100 rounded-full flex items-center justify-center mb-4">
                 <AlertCircle className="h-8 w-8 text-red-600" />
               </div>
-              <h1 className="text-2xl font-bold mb-2">Verification Failed</h1>
+              <h1 className="text-2xl font-bold mb-2">{tr.failedTitle}</h1>
               <p className="text-muted-foreground mb-6">
                 {error}
               </p>
               <div className="space-y-3">
                 <p className="text-sm text-muted-foreground">
-                  The verification link may have expired or already been used.
+                  {tr.expiredNote}
                 </p>
                 <Link href="/contact">
-                  <Button className="w-full">Contact Support</Button>
+                  <Button className="w-full">{tr.contactSupport}</Button>
                 </Link>
               </div>
             </div>
@@ -102,20 +104,20 @@ function VerifyEmailContent() {
               <div className="mx-auto w-16 h-16 bg-green-100 rounded-full flex items-center justify-center mb-4">
                 <CheckCircle className="h-8 w-8 text-green-600" />
               </div>
-              <h1 className="text-2xl font-bold mb-2">Email Verified!</h1>
+              <h1 className="text-2xl font-bold mb-2">{tr.verifiedTitle}</h1>
               <p className="text-muted-foreground mb-6">
-                Your email has been verified successfully.
+                {tr.verifiedDesc}
               </p>
-              
+
               <div className="bg-blue-50 border border-blue-200 rounded-lg p-4 mb-6">
                 <div className="flex items-start gap-3">
                   <Mail className="h-5 w-5 text-blue-600 mt-0.5 flex-shrink-0" />
                   <div className="text-start">
                     <p className="text-sm font-medium text-blue-900 mb-1">
-                      Check Your Inbox
+                      {tr.checkInboxTitle}
                     </p>
                     <p className="text-sm text-blue-700">
-                      We've sent your login credentials to your email. You'll receive them shortly.
+                      {tr.checkInboxDesc}
                     </p>
                   </div>
                 </div>
@@ -123,10 +125,10 @@ function VerifyEmailContent() {
 
               <div className="space-y-3">
                 <p className="text-sm text-muted-foreground">
-                  Once you receive your credentials, you can log in and start using Tasheel.
+                  {tr.onceReceivedNote}
                 </p>
                 <Link href="/login">
-                  <Button className="w-full">Go to Login</Button>
+                  <Button className="w-full">{tr.goToLogin}</Button>
                 </Link>
               </div>
             </div>

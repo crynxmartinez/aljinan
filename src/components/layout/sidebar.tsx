@@ -207,7 +207,7 @@ export function Sidebar({ clients = [], userRole, teamMemberRole }: SidebarProps
                   <item.icon className="h-4 w-4" />
                 )}
                 {item.href === '/dashboard/notifications' && unreadNotifications > 0 && (
-                  <span className="ml-auto flex h-5 w-5 items-center justify-center rounded-full bg-red-600 text-xs font-medium text-white">
+                  <span className="ms-auto flex h-5 w-5 items-center justify-center rounded-full bg-red-600 text-xs font-medium text-white">
                     {unreadNotifications > 9 ? '9+' : unreadNotifications}
                   </span>
                 )}
@@ -259,7 +259,7 @@ export function Sidebar({ clients = [], userRole, teamMemberRole }: SidebarProps
                       {expandedClients.includes(client.id) ? (
                         <ChevronDown className="h-4 w-4" />
                       ) : (
-                        <ChevronRight className="h-4 w-4" />
+                        <ChevronRight className="h-4 w-4 rtl:rotate-180" />
                       )}
                     </CollapsibleTrigger>
                     <Link

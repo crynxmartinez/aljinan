@@ -26,6 +26,7 @@ import {
   CalendarX,
   RefreshCw,
 } from 'lucide-react'
+import { useTranslation } from '@/lib/i18n/use-translation'
 
 interface Appointment {
   id: string
@@ -50,6 +51,9 @@ interface ClientBranchAppointmentsProps {
 }
 
 export function ClientBranchAppointments({ branchId }: ClientBranchAppointmentsProps) {
+  const { t, locale } = useTranslation()
+  const tc = t.dashboard.clientBranchAppointmentsPage
+  const dateLocale = locale === 'ar' ? 'ar-SA-u-nu-latn' : 'en-US'
   const router = useRouter()
   const [appointments, setAppointments] = useState<Appointment[]>([])
   const [loading, setLoading] = useState(true)
@@ -115,12 +119,12 @@ export function ClientBranchAppointments({ branchId }: ClientBranchAppointmentsP
 
   const getStatusBadge = (status: Appointment['status']) => {
     const config = {
-      SCHEDULED: { style: 'bg-blue-100 text-blue-700', icon: Clock, label: 'Awaiting Confirmation' },
-      CONFIRMED: { style: 'bg-green-100 text-green-700', icon: CalendarCheck, label: 'Confirmed' },
-      IN_PROGRESS: { style: 'bg-yellow-100 text-yellow-700', icon: AlertCircle, label: 'In Progress' },
-      COMPLETED: { style: 'bg-gray-100 text-gray-700', icon: CheckCircle, label: 'Completed' },
-      CANCELLED: { style: 'bg-red-100 text-red-700', icon: XCircle, label: 'Cancelled' },
-      RESCHEDULED: { style: 'bg-orange-100 text-orange-700', icon: RefreshCw, label: 'Reschedule Requested' },
+      SCHEDULED: { style: 'bg-blue-100 text-blue-700', icon: Clock, label: tc.statusAwaitingConfirmation },
+      CONFIRMED: { style: 'bg-green-100 text-green-700', icon: CalendarCheck, label: tc.statusConfirmed },
+      IN_PROGRESS: { style: 'bg-yellow-100 text-yellow-700', icon: AlertCircle, label: tc.statusInProgress },
+      COMPLETED: { style: 'bg-gray-100 text-gray-700', icon: CheckCircle, label: tc.statusCompleted },
+      CANCELLED: { style: 'bg-red-100 text-red-700', icon: XCircle, label: tc.statusCancelled },
+      RESCHEDULED: { style: 'bg-orange-100 text-orange-700', icon: RefreshCw, label: tc.statusRescheduleRequested },
     }
     const { style, icon: Icon, label } = config[status]
     return (
@@ -132,7 +136,7 @@ export function ClientBranchAppointments({ branchId }: ClientBranchAppointmentsP
   }
 
   const formatDate = (dateStr: string) => {
-    return new Date(dateStr).toLocaleDateString('ar-SA', {
+    return new Date(dateStr).toLocaleDateString(dateLocale, {
       weekday: 'long',
       month: 'long',
       day: 'numeric',
@@ -143,7 +147,7 @@ export function ClientBranchAppointments({ branchId }: ClientBranchAppointmentsP
   const formatTime = (time: string) => {
     const [hours, minutes] = time.split(':')
     const h = parseInt(hours)
-    const ampm = h >= 12 ? 'PM' : 'AM'
+    const ampm = h >= 12 ? tc.pm : tc.am
     const hour = h % 12 || 12
     return `${hour}:${minutes} ${ampm}`
   }
@@ -176,10 +180,10 @@ export function ClientBranchAppointments({ branchId }: ClientBranchAppointmentsP
             <CardHeader>
               <CardTitle className="flex items-center gap-2 text-blue-800">
                 <Clock className="h-5 w-5" />
-                Awaiting Your Confirmation
+                {tc.awaitingConfirmationTitle}
               </CardTitle>
               <CardDescription>
-                Please confirm or reschedule these appointments
+                {tc.awaitingConfirmationDesc}
               </CardDescription>
             </CardHeader>
             <CardContent className="space-y-4">
@@ -211,7 +215,7 @@ export function ClientBranchAppointments({ branchId }: ClientBranchAppointmentsP
                     </div>
                     {appointment.assignedTo && (
                       <p className="text-sm text-muted-foreground mb-4">
-                        Technician: {appointment.assignedTo}
+                        {tc.technicianLabel.replace('{name}', appointment.assignedTo)}
                       </p>
                     )}
                     <div className="flex gap-2">
@@ -221,7 +225,7 @@ export function ClientBranchAppointments({ branchId }: ClientBranchAppointmentsP
                         onClick={() => openActionDialog(appointment, 'request_reschedule')}
                       >
                         <RefreshCw className="me-2 h-4 w-4" />
-                        Request Reschedule
+                        {tc.requestRescheduleBtn}
                       </Button>
                       <Button
                         variant="outline"
@@ -229,14 +233,14 @@ export function ClientBranchAppointments({ branchId }: ClientBranchAppointmentsP
                         onClick={() => openActionDialog(appointment, 'cancel')}
                       >
                         <CalendarX className="me-2 h-4 w-4" />
-                        Cancel
+                        {tc.cancelBtn}
                       </Button>
                       <Button
                         size="sm"
                         onClick={() => openActionDialog(appointment, 'confirm')}
                       >
                         <CalendarCheck className="me-2 h-4 w-4" />
-                        Confirm
+                        {tc.confirmBtn}
                       </Button>
                     </div>
                   </div>
@@ -248,9 +252,9 @@ export function ClientBranchAppointments({ branchId }: ClientBranchAppointmentsP
         {/* Upcoming Appointments */}
         <Card>
           <CardHeader>
-            <CardTitle>Upcoming Appointments</CardTitle>
+            <CardTitle>{tc.upcomingAppointmentsTitle}</CardTitle>
             <CardDescription>
-              Scheduled visits and inspections for this branch
+              {tc.upcomingAppointmentsDesc}
             </CardDescription>
           </CardHeader>
           <CardContent>
@@ -258,14 +262,14 @@ export function ClientBranchAppointments({ branchId }: ClientBranchAppointmentsP
               upcomingAppointments.filter(a => a.status === 'SCHEDULED').length === 0 ? (
               <div className="flex flex-col items-center justify-center py-12 text-center">
                 <Calendar className="h-12 w-12 text-muted-foreground/30 mb-4" />
-                <h3 className="text-lg font-semibold mb-2">No upcoming appointments</h3>
+                <h3 className="text-lg font-semibold mb-2">{tc.noUpcomingAppointments}</h3>
                 <p className="text-muted-foreground max-w-md">
-                  Your contractor will schedule appointments for visits and inspections. You&apos;ll be able to confirm or request rescheduling.
+                  {tc.noUpcomingAppointmentsDesc}
                 </p>
               </div>
             ) : upcomingAppointments.filter(a => a.status !== 'SCHEDULED').length === 0 ? (
               <p className="text-center text-muted-foreground py-4">
-                All upcoming appointments are shown in the confirmation section above.
+                {tc.allShownAboveNote}
               </p>
             ) : (
               <div className="space-y-4">
@@ -288,7 +292,7 @@ export function ClientBranchAppointments({ branchId }: ClientBranchAppointmentsP
                           </div>
                           {appointment.assignedTo && (
                             <p className="text-sm text-muted-foreground">
-                              Technician: {appointment.assignedTo}
+                              {tc.technicianLabel.replace('{name}', appointment.assignedTo)}
                             </p>
                           )}
                         </div>
@@ -298,7 +302,7 @@ export function ClientBranchAppointments({ branchId }: ClientBranchAppointmentsP
                             size="sm"
                             onClick={() => openActionDialog(appointment, 'cancel')}
                           >
-                            Cancel
+                            {tc.cancelBtn}
                           </Button>
                         )}
                       </div>
@@ -313,7 +317,7 @@ export function ClientBranchAppointments({ branchId }: ClientBranchAppointmentsP
         {pastAppointments.length > 0 && (
           <Card>
             <CardHeader>
-              <CardTitle>Past Appointments</CardTitle>
+              <CardTitle>{tc.pastAppointmentsTitle}</CardTitle>
             </CardHeader>
             <CardContent>
               <div className="space-y-3">
@@ -323,7 +327,7 @@ export function ClientBranchAppointments({ branchId }: ClientBranchAppointmentsP
                       <div>
                         <h4 className="font-medium text-sm">{appointment.title}</h4>
                         <p className="text-xs text-muted-foreground">
-                          {formatDate(appointment.date)} at {formatTime(appointment.startTime)}
+                          {tc.atTime.replace('{date}', formatDate(appointment.date)).replace('{time}', formatTime(appointment.startTime))}
                         </p>
                       </div>
                       {getStatusBadge(appointment.status)}
@@ -341,14 +345,14 @@ export function ClientBranchAppointments({ branchId }: ClientBranchAppointmentsP
         <DialogContent>
           <DialogHeader>
             <DialogTitle>
-              {actionType === 'confirm' && 'Confirm Appointment'}
-              {actionType === 'cancel' && 'Cancel Appointment'}
-              {actionType === 'request_reschedule' && 'Request Reschedule'}
+              {actionType === 'confirm' && tc.confirmAppointmentTitle}
+              {actionType === 'cancel' && tc.cancelAppointmentTitle}
+              {actionType === 'request_reschedule' && tc.requestRescheduleTitle}
             </DialogTitle>
             <DialogDescription>
-              {actionType === 'confirm' && 'Confirm that you are available for this appointment.'}
-              {actionType === 'cancel' && 'Please provide a reason for cancelling this appointment.'}
-              {actionType === 'request_reschedule' && 'Let your contractor know when you would prefer to reschedule.'}
+              {actionType === 'confirm' && tc.confirmAppointmentDesc}
+              {actionType === 'cancel' && tc.cancelAppointmentDesc}
+              {actionType === 'request_reschedule' && tc.requestRescheduleDesc}
             </DialogDescription>
           </DialogHeader>
 
@@ -357,14 +361,14 @@ export function ClientBranchAppointments({ branchId }: ClientBranchAppointmentsP
               <div className="p-4 bg-muted/50 rounded-lg mb-4">
                 <p className="font-medium">{selectedAppointment.title}</p>
                 <p className="text-sm text-muted-foreground mt-1">
-                  {formatDate(selectedAppointment.date)} at {formatTime(selectedAppointment.startTime)}
+                  {tc.atTime.replace('{date}', formatDate(selectedAppointment.date)).replace('{time}', formatTime(selectedAppointment.startTime))}
                 </p>
               </div>
 
               {(actionType === 'cancel' || actionType === 'request_reschedule') && (
                 <div className="space-y-2">
                   <Label htmlFor="note">
-                    {actionType === 'cancel' ? 'Reason for cancellation' : 'Preferred times'}
+                    {actionType === 'cancel' ? tc.reasonForCancellation : tc.preferredTimes}
                   </Label>
                   <Textarea
                     id="note"
@@ -372,8 +376,8 @@ export function ClientBranchAppointments({ branchId }: ClientBranchAppointmentsP
                     onChange={(e) => setNote(e.target.value)}
                     placeholder={
                       actionType === 'cancel'
-                        ? 'Please explain why you need to cancel...'
-                        : 'Let us know your preferred dates and times...'
+                        ? tc.cancelPlaceholder
+                        : tc.reschedulePlaceholder
                     }
                     rows={3}
                   />
@@ -384,7 +388,7 @@ export function ClientBranchAppointments({ branchId }: ClientBranchAppointmentsP
 
           <DialogFooter>
             <Button variant="outline" onClick={() => setActionDialogOpen(false)}>
-              Cancel
+              {tc.cancelBtn}
             </Button>
             <Button
               onClick={handleAction}
@@ -392,9 +396,9 @@ export function ClientBranchAppointments({ branchId }: ClientBranchAppointmentsP
               variant={actionType === 'cancel' ? 'destructive' : 'default'}
             >
               {processing && <Loader2 className="me-2 h-4 w-4 animate-spin" />}
-              {actionType === 'confirm' && 'Confirm Appointment'}
-              {actionType === 'cancel' && 'Cancel Appointment'}
-              {actionType === 'request_reschedule' && 'Request Reschedule'}
+              {actionType === 'confirm' && tc.confirmAppointmentTitle}
+              {actionType === 'cancel' && tc.cancelAppointmentTitle}
+              {actionType === 'request_reschedule' && tc.requestRescheduleTitle}
             </Button>
           </DialogFooter>
         </DialogContent>

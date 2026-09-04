@@ -3,6 +3,7 @@ import { NextResponse } from 'next/server'
 import { authOptions } from '@/lib/auth'
 import { prisma } from '@/lib/prisma'
 import { sendVerificationEmail } from '@/lib/email'
+import { getLocale } from '@/lib/i18n/server'
 import { generateSlug, generateUniqueSlug } from '@/lib/utils/slugify'
 import crypto from 'crypto'
 
@@ -130,7 +131,7 @@ export async function POST(request: Request) {
     })
 
     // Send verification email
-    await sendVerificationEmail(companyEmail, companyName, verificationToken, 'CLIENT')
+    await sendVerificationEmail(companyEmail, companyName, verificationToken, 'CLIENT', await getLocale())
 
     return NextResponse.json({
       ...client,

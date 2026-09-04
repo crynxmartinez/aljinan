@@ -972,7 +972,7 @@ export function ContractsList({ branchId }: ContractsListProps) {
     <>
       {/* Success Message Notification */}
       {successMessage && (
-        <div className="fixed top-4 right-4 z-50 max-w-md animate-in slide-in-from-top-2 fade-in duration-300">
+        <div className="fixed top-4 end-4 z-50 max-w-md animate-in slide-in-from-top-2 fade-in duration-300">
           <div className="bg-amber-50 border border-amber-200 text-amber-800 px-4 py-3 rounded-lg shadow-lg flex items-start gap-3">
             <CheckCircle className="h-5 w-5 text-amber-600 flex-shrink-0 mt-0.5" />
             <div className="flex-1">
@@ -1042,12 +1042,12 @@ export function ContractsList({ branchId }: ContractsListProps) {
                           {contract.startDate && contract.endDate && (
                             <span className="flex items-center gap-1">
                               <Calendar className="h-3 w-3" />
-                              {new Date(contract.startDate).toLocaleDateString('ar-SA')} - {new Date(contract.endDate).toLocaleDateString('ar-SA')}
+                              {new Date(contract.startDate).toLocaleDateString('ar-SA-u-nu-latn')} - {new Date(contract.endDate).toLocaleDateString('ar-SA-u-nu-latn')}
                             </span>
                           )}
                           {contract.totalValue && (
                             <span className="font-medium text-primary">
-                              ر.س {contract.totalValue.toLocaleString('ar-SA', { minimumFractionDigits: 2 })}
+                              ر.س {contract.totalValue.toLocaleString('ar-SA-u-nu-latn', { minimumFractionDigits: 2 })}
                             </span>
                           )}
                           {workOrderCount > 0 && (
@@ -1143,7 +1143,7 @@ export function ContractsList({ branchId }: ContractsListProps) {
                   </div>
                   <div className="text-end">
                     <p className="font-semibold text-blue-700">
-                      ر.س {standaloneWorkOrders.reduce((sum, wo) => sum + (wo.price || 0), 0).toLocaleString('ar-SA', { minimumFractionDigits: 2 })}
+                      ر.س {standaloneWorkOrders.reduce((sum, wo) => sum + (wo.price || 0), 0).toLocaleString('ar-SA-u-nu-latn', { minimumFractionDigits: 2 })}
                     </p>
                     <p className="text-xs text-blue-600">{tcl.totalValue}</p>
                   </div>
@@ -1167,7 +1167,7 @@ export function ContractsList({ branchId }: ContractsListProps) {
                           {wo.scheduledDate && (
                             <span className="flex items-center gap-1">
                               <Calendar className="h-3 w-3" />
-                              {new Date(wo.scheduledDate).toLocaleDateString('ar-SA')}
+                              {new Date(wo.scheduledDate).toLocaleDateString('ar-SA-u-nu-latn')}
                             </span>
                           )}
                           <Badge variant="outline" className="text-xs">
@@ -1177,7 +1177,7 @@ export function ContractsList({ branchId }: ContractsListProps) {
                       </div>
                       {wo.price && (
                         <span className="font-semibold text-blue-700">
-                          ر.س {wo.price.toLocaleString('ar-SA', { minimumFractionDigits: 2 })}
+                          ر.س {wo.price.toLocaleString('ar-SA-u-nu-latn', { minimumFractionDigits: 2 })}
                         </span>
                       )}
                     </div>
@@ -1213,7 +1213,7 @@ export function ContractsList({ branchId }: ContractsListProps) {
                   </div>
                   <div className="text-end">
                     <p className="font-semibold text-amber-700">
-                      ر.س {stickerInspections.reduce((sum, wo) => sum + (wo.price || 0), 0).toLocaleString('ar-SA', { minimumFractionDigits: 2 })}
+                      ر.س {stickerInspections.reduce((sum, wo) => sum + (wo.price || 0), 0).toLocaleString('ar-SA-u-nu-latn', { minimumFractionDigits: 2 })}
                     </p>
                     <p className="text-xs text-amber-600">{tcl.totalValue}</p>
                   </div>
@@ -1237,7 +1237,7 @@ export function ContractsList({ branchId }: ContractsListProps) {
                           {wo.scheduledDate && (
                             <span className="flex items-center gap-1">
                               <Calendar className="h-3 w-3" />
-                              {new Date(wo.scheduledDate).toLocaleDateString('ar-SA')}
+                              {new Date(wo.scheduledDate).toLocaleDateString('ar-SA-u-nu-latn')}
                             </span>
                           )}
                           <Badge variant="outline" className="text-xs">
@@ -1247,7 +1247,7 @@ export function ContractsList({ branchId }: ContractsListProps) {
                       </div>
                       {wo.price && (
                         <span className="font-semibold text-amber-700">
-                          ر.س {wo.price.toLocaleString('ar-SA', { minimumFractionDigits: 2 })}
+                          ر.س {wo.price.toLocaleString('ar-SA-u-nu-latn', { minimumFractionDigits: 2 })}
                         </span>
                       )}
                     </div>
@@ -1856,7 +1856,7 @@ export function ContractsList({ branchId }: ContractsListProps) {
                 <div>
                   <p className="text-xs text-muted-foreground mb-1">{tcl.totalValue}</p>
                   <p className="font-bold text-lg text-primary">
-                    ر.س {(selectedContract.totalValue || 0).toLocaleString('ar-SA', { minimumFractionDigits: 2 })}
+                    ر.س {(selectedContract.totalValue || 0).toLocaleString('ar-SA-u-nu-latn', { minimumFractionDigits: 2 })}
                   </p>
                 </div>
                 {selectedContract.startDate && (
@@ -1864,7 +1864,7 @@ export function ContractsList({ branchId }: ContractsListProps) {
                     <p className="text-xs text-muted-foreground mb-1">{tcl.startDate}</p>
                     <p className="font-medium text-sm flex items-center gap-1">
                       <Calendar className="h-3 w-3" />
-                      {new Date(selectedContract.startDate).toLocaleDateString('ar-SA')}
+                      {new Date(selectedContract.startDate).toLocaleDateString('ar-SA-u-nu-latn')}
                     </p>
                   </div>
                 )}
@@ -1873,7 +1873,7 @@ export function ContractsList({ branchId }: ContractsListProps) {
                     <p className="text-xs text-muted-foreground mb-1">{tcl.endDate}</p>
                     <p className="font-medium text-sm flex items-center gap-1">
                       <Calendar className="h-3 w-3" />
-                      {new Date(selectedContract.endDate).toLocaleDateString('ar-SA')}
+                      {new Date(selectedContract.endDate).toLocaleDateString('ar-SA-u-nu-latn')}
                     </p>
                   </div>
                 )}
@@ -1890,7 +1890,7 @@ export function ContractsList({ branchId }: ContractsListProps) {
                     {selectedContract.startSignedAt ? (
                       <>
                         <CheckCircle className="h-4 w-4 text-green-600" />
-                        <span>{tcl.startSigned} {new Date(selectedContract.startSignedAt).toLocaleDateString('ar-SA')}</span>
+                        <span>{tcl.startSigned} {new Date(selectedContract.startSignedAt).toLocaleDateString('ar-SA-u-nu-latn')}</span>
                       </>
                     ) : (
                       <>
@@ -1903,7 +1903,7 @@ export function ContractsList({ branchId }: ContractsListProps) {
                     {selectedContract.endSignedAt ? (
                       <>
                         <CheckCircle className="h-4 w-4 text-green-600" />
-                        <span>{tcl.endSigned} {new Date(selectedContract.endSignedAt).toLocaleDateString('ar-SA')}</span>
+                        <span>{tcl.endSigned} {new Date(selectedContract.endSignedAt).toLocaleDateString('ar-SA-u-nu-latn')}</span>
                       </>
                     ) : (
                       <>
@@ -1959,13 +1959,13 @@ export function ContractsList({ branchId }: ContractsListProps) {
                                 <div key={i} className="grid grid-cols-3 gap-2 text-sm">
                                   <div className="flex items-center gap-1">
                                     <Calendar className="h-3 w-3 text-muted-foreground" />
-                                    {date ? new Date(date).toLocaleDateString('ar-SA') : '—'}
+                                    {date ? new Date(date).toLocaleDateString('ar-SA-u-nu-latn') : '—'}
                                   </div>
                                   <div className="text-muted-foreground">
-                                    {paymentDueDates[i] ? new Date(paymentDueDates[i]).toLocaleDateString('ar-SA') : '—'}
+                                    {paymentDueDates[i] ? new Date(paymentDueDates[i]).toLocaleDateString('ar-SA-u-nu-latn') : '—'}
                                   </div>
                                   <div className="font-medium">
-                                    {paymentAmounts[i] ? `ر.س ${paymentAmounts[i]?.toLocaleString('ar-SA', { minimumFractionDigits: 2 })}` : '—'}
+                                    {paymentAmounts[i] ? `ر.س ${paymentAmounts[i]?.toLocaleString('ar-SA-u-nu-latn', { minimumFractionDigits: 2 })}` : '—'}
                                   </div>
                                 </div>
                               ))}
@@ -1999,10 +1999,10 @@ export function ContractsList({ branchId }: ContractsListProps) {
                         <TableRow key={payment.id}>
                           <TableCell className="font-medium">{tcl.payment} #{payment.paymentNo}</TableCell>
                           <TableCell>
-                            {payment.dueDate ? new Date(payment.dueDate).toLocaleDateString('ar-SA') : '—'}
+                            {payment.dueDate ? new Date(payment.dueDate).toLocaleDateString('ar-SA-u-nu-latn') : '—'}
                           </TableCell>
                           <TableCell>
-                            {payment.amount ? `ر.س ${payment.amount.toLocaleString('ar-SA', { minimumFractionDigits: 2 })}` : '—'}
+                            {payment.amount ? `ر.س ${payment.amount.toLocaleString('ar-SA-u-nu-latn', { minimumFractionDigits: 2 })}` : '—'}
                           </TableCell>
                           <TableCell>
                             <Badge variant={payment.status === 'PAID' ? 'default' : payment.status === 'OVERDUE' ? 'destructive' : 'secondary'}>

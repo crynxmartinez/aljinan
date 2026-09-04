@@ -185,7 +185,7 @@ export function AppointmentsList({ branchId }: AppointmentsListProps) {
   }
 
   const formatDate = (dateStr: string) => {
-    return new Date(dateStr).toLocaleDateString('ar-SA', {
+    return new Date(dateStr).toLocaleDateString('ar-SA-u-nu-latn', {
       weekday: 'short',
       month: 'short',
       day: 'numeric',

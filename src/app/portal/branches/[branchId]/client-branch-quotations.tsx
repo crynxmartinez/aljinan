@@ -25,6 +25,7 @@ import {
   ThumbsUp,
   ThumbsDown,
 } from 'lucide-react'
+import { useTranslation } from '@/lib/i18n/use-translation'
 
 interface QuotationItem {
   id: string
@@ -57,6 +58,9 @@ interface ClientBranchQuotationsProps {
 }
 
 export function ClientBranchQuotations({ branchId }: ClientBranchQuotationsProps) {
+  const { t, locale } = useTranslation()
+  const tc = t.dashboard.clientBranchQuotationsPage
+  const dateLocale = locale === 'ar' ? 'ar-SA-u-nu-latn' : 'en-US'
   const router = useRouter()
   const [quotations, setQuotations] = useState<Quotation[]>([])
   const [loading, setLoading] = useState(true)
@@ -121,11 +125,11 @@ export function ClientBranchQuotations({ branchId }: ClientBranchQuotationsProps
 
   const getStatusBadge = (status: Quotation['status']) => {
     const config = {
-      DRAFT: { style: 'bg-gray-100 text-gray-700', icon: FileEdit, label: 'Draft' },
-      SENT: { style: 'bg-blue-100 text-blue-700', icon: Clock, label: 'Pending Review' },
-      APPROVED: { style: 'bg-green-100 text-green-700', icon: CheckCircle, label: 'Approved' },
-      REJECTED: { style: 'bg-red-100 text-red-700', icon: XCircle, label: 'Rejected' },
-      EXPIRED: { style: 'bg-orange-100 text-orange-700', icon: Clock, label: 'Expired' },
+      DRAFT: { style: 'bg-gray-100 text-gray-700', icon: FileEdit, label: tc.statusDraft },
+      SENT: { style: 'bg-blue-100 text-blue-700', icon: Clock, label: tc.statusPendingReview },
+      APPROVED: { style: 'bg-green-100 text-green-700', icon: CheckCircle, label: tc.statusApproved },
+      REJECTED: { style: 'bg-red-100 text-red-700', icon: XCircle, label: tc.statusRejected },
+      EXPIRED: { style: 'bg-orange-100 text-orange-700', icon: Clock, label: tc.statusExpired },
     }
     const { style, icon: Icon, label } = config[status]
     return (
@@ -137,7 +141,7 @@ export function ClientBranchQuotations({ branchId }: ClientBranchQuotationsProps
   }
 
   const formatCurrency = (amount: number) => {
-    return new Intl.NumberFormat('en-SA', { style: 'currency', currency: 'SAR' }).format(amount)
+    return new Intl.NumberFormat(dateLocale, { style: 'currency', currency: 'SAR' }).format(amount)
   }
 
   if (loading) {
@@ -162,10 +166,10 @@ export function ClientBranchQuotations({ branchId }: ClientBranchQuotationsProps
             <CardHeader>
               <CardTitle className="flex items-center gap-2 text-amber-800">
                 <Clock className="h-5 w-5" />
-                Pending Your Approval
+                {tc.pendingApprovalTitle}
               </CardTitle>
               <CardDescription>
-                Review and approve or reject these quotations
+                {tc.pendingApprovalDesc}
               </CardDescription>
             </CardHeader>
             <CardContent className="space-y-4">
@@ -191,10 +195,10 @@ export function ClientBranchQuotations({ branchId }: ClientBranchQuotationsProps
                     <table className="w-full text-sm">
                       <thead className="bg-muted/50">
                         <tr>
-                          <th className="text-start p-2">الوصف</th>
-                          <th className="text-end p-2 w-20">الكمية</th>
-                          <th className="text-end p-2 w-24">السعر</th>
-                          <th className="text-end p-2 w-24">الإجمالي</th>
+                          <th className="text-start p-2">{tc.descriptionCol}</th>
+                          <th className="text-end p-2 w-20">{tc.quantityCol}</th>
+                          <th className="text-end p-2 w-24">{tc.priceCol}</th>
+                          <th className="text-end p-2 w-24">{tc.totalCol}</th>
                         </tr>
                       </thead>
                       <tbody>
@@ -209,15 +213,15 @@ export function ClientBranchQuotations({ branchId }: ClientBranchQuotationsProps
                       </tbody>
                       <tfoot className="bg-muted/30">
                         <tr className="border-t">
-                          <td colSpan={3} className="text-end p-2">المجموع الفرعي</td>
+                          <td colSpan={3} className="text-end p-2">{tc.subtotalLabel}</td>
                           <td className="text-end p-2">{formatCurrency(quotation.subtotal)}</td>
                         </tr>
                         <tr>
-                          <td colSpan={3} className="text-end p-2">Tax ({quotation.taxRate}%)</td>
+                          <td colSpan={3} className="text-end p-2">{tc.taxLabel.replace('{rate}', String(quotation.taxRate))}</td>
                           <td className="text-end p-2">{formatCurrency(quotation.taxAmount)}</td>
                         </tr>
                         <tr className="font-semibold">
-                          <td colSpan={3} className="text-end p-2">الإجمالي</td>
+                          <td colSpan={3} className="text-end p-2">{tc.totalLabel}</td>
                           <td className="text-end p-2">{formatCurrency(quotation.total)}</td>
                         </tr>
                       </tfoot>
@@ -226,9 +230,9 @@ export function ClientBranchQuotations({ branchId }: ClientBranchQuotationsProps
 
                   <div className="flex items-center justify-between">
                     <div className="text-sm text-muted-foreground">
-                      Sent {new Date(quotation.sentAt!).toLocaleDateString('ar-SA')}
+                      {tc.sentOn.replace('{date}', new Date(quotation.sentAt!).toLocaleDateString(dateLocale))}
                       {quotation.validUntil && (
-                        <> · Valid until {new Date(quotation.validUntil).toLocaleDateString('ar-SA')}</>
+                        <> · {tc.validUntil.replace('{date}', new Date(quotation.validUntil).toLocaleDateString(dateLocale))}</>
                       )}
                     </div>
                     <div className="flex gap-2">
@@ -237,13 +241,13 @@ export function ClientBranchQuotations({ branchId }: ClientBranchQuotationsProps
                         onClick={() => openActionDialog(quotation, 'reject')}
                       >
                         <ThumbsDown className="me-2 h-4 w-4" />
-                        Reject
+                        {tc.rejectBtn}
                       </Button>
                       <Button
                         onClick={() => openActionDialog(quotation, 'approve')}
                       >
                         <ThumbsUp className="me-2 h-4 w-4" />
-                        Approve
+                        {tc.approveBtn}
                       </Button>
                     </div>
                   </div>
@@ -256,23 +260,23 @@ export function ClientBranchQuotations({ branchId }: ClientBranchQuotationsProps
         {/* All Quotations */}
         <Card>
           <CardHeader>
-            <CardTitle>Quotations</CardTitle>
+            <CardTitle>{tc.quotationsTitle}</CardTitle>
             <CardDescription>
-              All quotations for this branch
+              {tc.quotationsDesc}
             </CardDescription>
           </CardHeader>
           <CardContent>
             {quotations.length === 0 ? (
               <div className="flex flex-col items-center justify-center py-12 text-center">
                 <Receipt className="h-12 w-12 text-muted-foreground/30 mb-4" />
-                <h3 className="text-lg font-semibold mb-2">No quotations yet</h3>
+                <h3 className="text-lg font-semibold mb-2">{tc.noQuotationsYet}</h3>
                 <p className="text-muted-foreground max-w-md">
-                  Quotations from your contractor will appear here. You can review and approve or reject them.
+                  {tc.noQuotationsDesc}
                 </p>
               </div>
             ) : otherQuotations.length === 0 && pendingQuotations.length > 0 ? (
               <p className="text-center text-muted-foreground py-4">
-                All quotations are shown in the pending section above.
+                {tc.allShownAboveNote}
               </p>
             ) : (
               <div className="space-y-4">
@@ -289,17 +293,17 @@ export function ClientBranchQuotations({ branchId }: ClientBranchQuotationsProps
                         </div>
                         <div className="flex items-center gap-4 text-sm text-muted-foreground">
                           <span className="font-semibold text-foreground">{formatCurrency(quotation.total)}</span>
-                          <span>{quotation.items.length} item{quotation.items.length !== 1 ? 's' : ''}</span>
+                          <span>{tc.itemCount.replace('{count}', String(quotation.items.length))}</span>
                           {quotation.approvedAt && (
-                            <span>Approved {new Date(quotation.approvedAt).toLocaleDateString('ar-SA')}</span>
+                            <span>{tc.approvedOn.replace('{date}', new Date(quotation.approvedAt).toLocaleDateString(dateLocale))}</span>
                           )}
                           {quotation.rejectedAt && (
-                            <span>Rejected {new Date(quotation.rejectedAt).toLocaleDateString('ar-SA')}</span>
+                            <span>{tc.rejectedOn.replace('{date}', new Date(quotation.rejectedAt).toLocaleDateString(dateLocale))}</span>
                           )}
                         </div>
                         {quotation.rejectionNote && (
                           <p className="text-sm text-red-600 mt-2">
-                            Your note: {quotation.rejectionNote}
+                            {tc.yourNoteLabel.replace('{note}', quotation.rejectionNote)}
                           </p>
                         )}
                       </div>
@@ -317,12 +321,12 @@ export function ClientBranchQuotations({ branchId }: ClientBranchQuotationsProps
         <DialogContent>
           <DialogHeader>
             <DialogTitle>
-              {actionType === 'approve' ? 'Approve Quotation' : 'Reject Quotation'}
+              {actionType === 'approve' ? tc.approveQuotationTitle : tc.rejectQuotationTitle}
             </DialogTitle>
             <DialogDescription>
               {actionType === 'approve'
-                ? 'Are you sure you want to approve this quotation?'
-                : 'Please provide a reason for rejecting this quotation.'}
+                ? tc.approveConfirm
+                : tc.rejectPrompt}
             </DialogDescription>
           </DialogHeader>
 
@@ -335,12 +339,12 @@ export function ClientBranchQuotations({ branchId }: ClientBranchQuotationsProps
 
               {actionType === 'reject' && (
                 <div className="space-y-2">
-                  <Label htmlFor="rejectionNote">Reason for rejection</Label>
+                  <Label htmlFor="rejectionNote">{tc.rejectionReasonLabel}</Label>
                   <Textarea
                     id="rejectionNote"
                     value={rejectionNote}
                     onChange={(e) => setRejectionNote(e.target.value)}
-                    placeholder="Please explain why you're rejecting this quotation..."
+                    placeholder={tc.rejectionReasonPlaceholder}
                     rows={3}
                   />
                 </div>
@@ -350,7 +354,7 @@ export function ClientBranchQuotations({ branchId }: ClientBranchQuotationsProps
 
           <DialogFooter>
             <Button variant="outline" onClick={() => setActionDialogOpen(false)}>
-              Cancel
+              {tc.cancelBtn}
             </Button>
             <Button
               onClick={handleAction}
@@ -358,7 +362,7 @@ export function ClientBranchQuotations({ branchId }: ClientBranchQuotationsProps
               variant={actionType === 'reject' ? 'destructive' : 'default'}
             >
               {processing && <Loader2 className="me-2 h-4 w-4 animate-spin" />}
-              {actionType === 'approve' ? 'Approve' : 'Reject'}
+              {actionType === 'approve' ? tc.approveBtn : tc.rejectBtn}
             </Button>
           </DialogFooter>
         </DialogContent>

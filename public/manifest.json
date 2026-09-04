@@ -1,7 +1,7 @@
 {
-  "name": "Tasheel - Safety Management Platform",
-  "short_name": "Tasheel",
-  "description": "Leading safety inspection and compliance platform for contractors in Saudi Arabia. Manage fire safety, HVAC, electrical inspections, certificates, and work orders.",
+  "name": "تسهيل - منصة إدارة السلامة",
+  "short_name": "تسهيل",
+  "description": "منصة رائدة للتفتيش والامتثال في مجال السلامة لمقاولي المملكة العربية السعودية. إدارة تفتيش السلامة من الحريق والتكييف والكهرباء والشهادات وأوامر العمل.",
   "start_url": "/",
   "display": "standalone",
   "background_color": "#ffffff",
@@ -25,9 +25,9 @@
   "screenshots": [],
   "shortcuts": [
     {
-      "name": "Dashboard",
-      "short_name": "Dashboard",
-      "description": "Go to contractor dashboard",
+      "name": "لوحة التحكم",
+      "short_name": "لوحة التحكم",
+      "description": "الانتقال إلى لوحة تحكم المقاول",
       "url": "/dashboard",
       "icons": [
         {
@@ -37,9 +37,9 @@
       ]
     },
     {
-      "name": "Work Orders",
-      "short_name": "Work Orders",
-      "description": "Manage work orders",
+      "name": "أوامر العمل",
+      "short_name": "أوامر العمل",
+      "description": "إدارة أوامر العمل",
       "url": "/dashboard/work-orders",
       "icons": [
         {
@@ -49,9 +49,9 @@
       ]
     },
     {
-      "name": "Client Portal",
-      "short_name": "Portal",
-      "description": "Access client portal",
+      "name": "بوابة العملاء",
+      "short_name": "البوابة",
+      "description": "الوصول إلى بوابة العملاء",
       "url": "/portal",
       "icons": [
         {

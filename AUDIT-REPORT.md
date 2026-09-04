@@ -1,5 +1,11 @@
 # System-Wide Audit Report
 
+> **Historical record — superseded.** This audit predates several rounds of i18n work,
+> including a 2026-09-04 pass that closed out the i18n findings below (portal branch pages,
+> emails, auth pages, toasts, RTL layout, SEO metadata) and added a translation-parity test
+> (`tests/unit/i18n.test.ts`). Treat the i18n sections here as a snapshot of what was true on
+> the date below, not current state — check the code before acting on anything in this file.
+
 **Date:** August 20, 2026  
 **Status:** Complete  
 **TypeScript:** 0 errors | **ESLint:** 0 errors

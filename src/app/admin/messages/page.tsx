@@ -112,7 +112,7 @@ export default function MessagesPage() {
     if (diffMins < 60) return `${diffMins}${tm.mAgo}`
     if (diffHours < 24) return `${diffHours}${tm.hAgo}`
     if (diffDays < 7) return `${diffDays}${tm.dAgo}`
-    return date.toLocaleDateString('ar-SA', { month: 'short', day: 'numeric' })
+    return date.toLocaleDateString('ar-SA-u-nu-latn', { month: 'short', day: 'numeric' })
   }
 
   if (loading) {
@@ -209,7 +209,7 @@ export default function MessagesPage() {
                   <div>
                     <CardTitle>{selectedInquiry.name}</CardTitle>
                     <p className="text-sm text-muted-foreground mt-1">
-                      {tm.submitted} {new Date(selectedInquiry.createdAt).toLocaleDateString('ar-SA', {
+                      {tm.submitted} {new Date(selectedInquiry.createdAt).toLocaleDateString('ar-SA-u-nu-latn', {
                         month: 'long', day: 'numeric', year: 'numeric', hour: '2-digit', minute: '2-digit',
                       })}
                     </p>

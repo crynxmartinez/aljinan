@@ -46,8 +46,9 @@ const activityIcons: Record<string, React.ReactNode> = {
 }
 
 export function ActivityPanel({ branchId, isOpen, onClose }: ActivityPanelProps) {
-  const { t } = useTranslation()
+  const { t, locale } = useTranslation()
   const ta = t.dashboard.activityPanel
+  const dateLocale = locale === 'ar' ? 'ar-SA-u-nu-latn' : 'en-US'
   const [activities, setActivities] = useState<Activity[]>([])
   const [loading, setLoading] = useState(false)
   const [comment, setComment] = useState('')
@@ -107,13 +108,13 @@ export function ActivityPanel({ branchId, isOpen, onClose }: ActivityPanelProps)
     if (minutes < 60) return `${minutes}${ta.mAgo}`
     if (hours < 24) return `${hours}${ta.hAgo}`
     if (days < 7) return `${days}${ta.dAgo}`
-    return date.toLocaleDateString('ar-SA')
+    return date.toLocaleDateString(dateLocale)
   }
 
   if (!isOpen) return null
 
   return (
-    <div className="fixed inset-y-0 right-0 w-80 bg-background border-s shadow-lg z-50 flex flex-col">
+    <div className="fixed inset-y-0 end-0 w-80 bg-background border-s shadow-lg z-50 flex flex-col">
       {/* Header */}
       <div className="flex items-center justify-between p-4 border-b">
         <div className="flex items-center gap-2">

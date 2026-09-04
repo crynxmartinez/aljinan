@@ -1,8 +1,10 @@
 import type { Locale } from './translations'
 
+// The `-u-nu-latn` extension keeps digits as 0-9 in Arabic too — Saudi business documents
+// use Western digits, so `ar-SA`'s default Arabic-Indic numerals (٠١٢٣) would look foreign.
 const DATE_LOCALE: Record<Locale, string> = {
   en: 'en-US',
-  ar: 'ar-SA',
+  ar: 'ar-SA-u-nu-latn',
 }
 
 export function formatDate(

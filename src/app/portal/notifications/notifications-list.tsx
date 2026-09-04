@@ -112,7 +112,7 @@ export function NotificationsList() {
     if (diffMins < 60) return `${diffMins}${tn.mAgo}`
     if (diffHours < 24) return `${diffHours}${tn.hAgo}`
     if (diffDays < 7) return `${diffDays}${tn.dAgo}`
-    return date.toLocaleDateString('ar-SA')
+    return date.toLocaleDateString('ar-SA-u-nu-latn')
   }
 
   if (loading) {

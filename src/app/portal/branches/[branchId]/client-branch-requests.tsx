@@ -67,6 +67,7 @@ import {
   type ExportOptions,
   type ExportableRequest,
 } from '@/lib/export/export-utils'
+import { useTranslation } from '@/lib/i18n/use-translation'
 
 interface WorkOrder {
   id: string
@@ -172,8 +173,11 @@ function groupWorkOrders(workOrders: WorkOrder[]): Map<string, WorkOrder[]> {
 
 // Collapsible Work Orders Grouped View Component
 function WorkOrdersGroupedView({ workOrders }: { workOrders: WorkOrder[] }) {
+  const { t, locale } = useTranslation()
+  const tc = t.dashboard.clientBranchRequestsPage
   const [expandedGroups, setExpandedGroups] = useState<Set<string>>(new Set())
   const groups = groupWorkOrders(workOrders)
+  const dateLocale = locale === 'ar' ? 'ar-SA-u-nu-latn' : 'en-US'
 
   const toggleGroup = (groupName: string) => {
     setExpandedGroups(prev => {
@@ -214,7 +218,7 @@ function WorkOrdersGroupedView({ workOrders }: { workOrders: WorkOrder[] }) {
                   <span className="font-medium">{groupName}</span>
                   {!isSingleItem && (
                     <Badge variant="secondary" className="text-xs">
-                      {items.length} occurrences
+                      {tc.occurrencesCount.replace('{count}', String(items.length))}
                     </Badge>
                   )}
                 </div>
@@ -226,10 +230,10 @@ function WorkOrdersGroupedView({ workOrders }: { workOrders: WorkOrder[] }) {
               </div>
               <div className="text-end flex-shrink-0">
                 {hasPendingPrice ? (
-                  <Badge variant="outline" className="text-xs">بانتظار السعر</Badge>
+                  <Badge variant="outline" className="text-xs">{tc.awaitingPrice}</Badge>
                 ) : (
                   <span className="font-semibold text-primary">
-                    ر.س {groupTotal.toLocaleString('ar-SA', { minimumFractionDigits: 2 })}
+                    {t.dashboard.requestsList.sar} {groupTotal.toLocaleString(dateLocale, { minimumFractionDigits: 2 })}
                   </span>
                 )}
               </div>
@@ -243,10 +247,10 @@ function WorkOrdersGroupedView({ workOrders }: { workOrders: WorkOrder[] }) {
                   {items[0].scheduledDate ? (
                     <div className="flex items-center gap-1">
                       <Calendar className="h-3 w-3" />
-                      {new Date(items[0].scheduledDate).toLocaleDateString('ar-SA')}
+                      {new Date(items[0].scheduledDate).toLocaleDateString(dateLocale)}
                     </div>
                   ) : (
-                    <span>لا يوجد تاريخ مجدول</span>
+                    <span>{tc.noDateScheduled}</span>
                   )}
                 </div>
               </div>
@@ -266,16 +270,16 @@ function WorkOrdersGroupedView({ workOrders }: { workOrders: WorkOrder[] }) {
                         {wo.scheduledDate && (
                           <span className="ms-2 flex items-center gap-1 inline-flex">
                             <Calendar className="h-3 w-3" />
-                            {new Date(wo.scheduledDate).toLocaleDateString('ar-SA')}
+                            {new Date(wo.scheduledDate).toLocaleDateString(dateLocale)}
                           </span>
                         )}
                       </div>
                     </div>
                     <div className="text-end">
                       {wo.price !== null ? (
-                        <span className="font-medium">ر.س {wo.price.toLocaleString('ar-SA', { minimumFractionDigits: 2 })}</span>
+                        <span className="font-medium">{t.dashboard.requestsList.sar} {wo.price.toLocaleString(dateLocale, { minimumFractionDigits: 2 })}</span>
                       ) : (
-                        <Badge variant="outline" className="text-xs">قيد الانتظار</Badge>
+                        <Badge variant="outline" className="text-xs">{tc.pendingBadge}</Badge>
                       )}
                     </div>
                   </div>
@@ -290,6 +294,9 @@ function WorkOrdersGroupedView({ workOrders }: { workOrders: WorkOrder[] }) {
 }
 
 export function ClientBranchRequests({ branchId, onDataChange, userId }: ClientBranchRequestsProps) {
+  const { t, locale } = useTranslation()
+  const tc = t.dashboard.clientBranchRequestsPage
+  const dateLocale = locale === 'ar' ? 'ar-SA-u-nu-latn' : 'en-US'
   const router = useRouter()
   const [requests, setRequests] = useState<Request[]>([])
   const [allRequests, setAllRequests] = useState<Request[]>([])
@@ -376,10 +383,10 @@ export function ClientBranchRequests({ branchId, onDataChange, userId }: ClientB
         setError('')
       } else {
         const errorData = await response.json()
-        setError(`Failed to load requests: ${errorData.error || response.statusText}`)
+        setError(tc.loadRequestsFailed.replace('{error}', errorData.error || response.statusText))
       }
     } catch {
-      setError('Failed to fetch requests. Please try again.')
+      setError(tc.fetchRequestsFailed)
     } finally {
       setLoading(false)
     }
@@ -424,7 +431,7 @@ export function ClientBranchRequests({ branchId, onDataChange, userId }: ClientB
       onDataChange?.()
       router.refresh()
     } catch (err) {
-      setError(err instanceof Error ? err.message : 'An error occurred')
+      setError(err instanceof Error ? err.message : tc.genericError)
     } finally {
       setApproving(false)
     }
@@ -459,7 +466,7 @@ export function ClientBranchRequests({ branchId, onDataChange, userId }: ClientB
       const updated = updatedProjects.find((p: Project) => p.id === selectedProject.id)
       if (updated) setSelectedProject(updated)
     } catch (err) {
-      setError(err instanceof Error ? err.message : 'An error occurred')
+      setError(err instanceof Error ? err.message : tc.genericError)
     } finally {
       setAddingWorkOrder(false)
     }
@@ -548,7 +555,7 @@ export function ClientBranchRequests({ branchId, onDataChange, userId }: ClientB
       fetchRequests()
       router.refresh()
     } catch (err) {
-      setError(err instanceof Error ? err.message : 'An error occurred')
+      setError(err instanceof Error ? err.message : tc.genericError)
     } finally {
       setRespondingToQuote(false)
     }
@@ -582,7 +589,7 @@ export function ClientBranchRequests({ branchId, onDataChange, userId }: ClientB
       fetchRequests()
       router.refresh()
     } catch (err) {
-      setError(err instanceof Error ? err.message : 'An error occurred')
+      setError(err instanceof Error ? err.message : tc.genericError)
     } finally {
       setRespondingToQuote(false)
     }
@@ -599,7 +606,7 @@ export function ClientBranchRequests({ branchId, onDataChange, userId }: ClientB
   // Start work immediately without quotation
   const handleStartImmediately = async () => {
     if (!startImmediatelyRequest) {
-      setError('No request selected')
+      setError(tc.noRequestSelected)
       return
     }
 
@@ -614,7 +621,7 @@ export function ClientBranchRequests({ branchId, onDataChange, userId }: ClientB
 
       if (!response.ok) {
         const data = await response.json()
-        throw new Error(data.error || data.details || 'Failed to start work order')
+        throw new Error(data.error || data.details || t.toasts.createWorkOrderFailed)
       }
 
       const result = await response.json()
@@ -626,24 +633,52 @@ export function ClientBranchRequests({ branchId, onDataChange, userId }: ClientB
       onDataChange?.()
       router.refresh()
 
-      toast.success(`✅ Work order created in IN PROGRESS! ID: ${result.workOrderId?.slice(0, 8)}`)
+      toast.success(tc.workOrderCreatedToast.replace('{id}', result.workOrderId?.slice(0, 8) ?? ''))
     } catch (err) {
-      setError(err instanceof Error ? err.message : 'An error occurred')
-      toast.error(err instanceof Error ? err.message : 'Failed to create work order')
+      setError(err instanceof Error ? err.message : tc.genericError)
+      toast.error(err instanceof Error ? err.message : t.toasts.createWorkOrderFailed)
     } finally {
       setStartingImmediately(false)
     }
   }
 
+  // Map an equipment type enum value to its translated label
+  const equipmentTypeLabel = (type: string): string => {
+    const el = t.dashboard.equipmentList
+    const map: Record<string, string> = {
+      FIRE_EXTINGUISHER: el.fireExtinguisher,
+      FIRE_ALARM_PANEL: el.fireAlarmPanel,
+      SPRINKLER_SYSTEM: el.sprinklerSystem,
+      EMERGENCY_LIGHTING: el.emergencyLighting,
+      EXIT_SIGN: el.exitSign,
+      FIRE_DOOR: el.fireDoor,
+      SMOKE_DETECTOR: el.smokeDetector,
+      HEAT_DETECTOR: el.heatDetector,
+      GAS_DETECTOR: el.gasDetector,
+      KITCHEN_HOOD_SUPPRESSION: el.kitchenHoodSuppression,
+      FIRE_PUMP: el.firePump,
+      FIRE_HOSE_REEL: el.fireHoseReel,
+      OTHER: el.other,
+    }
+    return map[type] ?? type.replace(/_/g, ' ').toLowerCase().replace(/\b\w/g, l => l.toUpperCase())
+  }
+
+  // Count + frequency label for a recurring type, used to fill "{count} {freq}" templates.
+  // Only MONTHLY/QUARTERLY appear in these specific flows (no SEMI_ANNUALLY here).
+  const recurringCountAndFreq = (recurringType: string | null | undefined): { count: string; freq: string } =>
+    recurringType === 'MONTHLY'
+      ? { count: '12', freq: tc.monthly }
+      : { count: '4', freq: tc.quarterly }
+
   // Format work order type for display
   const formatWorkOrderType = (type: string | null | undefined): string => {
-    if (!type) return 'خدمة'
+    if (!type) return tc.typeService
     switch (type) {
-      case 'SERVICE': return 'خدمة'
-      case 'INSPECTION': return 'تفتيش'
-      case 'MAINTENANCE': return 'صيانة'
-      case 'INSTALLATION': return 'تركيب'
-      case 'STICKER_INSPECTION': return 'تفتيش ملصقات'
+      case 'SERVICE': return tc.typeService
+      case 'INSPECTION': return tc.typeInspection
+      case 'MAINTENANCE': return tc.typeMaintenance
+      case 'INSTALLATION': return tc.typeInstallation
+      case 'STICKER_INSPECTION': return tc.typeStickerInspection
       default: return type.charAt(0) + type.slice(1).toLowerCase()
     }
   }
@@ -710,40 +745,46 @@ export function ClientBranchRequests({ branchId, onDataChange, userId }: ClientB
       fetchRequests()
       router.refresh()
     } catch (err) {
-      setError(err instanceof Error ? err.message : 'An error occurred')
+      setError(err instanceof Error ? err.message : tc.genericError)
     } finally {
       setCreating(false)
     }
   }
 
   const getPriorityBadge = (priority: Request['priority']) => {
-    const styles = {
+    const styles: Record<Request['priority'], string> = {
       LOW: 'bg-gray-100 text-gray-700',
       MEDIUM: 'bg-blue-100 text-blue-700',
       HIGH: 'bg-orange-100 text-orange-700',
       URGENT: 'bg-red-100 text-red-700',
     }
-    return <Badge className={styles[priority]}>{priority}</Badge>
+    const labels: Record<Request['priority'], string> = {
+      LOW: tc.priorityLow,
+      MEDIUM: tc.priorityMedium,
+      HIGH: tc.priorityHigh,
+      URGENT: tc.priorityUrgent,
+    }
+    return <Badge className={styles[priority]}>{labels[priority]}</Badge>
   }
 
   const getStatusBadge = (status: Request['status']) => {
-    const config: Record<Request['status'], { style: string; icon: typeof Clock }> = {
-      REQUESTED: { style: 'bg-yellow-100 text-yellow-700', icon: Clock },
-      QUOTED: { style: 'bg-purple-100 text-purple-700', icon: Clock },
-      SCHEDULED: { style: 'bg-blue-100 text-blue-700', icon: Clock },
-      IN_PROGRESS: { style: 'bg-blue-100 text-blue-700', icon: AlertCircle },
-      FOR_REVIEW: { style: 'bg-orange-100 text-orange-700', icon: AlertCircle },
-      PENDING_APPROVAL: { style: 'bg-amber-100 text-amber-700', icon: Clock },
-      COMPLETED: { style: 'bg-green-100 text-green-700', icon: CheckCircle },
-      CLOSED: { style: 'bg-gray-100 text-gray-700', icon: CheckCircle },
-      REJECTED: { style: 'bg-red-100 text-red-700', icon: XCircle },
-      CANCELLED: { style: 'bg-gray-100 text-gray-700', icon: XCircle },
+    const config: Record<Request['status'], { style: string; icon: typeof Clock; label: string }> = {
+      REQUESTED: { style: 'bg-yellow-100 text-yellow-700', icon: Clock, label: tc.statusRequested },
+      QUOTED: { style: 'bg-purple-100 text-purple-700', icon: Clock, label: tc.statusQuoted },
+      SCHEDULED: { style: 'bg-blue-100 text-blue-700', icon: Clock, label: tc.statusScheduled },
+      IN_PROGRESS: { style: 'bg-blue-100 text-blue-700', icon: AlertCircle, label: tc.statusInProgress },
+      FOR_REVIEW: { style: 'bg-orange-100 text-orange-700', icon: AlertCircle, label: tc.statusForReview },
+      PENDING_APPROVAL: { style: 'bg-amber-100 text-amber-700', icon: Clock, label: tc.statusPendingApproval },
+      COMPLETED: { style: 'bg-green-100 text-green-700', icon: CheckCircle, label: tc.statusCompleted },
+      CLOSED: { style: 'bg-gray-100 text-gray-700', icon: CheckCircle, label: tc.statusClosed },
+      REJECTED: { style: 'bg-red-100 text-red-700', icon: XCircle, label: tc.statusRejected },
+      CANCELLED: { style: 'bg-gray-100 text-gray-700', icon: XCircle, label: tc.statusCancelled },
     }
-    const { style, icon: Icon } = config[status]
+    const { style, icon: Icon, label } = config[status]
     return (
       <Badge className={`${style} flex items-center gap-1`}>
         <Icon className="h-3 w-3" />
-        {status.replace('_', ' ')}
+        {label}
       </Badge>
     )
   }
@@ -763,22 +804,22 @@ export function ClientBranchRequests({ branchId, onDataChange, userId }: ClientB
       <Card>
         <CardHeader className="flex flex-row items-center justify-between">
           <div>
-            <CardTitle>طلبات الخدمة</CardTitle>
+            <CardTitle>{tc.title}</CardTitle>
             <CardDescription>
-              عرض وإرسال طلبات الخدمة لهذا الفرع
+              {tc.subtitle}
             </CardDescription>
           </div>
           <div className="flex items-center gap-2">
             <ExportDialog
-              title="تصدير سجل الطلبات"
-              description="قم بتنزيل سجل طلباتك كملف Excel أو CSV"
+              title={tc.exportTitle}
+              description={tc.exportDesc}
               itemCount={allRequests.length}
               onExport={handleExportRequests}
               showDateRange={true}
             />
             <Button onClick={() => setCreateDialogOpen(true)}>
               <Plus className="me-2 h-4 w-4" />
-              إرسال طلب
+              {tc.submitRequest}
             </Button>
           </div>
         </CardHeader>
@@ -791,13 +832,13 @@ export function ClientBranchRequests({ branchId, onDataChange, userId }: ClientB
           {requests.length === 0 ? (
             <div className="flex flex-col items-center justify-center py-12 text-center">
               <FileText className="h-12 w-12 text-muted-foreground/30 mb-4" />
-              <h3 className="text-lg font-semibold mb-2">لا توجد طلبات بعد</h3>
+              <h3 className="text-lg font-semibold mb-2">{tc.noRequestsYet}</h3>
               <p className="text-muted-foreground max-w-md mb-4">
-                أرسل طلب خدمة إلى المقاول الخاص بك. سيقوم بمراجعة طلبك والرد عليه.
+                {tc.noRequestsDesc}
               </p>
               <Button onClick={() => setCreateDialogOpen(true)}>
                 <Plus className="me-2 h-4 w-4" />
-                Submit Request
+                {tc.submitRequest}
               </Button>
             </div>
           ) : (
@@ -832,13 +873,13 @@ export function ClientBranchRequests({ branchId, onDataChange, userId }: ClientB
                       {getPriorityBadge(request.priority)}
                       {getStatusBadge(request.status)}
                       {request.createdByRole === 'CLIENT' && (
-                        <Badge variant="outline" className="text-xs">مقدم منك</Badge>
+                        <Badge variant="outline" className="text-xs">{tc.submittedByYou}</Badge>
                       )}
                       {request.recurringType && request.recurringType !== 'ONCE' && (
-                        <Badge variant="secondary" className="text-xs">{request.recurringType === 'MONTHLY' ? 'شهري' : 'ربع سنوي'}</Badge>
+                        <Badge variant="secondary" className="text-xs">{request.recurringType === 'MONTHLY' ? tc.monthly : tc.quarterly}</Badge>
                       )}
                       {request.needsCertificate && (
-                        <Badge variant="outline" className="text-xs text-green-600">شهادة</Badge>
+                        <Badge variant="outline" className="text-xs text-green-600">{tc.certificateBadge}</Badge>
                       )}
                     </div>
                     {request.description && !request.title.startsWith('Project Proposal:') && (
@@ -847,12 +888,12 @@ export function ClientBranchRequests({ branchId, onDataChange, userId }: ClientB
                       </p>
                     )}
                     <p className="text-xs text-muted-foreground">
-                      Created {new Date(request.createdAt).toLocaleDateString('ar-SA')}
+                      {tc.createdLabel} {new Date(request.createdAt).toLocaleDateString(dateLocale)}
                       {request.dueDate && (
-                        <> · Due {new Date(request.dueDate).toLocaleDateString('ar-SA')}</>
+                        <> · {tc.dueLabel} {new Date(request.dueDate).toLocaleDateString(dateLocale)}</>
                       )}
                       {request.completedAt && (
-                        <> · Completed {new Date(request.completedAt).toLocaleDateString('ar-SA')}</>
+                        <> · {tc.completedLabel} {new Date(request.completedAt).toLocaleDateString(dateLocale)}</>
                       )}
                     </p>
                   </div>
@@ -865,13 +906,13 @@ export function ClientBranchRequests({ branchId, onDataChange, userId }: ClientB
                           <div className="flex items-center gap-1">
                             <Banknote className="h-4 w-4 text-purple-600" />
                             <span className="font-semibold text-purple-700">
-                              ر.س {request.quotedPrice.toLocaleString('ar-SA', { minimumFractionDigits: 2 })}
+                              {t.dashboard.requestsList.sar} {request.quotedPrice.toLocaleString(dateLocale, { minimumFractionDigits: 2 })}
                             </span>
                           </div>
                           {request.quotedDate && (
                             <div className="flex items-center gap-1 text-muted-foreground">
                               <Calendar className="h-4 w-4" />
-                              <span>{new Date(request.quotedDate).toLocaleDateString('ar-SA')}</span>
+                              <span>{new Date(request.quotedDate).toLocaleDateString(dateLocale)}</span>
                             </div>
                           )}
                         </div>
@@ -880,7 +921,7 @@ export function ClientBranchRequests({ branchId, onDataChange, userId }: ClientB
                           onClick={(e) => { e.stopPropagation(); openQuoteResponseDialog(request); }}
                           className="bg-purple-600 hover:bg-purple-700"
                         >
-                          Review Quote
+                          {tc.reviewQuote}
                         </Button>
                       </div>
                     </div>
@@ -896,9 +937,9 @@ export function ClientBranchRequests({ branchId, onDataChange, userId }: ClientB
       <Dialog open={createDialogOpen} onOpenChange={setCreateDialogOpen}>
         <DialogContent className="sm:max-w-[600px] max-h-[90vh] overflow-y-auto">
           <DialogHeader>
-            <DialogTitle>إرسال طلب خدمة</DialogTitle>
+            <DialogTitle>{tc.submitServiceRequest}</DialogTitle>
             <DialogDescription>
-              أرسل طلب خدمة جديد إلى المقاول الخاص بك.
+              {tc.submitServiceRequestDesc}
             </DialogDescription>
           </DialogHeader>
           <form onSubmit={handleCreateRequest}>
@@ -910,7 +951,7 @@ export function ClientBranchRequests({ branchId, onDataChange, userId }: ClientB
             <div className="space-y-4">
               {/* Service Type - At Top */}
               <div className="space-y-2">
-                <Label htmlFor="workOrderType">نوع الخدمة *</Label>
+                <Label htmlFor="workOrderType">{tc.serviceTypeLabel}</Label>
                 <Select
                   value={newRequest.workOrderType}
                   onValueChange={(value: 'SERVICE' | 'INSPECTION' | 'MAINTENANCE' | 'INSTALLATION' | 'STICKER_INSPECTION') => {
@@ -928,35 +969,35 @@ export function ClientBranchRequests({ branchId, onDataChange, userId }: ClientB
                     <SelectValue />
                   </SelectTrigger>
                   <SelectContent>
-                    <SelectItem value="SERVICE">🔧 Repair/Service</SelectItem>
-                    <SelectItem value="INSPECTION">🔍 Inspection</SelectItem>
-                    <SelectItem value="MAINTENANCE">🛠️ Maintenance</SelectItem>
-                    <SelectItem value="INSTALLATION">📦 Installation</SelectItem>
-                    <SelectItem value="STICKER_INSPECTION">🏷️ Sticker Inspection</SelectItem>
+                    <SelectItem value="SERVICE">{tc.repairServiceOption}</SelectItem>
+                    <SelectItem value="INSPECTION">{tc.inspectionOption}</SelectItem>
+                    <SelectItem value="MAINTENANCE">{tc.maintenanceOption}</SelectItem>
+                    <SelectItem value="INSTALLATION">{tc.installationOption}</SelectItem>
+                    <SelectItem value="STICKER_INSPECTION">{tc.stickerInspectionOption}</SelectItem>
                   </SelectContent>
                 </Select>
               </div>
 
               {/* Title */}
               <div className="space-y-2">
-                <Label htmlFor="title">وصف موجز *</Label>
+                <Label htmlFor="title">{tc.briefDescLabel}</Label>
                 <Input
                   id="title"
                   value={newRequest.title}
                   onChange={(e) => setNewRequest({ ...newRequest, title: e.target.value })}
-                  placeholder="e.g., Fire alarm beeping in 3rd floor office"
+                  placeholder={tc.briefDescPlaceholder}
                   required
                 />
               </div>
 
               {/* Details */}
               <div className="space-y-2">
-                <Label htmlFor="description">تفاصيل إضافية</Label>
+                <Label htmlFor="description">{tc.additionalDetailsLabel}</Label>
                 <Textarea
                   id="description"
                   value={newRequest.description}
                   onChange={(e) => setNewRequest({ ...newRequest, description: e.target.value })}
-                  placeholder="Provide more details: location, when it started, any error codes, etc."
+                  placeholder={tc.additionalDetailsPlaceholder}
                   rows={3}
                 />
               </div>
@@ -964,7 +1005,7 @@ export function ClientBranchRequests({ branchId, onDataChange, userId }: ClientB
               {/* Priority & Frequency Row */}
               <div className="grid grid-cols-2 gap-4">
                 <div className="space-y-2">
-                  <Label htmlFor="priority">الأولوية</Label>
+                  <Label htmlFor="priority">{tc.priorityLabel}</Label>
                   <Select
                     value={newRequest.priority}
                     onValueChange={(value: 'LOW' | 'MEDIUM' | 'HIGH' | 'URGENT') => setNewRequest({ ...newRequest, priority: value })}
@@ -973,15 +1014,15 @@ export function ClientBranchRequests({ branchId, onDataChange, userId }: ClientB
                       <SelectValue />
                     </SelectTrigger>
                     <SelectContent>
-                      <SelectItem value="LOW">منخفض</SelectItem>
-                      <SelectItem value="MEDIUM">متوسط</SelectItem>
-                      <SelectItem value="HIGH">عالي</SelectItem>
-                      <SelectItem value="URGENT">🚨 عاجل</SelectItem>
+                      <SelectItem value="LOW">{tc.priorityLow}</SelectItem>
+                      <SelectItem value="MEDIUM">{tc.priorityMedium}</SelectItem>
+                      <SelectItem value="HIGH">{tc.priorityHigh}</SelectItem>
+                      <SelectItem value="URGENT">🚨 {tc.priorityUrgent}</SelectItem>
                     </SelectContent>
                   </Select>
                 </div>
                 <div className="space-y-2">
-                  <Label htmlFor="recurringType">التكرار</Label>
+                  <Label htmlFor="recurringType">{tc.frequencyLabel}</Label>
                   <Select
                     value={newRequest.recurringType}
                     onValueChange={(value: 'ONCE' | 'MONTHLY' | 'QUARTERLY' | 'SEMI_ANNUALLY' | 'ANNUALLY') => setNewRequest({ ...newRequest, recurringType: value })}
@@ -990,11 +1031,11 @@ export function ClientBranchRequests({ branchId, onDataChange, userId }: ClientB
                       <SelectValue />
                     </SelectTrigger>
                     <SelectContent>
-                      <SelectItem value="ONCE">مرة واحدة</SelectItem>
-                      <SelectItem value="MONTHLY">شهري</SelectItem>
-                      <SelectItem value="QUARTERLY">ربع سنوي</SelectItem>
-                      <SelectItem value="SEMI_ANNUALLY">نصف سنوي</SelectItem>
-                      <SelectItem value="ANNUALLY">سنوي</SelectItem>
+                      <SelectItem value="ONCE">{tc.once}</SelectItem>
+                      <SelectItem value="MONTHLY">{tc.monthly}</SelectItem>
+                      <SelectItem value="QUARTERLY">{tc.quarterly}</SelectItem>
+                      <SelectItem value="SEMI_ANNUALLY">{tc.semiAnnually}</SelectItem>
+                      <SelectItem value="ANNUALLY">{tc.annually}</SelectItem>
                     </SelectContent>
                   </Select>
                 </div>
@@ -1005,8 +1046,8 @@ export function ClientBranchRequests({ branchId, onDataChange, userId }: ClientB
                 <div className="space-y-3 p-4 bg-amber-50 border border-amber-200 rounded-lg">
                   <div className="flex items-center justify-between">
                     <div>
-                      <Label className="text-amber-800 font-medium">قائمة المعدات</Label>
-                      <p className="text-xs text-amber-600 mt-1">أضف عناصر المعدات التي تحتاج إلى تفتيش الملصقات</p>
+                      <Label className="text-amber-800 font-medium">{tc.equipmentListLabel}</Label>
+                      <p className="text-xs text-amber-600 mt-1">{tc.equipmentListDesc}</p>
                     </div>
                     <Button
                       type="button"
@@ -1016,7 +1057,7 @@ export function ClientBranchRequests({ branchId, onDataChange, userId }: ClientB
                       onClick={() => setShowEquipmentForm(true)}
                     >
                       <Plus className="h-4 w-4 me-1" />
-                      Add Equipment
+                      {tc.addEquipmentBtn}
                     </Button>
                   </div>
 
@@ -1025,15 +1066,15 @@ export function ClientBranchRequests({ branchId, onDataChange, userId }: ClientB
                     <div className="space-y-3 p-3 bg-white rounded-lg border border-amber-200">
                       <div className="grid grid-cols-2 gap-3">
                         <div className="space-y-1">
-                          <Label className="text-xs">معدات # *</Label>
+                          <Label className="text-xs">{tc.equipmentNumberLabel}</Label>
                           <Input
-                            placeholder="مثال: FE-001"
+                            placeholder={tc.equipmentNumberPlaceholder}
                             value={newEquipment.equipmentNumber}
                             onChange={(e) => setNewEquipment({ ...newEquipment, equipmentNumber: e.target.value })}
                           />
                         </div>
                         <div className="space-y-1">
-                          <Label className="text-xs">النوع *</Label>
+                          <Label className="text-xs">{tc.typeLabel}</Label>
                           <Select
                             value={newEquipment.equipmentType}
                             onValueChange={(value) => setNewEquipment({
@@ -1046,19 +1087,19 @@ export function ClientBranchRequests({ branchId, onDataChange, userId }: ClientB
                               <SelectValue />
                             </SelectTrigger>
                             <SelectContent>
-                              <SelectItem value="FIRE_EXTINGUISHER">طفاية حريق</SelectItem>
-                              <SelectItem value="FIRE_ALARM_PANEL">لوحة إنذار الحريق</SelectItem>
-                              <SelectItem value="SPRINKLER_SYSTEM">نظام الرشاشات</SelectItem>
-                              <SelectItem value="EMERGENCY_LIGHTING">إضاءة طوارئ</SelectItem>
-                              <SelectItem value="EXIT_SIGN">لاحصة الخروج</SelectItem>
-                              <SelectItem value="FIRE_DOOR">باب مقاوم للحريق</SelectItem>
-                              <SelectItem value="SMOKE_DETECTOR">كاشف الدخان</SelectItem>
-                              <SelectItem value="HEAT_DETECTOR">كاشف الحرارة</SelectItem>
-                              <SelectItem value="GAS_DETECTOR">كاشف الغاز</SelectItem>
-                              <SelectItem value="KITCHEN_HOOD_SUPPRESSION">نظام إخماد غطاء المطبخ</SelectItem>
-                              <SelectItem value="FIRE_PUMP">مضخة الحريق</SelectItem>
-                              <SelectItem value="FIRE_HOSE_REEL">خرطوم الحريق</SelectItem>
-                              <SelectItem value="OTHER">أخرى</SelectItem>
+                              <SelectItem value="FIRE_EXTINGUISHER">{t.dashboard.equipmentList.fireExtinguisher}</SelectItem>
+                              <SelectItem value="FIRE_ALARM_PANEL">{t.dashboard.equipmentList.fireAlarmPanel}</SelectItem>
+                              <SelectItem value="SPRINKLER_SYSTEM">{t.dashboard.equipmentList.sprinklerSystem}</SelectItem>
+                              <SelectItem value="EMERGENCY_LIGHTING">{t.dashboard.equipmentList.emergencyLighting}</SelectItem>
+                              <SelectItem value="EXIT_SIGN">{t.dashboard.equipmentList.exitSign}</SelectItem>
+                              <SelectItem value="FIRE_DOOR">{t.dashboard.equipmentList.fireDoor}</SelectItem>
+                              <SelectItem value="SMOKE_DETECTOR">{t.dashboard.equipmentList.smokeDetector}</SelectItem>
+                              <SelectItem value="HEAT_DETECTOR">{t.dashboard.equipmentList.heatDetector}</SelectItem>
+                              <SelectItem value="GAS_DETECTOR">{t.dashboard.equipmentList.gasDetector}</SelectItem>
+                              <SelectItem value="KITCHEN_HOOD_SUPPRESSION">{t.dashboard.equipmentList.kitchenHoodSuppression}</SelectItem>
+                              <SelectItem value="FIRE_PUMP">{t.dashboard.equipmentList.firePump}</SelectItem>
+                              <SelectItem value="FIRE_HOSE_REEL">{t.dashboard.equipmentList.fireHoseReel}</SelectItem>
+                              <SelectItem value="OTHER">{t.dashboard.equipmentList.other}</SelectItem>
                             </SelectContent>
                           </Select>
                         </div>
@@ -1066,25 +1107,25 @@ export function ClientBranchRequests({ branchId, onDataChange, userId }: ClientB
                       {/* Custom Equipment Type - Show when OTHER is selected */}
                       {newEquipment.equipmentType === 'OTHER' && (
                         <div className="space-y-1">
-                          <Label className="text-xs">حدد نوع المعدات *</Label>
+                          <Label className="text-xs">{tc.customTypeLabel}</Label>
                           <Input
-                            placeholder="مثال: كاشف CO2، رشاش ماء"
+                            placeholder={tc.customTypePlaceholder}
                             value={newEquipment.customEquipmentType}
                             onChange={(e) => setNewEquipment({ ...newEquipment, customEquipmentType: e.target.value })}
                           />
                         </div>
                       )}
                       <div className="space-y-1">
-                        <Label className="text-xs">الموقع</Label>
+                        <Label className="text-xs">{tc.locationLabel}</Label>
                         <Input
-                          placeholder="e.g., Floor 1, Lobby"
+                          placeholder={tc.locationPlaceholder}
                           value={newEquipment.location}
                           onChange={(e) => setNewEquipment({ ...newEquipment, location: e.target.value })}
                         />
                       </div>
                       <div className="grid grid-cols-2 gap-3">
                         <div className="space-y-1">
-                          <Label className="text-xs">تاريخ الإضافة</Label>
+                          <Label className="text-xs">{tc.dateAddedLabel}</Label>
                           <Input
                             type="date"
                             value={newEquipment.dateAdded}
@@ -1092,7 +1133,7 @@ export function ClientBranchRequests({ branchId, onDataChange, userId }: ClientB
                           />
                         </div>
                         <div className="space-y-1">
-                          <Label className="text-xs">تاريخ الانتهاء المتوقع</Label>
+                          <Label className="text-xs">{tc.expectedExpiryLabel}</Label>
                           <Input
                             type="date"
                             value={newEquipment.expectedExpiry}
@@ -1101,9 +1142,9 @@ export function ClientBranchRequests({ branchId, onDataChange, userId }: ClientB
                         </div>
                       </div>
                       <div className="space-y-1">
-                        <Label className="text-xs">ملاحظات (اختياري)</Label>
+                        <Label className="text-xs">{tc.notesOptionalLabel}</Label>
                         <Input
-                          placeholder="أي ملاحظات إضافية..."
+                          placeholder={tc.notesPlaceholder}
                           value={newEquipment.notes}
                           onChange={(e) => setNewEquipment({ ...newEquipment, notes: e.target.value })}
                         />
@@ -1126,7 +1167,7 @@ export function ClientBranchRequests({ branchId, onDataChange, userId }: ClientB
                             })
                           }}
                         >
-                          Cancel
+                          {tc.cancelBtn}
                         </Button>
                         <Button
                           type="button"
@@ -1134,12 +1175,12 @@ export function ClientBranchRequests({ branchId, onDataChange, userId }: ClientB
                           className="bg-amber-600 hover:bg-amber-700"
                           onClick={() => {
                             if (!newEquipment.equipmentNumber.trim()) {
-                              setError('Equipment number is required')
+                              setError(tc.equipmentNumberRequired)
                               return
                             }
 
                             if (newEquipment.equipmentType === 'OTHER' && !newEquipment.customEquipmentType.trim()) {
-                              setError('Please specify the equipment type')
+                              setError(tc.specifyTypeRequired)
                               return
                             }
                             setEquipment([...equipment, { ...newEquipment }])
@@ -1156,7 +1197,7 @@ export function ClientBranchRequests({ branchId, onDataChange, userId }: ClientB
                             setError('')
                           }}
                         >
-                          Add
+                          {tc.addBtn}
                         </Button>
                       </div>
                     </div>
@@ -1168,11 +1209,11 @@ export function ClientBranchRequests({ branchId, onDataChange, userId }: ClientB
                       <table className="w-full text-sm">
                         <thead className="bg-amber-100">
                           <tr>
-                            <th className="px-3 py-2 text-start text-amber-800">رقم المعدة</th>
-                            <th className="px-3 py-2 text-start text-amber-800">النوع</th>
-                            <th className="px-3 py-2 text-start text-amber-800">الموقع</th>
-                            <th className="px-3 py-2 text-start text-amber-800">الانتهاء</th>
-                            <th className="px-3 py-2 text-end text-amber-800">إجراء</th>
+                            <th className="px-3 py-2 text-start text-amber-800">{tc.tableEquipmentNumber}</th>
+                            <th className="px-3 py-2 text-start text-amber-800">{tc.tableType}</th>
+                            <th className="px-3 py-2 text-start text-amber-800">{tc.tableLocation}</th>
+                            <th className="px-3 py-2 text-start text-amber-800">{tc.tableExpiry}</th>
+                            <th className="px-3 py-2 text-end text-amber-800">{tc.tableAction}</th>
                           </tr>
                         </thead>
                         <tbody className="bg-white divide-y divide-amber-100">
@@ -1180,11 +1221,11 @@ export function ClientBranchRequests({ branchId, onDataChange, userId }: ClientB
                             <tr key={idx}>
                               <td className="px-3 py-2 font-medium">{eq.equipmentNumber}</td>
                               <td className="px-3 py-2 text-muted-foreground">
-                                {eq.equipmentType.replace(/_/g, ' ').toLowerCase().replace(/\b\w/g, l => l.toUpperCase())}
+                                {equipmentTypeLabel(eq.equipmentType)}
                               </td>
                               <td className="px-3 py-2 text-muted-foreground">{eq.location || '-'}</td>
                               <td className="px-3 py-2 text-muted-foreground">
-                                {eq.expectedExpiry ? new Date(eq.expectedExpiry).toLocaleDateString('ar-SA') : '-'}
+                                {eq.expectedExpiry ? new Date(eq.expectedExpiry).toLocaleDateString(dateLocale) : '-'}
                               </td>
                               <td className="px-3 py-2 text-end">
                                 <Button
@@ -1206,7 +1247,7 @@ export function ClientBranchRequests({ branchId, onDataChange, userId }: ClientB
 
                   {equipment.length === 0 && !showEquipmentForm && (
                     <p className="text-sm text-amber-600 text-center py-4">
-                      No equipment added yet. Click &quot;Add Equipment&quot; to start.
+                      {tc.noEquipmentYet}
                     </p>
                   )}
                 </div>
@@ -1215,7 +1256,7 @@ export function ClientBranchRequests({ branchId, onDataChange, userId }: ClientB
               {/* Preferred Date & Time Row */}
               <div className="grid grid-cols-2 gap-4">
                 <div className="space-y-2">
-                  <Label htmlFor="preferredDate">التاريخ المفضل</Label>
+                  <Label htmlFor="preferredDate">{tc.preferredDateLabel}</Label>
                   <Input
                     id="preferredDate"
                     type="date"
@@ -1225,19 +1266,19 @@ export function ClientBranchRequests({ branchId, onDataChange, userId }: ClientB
                   />
                 </div>
                 <div className="space-y-2">
-                  <Label htmlFor="preferredTimeSlot">الوقت المفضل</Label>
+                  <Label htmlFor="preferredTimeSlot">{tc.preferredTimeLabel}</Label>
                   <Select
                     value={newRequest.preferredTimeSlot}
                     onValueChange={(value) => setNewRequest({ ...newRequest, preferredTimeSlot: value })}
                   >
                     <SelectTrigger>
-                      <SelectValue placeholder="أي وقت" />
+                      <SelectValue placeholder={tc.anyTimePlaceholder} />
                     </SelectTrigger>
                     <SelectContent>
-                      <SelectItem value="MORNING">صباحاً (8ص-12ظ)</SelectItem>
-                      <SelectItem value="AFTERNOON">ظهيرة (12ظ-5م)</SelectItem>
-                      <SelectItem value="EVENING">مساءً (5م-8م)</SelectItem>
-                      <SelectItem value="ANYTIME">أي وقت</SelectItem>
+                      <SelectItem value="MORNING">{tc.morningOption}</SelectItem>
+                      <SelectItem value="AFTERNOON">{tc.afternoonOption}</SelectItem>
+                      <SelectItem value="EVENING">{tc.eveningOption}</SelectItem>
+                      <SelectItem value="ANYTIME">{tc.anytimeOption}</SelectItem>
                     </SelectContent>
                   </Select>
                 </div>
@@ -1245,9 +1286,9 @@ export function ClientBranchRequests({ branchId, onDataChange, userId }: ClientB
 
               {/* Photo Upload */}
               <div className="space-y-2">
-                <Label>المرفقات (اختياري)</Label>
+                <Label>{tc.attachmentsLabel}</Label>
                 <p className="text-xs text-muted-foreground mb-2">
-                  قم برفع الملفات لمساعدة الفني على فهم المشكلة
+                  {tc.attachmentsDesc}
                 </p>
                 <FileUploadDropzone
                   onFilesSelected={(files) => {
@@ -1262,18 +1303,18 @@ export function ClientBranchRequests({ branchId, onDataChange, userId }: ClientB
                   uploading={uploading}
                   uploadedFiles={uploadedPhotos}
                   onRemoveFile={removePhoto}
-                  label="Upload files (PDF, DOC, images)"
+                  label={tc.uploadFilesLabel}
                   showPreview={true}
                 />
               </div>
             </div>
             <DialogFooter className="mt-6">
               <Button type="button" variant="outline" onClick={() => setCreateDialogOpen(false)}>
-                Cancel
+                {tc.cancelBtn}
               </Button>
               <Button type="submit" disabled={creating || uploading}>
                 {creating && <Loader2 className="me-2 h-4 w-4 animate-spin" />}
-                Submit Request
+                {tc.submitRequest}
               </Button>
             </DialogFooter>
           </form>
@@ -1286,7 +1327,7 @@ export function ClientBranchRequests({ branchId, onDataChange, userId }: ClientB
           <DialogHeader>
             <DialogTitle>{selectedRequest?.title}</DialogTitle>
             <DialogDescription>
-              {selectedRequest?.createdByRole === 'CLIENT' ? 'Your service request' : 'Request from contractor'}
+              {selectedRequest?.createdByRole === 'CLIENT' ? tc.yourServiceRequest : tc.requestFromContractor}
             </DialogDescription>
           </DialogHeader>
           {selectedRequest && (
@@ -1296,17 +1337,17 @@ export function ClientBranchRequests({ branchId, onDataChange, userId }: ClientB
                 {getPriorityBadge(selectedRequest.priority)}
                 {getStatusBadge(selectedRequest.status)}
                 {selectedRequest.workOrderType && (
-                  <Badge variant="outline">{selectedRequest.workOrderType}</Badge>
+                  <Badge variant="outline">{formatWorkOrderType(selectedRequest.workOrderType)}</Badge>
                 )}
                 {selectedRequest.recurringType && selectedRequest.recurringType !== 'ONCE' && (
-                  <Badge variant="secondary">{selectedRequest.recurringType === 'MONTHLY' ? 'شهري' : 'ربع سنوي'}</Badge>
+                  <Badge variant="secondary">{selectedRequest.recurringType === 'MONTHLY' ? tc.monthly : tc.quarterly}</Badge>
                 )}
               </div>
 
               {/* Description */}
               {selectedRequest.description && (
                 <div className="p-4 bg-muted/50 rounded-lg">
-                  <p className="text-sm font-medium text-muted-foreground mb-1">الوصف</p>
+                  <p className="text-sm font-medium text-muted-foreground mb-1">{tc.descriptionLabel}</p>
                   <p className="text-sm whitespace-pre-wrap">{selectedRequest.description}</p>
                 </div>
               )}
@@ -1314,18 +1355,18 @@ export function ClientBranchRequests({ branchId, onDataChange, userId }: ClientB
               {/* Request Details Grid */}
               <div className="grid grid-cols-2 md:grid-cols-3 gap-4 text-sm">
                 <div>
-                  <p className="text-muted-foreground">تاريخ الإنشاء</p>
-                  <p className="font-medium">{new Date(selectedRequest.createdAt).toLocaleDateString('ar-SA')}</p>
+                  <p className="text-muted-foreground">{tc.createdDateLabel}</p>
+                  <p className="font-medium">{new Date(selectedRequest.createdAt).toLocaleDateString(dateLocale)}</p>
                 </div>
                 {selectedRequest.preferredDate && (
                   <div>
-                    <p className="text-muted-foreground">التاريخ المفضل</p>
-                    <p className="font-medium">{new Date(selectedRequest.preferredDate).toLocaleDateString('ar-SA')}</p>
+                    <p className="text-muted-foreground">{tc.preferredDateLabel}</p>
+                    <p className="font-medium">{new Date(selectedRequest.preferredDate).toLocaleDateString(dateLocale)}</p>
                   </div>
                 )}
                 {selectedRequest.preferredTimeSlot && (
                   <div>
-                    <p className="text-muted-foreground">الوقت المفضل</p>
+                    <p className="text-muted-foreground">{tc.preferredTimeLabel}</p>
                     <p className="font-medium">{selectedRequest.preferredTimeSlot}</p>
                   </div>
                 )}
@@ -1334,7 +1375,7 @@ export function ClientBranchRequests({ branchId, onDataChange, userId }: ClientB
               {/* Photos */}
               {selectedRequest.photos && selectedRequest.photos.length > 0 && (
                 <div>
-                  <p className="text-sm font-medium text-muted-foreground mb-2">الصور المرفقة</p>
+                  <p className="text-sm font-medium text-muted-foreground mb-2">{tc.attachedPhotosLabel}</p>
                   <div className="grid grid-cols-3 gap-2">
                     {selectedRequest.photos.map((photo, idx) => photo?.url ? (
                       <img
@@ -1352,15 +1393,15 @@ export function ClientBranchRequests({ branchId, onDataChange, userId }: ClientB
               {/* Equipment List - For Sticker Inspections */}
               {selectedRequest.workOrderType === 'STICKER_INSPECTION' && selectedRequest.equipment && selectedRequest.equipment.length > 0 && (
                 <div className="space-y-2 p-4 bg-amber-50 border border-amber-200 rounded-lg">
-                  <p className="text-sm font-medium text-amber-800">معدات للتفتيش ({selectedRequest.equipment.length} عناصر)</p>
+                  <p className="text-sm font-medium text-amber-800">{tc.equipmentForInspectionLabel.replace('{count}', String(selectedRequest.equipment.length))}</p>
                   <div className="border border-amber-200 rounded-lg overflow-hidden">
                     <table className="w-full text-sm">
                       <thead className="bg-amber-100">
                         <tr>
-                          <th className="px-3 py-2 text-start text-amber-800">رقم المعدة</th>
-                          <th className="px-3 py-2 text-start text-amber-800">النوع</th>
-                          <th className="px-3 py-2 text-start text-amber-800">الموقع</th>
-                          <th className="px-3 py-2 text-start text-amber-800">الانتهاء</th>
+                          <th className="px-3 py-2 text-start text-amber-800">{tc.tableEquipmentNumber}</th>
+                          <th className="px-3 py-2 text-start text-amber-800">{tc.tableType}</th>
+                          <th className="px-3 py-2 text-start text-amber-800">{tc.tableLocation}</th>
+                          <th className="px-3 py-2 text-start text-amber-800">{tc.tableExpiry}</th>
                         </tr>
                       </thead>
                       <tbody className="bg-white divide-y divide-amber-100">
@@ -1368,11 +1409,11 @@ export function ClientBranchRequests({ branchId, onDataChange, userId }: ClientB
                           <tr key={eq.id}>
                             <td className="px-3 py-2 font-medium">{eq.equipmentNumber}</td>
                             <td className="px-3 py-2 text-muted-foreground">
-                              {eq.equipmentType.replace(/_/g, ' ').toLowerCase().replace(/\b\w/g, l => l.toUpperCase())}
+                              {equipmentTypeLabel(eq.equipmentType)}
                             </td>
                             <td className="px-3 py-2 text-muted-foreground">{eq.location || '-'}</td>
                             <td className="px-3 py-2 text-muted-foreground">
-                              {eq.expectedExpiry ? new Date(eq.expectedExpiry).toLocaleDateString('ar-SA') : '-'}
+                              {eq.expectedExpiry ? new Date(eq.expectedExpiry).toLocaleDateString(dateLocale) : '-'}
                             </td>
                           </tr>
                         ))}
@@ -1385,23 +1426,23 @@ export function ClientBranchRequests({ branchId, onDataChange, userId }: ClientB
               {/* Quote Response Section - If contractor has quoted */}
               {selectedRequest.status === 'QUOTED' && selectedRequest.quotedPrice && (
                 <div className="bg-purple-50 border border-purple-200 p-4 rounded-lg">
-                  <p className="text-sm font-medium text-purple-800 mb-2">عرض سعر من المقاول</p>
+                  <p className="text-sm font-medium text-purple-800 mb-2">{tc.quoteFromContractor}</p>
 
                   {/* For recurring requests with occurrences - show table */}
                   {selectedRequest.recurringType && selectedRequest.recurringType !== 'ONCE' && selectedRequest.occurrences && selectedRequest.occurrences.length > 0 ? (
                     <div className="space-y-3">
                       <p className="text-sm text-purple-700">
-                        {selectedRequest.recurringType === 'MONTHLY' ? '12 شهري' :
-                          selectedRequest.recurringType === 'QUARTERLY' ? '4 ربع سنوي' :
-                            selectedRequest.recurringType === 'SEMI_ANNUALLY' ? '2 نصف سنوي' : ''} أوامر عمل
+                        {selectedRequest.recurringType === 'MONTHLY' ? `12 ${tc.monthly}` :
+                          selectedRequest.recurringType === 'QUARTERLY' ? `4 ${tc.quarterly}` :
+                            selectedRequest.recurringType === 'SEMI_ANNUALLY' ? `2 ${tc.semiAnnual}` : ''} {t.dashboard.requestsList.workOrdersCount}
                       </p>
                       <div className="border border-purple-200 rounded-lg overflow-hidden bg-white">
                         <table className="w-full text-sm">
                           <thead className="bg-purple-100">
                             <tr>
                               <th className="px-3 py-2 text-start text-purple-800 font-medium">#</th>
-                              <th className="px-3 py-2 text-start text-purple-800 font-medium">تاريخ الزيارة</th>
-                              <th className="px-3 py-2 text-end text-purple-800 font-medium">السعر (ر.س)</th>
+                              <th className="px-3 py-2 text-start text-purple-800 font-medium">{tc.visitDateHeader}</th>
+                              <th className="px-3 py-2 text-end text-purple-800 font-medium">{tc.priceSarHeader}</th>
                             </tr>
                           </thead>
                           <tbody className="divide-y divide-purple-100">
@@ -1409,19 +1450,19 @@ export function ClientBranchRequests({ branchId, onDataChange, userId }: ClientB
                               <tr key={idx}>
                                 <td className="px-3 py-2 text-muted-foreground">{occ.order}</td>
                                 <td className="px-3 py-2">
-                                  {occ.visitDate ? new Date(occ.visitDate).toLocaleDateString('ar-SA') : '-'}
+                                  {occ.visitDate ? new Date(occ.visitDate).toLocaleDateString(dateLocale) : '-'}
                                 </td>
                                 <td className="px-3 py-2 text-end font-medium">
-                                  {occ.price ? occ.price.toLocaleString('ar-SA') : '-'}
+                                  {occ.price ? occ.price.toLocaleString(dateLocale) : '-'}
                                 </td>
                               </tr>
                             ))}
                           </tbody>
                           <tfoot className="bg-purple-50 border-t border-purple-200">
                             <tr>
-                              <td colSpan={2} className="px-3 py-2 font-semibold text-purple-800">الإجمالي</td>
+                              <td colSpan={2} className="px-3 py-2 font-semibold text-purple-800">{tc.totalLabel}</td>
                               <td className="px-3 py-2 text-end font-bold text-purple-900">
-                                ر.س {selectedRequest.quotedPrice.toLocaleString('ar-SA', { minimumFractionDigits: 2 })}
+                                {t.dashboard.requestsList.sar} {selectedRequest.quotedPrice.toLocaleString(dateLocale, { minimumFractionDigits: 2 })}
                               </td>
                             </tr>
                           </tfoot>
@@ -1432,13 +1473,13 @@ export function ClientBranchRequests({ branchId, onDataChange, userId }: ClientB
                     /* For one-time requests - show simple view */
                     <div className="grid grid-cols-2 gap-4 text-sm mb-3">
                       <div>
-                        <p className="text-purple-600">السعر المعروض</p>
-                        <p className="font-bold text-lg">ر.س {selectedRequest.quotedPrice.toLocaleString('ar-SA', { minimumFractionDigits: 2 })}</p>
+                        <p className="text-purple-600">{tc.offeredPrice}</p>
+                        <p className="font-bold text-lg">{t.dashboard.requestsList.sar} {selectedRequest.quotedPrice.toLocaleString(dateLocale, { minimumFractionDigits: 2 })}</p>
                       </div>
                       {selectedRequest.quotedDate && (
                         <div>
-                          <p className="text-purple-600">التاريخ المجدول</p>
-                          <p className="font-semibold">{new Date(selectedRequest.quotedDate).toLocaleDateString('ar-SA')}</p>
+                          <p className="text-purple-600">{tc.scheduledDateLabel}</p>
+                          <p className="font-semibold">{new Date(selectedRequest.quotedDate).toLocaleDateString(dateLocale)}</p>
                         </div>
                       )}
                     </div>
@@ -1446,7 +1487,7 @@ export function ClientBranchRequests({ branchId, onDataChange, userId }: ClientB
 
                   {selectedRequest.quotedNotes && (
                     <div className="mt-3 pt-3 border-t border-purple-200">
-                      <p className="text-purple-600 text-sm mb-1">ملاحظات من المقاول</p>
+                      <p className="text-purple-600 text-sm mb-1">{tc.notesFromContractorLabel}</p>
                       <p className="text-sm text-purple-900 whitespace-pre-wrap">{selectedRequest.quotedNotes}</p>
                     </div>
                   )}
@@ -1459,7 +1500,7 @@ export function ClientBranchRequests({ branchId, onDataChange, userId }: ClientB
                         className="inline-flex items-center gap-1.5 text-sm font-medium text-purple-800 hover:text-purple-900 underline"
                       >
                         <FileText className="h-4 w-4" />
-                        {selectedRequest.quotationFileName || 'عرض عرض السعر'}
+                        {selectedRequest.quotationFileName || tc.viewQuotation}
                       </a>
                     </div>
                   )}
@@ -1473,7 +1514,7 @@ export function ClientBranchRequests({ branchId, onDataChange, userId }: ClientB
                       className="bg-green-600 hover:bg-green-700"
                     >
                       <ThumbsUp className="me-2 h-4 w-4" />
-                      قبول عرض السعر
+                      {tc.acceptQuoteBtn}
                     </Button>
                     <Button
                       size="sm"
@@ -1485,7 +1526,7 @@ export function ClientBranchRequests({ branchId, onDataChange, userId }: ClientB
                       className="border-red-300 text-red-600 hover:bg-red-50"
                     >
                       <ThumbsDown className="me-2 h-4 w-4" />
-                      رفض عرض السعر
+                      {tc.rejectQuoteBtn}
                     </Button>
                   </div>
                 </div>
@@ -1496,13 +1537,13 @@ export function ClientBranchRequests({ branchId, onDataChange, userId }: ClientB
                 <div className="space-y-3">
                   <div className="bg-yellow-50 border border-yellow-200 p-3 rounded-lg">
                     <p className="text-sm text-yellow-800">
-                      ⏳ بانتظار المقاول لمراجعة طلبك...
+                      {tc.waitingContractorReview}
                     </p>
                   </div>
                   <div className="bg-blue-50 border border-blue-200 p-4 rounded-lg">
-                    <p className="text-sm font-medium text-blue-900 mb-2">هل تحتاج هذا بشكل عاجل؟</p>
+                    <p className="text-sm font-medium text-blue-900 mb-2">{tc.needUrgentTitle}</p>
                     <p className="text-sm text-blue-700 mb-3">
-                      تخطى عملية التسعير وابدأ العمل فوراً. سيقوم المقاول بإضافة التسعير لاحقاً.
+                      {tc.needUrgentDesc}
                     </p>
                     <Button
                       size="sm"
@@ -1512,7 +1553,7 @@ export function ClientBranchRequests({ branchId, onDataChange, userId }: ClientB
                       className="bg-blue-600 hover:bg-blue-700"
                     >
                       <Calendar className="me-2 h-4 w-4" />
-                      ابدأ فوراً
+                      {tc.startNowBtn}
                     </Button>
                   </div>
                 </div>
@@ -1520,21 +1561,21 @@ export function ClientBranchRequests({ branchId, onDataChange, userId }: ClientB
               {selectedRequest.status === 'SCHEDULED' && (
                 <div className="bg-blue-50 border border-blue-200 p-3 rounded-lg">
                   <p className="text-sm text-blue-800">
-                    📅 تم جدولة طلبك. سيبدأ المقاول العمل قريباً.
+                    {tc.scheduledStatusMsg}
                   </p>
                 </div>
               )}
               {selectedRequest.status === 'IN_PROGRESS' && (
                 <div className="bg-blue-50 border border-blue-200 p-3 rounded-lg">
                   <p className="text-sm text-blue-800">
-                    🔧 العمل قيد التنفيذ حالياً...
+                    {tc.inProgressStatusMsg}
                   </p>
                 </div>
               )}
               {selectedRequest.status === 'COMPLETED' && (
                 <div className="bg-green-50 border border-green-200 p-3 rounded-lg">
                   <p className="text-sm text-green-800">
-                    ✅ تم إكمال هذا الطلب.
+                    {tc.completedStatusMsg}
                   </p>
                 </div>
               )}
@@ -1556,11 +1597,11 @@ export function ClientBranchRequests({ branchId, onDataChange, userId }: ClientB
                 size="sm"
                 onClick={() => setCancelDialogOpen(true)}
               >
-                إلغاء الطلب
+                {tc.cancelRequestBtn}
               </Button>
             )}
             <Button variant="outline" onClick={() => setSelectedRequest(null)}>
-              إغلاق
+              {tc.closeBtn}
             </Button>
           </DialogFooter>
         </DialogContent>
@@ -1570,9 +1611,9 @@ export function ClientBranchRequests({ branchId, onDataChange, userId }: ClientB
       <AlertDialog open={cancelDialogOpen} onOpenChange={setCancelDialogOpen}>
         <AlertDialogContent>
           <AlertDialogHeader>
-            <AlertDialogTitle>إلغاء الطلب</AlertDialogTitle>
+            <AlertDialogTitle>{tc.cancelRequestTitle}</AlertDialogTitle>
             <AlertDialogDescription>
-              هل أنت متأكد من إلغاء هذا الطلب؟ لا يمكن التراجع عن هذا الإجراء.
+              {tc.cancelRequestDesc}
               {selectedRequest && (
                 <span className="block mt-2 font-medium text-foreground">
                   &quot;{selectedRequest.title}&quot;
@@ -1581,7 +1622,7 @@ export function ClientBranchRequests({ branchId, onDataChange, userId }: ClientB
             </AlertDialogDescription>
           </AlertDialogHeader>
           <AlertDialogFooter>
-            <AlertDialogCancel disabled={cancelling}>إبقاء الطلب</AlertDialogCancel>
+            <AlertDialogCancel disabled={cancelling}>{tc.keepRequestBtn}</AlertDialogCancel>
             <AlertDialogAction
               disabled={cancelling}
               className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
@@ -1608,10 +1649,10 @@ export function ClientBranchRequests({ branchId, onDataChange, userId }: ClientB
               {cancelling ? (
                 <>
                   <Loader2 className="me-2 h-4 w-4 animate-spin" />
-                  جاري الإلغاء...
+                  {tc.cancelling}
                 </>
               ) : (
-                'نعم، إلغاء الطلب'
+                tc.yesCancelRequest
               )}
             </AlertDialogAction>
           </AlertDialogFooter>
@@ -1624,7 +1665,7 @@ export function ClientBranchRequests({ branchId, onDataChange, userId }: ClientB
           <DialogHeader>
             <DialogTitle className="text-xl">{selectedProject?.title}</DialogTitle>
             <DialogDescription>
-              عرض مشروع من المقاول - راجع أوامر العمل والتسعير أدناه
+              {tc.projectProposalDesc}
             </DialogDescription>
           </DialogHeader>
 
@@ -1642,27 +1683,27 @@ export function ClientBranchRequests({ branchId, onDataChange, userId }: ClientB
                 {/* Project Info */}
                 <div className="grid grid-cols-2 md:grid-cols-4 gap-4 p-4 bg-muted/30 rounded-lg">
                   <div>
-                    <p className="text-xs text-muted-foreground">الحالة</p>
+                    <p className="text-xs text-muted-foreground">{tc.statusLabel}</p>
                     <Badge className={selectedProject.status === 'PENDING' ? 'bg-amber-100 text-amber-700' : 'bg-green-100 text-green-700'}>
-                      {selectedProject.status === 'PENDING' ? 'بانتظار المراجعة' : selectedProject.status}
+                      {selectedProject.status === 'PENDING' ? tc.pendingReviewBadge : selectedProject.status}
                     </Badge>
                   </div>
                   {selectedProject.startDate && (
                     <div>
-                      <p className="text-xs text-muted-foreground">تاريخ البدء</p>
-                      <p className="font-medium text-sm">{new Date(selectedProject.startDate).toLocaleDateString('ar-SA')}</p>
+                      <p className="text-xs text-muted-foreground">{tc.startDateLabel}</p>
+                      <p className="font-medium text-sm">{new Date(selectedProject.startDate).toLocaleDateString(dateLocale)}</p>
                     </div>
                   )}
                   {selectedProject.endDate && (
                     <div>
-                      <p className="text-xs text-muted-foreground">تاريخ الانتهاء</p>
-                      <p className="font-medium text-sm">{new Date(selectedProject.endDate).toLocaleDateString('ar-SA')}</p>
+                      <p className="text-xs text-muted-foreground">{tc.endDateLabel}</p>
+                      <p className="font-medium text-sm">{new Date(selectedProject.endDate).toLocaleDateString(dateLocale)}</p>
                     </div>
                   )}
                   <div>
-                    <p className="text-xs text-muted-foreground">القيمة الإجمالية</p>
+                    <p className="text-xs text-muted-foreground">{tc.totalValueLabel}</p>
                     <p className="font-bold text-lg text-primary">
-                      ر.س {calculatedTotal.toLocaleString('ar-SA', { minimumFractionDigits: 2 })}
+                      {t.dashboard.requestsList.sar} {calculatedTotal.toLocaleString(dateLocale, { minimumFractionDigits: 2 })}
                     </p>
                   </div>
                 </div>
@@ -1670,11 +1711,11 @@ export function ClientBranchRequests({ branchId, onDataChange, userId }: ClientB
                 {/* Work Orders - Grouped Collapsible View */}
                 <div>
                   <div className="flex items-center justify-between mb-3">
-                    <h3 className="font-semibold">أوامر العمل</h3>
+                    <h3 className="font-semibold">{tc.workOrdersHeading}</h3>
                     {selectedProject.status === 'PENDING' && (
                       <Button variant="outline" size="sm" onClick={() => setAddWorkOrderOpen(true)}>
                         <Plus className="h-4 w-4 me-1" />
-                        طلب عمل إضافي
+                        {tc.requestAdditionalWork}
                       </Button>
                     )}
                   </div>
@@ -1685,15 +1726,15 @@ export function ClientBranchRequests({ branchId, onDataChange, userId }: ClientB
 
                       {/* Total Row */}
                       <div className="flex items-center justify-between p-4 bg-primary/5 border-t">
-                        <span className="font-semibold">الإجمالي</span>
+                        <span className="font-semibold">{tc.totalRow}</span>
                         <span className="text-xl font-bold">
-                          ر.س {calculatedTotal.toLocaleString('ar-SA', { minimumFractionDigits: 2 })}
+                          {t.dashboard.requestsList.sar} {calculatedTotal.toLocaleString(dateLocale, { minimumFractionDigits: 2 })}
                         </span>
                       </div>
                     </div>
                   ) : (
                     <div className="text-center py-8 text-muted-foreground border rounded-lg">
-                      لم يتم تحديد أوامر عمل بعد
+                      {tc.noWorkOrdersYet}
                     </div>
                   )}
                 </div>
@@ -1706,22 +1747,20 @@ export function ClientBranchRequests({ branchId, onDataChange, userId }: ClientB
                       {hasPendingPrices ? (
                         <div className="p-4 bg-orange-50 border border-orange-200 rounded-lg">
                           <p className="text-sm text-orange-800">
-                            <strong>بانتظار التسعير.</strong> بعض أوامر العمل بانتظار السعر من المقاول.
-                            لا يمكنك قبول المشروع حتى يتم تسعير جميع أوامر العمل.
+                            <strong>{tc.awaitingPricingTitle}</strong> {tc.awaitingPricingDesc}
                           </p>
                         </div>
                       ) : (
                         <div className="p-4 bg-amber-50 border border-amber-200 rounded-lg">
                           <p className="text-sm text-amber-800">
-                            <strong>جاهز للمتابعة؟</strong> بقبول هذا المشروع، سيتم إنشاء عقد ويمكن بدء العمل.
-                            يمكنك أيضاً طلب أوامر عمل إضافية أعلاه - سيقوم المقاول بإضافة التسعير لأي عناصر جديدة.
+                            <strong>{tc.readyTitle}</strong> {tc.readyDesc}
                           </p>
                         </div>
                       )}
 
                       <div className="flex gap-3 justify-end">
                         <Button variant="outline" onClick={() => { setSelectedProject(null); setSelectedRequest(null); }}>
-                          مراجعة لاحقاً
+                          {tc.reviewLaterBtn}
                         </Button>
                         <Button
                           onClick={() => handleApproveProject(selectedProject.id)}
@@ -1731,12 +1770,12 @@ export function ClientBranchRequests({ branchId, onDataChange, userId }: ClientB
                           {approving ? (
                             <>
                               <Loader2 className="me-2 h-4 w-4 animate-spin" />
-                              جاري القبول...
+                              {tc.approvingText}
                             </>
                           ) : (
                             <>
                               <CheckCircle className="me-2 h-4 w-4" />
-                              قبول المشروع
+                              {tc.approveProjectBtn}
                             </>
                           )}
                         </Button>
@@ -1749,7 +1788,7 @@ export function ClientBranchRequests({ branchId, onDataChange, userId }: ClientB
                 {selectedProject.status === 'ACTIVE' && (
                   <div className="p-4 bg-green-50 border border-green-200 rounded-lg">
                     <p className="text-sm text-green-800">
-                      <strong>المشروع نشط.</strong> العمل قيد التنفيذ. تحقق من تبويب المواعيد للزيارات المجدولة.
+                      <strong>{tc.projectActiveTitle}</strong> {tc.projectActiveDesc}
                     </p>
                   </div>
                 )}
@@ -1763,62 +1802,62 @@ export function ClientBranchRequests({ branchId, onDataChange, userId }: ClientB
       <Dialog open={addWorkOrderOpen} onOpenChange={setAddWorkOrderOpen}>
         <DialogContent>
           <DialogHeader>
-            <DialogTitle>طلب عمل إضافي</DialogTitle>
+            <DialogTitle>{tc.requestAdditionalWork}</DialogTitle>
             <DialogDescription>
-              أضف طلب أمر عمل. سيقوم المقاول بالمراجعة وإضافة التسعير.
+              {tc.requestAdditionalWorkDesc}
             </DialogDescription>
           </DialogHeader>
           <div className="space-y-4">
             <div className="space-y-2">
-              <Label htmlFor="wo-name">اسم أمر العمل *</Label>
+              <Label htmlFor="wo-name">{tc.workOrderNameLabel}</Label>
               <Input
                 id="wo-name"
                 value={newWorkOrder.name}
                 onChange={(e) => setNewWorkOrder({ ...newWorkOrder, name: e.target.value })}
-                placeholder="مثال: تفتيش إضافي للآفات"
+                placeholder={tc.workOrderNamePlaceholder}
               />
             </div>
             <div className="space-y-2">
-              <Label htmlFor="wo-desc">الوصف</Label>
+              <Label htmlFor="wo-desc">{tc.descriptionLabel}</Label>
               <Textarea
                 id="wo-desc"
                 value={newWorkOrder.description}
                 onChange={(e) => setNewWorkOrder({ ...newWorkOrder, description: e.target.value })}
-                placeholder="صف ما تحتاجه..."
+                placeholder={tc.workOrderDescPlaceholder}
                 rows={3}
               />
             </div>
             <div className="space-y-2">
-              <Label htmlFor="wo-recurring">متكرر</Label>
+              <Label htmlFor="wo-recurring">{tc.recurringLabel}</Label>
               <Select
                 value={newWorkOrder.recurringType}
                 onValueChange={(value) => setNewWorkOrder({ ...newWorkOrder, recurringType: value as 'ONCE' | 'MONTHLY' | 'QUARTERLY' })}
               >
                 <SelectTrigger>
-                  <SelectValue placeholder="اختر التكرار" />
+                  <SelectValue placeholder={tc.selectFrequencyPlaceholder} />
                 </SelectTrigger>
                 <SelectContent>
-                  <SelectItem value="ONCE">مرة واحدة</SelectItem>
-                  <SelectItem value="MONTHLY">شهري</SelectItem>
-                  <SelectItem value="QUARTERLY">ربع سنوي</SelectItem>
+                  <SelectItem value="ONCE">{tc.once}</SelectItem>
+                  <SelectItem value="MONTHLY">{tc.monthly}</SelectItem>
+                  <SelectItem value="QUARTERLY">{tc.quarterly}</SelectItem>
                 </SelectContent>
               </Select>
             </div>
           </div>
           <DialogFooter>
             <Button variant="outline" onClick={() => setAddWorkOrderOpen(false)}>
-              إلغاء
+              {tc.cancelBtn}
             </Button>
             <Button onClick={handleAddWorkOrder} disabled={addingWorkOrder || !newWorkOrder.name.trim()}>
               {addingWorkOrder ? (
                 <>
                   <Loader2 className="me-2 h-4 w-4 animate-spin" />
-                  جاري الإضافة...
+                  {tc.addingText}
                 </>
               ) : (
                 <>
                   <Send className="me-2 h-4 w-4" />
-                  إرسال الطلب
+                  {tc.sendRequestBtn}
                 </>
               )}
             </Button>
@@ -1830,9 +1869,9 @@ export function ClientBranchRequests({ branchId, onDataChange, userId }: ClientB
       <Dialog open={quoteResponseDialogOpen} onOpenChange={(open) => { if (!open) { setQuoteResponseDialogOpen(false); setQuoteResponseRequest(null); setShowRejectionForm(false); setRejectionReason(''); setError(''); } }}>
         <DialogContent className="sm:max-w-[500px] max-h-[90vh] overflow-y-auto">
           <DialogHeader>
-            <DialogTitle>مراجعة عرض السعر</DialogTitle>
+            <DialogTitle>{tc.reviewQuoteTitle}</DialogTitle>
             <DialogDescription>
-              قدم المقاول عرض سعر لطلبك
+              {tc.reviewQuoteDesc}
             </DialogDescription>
           </DialogHeader>
 
@@ -1853,7 +1892,7 @@ export function ClientBranchRequests({ branchId, onDataChange, userId }: ClientB
                     <Badge variant="secondary">{formatWorkOrderType(quoteResponseRequest.workOrderType)}</Badge>
                   )}
                   {quoteResponseRequest.recurringType && quoteResponseRequest.recurringType !== 'ONCE' && (
-                    <Badge variant="outline">{quoteResponseRequest.recurringType === 'MONTHLY' ? 'شهري' : 'ربع سنوي'}</Badge>
+                    <Badge variant="outline">{quoteResponseRequest.recurringType === 'MONTHLY' ? tc.monthly : tc.quarterly}</Badge>
                   )}
                 </div>
                 {quoteResponseRequest.description && (
@@ -1863,46 +1902,46 @@ export function ClientBranchRequests({ branchId, onDataChange, userId }: ClientB
 
               {/* Quote Details */}
               <div className="p-4 bg-purple-50 border border-purple-200 rounded-lg space-y-3">
-                <h4 className="font-semibold text-purple-800">عرض سعر المقاول</h4>
+                <h4 className="font-semibold text-purple-800">{tc.contractorQuoteHeading}</h4>
                 <div className="grid grid-cols-2 gap-4">
                   <div>
                     <p className="text-xs text-purple-600 mb-1">
                       {quoteResponseRequest.recurringType && quoteResponseRequest.recurringType !== 'ONCE'
-                        ? 'السعر الإجمالي'
-                        : 'السعر'}
+                        ? tc.totalPriceLabel
+                        : tc.priceLabel}
                     </p>
                     <p className="text-2xl font-bold text-purple-800">
-                      ر.س {quoteResponseRequest.quotedPrice?.toLocaleString('ar-SA', { minimumFractionDigits: 2 })}
+                      {t.dashboard.requestsList.sar} {quoteResponseRequest.quotedPrice?.toLocaleString(dateLocale, { minimumFractionDigits: 2 })}
                     </p>
                   </div>
                   <div>
                     <p className="text-xs text-purple-600 mb-1">
                       {quoteResponseRequest.recurringType && quoteResponseRequest.recurringType !== 'ONCE'
-                        ? 'أول تاريخ مجدول'
-                        : 'التاريخ المجدول'}
+                        ? tc.firstScheduledDateLabel
+                        : tc.scheduledDateLabel}
                     </p>
                     <p className="text-lg font-semibold text-purple-800">
-                      {quoteResponseRequest.quotedDate ? new Date(quoteResponseRequest.quotedDate).toLocaleDateString('ar-SA') : 'بانتظار التحديد'}
+                      {quoteResponseRequest.quotedDate ? new Date(quoteResponseRequest.quotedDate).toLocaleDateString(dateLocale) : tc.pendingSchedule}
                     </p>
                   </div>
                 </div>
                 {quoteResponseRequest.assignedTo && (
                   <div>
-                    <p className="text-xs text-purple-600 mb-1">الفني المعين</p>
+                    <p className="text-xs text-purple-600 mb-1">{tc.assignedTechnicianLabel}</p>
                     <p className="text-sm font-medium text-purple-800">
-                      {quoteResponseRequest.assignedToUser?.name || quoteResponseRequest.assignedToUser?.email || 'معين'}
+                      {quoteResponseRequest.assignedToUser?.name || quoteResponseRequest.assignedToUser?.email || tc.assignedFallback}
                     </p>
                   </div>
                 )}
                 {quoteResponseRequest.quotedNotes && (
                   <div className="pt-3 border-t border-purple-200">
-                    <p className="text-xs text-purple-600 mb-1">ملاحظات من المقاول</p>
+                    <p className="text-xs text-purple-600 mb-1">{tc.notesFromContractorLabel}</p>
                     <p className="text-sm text-purple-900 whitespace-pre-wrap">{quoteResponseRequest.quotedNotes}</p>
                   </div>
                 )}
                 {quoteResponseRequest.quotationUrl && (
                   <div>
-                    <p className="text-xs text-purple-600 mb-1">مستند عرض السعر</p>
+                    <p className="text-xs text-purple-600 mb-1">{tc.quotationDocumentLabel}</p>
                     <a
                       href={quoteResponseRequest.quotationUrl}
                       target="_blank"
@@ -1910,7 +1949,7 @@ export function ClientBranchRequests({ branchId, onDataChange, userId }: ClientB
                       className="inline-flex items-center gap-1.5 text-sm font-medium text-purple-800 hover:text-purple-900 underline"
                     >
                       <FileText className="h-4 w-4" />
-                      {quoteResponseRequest.quotationFileName || 'عرض عرض السعر'}
+                      {quoteResponseRequest.quotationFileName || tc.viewQuotation}
                     </a>
                   </div>
                 )}
@@ -1920,8 +1959,8 @@ export function ClientBranchRequests({ branchId, onDataChange, userId }: ClientB
               {quoteResponseRequest.recurringType && quoteResponseRequest.recurringType !== 'ONCE' && quoteResponseRequest.quotedDate && quoteResponseRequest.quotedPrice && (
                 <div className="p-4 bg-blue-50 border border-blue-200 rounded-lg">
                   <h5 className="font-medium text-blue-800 mb-3">
-                    أوامر العمل ({quoteResponseRequest.recurringType === 'MONTHLY' ? 'شهري' :
-                      quoteResponseRequest.recurringType === 'QUARTERLY' ? 'ربع سنوي' : 'نصف سنوي'})
+                    {tc.workOrdersParens.replace('{freq}', quoteResponseRequest.recurringType === 'MONTHLY' ? tc.monthly :
+                      quoteResponseRequest.recurringType === 'QUARTERLY' ? tc.quarterly : tc.semiAnnual)}
                   </h5>
                   <div className="space-y-1 text-sm">
                     {(() => {
@@ -1932,16 +1971,16 @@ export function ClientBranchRequests({ branchId, onDataChange, userId }: ClientB
                             {quoteResponseRequest.occurrences.map((occ, idx) => (
                               <div key={idx} className="flex justify-between items-center py-1 border-b border-blue-100 last:border-0">
                                 <span className="text-blue-700">
-                                  └ #{occ.order}: {occ.visitDate ? new Date(occ.visitDate).toLocaleDateString('ar-SA') : 'بانتظار التحديد'}
+                                  └ #{occ.order}: {occ.visitDate ? new Date(occ.visitDate).toLocaleDateString(dateLocale) : tc.pendingSchedule}
                                 </span>
                                 <span className="font-medium text-blue-800">
-                                  {occ.price ? `ر.س ${occ.price.toLocaleString('ar-SA')}` : '-'}
+                                  {occ.price ? `${t.dashboard.requestsList.sar} ${occ.price.toLocaleString(dateLocale)}` : '-'}
                                 </span>
                               </div>
                             ))}
                             <div className="flex justify-between items-center pt-3 mt-2 border-t border-blue-300 font-semibold">
-                              <span className="text-blue-800">الإجمالي ({quoteResponseRequest.occurrences.length} أمر عمل)</span>
-                              <span className="text-blue-900 text-lg">ر.س {quoteResponseRequest.quotedPrice?.toLocaleString('ar-SA', { minimumFractionDigits: 2 })}</span>
+                              <span className="text-blue-800">{tc.workOrderTotalLabel.replace('{count}', String(quoteResponseRequest.occurrences.length))}</span>
+                              <span className="text-blue-900 text-lg">{t.dashboard.requestsList.sar} {quoteResponseRequest.quotedPrice?.toLocaleString(dateLocale, { minimumFractionDigits: 2 })}</span>
                             </div>
                           </>
                         )
@@ -1965,14 +2004,14 @@ export function ClientBranchRequests({ branchId, onDataChange, userId }: ClientB
                           {dates.map((date, idx) => (
                             <div key={idx} className="flex justify-between items-center py-1 border-b border-blue-100 last:border-0">
                               <span className="text-blue-700">
-                                └ #{idx + 1}: {date.toLocaleDateString('ar-SA')}
+                                └ #{idx + 1}: {date.toLocaleDateString(dateLocale)}
                               </span>
-                              <span className="font-medium text-blue-800">ر.س {pricePerOccurrence.toLocaleString('ar-SA')}</span>
+                              <span className="font-medium text-blue-800">{t.dashboard.requestsList.sar} {pricePerOccurrence.toLocaleString(dateLocale)}</span>
                             </div>
                           ))}
                           <div className="flex justify-between items-center pt-3 mt-2 border-t border-blue-300 font-semibold">
-                            <span className="text-blue-800">الإجمالي ({dates.length} أمر عمل)</span>
-                            <span className="text-blue-900 text-lg">ر.س {quoteResponseRequest.quotedPrice?.toLocaleString('ar-SA', { minimumFractionDigits: 2 })}</span>
+                            <span className="text-blue-800">{tc.workOrderTotalLabel.replace('{count}', String(dates.length))}</span>
+                            <span className="text-blue-900 text-lg">{t.dashboard.requestsList.sar} {quoteResponseRequest.quotedPrice?.toLocaleString(dateLocale, { minimumFractionDigits: 2 })}</span>
                           </div>
                         </>
                       )
@@ -1984,12 +2023,12 @@ export function ClientBranchRequests({ branchId, onDataChange, userId }: ClientB
               {/* Rejection Form */}
               {showRejectionForm ? (
                 <div className="space-y-3">
-                  <Label htmlFor="rejectionReason">سبب الرفض (اختياري)</Label>
+                  <Label htmlFor="rejectionReason">{tc.rejectionReasonLabel}</Label>
                   <Textarea
                     id="rejectionReason"
                     value={rejectionReason}
                     onChange={(e) => setRejectionReason(e.target.value)}
-                    placeholder="أخبر المقاول لماذا ترفض هذا العرض..."
+                    placeholder={tc.rejectionReasonPlaceholder}
                     rows={3}
                   />
                   <div className="flex gap-2">
@@ -1998,7 +2037,7 @@ export function ClientBranchRequests({ branchId, onDataChange, userId }: ClientB
                       onClick={() => setShowRejectionForm(false)}
                       className="flex-1"
                     >
-                      رجوع
+                      {tc.backBtn}
                     </Button>
                     <Button
                       variant="destructive"
@@ -2008,7 +2047,7 @@ export function ClientBranchRequests({ branchId, onDataChange, userId }: ClientB
                     >
                       {respondingToQuote && <Loader2 className="me-2 h-4 w-4 animate-spin" />}
                       <ThumbsDown className="me-2 h-4 w-4" />
-                      تأكيد الرفض
+                      {tc.confirmRejectionBtn}
                     </Button>
                   </div>
                 </div>
@@ -2016,9 +2055,11 @@ export function ClientBranchRequests({ branchId, onDataChange, userId }: ClientB
                 <div className="space-y-4">
                   <div className="p-4 bg-blue-50 border border-blue-200 rounded-lg">
                     <p className="text-sm text-blue-800">
-                      <strong>وقّع للقبول</strong> - بالتوقيع أدناه، أنت توافق على السعر المجدول والمواعيد.
+                      <strong>{tc.signToAcceptTitle}</strong> - {tc.signToAcceptDesc}
                       {quoteResponseRequest.recurringType && quoteResponseRequest.recurringType !== 'ONCE'
-                        ? ` سيتم إنشاء ${quoteResponseRequest.recurringType === 'MONTHLY' ? '12 شهري' : '4 ربع سنوي'} أمر عمل.`
+                        ? ` ${tc.willCreateWorkOrders
+                            .replace('{count}', recurringCountAndFreq(quoteResponseRequest.recurringType).count)
+                            .replace('{freq}', recurringCountAndFreq(quoteResponseRequest.recurringType).freq)}`
                         : ''}
                     </p>
                   </div>
@@ -2026,7 +2067,7 @@ export function ClientBranchRequests({ branchId, onDataChange, userId }: ClientB
                   <div className="space-y-2">
                     <Label className="flex items-center gap-2">
                       <PenTool className="h-4 w-4" />
-                      توقيعك
+                      {tc.yourSignatureLabel}
                     </Label>
                     <div className="border rounded-lg p-2 bg-white">
                       <SignaturePad
@@ -2046,7 +2087,7 @@ export function ClientBranchRequests({ branchId, onDataChange, userId }: ClientB
                       }}
                       className="flex-1"
                     >
-                      رجوع
+                      {tc.backBtn}
                     </Button>
                     <Button
                       onClick={handleAcceptQuote}
@@ -2055,7 +2096,7 @@ export function ClientBranchRequests({ branchId, onDataChange, userId }: ClientB
                     >
                       {respondingToQuote && <Loader2 className="me-2 h-4 w-4 animate-spin" />}
                       <CheckCircle className="me-2 h-4 w-4" />
-                      تأكيد وقبول
+                      {tc.confirmAndAcceptBtn}
                     </Button>
                   </div>
                 </div>
@@ -2063,11 +2104,13 @@ export function ClientBranchRequests({ branchId, onDataChange, userId }: ClientB
                 <>
                   <div className="p-4 bg-green-50 border border-green-200 rounded-lg">
                     <p className="text-sm text-green-800">
-                      <strong>ماذا يحدث بعد ذلك؟</strong> إذا قبلت،
+                      <strong>{tc.whatHappensNextTitle}</strong>{' '}
                       {quoteResponseRequest.recurringType && quoteResponseRequest.recurringType !== 'ONCE'
-                        ? ` سيتم إنشاء وجدولة ${quoteResponseRequest.recurringType === 'MONTHLY' ? '12 شهري' : '4 ربع سنوي'} أمر عمل تلقائياً.`
-                        : ' سيتم إنشاء أمر عمل وسيقوم المقاول بجدولة الخدمة.'}
-                      {' '}إذا رفضت، سيتم إخطار المقاول وقد يقدم عرض سعر معدل.
+                        ? tc.whatHappensNextAcceptRecurring
+                            .replace('{count}', recurringCountAndFreq(quoteResponseRequest.recurringType).count)
+                            .replace('{freq}', recurringCountAndFreq(quoteResponseRequest.recurringType).freq)
+                        : tc.whatHappensNextAcceptOnce}
+                      {' '}{tc.whatHappensNextRejectNote}
                     </p>
                   </div>
 
@@ -2078,14 +2121,14 @@ export function ClientBranchRequests({ branchId, onDataChange, userId }: ClientB
                       className="flex-1"
                     >
                       <ThumbsDown className="me-2 h-4 w-4" />
-                      رفض
+                      {tc.rejectBtn}
                     </Button>
                     <Button
                       onClick={() => setShowSignatureForm(true)}
                       className="flex-1 bg-green-600 hover:bg-green-700"
                     >
                       <PenTool className="me-2 h-4 w-4" />
-                      قبول وتوقيع
+                      {tc.acceptAndSignBtn}
                     </Button>
                   </div>
                 </>
@@ -2099,9 +2142,9 @@ export function ClientBranchRequests({ branchId, onDataChange, userId }: ClientB
       <Dialog open={startImmediatelyDialogOpen} onOpenChange={(open) => { if (!open) { setStartImmediatelyDialogOpen(false); setStartImmediatelyRequest(null); setStartImmediatelyDate(''); setError(''); setSelectedRequest(null); } }}>
         <DialogContent className="sm:max-w-[500px]">
           <DialogHeader>
-            <DialogTitle>بدء العمل فوراً</DialogTitle>
+            <DialogTitle>{tc.startWorkNowTitle}</DialogTitle>
             <DialogDescription>
-              سيبدأ هذا أمر العمل اليوم وينتقل إلى قيد التنفيذ فوراً.
+              {tc.startWorkNowDesc}
             </DialogDescription>
           </DialogHeader>
 
@@ -2115,21 +2158,23 @@ export function ClientBranchRequests({ branchId, onDataChange, userId }: ClientB
 
               <div className="p-4 bg-blue-50 border border-blue-200 rounded-lg">
                 <p className="text-sm text-blue-900 font-semibold mb-2">
-                  ⚠️ تحذير: هذا الإجراء سيقوم بـ:
+                  {tc.warningLabel}
                 </p>
                 <ul className="text-sm text-blue-800 space-y-1 ms-4 list-disc">
-                  <li>إنشاء أمر عمل يبدأ <strong>اليوم ({new Date().toLocaleDateString('ar-SA')})</strong></li>
-                  <li>نقله إلى حالة <strong>قيد التنفيذ</strong> فوراً</li>
-                  <li>تخطي عملية التسعير (سيضيف المقاول التسعير لاحقاً)</li>
+                  <li><strong>{tc.warningCreateToday.replace('{date}', new Date().toLocaleDateString(dateLocale))}</strong></li>
+                  <li>{tc.warningMoveInProgress}</li>
+                  <li>{tc.warningSkipQuote}</li>
                   {startImmediatelyRequest.recurringType && startImmediatelyRequest.recurringType !== 'ONCE' && (
-                    <li>إنشاء <strong>{startImmediatelyRequest.recurringType === 'MONTHLY' ? '12 شهري' : '4 ربع سنوي'}</strong> أمر عمل</li>
+                    <li>{tc.warningCreateRecurring
+                      .replace('{count}', recurringCountAndFreq(startImmediatelyRequest.recurringType).count)
+                      .replace('{freq}', recurringCountAndFreq(startImmediatelyRequest.recurringType).freq)}</li>
                   )}
                 </ul>
               </div>
 
               <div className="p-4 bg-muted rounded-lg">
                 <p className="text-sm">
-                  <strong>الطلب:</strong> {startImmediatelyRequest.title}
+                  <strong>{tc.requestLabel}</strong> {startImmediatelyRequest.title}
                 </p>
                 {startImmediatelyRequest.description && (
                   <p className="text-sm text-muted-foreground mt-1">
@@ -2142,13 +2187,13 @@ export function ClientBranchRequests({ branchId, onDataChange, userId }: ClientB
 
               <div className="p-4 bg-blue-50 border border-blue-200 rounded-lg">
                 <p className="text-sm text-blue-800">
-                  <strong>ماذا يحدث بعد ذلك؟</strong>
+                  <strong>{tc.whatHappensNextTitle}</strong>
                 </p>
                 <ul className="text-sm text-blue-700 mt-2 space-y-1 list-disc list-inside">
-                  <li>سيتم إنشاء أمر العمل وسيظهر في تبويب القائمة</li>
-                  <li>يمكن للمقاول بدء العمل في التاريخ المجدول</li>
-                  <li>سيضيف المقاول التسعير قبل الإرسال للمراجعة</li>
-                  <li>ستقوم بمراجعة وقبول العمل عند إكماله</li>
+                  <li>{tc.whatHappensNextStart1}</li>
+                  <li>{tc.whatHappensNextStart2}</li>
+                  <li>{tc.whatHappensNextStart3}</li>
+                  <li>{tc.whatHappensNextStart4}</li>
                 </ul>
               </div>
 
@@ -2163,7 +2208,7 @@ export function ClientBranchRequests({ branchId, onDataChange, userId }: ClientB
                   className="flex-1"
                   disabled={startingImmediately}
                 >
-                  إلغاء
+                  {tc.cancelBtn}
                 </Button>
                 <Button
                   onClick={handleStartImmediately}
@@ -2173,12 +2218,12 @@ export function ClientBranchRequests({ branchId, onDataChange, userId }: ClientB
                   {startingImmediately ? (
                     <>
                       <Loader2 className="me-2 h-4 w-4 animate-spin" />
-                      جاري الإنشاء...
+                      {tc.creatingText}
                     </>
                   ) : (
                     <>
                       <CheckCircle className="me-2 h-4 w-4" />
-                      إنشاء أمر عمل
+                      {tc.createWorkOrderBtn}
                     </>
                   )}
                 </Button>

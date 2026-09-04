@@ -137,7 +137,7 @@ export async function GET() {
             },
             _sum: { price: true }
           }).then(agg => ({
-            month: monthStart.toLocaleDateString('ar-SA', { month: 'short' }),
+            month: monthStart.toLocaleDateString('ar-SA-u-nu-latn', { month: 'short' }),
             revenue: Number(agg._sum.price || 0)
           }))
         )

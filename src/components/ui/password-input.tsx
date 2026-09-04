@@ -22,7 +22,7 @@ const PasswordInput = forwardRef<HTMLInputElement, PasswordInputProps>(
       <div className="relative">
         <Input
           type={showPassword ? 'text' : 'password'}
-          className={cn('pr-10', className, error && 'border-destructive')}
+          className={cn('pe-10', className, error && 'border-destructive')}
           ref={ref}
           {...props}
         />

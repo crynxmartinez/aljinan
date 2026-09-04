@@ -402,7 +402,7 @@ export default function ClientWorkOrdersPage() {
                   </div>
                   <div className="col-span-1 flex items-center">
                     <p className="text-sm">
-                      {wo.scheduledDate ? new Date(wo.scheduledDate).toLocaleDateString('ar-SA') : '-'}
+                      {wo.scheduledDate ? new Date(wo.scheduledDate).toLocaleDateString('ar-SA-u-nu-latn') : '-'}
                     </p>
                   </div>
                   <div className="col-span-1 flex items-center justify-end">

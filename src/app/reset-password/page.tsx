@@ -7,8 +7,11 @@ import { Label } from '@/components/ui/label'
 import { Button } from '@/components/ui/button'
 import { PasswordInput } from '@/components/ui/password-input'
 import { Loader2, Lock, CheckCircle, AlertCircle } from 'lucide-react'
+import { useTranslation } from '@/lib/i18n/use-translation'
 
 function ResetPasswordForm() {
+  const { t } = useTranslation()
+  const tr = t.pages.resetPassword
   const router = useRouter()
   const searchParams = useSearchParams()
   const token = searchParams.get('token')
@@ -21,21 +24,21 @@ function ResetPasswordForm() {
 
   useEffect(() => {
     if (!token) {
-      setError('Invalid reset link. Please request a new password reset.')
+      setError(tr.invalidLinkError)
     }
-  }, [token])
+  }, [token, tr.invalidLinkError])
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
     setError('')
 
     if (password.length < 8) {
-      setError('Password must be at least 8 characters')
+      setError(tr.passwordTooShort)
       return
     }
 
     if (password !== confirmPassword) {
-      setError('Passwords do not match')
+      setError(tr.passwordMismatch)
       return
     }
 
@@ -58,7 +61,7 @@ function ResetPasswordForm() {
         router.push('/login')
       }, 3000)
     } catch (err) {
-      setError(err instanceof Error ? err.message : 'An error occurred')
+      setError(err instanceof Error ? err.message : tr.genericError)
     } finally {
       setLoading(false)
     }
@@ -73,12 +76,12 @@ function ResetPasswordForm() {
               <div className="mx-auto w-16 h-16 bg-red-100 rounded-full flex items-center justify-center mb-4">
                 <AlertCircle className="h-8 w-8 text-red-600" />
               </div>
-              <h1 className="text-2xl font-bold mb-2">Invalid Reset Link</h1>
+              <h1 className="text-2xl font-bold mb-2">{tr.invalidLinkTitle}</h1>
               <p className="text-muted-foreground mb-6">
-                This password reset link is invalid or has expired.
+                {tr.invalidLinkDesc}
               </p>
               <Link href="/forgot-password">
-                <Button className="w-full">Request New Reset Link</Button>
+                <Button className="w-full">{tr.requestNewLink}</Button>
               </Link>
             </div>
           </div>
@@ -96,9 +99,9 @@ function ResetPasswordForm() {
               <div className="mx-auto w-16 h-16 bg-green-100 rounded-full flex items-center justify-center mb-4">
                 <CheckCircle className="h-8 w-8 text-green-600" />
               </div>
-              <h1 className="text-2xl font-bold mb-2">Password Reset Successful!</h1>
+              <h1 className="text-2xl font-bold mb-2">{tr.successTitle}</h1>
               <p className="text-muted-foreground mb-6">
-                Your password has been reset successfully. Redirecting to login...
+                {tr.successDesc}
               </p>
               <Loader2 className="h-6 w-6 animate-spin mx-auto text-primary" />
             </div>
@@ -108,9 +111,9 @@ function ResetPasswordForm() {
                 <div className="mx-auto w-12 h-12 bg-primary/10 rounded-full flex items-center justify-center mb-4">
                   <Lock className="h-6 w-6 text-primary" />
                 </div>
-                <h1 className="text-2xl font-bold mb-2">Reset Your Password</h1>
+                <h1 className="text-2xl font-bold mb-2">{tr.title}</h1>
                 <p className="text-sm text-muted-foreground">
-                  Enter your new password below
+                  {tr.subtitle}
                 </p>
               </div>
 
@@ -123,24 +126,24 @@ function ResetPasswordForm() {
 
                 <div className="space-y-4">
                   <div className="space-y-2">
-                    <Label htmlFor="password">New Password</Label>
+                    <Label htmlFor="password">{tr.newPasswordLabel}</Label>
                     <PasswordInput
                       id="password"
                       value={password}
                       onChange={(e) => setPassword(e.target.value)}
-                      placeholder="Enter new password (min. 8 characters)"
+                      placeholder={tr.newPasswordPlaceholder}
                       required
                       autoFocus
                     />
                   </div>
 
                   <div className="space-y-2">
-                    <Label htmlFor="confirmPassword">Confirm Password</Label>
+                    <Label htmlFor="confirmPassword">{tr.confirmPasswordLabel}</Label>
                     <PasswordInput
                       id="confirmPassword"
                       value={confirmPassword}
                       onChange={(e) => setConfirmPassword(e.target.value)}
-                      placeholder="Confirm your new password"
+                      placeholder={tr.confirmPasswordPlaceholder}
                       required
                     />
                   </div>
@@ -148,12 +151,12 @@ function ResetPasswordForm() {
 
                 <Button type="submit" className="w-full" disabled={loading}>
                   {loading && <Loader2 className="me-2 h-4 w-4 animate-spin" />}
-                  {loading ? 'Resetting Password...' : 'Reset Password'}
+                  {loading ? tr.resetting : tr.resetButton}
                 </Button>
 
                 <div className="text-center text-sm">
                   <Link href="/login" className="text-muted-foreground hover:text-foreground">
-                    Back to Login
+                    {tr.backToLogin}
                   </Link>
                 </div>
               </form>

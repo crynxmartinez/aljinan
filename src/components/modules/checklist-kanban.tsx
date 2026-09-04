@@ -389,7 +389,7 @@ function DraggableCard({
               <div className="text-xs text-purple-600 truncate">{item.contractTitle}</div>
               {item.paymentDueDate && (
                 <div className="text-xs text-muted-foreground">
-                  استحقاق الدفع: {new Date(item.paymentDueDate).toLocaleDateString('ar-SA')}
+                  استحقاق الدفع: {new Date(item.paymentDueDate).toLocaleDateString('ar-SA-u-nu-latn')}
                 </div>
               )}
             </div>
@@ -480,14 +480,14 @@ function DroppableColumn({
 
 function formatDate(dateString: string | null, locale: 'en' | 'ar' = 'ar') {
   if (!dateString) return null
-  return new Date(dateString).toLocaleDateString(locale === 'ar' ? 'ar-SA' : 'en-US', {
+  return new Date(dateString).toLocaleDateString(locale === 'ar' ? 'ar-SA-u-nu-latn' : 'en-US', {
     month: 'short',
     day: 'numeric',
   })
 }
 
 function formatCurrency(amount: number) {
-  return `ر.س ${amount.toLocaleString('ar-SA', { minimumFractionDigits: 2 })}`
+  return `ر.س ${amount.toLocaleString('ar-SA-u-nu-latn', { minimumFractionDigits: 2 })}`
 }
 
 // Date priority types for visual indicators
@@ -859,11 +859,10 @@ export function ChecklistKanban({ branchId, readOnly = false, userRole }: Checkl
         router.refresh()
       } else {
         const error = await response.json()
-        toast.error(error.error || 'Failed to sign inspection')
-        throw new Error(error.error)
+        throw new Error(error.error || t.toasts.inspectionSignFailed)
       }
     } catch (error) {
-      toast.error(t.toasts.inspectionSignFailed)
+      toast.error(error instanceof Error ? error.message : t.toasts.inspectionSignFailed)
       throw error
     } finally {
       setUpdating(false)
@@ -896,11 +895,10 @@ export function ChecklistKanban({ branchId, readOnly = false, userRole }: Checkl
         router.refresh()
       } else {
         const error = await response.json()
-        toast.error(error.error || 'Failed to sign')
-        throw new Error(error.error)
+        throw new Error(error.error || t.toasts.signFailed)
       }
     } catch (error) {
-      toast.error(t.toasts.signFailed)
+      toast.error(error instanceof Error ? error.message : t.toasts.signFailed)
       throw error
     } finally {
       setUpdating(false)
@@ -951,11 +949,10 @@ export function ChecklistKanban({ branchId, readOnly = false, userRole }: Checkl
         router.refresh()
       } else {
         const error = await response.json()
-        toast.error(error.error || 'Failed to sign')
-        throw new Error(error.error)
+        throw new Error(error.error || t.toasts.signFailed)
       }
     } catch (error) {
-      toast.error(t.toasts.signFailed)
+      toast.error(error instanceof Error ? error.message : t.toasts.signFailed)
       throw error
     } finally {
       setUpdating(false)
@@ -990,7 +987,7 @@ export function ChecklistKanban({ branchId, readOnly = false, userRole }: Checkl
         router.refresh()
       } else {
         const error = await response.json()
-        toast.error(error.error || 'Failed to update price')
+        toast.error(error.error || t.toasts.priceUpdateFailed)
       }
     } catch (error) {
       console.error('Failed to update price:', error)
@@ -1054,7 +1051,7 @@ export function ChecklistKanban({ branchId, readOnly = false, userRole }: Checkl
         router.refresh()
       } else {
         const error = await response.json()
-        toast.error(error.error || (t.toasts?.rescheduleFailed || 'فشل في إعادة الجدولة'))
+        toast.error(error.error || t.toasts.rescheduleFailed)
       }
     } catch {
       toast.error(t.toasts.rescheduleFailed)
@@ -1368,7 +1365,7 @@ export function ChecklistKanban({ branchId, readOnly = false, userRole }: Checkl
                     <p className="text-muted-foreground">مجدول</p>
                     <p className="font-medium flex items-center gap-1">
                       <Calendar className="h-4 w-4" />
-                      {new Date(selectedItem.scheduledDate).toLocaleDateString('ar-SA')}
+                      {new Date(selectedItem.scheduledDate).toLocaleDateString('ar-SA-u-nu-latn')}
                     </p>
                     {/* Reschedule button - only for SCHEDULED stage and contractors */}
                     {!readOnly && userRole !== 'CLIENT' && selectedItem.stage === 'SCHEDULED' && (
@@ -1947,7 +1944,7 @@ export function ChecklistKanban({ branchId, readOnly = false, userRole }: Checkl
                                 selectedItem.workOrderType === 'INSPECTION' || selectedItem.workOrderType === 'STICKER_INSPECTION' ? 'تاريخ التفتيش' :
                                   'التاريخ'}
                         </p>
-                        <p className="text-sm">{new Date(selectedItem.inspectionDate).toLocaleDateString('ar-SA')}</p>
+                        <p className="text-sm">{new Date(selectedItem.inspectionDate).toLocaleDateString('ar-SA-u-nu-latn')}</p>
                       </div>
                     )}
 
@@ -2010,7 +2007,7 @@ export function ChecklistKanban({ branchId, readOnly = false, userRole }: Checkl
                       {selectedItem.supervisorSignature ? (
                         <div className="flex items-center gap-2 text-green-700">
                           <CheckCircle className="h-4 w-4" />
-                          <span className="text-sm">موقّع {selectedItem.supervisorSignedAt && new Date(selectedItem.supervisorSignedAt).toLocaleDateString('ar-SA')}</span>
+                          <span className="text-sm">موقّع {selectedItem.supervisorSignedAt && new Date(selectedItem.supervisorSignedAt).toLocaleDateString('ar-SA-u-nu-latn')}</span>
                         </div>
                       ) : userRole === 'CONTRACTOR' ? (
                         <Button
@@ -2039,7 +2036,7 @@ export function ChecklistKanban({ branchId, readOnly = false, userRole }: Checkl
                       {selectedItem.clientSignature ? (
                         <div className="flex items-center gap-2 text-green-700">
                           <CheckCircle className="h-4 w-4" />
-                          <span className="text-sm">موقّع {selectedItem.clientSignedAt && new Date(selectedItem.clientSignedAt).toLocaleDateString('ar-SA')}</span>
+                          <span className="text-sm">موقّع {selectedItem.clientSignedAt && new Date(selectedItem.clientSignedAt).toLocaleDateString('ar-SA-u-nu-latn')}</span>
                         </div>
                       ) : userRole === 'CLIENT' ? (
                         <Button
@@ -2076,7 +2073,7 @@ export function ChecklistKanban({ branchId, readOnly = false, userRole }: Checkl
                   </div>
                   {selectedItem.deletedAt && (
                     <p className="text-sm text-gray-600 mb-2">
-                      تمت الأرشفة في: {new Date(selectedItem.deletedAt).toLocaleDateString('ar-SA')} الساعة {new Date(selectedItem.deletedAt).toLocaleTimeString('ar-SA')}
+                      تمت الأرشفة في: {new Date(selectedItem.deletedAt).toLocaleDateString('ar-SA-u-nu-latn')} الساعة {new Date(selectedItem.deletedAt).toLocaleTimeString('ar-SA-u-nu-latn')}
                     </p>
                   )}
                   {selectedItem.deletedReason && (
@@ -2211,7 +2208,7 @@ export function ChecklistKanban({ branchId, readOnly = false, userRole }: Checkl
                   {selectedItem.scheduledDate && (
                     <div>
                       <p className="text-muted-foreground">مجدول</p>
-                      <p className="font-medium">{new Date(selectedItem.scheduledDate).toLocaleDateString('ar-SA')}</p>
+                      <p className="font-medium">{new Date(selectedItem.scheduledDate).toLocaleDateString('ar-SA-u-nu-latn')}</p>
                     </div>
                   )}
                   {selectedItem.price && (
@@ -2232,7 +2229,7 @@ export function ChecklistKanban({ branchId, readOnly = false, userRole }: Checkl
                   </h4>
                   {selectedItem.inspectionDate && (
                     <p className="text-sm mb-1">
-                      <span className="text-muted-foreground">التاريخ:</span> {new Date(selectedItem.inspectionDate).toLocaleDateString('ar-SA')}
+                      <span className="text-muted-foreground">التاريخ:</span> {new Date(selectedItem.inspectionDate).toLocaleDateString('ar-SA-u-nu-latn')}
                     </p>
                   )}
                   {selectedItem.systemsChecked && (
@@ -2367,7 +2364,7 @@ export function ChecklistKanban({ branchId, readOnly = false, userRole }: Checkl
               <div className="p-3 bg-muted/50 rounded-lg">
                 <p className="text-sm text-muted-foreground">الجدول الحالي</p>
                 <p className="font-medium">
-                  {new Date(selectedItem.scheduledDate).toLocaleDateString(locale === 'ar' ? 'ar-SA' : 'en-US', {
+                  {new Date(selectedItem.scheduledDate).toLocaleDateString(locale === 'ar' ? 'ar-SA-u-nu-latn' : 'en-US', {
                     weekday: 'long',
                     year: 'numeric',
                     month: 'long',

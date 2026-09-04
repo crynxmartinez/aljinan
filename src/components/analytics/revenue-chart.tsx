@@ -77,7 +77,7 @@ export function RevenueChart({ data, title, description }: RevenueChartProps) {
         },
         callbacks: {
           label: function (context: any) {
-            return `ر.س ${context.parsed.y.toLocaleString('ar-SA')}`
+            return `ر.س ${context.parsed.y.toLocaleString('ar-SA-u-nu-latn')}`
           },
         },
       },
@@ -90,7 +90,7 @@ export function RevenueChart({ data, title, description }: RevenueChartProps) {
         },
         ticks: {
           callback: function (value: any) {
-            return `ر.س ${value.toLocaleString('ar-SA')}`
+            return `ر.س ${value.toLocaleString('ar-SA-u-nu-latn')}`
           },
         },
       },

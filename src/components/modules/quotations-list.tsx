@@ -298,7 +298,7 @@ export function QuotationsList({ branchId }: QuotationsListProps) {
                         {quotation.items.length} item{quotation.items.length !== 1 ? 's' : ''}
                       </span>
                       <span className="text-muted-foreground">
-                        Created {new Date(quotation.createdAt).toLocaleDateString('ar-SA')}
+                        Created {new Date(quotation.createdAt).toLocaleDateString('ar-SA-u-nu-latn')}
                       </span>
                     </div>
                     {quotation.rejectionNote && (
@@ -566,24 +566,24 @@ export function QuotationsList({ branchId }: QuotationsListProps) {
               <div className="grid grid-cols-2 gap-4 text-sm">
                 <div>
                   <p className="font-medium text-muted-foreground">تم الإنشاء</p>
-                  <p>{new Date(selectedQuotation.createdAt).toLocaleDateString('ar-SA')}</p>
+                  <p>{new Date(selectedQuotation.createdAt).toLocaleDateString('ar-SA-u-nu-latn')}</p>
                 </div>
                 {selectedQuotation.validUntil && (
                   <div>
                     <p className="font-medium text-muted-foreground">Valid Until</p>
-                    <p>{new Date(selectedQuotation.validUntil).toLocaleDateString('ar-SA')}</p>
+                    <p>{new Date(selectedQuotation.validUntil).toLocaleDateString('ar-SA-u-nu-latn')}</p>
                   </div>
                 )}
                 {selectedQuotation.sentAt && (
                   <div>
                     <p className="font-medium text-muted-foreground">تم الإرسال</p>
-                    <p>{new Date(selectedQuotation.sentAt).toLocaleDateString('ar-SA')}</p>
+                    <p>{new Date(selectedQuotation.sentAt).toLocaleDateString('ar-SA-u-nu-latn')}</p>
                   </div>
                 )}
                 {selectedQuotation.approvedAt && (
                   <div>
                     <p className="font-medium text-muted-foreground">موافق عليه</p>
-                    <p>{new Date(selectedQuotation.approvedAt).toLocaleDateString('ar-SA')}</p>
+                    <p>{new Date(selectedQuotation.approvedAt).toLocaleDateString('ar-SA-u-nu-latn')}</p>
                   </div>
                 )}
               </div>

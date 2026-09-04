@@ -212,7 +212,7 @@ interface InspectionReportData {
 
 export function InspectionReportDocument({ data }: { data: InspectionReportData }) {
   const formatDate = (dateStr: string) => {
-    return new Date(dateStr).toLocaleDateString('ar-SA', {
+    return new Date(dateStr).toLocaleDateString('ar-SA-u-nu-latn', {
       year: 'numeric',
       month: 'long',
       day: 'numeric',

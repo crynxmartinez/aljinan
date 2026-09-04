@@ -50,7 +50,7 @@ const STAGE_COLORS: Record<ChecklistItemStage, string> = {
 }
 
 function formatCurrency(amount: number) {
-  return `ر.س ${amount.toLocaleString('ar-SA', { minimumFractionDigits: 2 })}`
+  return `ر.س ${amount.toLocaleString('ar-SA-u-nu-latn', { minimumFractionDigits: 2 })}`
 }
 
 export function CalendarView({ branchId }: CalendarViewProps) {
@@ -181,13 +181,13 @@ export function CalendarView({ branchId }: CalendarViewProps) {
               </CardTitle>
               <div className="flex items-center gap-1">
                 <Button variant="outline" size="icon" onClick={() => navigateMonth('prev')}>
-                  <ChevronLeft className="h-4 w-4" />
+                  <ChevronLeft className="h-4 w-4 rtl:rotate-180" />
                 </Button>
                 <Button variant="outline" size="sm" onClick={() => setCurrentDate(new Date())}>
                   {tc.today}
                 </Button>
                 <Button variant="outline" size="icon" onClick={() => navigateMonth('next')}>
-                  <ChevronRight className="h-4 w-4" />
+                  <ChevronRight className="h-4 w-4 rtl:rotate-180" />
                 </Button>
               </div>
             </div>

@@ -74,7 +74,7 @@ function groupWorkOrders(workOrders: BillingWorkOrder[]): Map<string, BillingWor
 
 function formatDate(dateString: string | null, notScheduledLabel: string) {
   if (!dateString) return notScheduledLabel
-  return new Date(dateString).toLocaleDateString('ar-SA', {
+  return new Date(dateString).toLocaleDateString('ar-SA-u-nu-latn', {
     month: 'short',
     day: 'numeric',
     year: 'numeric'

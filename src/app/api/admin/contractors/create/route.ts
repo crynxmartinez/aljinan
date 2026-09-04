@@ -3,6 +3,7 @@ import { prisma } from '@/lib/prisma'
 import { sendVerificationEmail } from '@/lib/email'
 import crypto from 'crypto'
 import { requireAdmin } from '@/lib/admin-auth'
+import { getLocale } from '@/lib/i18n/server'
 
 export async function POST(request: Request) {
   try {
@@ -60,7 +61,7 @@ export async function POST(request: Request) {
     })
 
     // Send verification email
-    await sendVerificationEmail(user.email, user.name || 'there', verificationToken)
+    await sendVerificationEmail(user.email, user.name || 'there', verificationToken, undefined, await getLocale())
 
     // If this was created from a contact inquiry, mark it as converted
     if (inquiryId) {

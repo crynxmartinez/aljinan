@@ -26,7 +26,7 @@ export function HowItWorks() {
             return (
               <div key={index} className="relative">
                 {/* Step Number */}
-                <div className="absolute -top-4 -left-4 w-12 h-12 bg-orange-500 text-white rounded-full flex items-center justify-center font-bold text-xl z-10">
+                <div className="absolute -top-4 -start-4 w-12 h-12 bg-orange-500 text-white rounded-full flex items-center justify-center font-bold text-xl z-10">
                   {index + 1}
                 </div>
 
@@ -41,9 +41,9 @@ export function HowItWorks() {
                   <p className="text-muted-foreground">{step.description}</p>
                 </div>
 
-                {/* Arrow (desktop only) */}
+                {/* Arrow (desktop only) — flips to point the reading direction in RTL */}
                 {index < t.howItWorks.steps.length - 1 && (
-                  <div className="hidden md:block absolute top-1/2 -right-4 transform -translate-y-1/2 text-orange-300 text-3xl z-0">
+                  <div className="hidden md:block absolute top-1/2 -end-4 rtl:rotate-180 transform -translate-y-1/2 text-orange-300 text-3xl z-0">
                     →
                   </div>
                 )}

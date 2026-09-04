@@ -250,7 +250,7 @@ export function ActionCenterTable({ userRole }: ActionCenterTableProps) {
                           {wo.description}
                         </TableCell>
                         <TableCell>
-                          {new Date(wo.scheduledDate).toLocaleDateString('ar-SA')}
+                          {new Date(wo.scheduledDate).toLocaleDateString('ar-SA-u-nu-latn')}
                         </TableCell>
                         <TableCell>
                           <Badge variant="destructive">
@@ -265,7 +265,7 @@ export function ActionCenterTable({ userRole }: ActionCenterTableProps) {
                         <TableCell>
                           <Link href={getBranchLink(wo.clientId, wo.branchId, 'checklists')}>
                             <Button variant="ghost" size="sm">
-                              <ChevronRight className="h-4 w-4" />
+                              <ChevronRight className="h-4 w-4 rtl:rotate-180" />
                             </Button>
                           </Link>
                         </TableCell>
@@ -331,7 +331,7 @@ export function ActionCenterTable({ userRole }: ActionCenterTableProps) {
                         )}
                         <TableCell>
                           {eq.expectedExpiry
-                            ? new Date(eq.expectedExpiry).toLocaleDateString('ar-SA')
+                            ? new Date(eq.expectedExpiry).toLocaleDateString('ar-SA-u-nu-latn')
                             : '-'}
                         </TableCell>
                         <TableCell>
@@ -346,7 +346,7 @@ export function ActionCenterTable({ userRole }: ActionCenterTableProps) {
                         <TableCell>
                           <Link href={getBranchLink(eq.clientId, eq.branchId, 'equipment')}>
                             <Button variant="ghost" size="sm">
-                              <ChevronRight className="h-4 w-4" />
+                              <ChevronRight className="h-4 w-4 rtl:rotate-180" />
                             </Button>
                           </Link>
                         </TableCell>
@@ -400,7 +400,7 @@ export function ActionCenterTable({ userRole }: ActionCenterTableProps) {
                           </TableCell>
                           <TableCell>
                             {contract.endDate
-                              ? new Date(contract.endDate).toLocaleDateString('ar-SA')
+                              ? new Date(contract.endDate).toLocaleDateString('ar-SA-u-nu-latn')
                               : '-'}
                           </TableCell>
                           <TableCell>
@@ -426,7 +426,7 @@ export function ActionCenterTable({ userRole }: ActionCenterTableProps) {
                           <TableCell>
                             <Link href={getBranchLink(contract.clientId, contract.branchId, 'contracts')}>
                               <Button variant="ghost" size="sm">
-                                <ChevronRight className="h-4 w-4" />
+                                <ChevronRight className="h-4 w-4 rtl:rotate-180" />
                               </Button>
                             </Link>
                           </TableCell>

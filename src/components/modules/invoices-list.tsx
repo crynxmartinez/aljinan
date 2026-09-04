@@ -304,7 +304,7 @@ export function InvoicesList({ branchId }: InvoicesListProps) {
                       )}
                       {invoice.dueDate && (
                         <span className="text-muted-foreground">
-                          Due: {new Date(invoice.dueDate).toLocaleDateString('ar-SA')}
+                          Due: {new Date(invoice.dueDate).toLocaleDateString('ar-SA-u-nu-latn')}
                         </span>
                       )}
                     </div>
@@ -571,24 +571,24 @@ export function InvoicesList({ branchId }: InvoicesListProps) {
               <div className="grid grid-cols-2 gap-4 text-sm">
                 <div>
                   <p className="font-medium text-muted-foreground">تم الإنشاء</p>
-                  <p>{new Date(selectedInvoice.createdAt).toLocaleDateString('ar-SA')}</p>
+                  <p>{new Date(selectedInvoice.createdAt).toLocaleDateString('ar-SA-u-nu-latn')}</p>
                 </div>
                 {selectedInvoice.dueDate && (
                   <div>
                     <p className="font-medium text-muted-foreground">تاريخ الاستحقاق</p>
-                    <p>{new Date(selectedInvoice.dueDate).toLocaleDateString('ar-SA')}</p>
+                    <p>{new Date(selectedInvoice.dueDate).toLocaleDateString('ar-SA-u-nu-latn')}</p>
                   </div>
                 )}
                 {selectedInvoice.sentAt && (
                   <div>
                     <p className="font-medium text-muted-foreground">تم الإرسال</p>
-                    <p>{new Date(selectedInvoice.sentAt).toLocaleDateString('ar-SA')}</p>
+                    <p>{new Date(selectedInvoice.sentAt).toLocaleDateString('ar-SA-u-nu-latn')}</p>
                   </div>
                 )}
                 {selectedInvoice.paidAt && (
                   <div>
                     <p className="font-medium text-muted-foreground">مدفوع</p>
-                    <p>{new Date(selectedInvoice.paidAt).toLocaleDateString('ar-SA')}</p>
+                    <p>{new Date(selectedInvoice.paidAt).toLocaleDateString('ar-SA-u-nu-latn')}</p>
                   </div>
                 )}
               </div>

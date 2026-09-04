@@ -7,8 +7,11 @@ import { Label } from '@/components/ui/label'
 import { Button } from '@/components/ui/button'
 import { PasswordInput } from '@/components/ui/password-input'
 import { Loader2, Lock } from 'lucide-react'
+import { useTranslation } from '@/lib/i18n/use-translation'
 
 export default function ChangePasswordPage() {
+  const { t } = useTranslation()
+  const tr = t.pages.changePassword
   const router = useRouter()
   const { data: session, update } = useSession()
   const [newPassword, setNewPassword] = useState('')
@@ -21,12 +24,12 @@ export default function ChangePasswordPage() {
     setError('')
 
     if (newPassword.length < 8) {
-      setError('Password must be at least 8 characters')
+      setError(tr.passwordTooShort)
       return
     }
 
     if (newPassword !== confirmPassword) {
-      setError('Passwords do not match')
+      setError(tr.passwordMismatch)
       return
     }
 
@@ -54,7 +57,7 @@ export default function ChangePasswordPage() {
       }
       router.refresh()
     } catch (err) {
-      setError(err instanceof Error ? err.message : 'An error occurred')
+      setError(err instanceof Error ? err.message : tr.genericError)
     } finally {
       setLoading(false)
     }
@@ -68,9 +71,9 @@ export default function ChangePasswordPage() {
             <div className="mx-auto w-12 h-12 bg-primary/10 rounded-full flex items-center justify-center mb-4">
               <Lock className="h-6 w-6 text-primary" />
             </div>
-            <h1 className="text-2xl font-bold mb-2">Set Your Password</h1>
+            <h1 className="text-2xl font-bold mb-2">{tr.title}</h1>
             <p className="text-sm text-muted-foreground">
-              Please set a new password for your account. This is required for your first login.
+              {tr.subtitle}
             </p>
           </div>
 
@@ -83,23 +86,23 @@ export default function ChangePasswordPage() {
 
             <div className="space-y-4">
               <div className="space-y-2">
-                <Label htmlFor="newPassword">New Password</Label>
+                <Label htmlFor="newPassword">{tr.newPasswordLabel}</Label>
                 <PasswordInput
                   id="newPassword"
                   value={newPassword}
                   onChange={(e) => setNewPassword(e.target.value)}
-                  placeholder="Enter new password (min. 8 characters)"
+                  placeholder={tr.newPasswordPlaceholder}
                   required
                 />
               </div>
 
               <div className="space-y-2">
-                <Label htmlFor="confirmPassword">Confirm Password</Label>
+                <Label htmlFor="confirmPassword">{tr.confirmPasswordLabel}</Label>
                 <PasswordInput
                   id="confirmPassword"
                   value={confirmPassword}
                   onChange={(e) => setConfirmPassword(e.target.value)}
-                  placeholder="Confirm your new password"
+                  placeholder={tr.confirmPasswordPlaceholder}
                   required
                 />
               </div>
@@ -107,7 +110,7 @@ export default function ChangePasswordPage() {
 
             <Button type="submit" className="w-full" disabled={loading}>
               {loading && <Loader2 className="me-2 h-4 w-4 animate-spin" />}
-              {loading ? 'Saving...' : 'Set Password & Continue'}
+              {loading ? tr.saving : tr.submitButton}
             </Button>
           </form>
         </div>

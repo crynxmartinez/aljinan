@@ -331,7 +331,7 @@ function WorkOrdersGroupedViewContractor({
                         </Badge>
                       ) : (
                         <span className="font-semibold text-primary">
-                          ر.س {groupTotal.toLocaleString('ar-SA', { minimumFractionDigits: 2 })}
+                          ر.س {groupTotal.toLocaleString('ar-SA-u-nu-latn', { minimumFractionDigits: 2 })}
                         </span>
                       )}
                     </div>
@@ -356,7 +356,7 @@ function WorkOrdersGroupedViewContractor({
                   {items[0].scheduledDate ? (
                     <div className="flex items-center gap-1">
                       <Calendar className="h-3 w-3" />
-                      {new Date(items[0].scheduledDate).toLocaleDateString('ar-SA')}
+                      {new Date(items[0].scheduledDate).toLocaleDateString('ar-SA-u-nu-latn')}
                     </div>
                   ) : (
                     <span>{tr.noDateScheduled}</span>
@@ -379,7 +379,7 @@ function WorkOrdersGroupedViewContractor({
                         {wo.scheduledDate && (
                           <span className="ms-2 inline-flex items-center gap-1">
                             <Calendar className="h-3 w-3" />
-                            {new Date(wo.scheduledDate).toLocaleDateString('ar-SA')}
+                            {new Date(wo.scheduledDate).toLocaleDateString('ar-SA-u-nu-latn')}
                           </span>
                         )}
                       </div>
@@ -405,7 +405,7 @@ function WorkOrdersGroupedViewContractor({
                       ) : (
                         <>
                           {wo.price !== null ? (
-                            <span className="font-medium">{tr.sar} {wo.price.toLocaleString('ar-SA', { minimumFractionDigits: 2 })}</span>
+                            <span className="font-medium">{tr.sar} {wo.price.toLocaleString('ar-SA-u-nu-latn', { minimumFractionDigits: 2 })}</span>
                           ) : (
                             <Badge variant="outline" className="text-xs text-orange-600">{tr.pending}</Badge>
                           )}
@@ -807,11 +807,11 @@ export function RequestsList({ branchId, userRole, userId }: RequestsListProps) 
       setOccurrences([])
       setQuotationFile(null)
 
-      toast.success(`${result.count} work order(s) started immediately!`)
+      toast.success(tr.workOrdersStartedImmediately.replace('{count}', String(result.count)))
       fetchRequests()
       router.refresh()
     } catch (err) {
-      setError(err instanceof Error ? err.message : 'An error occurred')
+      setError(err instanceof Error ? err.message : tr.genericError)
     } finally {
       setStartingImmediately(false)
     }
@@ -843,13 +843,13 @@ export function RequestsList({ branchId, userRole, userId }: RequestsListProps) 
 
       if (!response.ok) {
         const data = await response.json()
-        toast.error(data.error || data.details || 'Failed to create work order')
+        toast.error(data.error || data.details || t.toasts.createWorkOrderFailed)
         return
       }
 
       setStartImmediatelyDialogOpen(false)
       setStartImmediatelyRequest(null)
-      toast.success(`Work order created and moved to IN PROGRESS!`)
+      toast.success(tr.workOrderCreatedInProgress)
       fetchRequests()
       router.refresh()
     } catch {
@@ -1100,9 +1100,9 @@ export function RequestsList({ branchId, userRole, userId }: RequestsListProps) 
                       </p>
                     )}
                     <p className="text-xs text-muted-foreground">
-                      Created {new Date(request.createdAt).toLocaleDateString('ar-SA')}
+                      Created {new Date(request.createdAt).toLocaleDateString('ar-SA-u-nu-latn')}
                       {request.dueDate && (
-                        <> · Due {new Date(request.dueDate).toLocaleDateString('ar-SA')}</>
+                        <> · Due {new Date(request.dueDate).toLocaleDateString('ar-SA-u-nu-latn')}</>
                       )}
                     </p>
                   </div>
@@ -1509,7 +1509,7 @@ export function RequestsList({ branchId, userRole, userId }: RequestsListProps) 
                       {/* Total */}
                       <div className="p-3 bg-blue-50 border border-blue-200 rounded-lg">
                         <p className="text-sm text-blue-800">
-                          <strong>{tr.totalLabel}</strong> {tr.sar} {occurrences.reduce((sum, o) => sum + (o.price ? parseFloat(o.price) : 0), 0).toLocaleString('ar-SA', { minimumFractionDigits: 2 })}
+                          <strong>{tr.totalLabel}</strong> {tr.sar} {occurrences.reduce((sum, o) => sum + (o.price ? parseFloat(o.price) : 0), 0).toLocaleString('ar-SA-u-nu-latn', { minimumFractionDigits: 2 })}
                           {' '}({occurrences.length} {tr.workOrdersCount})
                         </p>
                       </div>
@@ -1580,12 +1580,12 @@ export function RequestsList({ branchId, userRole, userId }: RequestsListProps) 
               <div className="grid grid-cols-2 md:grid-cols-3 gap-4 text-sm">
                 <div>
                   <p className="font-medium text-muted-foreground">{tr.created}</p>
-                  <p>{new Date(selectedRequest.createdAt).toLocaleDateString('ar-SA')}</p>
+                  <p>{new Date(selectedRequest.createdAt).toLocaleDateString('ar-SA-u-nu-latn')}</p>
                 </div>
                 {selectedRequest.preferredDate && (
                   <div>
                     <p className="font-medium text-muted-foreground">{tr.preferredDate}</p>
-                    <p>{new Date(selectedRequest.preferredDate).toLocaleDateString('ar-SA')}</p>
+                    <p>{new Date(selectedRequest.preferredDate).toLocaleDateString('ar-SA-u-nu-latn')}</p>
                   </div>
                 )}
                 {selectedRequest.preferredTimeSlot && (
@@ -1651,7 +1651,7 @@ export function RequestsList({ branchId, userRole, userId }: RequestsListProps) 
                             </td>
                             <td className="px-3 py-2 text-muted-foreground">{eq.location || '-'}</td>
                             <td className="px-3 py-2 text-muted-foreground">
-                              {eq.expectedExpiry ? new Date(eq.expectedExpiry).toLocaleDateString('ar-SA') : '-'}
+                              {eq.expectedExpiry ? new Date(eq.expectedExpiry).toLocaleDateString('ar-SA-u-nu-latn') : '-'}
                             </td>
                           </tr>
                         ))}
@@ -1688,7 +1688,7 @@ export function RequestsList({ branchId, userRole, userId }: RequestsListProps) 
                               <tr key={idx}>
                                 <td className="px-3 py-2 text-muted-foreground">{occ.order}</td>
                                 <td className="px-3 py-2">
-                                  {occ.visitDate ? new Date(occ.visitDate).toLocaleDateString('ar-SA') : '-'}
+                                  {occ.visitDate ? new Date(occ.visitDate).toLocaleDateString('ar-SA-u-nu-latn') : '-'}
                                 </td>
                                 <td className="px-3 py-2 text-end font-medium">
                                   {occ.price ? occ.price.toLocaleString() : '-'}
@@ -1717,7 +1717,7 @@ export function RequestsList({ branchId, userRole, userId }: RequestsListProps) 
                       {selectedRequest.quotedDate && (
                         <div>
                           <p className="text-purple-600">{tr.scheduledDate.replace(' *', '')}</p>
-                          <p className="font-semibold">{new Date(selectedRequest.quotedDate).toLocaleDateString('ar-SA')}</p>
+                          <p className="font-semibold">{new Date(selectedRequest.quotedDate).toLocaleDateString('ar-SA-u-nu-latn')}</p>
                         </div>
                       )}
                     </div>
@@ -1882,7 +1882,7 @@ export function RequestsList({ branchId, userRole, userId }: RequestsListProps) 
                       {quoteRequest.preferredDate && (
                         <div className="flex items-center gap-1">
                           <Calendar className="h-4 w-4 text-blue-600" />
-                          <span>{new Date(quoteRequest.preferredDate).toLocaleDateString('ar-SA')}</span>
+                          <span>{new Date(quoteRequest.preferredDate).toLocaleDateString('ar-SA-u-nu-latn')}</span>
                         </div>
                       )}
                       {quoteRequest.preferredTimeSlot && (
@@ -1925,7 +1925,7 @@ export function RequestsList({ branchId, userRole, userId }: RequestsListProps) 
                 <div className="grid grid-cols-2 gap-4 text-sm">
                   <div>
                     <p className="text-muted-foreground">{tr.submitted}</p>
-                    <p className="font-medium">{new Date(quoteRequest.createdAt).toLocaleDateString('ar-SA')}</p>
+                    <p className="font-medium">{new Date(quoteRequest.createdAt).toLocaleDateString('ar-SA-u-nu-latn')}</p>
                   </div>
                   <div>
                     <p className="text-muted-foreground">{tr.createdBy}</p>
@@ -2015,7 +2015,7 @@ export function RequestsList({ branchId, userRole, userId }: RequestsListProps) 
                               {dates.slice(0, 4).map((date, idx) => (
                                 <div key={idx} className="flex justify-between items-center py-1 border-b border-blue-100 last:border-0">
                                   <span className="text-blue-700">
-                                    └ {quoteRequest.recurringType === 'MONTHLY' ? `${tr.month} ${idx + 1}` : `Q${idx + 1}`}: {date.toLocaleDateString('ar-SA')}
+                                    └ {quoteRequest.recurringType === 'MONTHLY' ? `${tr.month} ${idx + 1}` : `Q${idx + 1}`}: {date.toLocaleDateString('ar-SA-u-nu-latn')}
                                   </span>
                                   <span className="font-medium text-blue-800">{tr.sar} {price.toLocaleString()}</span>
                                 </div>

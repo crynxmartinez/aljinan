@@ -574,7 +574,7 @@ export function EquipmentList({ branchId, userRole = 'CONTRACTOR' }: EquipmentLi
                         {eq.expectedExpiry ? (
                           <span className="flex items-center gap-1 text-sm">
                             <Calendar className="h-3 w-3" />
-                            {new Date(eq.expectedExpiry).toLocaleDateString('ar-SA')}
+                            {new Date(eq.expectedExpiry).toLocaleDateString('ar-SA-u-nu-latn')}
                           </span>
                         ) : (
                           <span className="text-muted-foreground">-</span>
@@ -583,7 +583,7 @@ export function EquipmentList({ branchId, userRole = 'CONTRACTOR' }: EquipmentLi
                       <TableCell>
                         {eq.lastInspected ? (
                           <span className="text-sm">
-                            {new Date(eq.lastInspected).toLocaleDateString('ar-SA')}
+                            {new Date(eq.lastInspected).toLocaleDateString('ar-SA-u-nu-latn')}
                           </span>
                         ) : (
                           <span className="text-muted-foreground">{te.never}</span>
@@ -622,7 +622,7 @@ export function EquipmentList({ branchId, userRole = 'CONTRACTOR' }: EquipmentLi
                                 </div>
                                 {certExpiry && (
                                   <span className="text-xs text-muted-foreground">
-                                    {certExpiry.toLocaleDateString('ar-SA')}
+                                    {certExpiry.toLocaleDateString('ar-SA-u-nu-latn')}
                                   </span>
                                 )}
                                 <div className="flex items-center gap-1">
@@ -1058,7 +1058,7 @@ export function EquipmentList({ branchId, userRole = 'CONTRACTOR' }: EquipmentLi
                   </div>
                   {selectedEquipment.certificate.expiryDate && (
                     <p className="text-xs text-muted-foreground mt-1">
-                      {te.expires}: {new Date(selectedEquipment.certificate.expiryDate).toLocaleDateString('ar-SA')}
+                      {te.expires}: {new Date(selectedEquipment.certificate.expiryDate).toLocaleDateString('ar-SA-u-nu-latn')}
                     </p>
                   )}
                 </div>

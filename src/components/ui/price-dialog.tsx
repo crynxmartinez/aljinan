@@ -72,7 +72,7 @@ export function PriceDialog({ open, onOpenChange, onConfirm, currentPrice }: Pri
             <Label htmlFor="price">{tu.priceDialog.priceLabel}</Label>
             <div className="relative">
               <span className="absolute start-3 top-1/2 -translate-y-1/2 text-muted-foreground">
-                SAR
+                {t.dashboard.requestsList.sar}
               </span>
               <Input
                 id="price"

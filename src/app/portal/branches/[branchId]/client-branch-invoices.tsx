@@ -11,6 +11,7 @@ import {
   AlertTriangle,
   XCircle,
 } from 'lucide-react'
+import { useTranslation } from '@/lib/i18n/use-translation'
 
 interface InvoiceItem {
   id: string
@@ -43,6 +44,9 @@ interface ClientBranchInvoicesProps {
 }
 
 export function ClientBranchInvoices({ branchId }: ClientBranchInvoicesProps) {
+  const { t, locale } = useTranslation()
+  const tc = t.dashboard.clientBranchInvoicesPage
+  const dateLocale = locale === 'ar' ? 'ar-SA-u-nu-latn' : 'en-US'
   const [invoices, setInvoices] = useState<Invoice[]>([])
   const [loading, setLoading] = useState(true)
   const [expandedInvoice, setExpandedInvoice] = useState<string | null>(null)
@@ -67,12 +71,12 @@ export function ClientBranchInvoices({ branchId }: ClientBranchInvoicesProps) {
 
   const getStatusBadge = (status: Invoice['status']) => {
     const config = {
-      DRAFT: { style: 'bg-gray-100 text-gray-700', icon: Clock, label: 'Draft' },
-      SENT: { style: 'bg-blue-100 text-blue-700', icon: Clock, label: 'Awaiting Payment' },
-      PAID: { style: 'bg-green-100 text-green-700', icon: CheckCircle, label: 'Paid' },
-      PARTIAL: { style: 'bg-yellow-100 text-yellow-700', icon: AlertTriangle, label: 'Partial Payment' },
-      OVERDUE: { style: 'bg-red-100 text-red-700', icon: AlertTriangle, label: 'Overdue' },
-      CANCELLED: { style: 'bg-gray-100 text-gray-700', icon: XCircle, label: 'Cancelled' },
+      DRAFT: { style: 'bg-gray-100 text-gray-700', icon: Clock, label: tc.statusDraft },
+      SENT: { style: 'bg-blue-100 text-blue-700', icon: Clock, label: tc.statusAwaitingPayment },
+      PAID: { style: 'bg-green-100 text-green-700', icon: CheckCircle, label: tc.statusPaid },
+      PARTIAL: { style: 'bg-yellow-100 text-yellow-700', icon: AlertTriangle, label: tc.statusPartialPayment },
+      OVERDUE: { style: 'bg-red-100 text-red-700', icon: AlertTriangle, label: tc.statusOverdue },
+      CANCELLED: { style: 'bg-gray-100 text-gray-700', icon: XCircle, label: tc.statusCancelled },
     }
     const { style, icon: Icon, label } = config[status]
     return (
@@ -84,7 +88,7 @@ export function ClientBranchInvoices({ branchId }: ClientBranchInvoicesProps) {
   }
 
   const formatCurrency = (amount: number) => {
-    return new Intl.NumberFormat('en-SA', { style: 'currency', currency: 'SAR' }).format(amount)
+    return new Intl.NumberFormat(dateLocale, { style: 'currency', currency: 'SAR' }).format(amount)
   }
 
   if (loading) {
@@ -110,7 +114,7 @@ export function ClientBranchInvoices({ branchId }: ClientBranchInvoicesProps) {
           <CardHeader>
             <CardTitle className="flex items-center gap-2 text-amber-800">
               <Banknote className="h-5 w-5" />
-              Outstanding Balance
+              {tc.outstandingBalance}
             </CardTitle>
           </CardHeader>
           <CardContent>
@@ -118,7 +122,7 @@ export function ClientBranchInvoices({ branchId }: ClientBranchInvoicesProps) {
               {formatCurrency(totalUnpaid)}
             </div>
             <p className="text-sm text-amber-700 mt-1">
-              {unpaidInvoices.length} invoice{unpaidInvoices.length !== 1 ? 's' : ''} awaiting payment
+              {tc.invoiceCountAwaiting.replace('{count}', String(unpaidInvoices.length))}
             </p>
           </CardContent>
         </Card>
@@ -128,7 +132,7 @@ export function ClientBranchInvoices({ branchId }: ClientBranchInvoicesProps) {
       {unpaidInvoices.length > 0 && (
         <Card>
           <CardHeader>
-            <CardTitle>Invoices Awaiting Payment</CardTitle>
+            <CardTitle>{tc.invoicesAwaitingPaymentTitle}</CardTitle>
           </CardHeader>
           <CardContent className="space-y-4">
             {unpaidInvoices.map((invoice) => (
@@ -149,7 +153,7 @@ export function ClientBranchInvoices({ branchId }: ClientBranchInvoicesProps) {
                       <h4 className="font-medium">{invoice.title}</h4>
                       <div className="flex items-center gap-4 text-sm text-muted-foreground">
                         {invoice.dueDate && (
-                          <span>Due: {new Date(invoice.dueDate).toLocaleDateString('ar-SA')}</span>
+                          <span>{tc.dueLabel} {new Date(invoice.dueDate).toLocaleDateString(dateLocale)}</span>
                         )}
                       </div>
                     </div>
@@ -157,7 +161,7 @@ export function ClientBranchInvoices({ branchId }: ClientBranchInvoicesProps) {
                       <div className="text-lg font-semibold">{formatCurrency(invoice.total)}</div>
                       {invoice.amountPaid > 0 && (
                         <div className="text-sm text-muted-foreground">
-                          Paid: {formatCurrency(invoice.amountPaid)}
+                          {tc.paidLabel} {formatCurrency(invoice.amountPaid)}
                         </div>
                       )}
                     </div>
@@ -169,10 +173,10 @@ export function ClientBranchInvoices({ branchId }: ClientBranchInvoicesProps) {
                     <table className="w-full text-sm">
                       <thead>
                         <tr className="text-muted-foreground">
-                          <th className="text-start pb-2">الوصف</th>
-                          <th className="text-end pb-2 w-20">الكمية</th>
-                          <th className="text-end pb-2 w-24">السعر</th>
-                          <th className="text-end pb-2 w-24">الإجمالي</th>
+                          <th className="text-start pb-2">{tc.descriptionCol}</th>
+                          <th className="text-end pb-2 w-20">{tc.quantityCol}</th>
+                          <th className="text-end pb-2 w-24">{tc.priceCol}</th>
+                          <th className="text-end pb-2 w-24">{tc.totalCol}</th>
                         </tr>
                       </thead>
                       <tbody>
@@ -187,25 +191,25 @@ export function ClientBranchInvoices({ branchId }: ClientBranchInvoicesProps) {
                       </tbody>
                       <tfoot className="border-t">
                         <tr>
-                          <td colSpan={3} className="text-end py-2">المجموع الفرعي</td>
+                          <td colSpan={3} className="text-end py-2">{tc.subtotalLabel}</td>
                           <td className="text-end py-2">{formatCurrency(invoice.subtotal)}</td>
                         </tr>
                         <tr>
-                          <td colSpan={3} className="text-end py-1">Tax ({invoice.taxRate}%)</td>
+                          <td colSpan={3} className="text-end py-1">{tc.taxLabel.replace('{rate}', String(invoice.taxRate))}</td>
                           <td className="text-end py-1">{formatCurrency(invoice.taxAmount)}</td>
                         </tr>
                         <tr className="font-semibold">
-                          <td colSpan={3} className="text-end py-2">الإجمالي</td>
+                          <td colSpan={3} className="text-end py-2">{tc.totalLabel}</td>
                           <td className="text-end py-2">{formatCurrency(invoice.total)}</td>
                         </tr>
                         {invoice.amountPaid > 0 && (
                           <>
                             <tr className="text-green-600">
-                              <td colSpan={3} className="text-end py-1">Amount Paid</td>
+                              <td colSpan={3} className="text-end py-1">{tc.amountPaidLabel}</td>
                               <td className="text-end py-1">-{formatCurrency(invoice.amountPaid)}</td>
                             </tr>
                             <tr className="font-semibold text-amber-600">
-                              <td colSpan={3} className="text-end py-2">Balance Due</td>
+                              <td colSpan={3} className="text-end py-2">{tc.balanceDueLabel}</td>
                               <td className="text-end py-2">{formatCurrency(invoice.total - invoice.amountPaid)}</td>
                             </tr>
                           </>
@@ -223,21 +227,21 @@ export function ClientBranchInvoices({ branchId }: ClientBranchInvoicesProps) {
       {/* All Invoices / Payment History */}
       <Card>
         <CardHeader>
-          <CardTitle>Payment History</CardTitle>
-          <CardDescription>All invoices for this branch</CardDescription>
+          <CardTitle>{tc.paymentHistoryTitle}</CardTitle>
+          <CardDescription>{tc.paymentHistoryDesc}</CardDescription>
         </CardHeader>
         <CardContent>
           {invoices.length === 0 ? (
             <div className="flex flex-col items-center justify-center py-12 text-center">
               <Banknote className="h-12 w-12 text-muted-foreground/30 mb-4" />
-              <h3 className="text-lg font-semibold mb-2">No invoices yet</h3>
+              <h3 className="text-lg font-semibold mb-2">{tc.noInvoicesYet}</h3>
               <p className="text-muted-foreground max-w-md">
-                Invoices from your contractor will appear here.
+                {tc.noInvoicesDesc}
               </p>
             </div>
           ) : paidInvoices.length === 0 && unpaidInvoices.length > 0 ? (
             <p className="text-center text-muted-foreground py-4">
-              No paid invoices yet. Outstanding invoices are shown above.
+              {tc.noPaidInvoicesYet}
             </p>
           ) : (
             <div className="space-y-3">
@@ -253,7 +257,7 @@ export function ClientBranchInvoices({ branchId }: ClientBranchInvoicesProps) {
                     </div>
                     <h4 className="font-medium text-sm">{invoice.title}</h4>
                     <p className="text-xs text-muted-foreground">
-                      Paid on {invoice.paidAt ? new Date(invoice.paidAt).toLocaleDateString('ar-SA') : 'N/A'}
+                      {tc.paidOnLabel.replace('{date}', invoice.paidAt ? new Date(invoice.paidAt).toLocaleDateString(dateLocale) : tc.notAvailable)}
                     </p>
                   </div>
                   <div className="text-end">

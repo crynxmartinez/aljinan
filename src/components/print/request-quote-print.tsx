@@ -92,7 +92,7 @@ export function RequestQuotePrint({ requestId, branchId }: RequestQuotePrintProp
 
   const formatDate = (dateString: string | null) => {
     if (!dateString) return '-'
-    return new Date(dateString).toLocaleDateString('ar-SA', {
+    return new Date(dateString).toLocaleDateString('ar-SA-u-nu-latn', {
       year: 'numeric',
       month: 'long',
       day: 'numeric'
@@ -226,7 +226,7 @@ export function RequestQuotePrint({ requestId, branchId }: RequestQuotePrintProp
                 <p className="text-lg font-semibold">REQ #{data.requestNumber}</p>
               )}
               <p className="text-sm text-muted-foreground mt-1">
-                {tp.generated} {new Date().toLocaleDateString('ar-SA')} {new Date().toLocaleTimeString()}
+                {tp.generated} {new Date().toLocaleDateString('ar-SA-u-nu-latn')} {new Date().toLocaleTimeString()}
               </p>
             </div>
           </div>

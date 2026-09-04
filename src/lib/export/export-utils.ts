@@ -42,7 +42,7 @@ export interface ExportOptions {
 
 function formatDate(dateStr: string | null | undefined): string {
   if (!dateStr) return ''
-  return new Date(dateStr).toLocaleDateString('ar-SA', {
+  return new Date(dateStr).toLocaleDateString('ar-SA-u-nu-latn', {
     year: 'numeric',
     month: 'short',
     day: 'numeric',
@@ -132,7 +132,7 @@ export function exportWorkOrdersToPdf(
 
   doc.setFontSize(10)
   doc.text(
-    `تم الإنشاء في ${new Date().toLocaleDateString('ar-SA', { year: 'numeric', month: 'long', day: 'numeric' })}`,
+    `تم الإنشاء في ${new Date().toLocaleDateString('ar-SA-u-nu-latn', { year: 'numeric', month: 'long', day: 'numeric' })}`,
     doc.internal.pageSize.getWidth() / 2,
     22,
     { align: 'center' }

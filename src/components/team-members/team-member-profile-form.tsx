@@ -62,13 +62,13 @@ export function TeamMemberProfileForm({ teamMember }: TeamMemberProfileFormProps
 
       if (!response.ok) {
         const error = await response.json()
-        throw new Error(error.error || 'Failed to update profile')
+        throw new Error(error.error || t.toasts.profileUpdateFailed)
       }
 
       toast.success(t.toasts.profileUpdated)
       router.refresh()
     } catch (error) {
-      toast.error(error instanceof Error ? error.message : 'Failed to update profile')
+      toast.error(error instanceof Error ? error.message : t.toasts.profileUpdateFailed)
     } finally {
       setLoading(false)
     }

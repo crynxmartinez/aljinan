@@ -409,12 +409,12 @@ export default function WorkOrdersPage() {
                   </div>
                   <div className="col-span-1 flex items-center">
                     <p className="text-sm">
-                      {wo.scheduledDate ? new Date(wo.scheduledDate).toLocaleDateString('ar-SA') : '-'}
+                      {wo.scheduledDate ? new Date(wo.scheduledDate).toLocaleDateString('ar-SA-u-nu-latn') : '-'}
                     </p>
                   </div>
                   <div className="col-span-1 flex items-center justify-end">
                     <p className="text-sm font-medium">
-                      {wo.price ? `ر.س ${wo.price.toLocaleString('ar-SA', { minimumFractionDigits: 2 })}` : '-'}
+                      {wo.price ? `ر.س ${wo.price.toLocaleString('ar-SA-u-nu-latn', { minimumFractionDigits: 2 })}` : '-'}
                     </p>
                   </div>
                 </div>

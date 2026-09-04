@@ -177,7 +177,7 @@ interface InstallationReportDocumentData {
 export function InstallationReportDocument({ data }: { data: InstallationReportDocumentData }) {
   const formatDate = (dateStr: string) => {
     if (!dateStr) return '-'
-    return new Date(dateStr).toLocaleDateString('ar-SA', {
+    return new Date(dateStr).toLocaleDateString('ar-SA-u-nu-latn', {
       year: 'numeric',
       month: 'long',
       day: 'numeric',

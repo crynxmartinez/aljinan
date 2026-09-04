@@ -59,14 +59,14 @@ export function ImageLightbox({ images, initialIndex = 0, open, onOpenChange }: 
           <Button
             variant="ghost"
             size="icon"
-            className="absolute top-4 right-4 z-50 text-white hover:bg-white/20"
+            className="absolute top-4 end-4 z-50 text-white hover:bg-white/20"
             onClick={() => onOpenChange(false)}
           >
             <X className="h-6 w-6" />
           </Button>
 
           {/* Image counter */}
-          <div className="absolute top-4 left-4 z-50 text-white bg-black/50 px-3 py-1 rounded-md text-sm">
+          <div className="absolute top-4 start-4 z-50 text-white bg-black/50 px-3 py-1 rounded-md text-sm">
             {currentIndex + 1} / {images.length}
           </div>
 
@@ -99,7 +99,7 @@ export function ImageLightbox({ images, initialIndex = 0, open, onOpenChange }: 
           <Button
             variant="ghost"
             size="icon"
-            className="absolute bottom-4 right-4 z-50 text-white hover:bg-white/20"
+            className="absolute bottom-4 end-4 z-50 text-white hover:bg-white/20"
             onClick={handleDownload}
           >
             <Download className="h-5 w-5" />
@@ -113,7 +113,7 @@ export function ImageLightbox({ images, initialIndex = 0, open, onOpenChange }: 
               className="absolute start-4 top-1/2 transform -translate-y-1/2 z-50 text-white hover:bg-white/20"
               onClick={handlePrevious}
             >
-              <ChevronLeft className="h-8 w-8" />
+              <ChevronLeft className="h-8 w-8 rtl:rotate-180" />
             </Button>
           )}
 
@@ -125,7 +125,7 @@ export function ImageLightbox({ images, initialIndex = 0, open, onOpenChange }: 
               className="absolute end-4 top-1/2 transform -translate-y-1/2 z-50 text-white hover:bg-white/20"
               onClick={handleNext}
             >
-              <ChevronRight className="h-8 w-8" />
+              <ChevronRight className="h-8 w-8 rtl:rotate-180" />
             </Button>
           )}
 
@@ -140,7 +140,7 @@ export function ImageLightbox({ images, initialIndex = 0, open, onOpenChange }: 
           </div>
 
           {/* Image name */}
-          <div className="absolute bottom-4 left-4 z-50 text-white bg-black/50 px-3 py-1 rounded-md text-sm max-w-md truncate">
+          <div className="absolute bottom-4 start-4 z-50 text-white bg-black/50 px-3 py-1 rounded-md text-sm max-w-md truncate">
             {currentImage.name}
           </div>
         </div>

@@ -18,6 +18,7 @@ import {
   XCircle,
   Eye,
 } from 'lucide-react'
+import { useTranslation } from '@/lib/i18n/use-translation'
 
 interface ChecklistItem {
   id: string
@@ -43,6 +44,9 @@ interface ClientBranchReportsProps {
 }
 
 export function ClientBranchReports({ branchId }: ClientBranchReportsProps) {
+  const { t, locale } = useTranslation()
+  const tc = t.dashboard.clientBranchReportsPage
+  const dateLocale = locale === 'ar' ? 'ar-SA-u-nu-latn' : 'en-US'
   const [reports, setReports] = useState<Checklist[]>([])
   const [loading, setLoading] = useState(true)
   const [selectedReport, setSelectedReport] = useState<Checklist | null>(null)
@@ -92,18 +96,18 @@ export function ClientBranchReports({ branchId }: ClientBranchReportsProps) {
     <>
       <Card>
         <CardHeader>
-          <CardTitle>Reports</CardTitle>
+          <CardTitle>{tc.title}</CardTitle>
           <CardDescription>
-            Completed work order reports for this branch
+            {tc.subtitle}
           </CardDescription>
         </CardHeader>
         <CardContent>
           {reports.length === 0 ? (
             <div className="flex flex-col items-center justify-center py-12 text-center">
               <ClipboardList className="h-12 w-12 text-muted-foreground/30 mb-4" />
-              <h3 className="text-lg font-semibold mb-2">No reports yet</h3>
+              <h3 className="text-lg font-semibold mb-2">{tc.noReportsYet}</h3>
               <p className="text-muted-foreground max-w-md">
-                Completed reports from your contractor will appear here.
+                {tc.noReportsDesc}
               </p>
             </div>
           ) : (
@@ -119,7 +123,7 @@ export function ClientBranchReports({ branchId }: ClientBranchReportsProps) {
                       <h4 className="font-medium">{report.title}</h4>
                       <Badge className="bg-green-100 text-green-700 flex items-center gap-1">
                         <CheckCircle className="h-3 w-3" />
-                        Completed
+                        {tc.completedBadge}
                       </Badge>
                     </div>
                     {report.description && (
@@ -128,10 +132,10 @@ export function ClientBranchReports({ branchId }: ClientBranchReportsProps) {
                       </p>
                     )}
                     <div className="flex items-center gap-4 text-sm text-muted-foreground">
-                      <span>{report.items.length} items checked</span>
-                      <span>{getCompletionRate(report.items)}% passed</span>
+                      <span>{tc.itemsChecked.replace('{count}', String(report.items.length))}</span>
+                      <span>{tc.percentPassed.replace('{percent}', String(getCompletionRate(report.items)))}</span>
                       {report.completedAt && (
-                        <span>Completed {new Date(report.completedAt).toLocaleDateString('ar-SA')}</span>
+                        <span>{tc.completedOn.replace('{date}', new Date(report.completedAt).toLocaleDateString(dateLocale))}</span>
                       )}
                     </div>
                   </div>
@@ -141,7 +145,7 @@ export function ClientBranchReports({ branchId }: ClientBranchReportsProps) {
                     onClick={() => handleViewReport(report)}
                   >
                     <Eye className="me-2 h-4 w-4" />
-                    View Report
+                    {tc.viewReportBtn}
                   </Button>
                 </div>
               ))}
@@ -157,7 +161,7 @@ export function ClientBranchReports({ branchId }: ClientBranchReportsProps) {
             <DialogTitle>{selectedReport?.title}</DialogTitle>
             <DialogDescription>
               {selectedReport?.completedAt && (
-                <>Completed on {new Date(selectedReport.completedAt).toLocaleDateString('ar-SA')}</>
+                <>{tc.completedOnFull.replace('{date}', new Date(selectedReport.completedAt).toLocaleDateString(dateLocale))}</>
               )}
             </DialogDescription>
           </DialogHeader>
@@ -168,7 +172,7 @@ export function ClientBranchReports({ branchId }: ClientBranchReportsProps) {
               )}
 
               <div className="space-y-2">
-                <h4 className="font-medium text-sm">Inspection Items</h4>
+                <h4 className="font-medium text-sm">{tc.inspectionItemsHeading}</h4>
                 <div className="space-y-2">
                   {selectedReport.items.map((item) => (
                     <div
@@ -196,7 +200,7 @@ export function ClientBranchReports({ branchId }: ClientBranchReportsProps) {
 
               {selectedReport.notes && (
                 <div className="space-y-2">
-                  <h4 className="font-medium text-sm">Inspector Notes</h4>
+                  <h4 className="font-medium text-sm">{tc.inspectorNotesHeading}</h4>
                   <div className="p-3 bg-muted/50 rounded-lg text-sm">
                     {selectedReport.notes}
                   </div>
@@ -205,19 +209,19 @@ export function ClientBranchReports({ branchId }: ClientBranchReportsProps) {
 
               <div className="pt-4 border-t">
                 <div className="flex justify-between text-sm">
-                  <span>Total Items</span>
+                  <span>{tc.totalItems}</span>
                   <span className="font-medium">{selectedReport.items.length}</span>
                 </div>
                 <div className="flex justify-between text-sm text-green-600">
-                  <span>Passed</span>
+                  <span>{tc.passed}</span>
                   <span className="font-medium">{selectedReport.items.filter(i => i.isCompleted).length}</span>
                 </div>
                 <div className="flex justify-between text-sm text-red-600">
-                  <span>Failed</span>
+                  <span>{tc.failed}</span>
                   <span className="font-medium">{selectedReport.items.filter(i => !i.isCompleted).length}</span>
                 </div>
                 <div className="flex justify-between text-sm font-medium mt-2 pt-2 border-t">
-                  <span>Pass Rate</span>
+                  <span>{tc.passRate}</span>
                   <span>{getCompletionRate(selectedReport.items)}%</span>
                 </div>
               </div>

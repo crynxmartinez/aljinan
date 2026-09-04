@@ -156,7 +156,7 @@ export function SignatureDialog({
             <div className="flex items-center justify-between">
               <div>
                 <p className="text-sm font-medium">{tu.signatureDialog.signingAs} <span className="text-primary">{signerName}</span></p>
-                <p className="text-xs text-muted-foreground">{tu.signatureDialog.date} {new Date().toLocaleDateString('ar-SA')}</p>
+                <p className="text-xs text-muted-foreground">{tu.signatureDialog.date} {new Date().toLocaleDateString('ar-SA-u-nu-latn')}</p>
               </div>
               <Button
                 type="button"
