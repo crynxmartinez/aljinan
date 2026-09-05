@@ -37,6 +37,11 @@ export async function GET(request: Request) {
       let contractorId: string | null = null
       let clientId: string | null = null
       let clientBranchIds: string[] = []
+      // Admin: platform-wide, but still gated per-category by the same granular
+      // permissions that guard the equivalent /api/admin/* read endpoints — a support
+      // admin with canManageContractors off shouldn't see contractors surface here either.
+      let isAdmin = false
+      let adminPerms: { canManageContractors: boolean; canManageMessages: boolean } | null = null
 
       if (role === 'CONTRACTOR') {
         const contractor = await prisma.contractor.findUnique({
@@ -57,6 +62,13 @@ export async function GET(request: Request) {
         })
         clientId = client?.id ?? null
         clientBranchIds = client?.branches.map(b => b.id) ?? []
+      } else if (role === 'ADMIN') {
+        isAdmin = true
+        const admin = await prisma.adminUser.findUnique({
+          where: { userId },
+          select: { canManageContractors: true, canManageMessages: true }
+        })
+        adminPerms = admin ?? { canManageContractors: false, canManageMessages: false }
       }
 
       // --- Build parallel queries ---
@@ -69,6 +81,11 @@ export async function GET(request: Request) {
         invoices,
         equipment,
         certificates,
+        teamMembers,
+        branchRequests,
+        appointments,
+        contractors,
+        inquiries,
       ] = await Promise.all([
 
         // 1. Clients — contractor/team member only
@@ -83,6 +100,7 @@ export async function GET(request: Request) {
                 { companyEmail: { contains: query, mode: 'insensitive' } },
                 { companyPhone: { contains: query, mode: 'insensitive' } },
                 { contactPersonPhone: { contains: query, mode: 'insensitive' } },
+                { contactPersonEmail: { contains: query, mode: 'insensitive' } },
               ],
             },
             select: { id: true, slug: true, companyName: true, displayName: true },
@@ -101,7 +119,9 @@ export async function GET(request: Request) {
                 { clientNickname: { contains: query, mode: 'insensitive' } },
                 { address: { contains: query, mode: 'insensitive' } },
                 { city: { contains: query, mode: 'insensitive' } },
+                { phone: { contains: query, mode: 'insensitive' } },
                 { contactPersonPhone: { contains: query, mode: 'insensitive' } },
+                { contactPersonEmail: { contains: query, mode: 'insensitive' } },
               ],
             },
             select: { id: true, slug: true, name: true, displayName: true, address: true, client: { select: { id: true, slug: true, companyName: true } } },
@@ -116,6 +136,8 @@ export async function GET(request: Request) {
                   { clientNickname: { contains: query, mode: 'insensitive' } },
                   { address: { contains: query, mode: 'insensitive' } },
                   { city: { contains: query, mode: 'insensitive' } },
+                  { phone: { contains: query, mode: 'insensitive' } },
+                  { contactPersonEmail: { contains: query, mode: 'insensitive' } },
                 ],
               },
               select: { id: true, slug: true, name: true, clientNickname: true, address: true, client: { select: { id: true, slug: true } } },
@@ -202,6 +224,7 @@ export async function GET(request: Request) {
                 branchId: { in: clientBranchIds },
                 OR: [
                   { title: { contains: query, mode: 'insensitive' } },
+                  { description: { contains: query, mode: 'insensitive' } },
                 ],
               },
               select: { id: true, title: true, status: true, branchId: true, branch: { select: { id: true, slug: true } } },
@@ -260,6 +283,8 @@ export async function GET(request: Request) {
                   { equipmentNumber: { contains: query, mode: 'insensitive' } },
                   { location: { contains: query, mode: 'insensitive' } },
                   { brand: { contains: query, mode: 'insensitive' } },
+                  { model: { contains: query, mode: 'insensitive' } },
+                  { serialNumber: { contains: query, mode: 'insensitive' } },
                 ],
               },
               select: { id: true, equipmentNumber: true, equipmentType: true, location: true, branchId: true, branch: { select: { id: true, slug: true } } },
@@ -293,12 +318,133 @@ export async function GET(request: Request) {
               take: LIMIT,
             })
             : Promise.resolve([]),
+
+        // 9. Team members — contractor's own staff. Only the contractor owner manages
+        // this roster (/dashboard/team redirects TEAM_MEMBER and CLIENT away), so it's
+        // scoped to role === 'CONTRACTOR' rather than the broader isContractor check.
+        role === 'CONTRACTOR' && contractorId
+          ? prisma.teamMember.findMany({
+            where: {
+              contractorId,
+              OR: [
+                { user: { name: { contains: query, mode: 'insensitive' } } },
+                { user: { email: { contains: query, mode: 'insensitive' } } },
+                { jobTitle: { contains: query, mode: 'insensitive' } },
+                { phone: { contains: query, mode: 'insensitive' } },
+              ],
+            },
+            select: { id: true, jobTitle: true, teamRole: true, user: { select: { name: true, email: true } } },
+            take: LIMIT,
+          })
+          : Promise.resolve([]),
+
+        // 10. Branch requests — a client's pending/rejected ask for a new branch. Approved
+        // ones are excluded since they already exist as a searchable Branch by then.
+        contractorId && role !== 'CLIENT'
+          ? prisma.branchRequest.findMany({
+            where: {
+              client: { contractorId },
+              status: { not: 'APPROVED' },
+              OR: [
+                { name: { contains: query, mode: 'insensitive' } },
+                { address: { contains: query, mode: 'insensitive' } },
+                { city: { contains: query, mode: 'insensitive' } },
+                { phone: { contains: query, mode: 'insensitive' } },
+              ],
+            },
+            select: { id: true, name: true, status: true, client: { select: { id: true, slug: true, companyName: true } } },
+            take: LIMIT,
+          })
+          : clientId
+            ? prisma.branchRequest.findMany({
+              where: {
+                clientId,
+                status: { not: 'APPROVED' },
+                OR: [
+                  { name: { contains: query, mode: 'insensitive' } },
+                  { address: { contains: query, mode: 'insensitive' } },
+                  { city: { contains: query, mode: 'insensitive' } },
+                ],
+              },
+              select: { id: true, name: true, status: true },
+              take: LIMIT,
+            })
+            : Promise.resolve([]),
+
+        // 11. Appointments
+        contractorId && role !== 'CLIENT'
+          ? prisma.appointment.findMany({
+            where: {
+              branch: { client: { contractorId } },
+              OR: [
+                { title: { contains: query, mode: 'insensitive' } },
+                { description: { contains: query, mode: 'insensitive' } },
+              ],
+            },
+            select: { id: true, title: true, status: true, branchId: true, branch: { select: { slug: true, client: { select: { id: true, slug: true, companyName: true } } } } },
+            take: LIMIT,
+          })
+          : clientBranchIds.length > 0
+            ? prisma.appointment.findMany({
+              where: {
+                branchId: { in: clientBranchIds },
+                OR: [
+                  { title: { contains: query, mode: 'insensitive' } },
+                  { description: { contains: query, mode: 'insensitive' } },
+                ],
+              },
+              select: { id: true, title: true, status: true, branchId: true, branch: { select: { id: true, slug: true } } },
+              take: LIMIT,
+            })
+            : Promise.resolve([]),
+
+        // 12. Contractors — ADMIN only, platform-wide. Gated on the same
+        // canManageContractors permission that guards GET /api/admin/contractors.
+        isAdmin && adminPerms?.canManageContractors
+          ? prisma.contractor.findMany({
+            where: {
+              OR: [
+                { companyName: { contains: query, mode: 'insensitive' } },
+                { companyEmail: { contains: query, mode: 'insensitive' } },
+                { companyPhone: { contains: query, mode: 'insensitive' } },
+                { contactPersonName: { contains: query, mode: 'insensitive' } },
+                { contactPersonEmail: { contains: query, mode: 'insensitive' } },
+                { contactPersonPhone: { contains: query, mode: 'insensitive' } },
+                { licenseNumber: { contains: query, mode: 'insensitive' } },
+                { crNumber: { contains: query, mode: 'insensitive' } },
+                { user: { email: { contains: query, mode: 'insensitive' } } },
+                { user: { name: { contains: query, mode: 'insensitive' } } },
+              ],
+            },
+            select: { id: true, companyName: true, user: { select: { name: true, email: true } } },
+            take: LIMIT,
+          })
+          : Promise.resolve([]),
+
+        // 13. Contact inquiries ("Messages") — ADMIN only, platform-wide. Gated on the
+        // same canManageMessages permission that guards GET /api/admin/messages.
+        isAdmin && adminPerms?.canManageMessages
+          ? prisma.contactInquiry.findMany({
+            where: {
+              OR: [
+                { name: { contains: query, mode: 'insensitive' } },
+                { email: { contains: query, mode: 'insensitive' } },
+                { phone: { contains: query, mode: 'insensitive' } },
+                { companyName: { contains: query, mode: 'insensitive' } },
+                { message: { contains: query, mode: 'insensitive' } },
+              ],
+            },
+            select: { id: true, name: true, email: true, status: true },
+            take: LIMIT,
+          })
+          : Promise.resolve([]),
       ])
 
       // --- Format results ---
       type SearchResult = {
         id: string
         type: 'client' | 'branch' | 'work_order' | 'request' | 'contract' | 'invoice' | 'equipment' | 'certificate'
+          | 'team_member' | 'branch_request' | 'appointment' | 'contractor' | 'inquiry'
         title: string
         subtitle: string
         link: string
@@ -403,6 +549,57 @@ export async function GET(request: Request) {
           link: isContractor
             ? `/dashboard/clients/${cert.branch?.client?.slug || cert.branch?.client?.id}/branches/${cert.branch?.slug || cert.branchId}?tab=certificates`
             : `/portal/branches/${cert.branch?.slug || cert.branchId}?tab=certificates`,
+        })),
+
+        // Team members (staff) — contractor-only roster, no per-member deep link
+        ...(teamMembers as any[]).map(m => ({
+          id: m.id,
+          type: 'team_member' as const,
+          title: m.user?.name || m.user?.email,
+          subtitle: m.jobTitle || m.teamRole,
+          link: `/dashboard/team`,
+        })),
+
+        // Branch requests — pending/rejected asks for a new branch
+        ...(branchRequests as any[]).map(br => ({
+          id: br.id,
+          type: 'branch_request' as const,
+          title: br.name,
+          subtitle: isContractor
+            ? `${br.client?.companyName} · ${br.status}`
+            : br.status,
+          link: isContractor ? `/dashboard` : `/portal`,
+        })),
+
+        // Appointments
+        ...(appointments as any[]).map(a => ({
+          id: a.id,
+          type: 'appointment' as const,
+          title: a.title,
+          subtitle: isContractor
+            ? `${a.branch?.client?.companyName} · ${a.status}`
+            : a.status,
+          link: isContractor
+            ? `/dashboard/clients/${a.branch?.client?.slug || a.branch?.client?.id}/branches/${a.branch?.slug || a.branchId}?tab=calendar`
+            : `/portal/branches/${a.branch?.slug || a.branchId}?tab=calendar`,
+        })),
+
+        // Contractors — ADMIN only
+        ...(contractors as any[]).map(c => ({
+          id: c.id,
+          type: 'contractor' as const,
+          title: c.companyName || c.user?.name || c.user?.email,
+          subtitle: c.user?.email,
+          link: `/admin/contractors?q=${encodeURIComponent(c.companyName || c.user?.email || '')}`,
+        })),
+
+        // Contact inquiries ("Messages") — ADMIN only
+        ...(inquiries as any[]).map(i => ({
+          id: i.id,
+          type: 'inquiry' as const,
+          title: i.name,
+          subtitle: `${i.email} · ${i.status}`,
+          link: `/admin/messages?id=${i.id}`,
         })),
       ]
 

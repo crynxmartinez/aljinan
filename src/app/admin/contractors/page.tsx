@@ -116,6 +116,15 @@ export default function ContractorsPage() {
     fetchContractors()
   }, [])
 
+  // Prefill the filter box when arriving from a global-search result (?q=...)
+  useEffect(() => {
+    const q = searchParams.get('q')
+    if (q) {
+      setSearch(q)
+      router.replace('/admin/contractors')
+    }
+  }, [searchParams, router])
+
   // Handle URL parameters from messages page
   useEffect(() => {
     const shouldCreate = searchParams.get('create')
@@ -306,9 +315,9 @@ export default function ContractorsPage() {
   const statusBadge = (status: string) => {
     switch (status) {
       case 'ACTIVE':
-        return <Badge className="bg-green-100 text-green-800 hover:bg-green-100">{tc.verified}</Badge>
+        return <Badge className="bg-green-100 dark:bg-green-950/40 text-green-800 dark:text-green-400 hover:bg-green-100 dark:hover:bg-green-950/40">{tc.verified}</Badge>
       case 'PENDING':
-        return <Badge className="bg-amber-100 text-amber-800 hover:bg-amber-100">{tc.pendingVerification}</Badge>
+        return <Badge className="bg-amber-100 dark:bg-amber-950/40 text-amber-800 dark:text-amber-400 hover:bg-amber-100 dark:hover:bg-amber-950/40">{tc.pendingVerification}</Badge>
       case 'ARCHIVED':
         return <Badge className="bg-gray-100 text-gray-800 hover:bg-gray-100">{tc.archived}</Badge>
       default:
@@ -355,8 +364,8 @@ export default function ContractorsPage() {
         <Card>
           <CardContent className="pt-6">
             <div className="flex items-center gap-3">
-              <div className="p-2 rounded-lg bg-blue-100">
-                <Building2 className="h-4 w-4 text-blue-600" />
+              <div className="p-2 rounded-lg bg-blue-100 dark:bg-blue-950/40">
+                <Building2 className="h-4 w-4 text-blue-600 dark:text-blue-400" />
               </div>
               <div>
                 <p className="text-2xl font-bold">{contractors.length}</p>
@@ -368,8 +377,8 @@ export default function ContractorsPage() {
         <Card>
           <CardContent className="pt-6">
             <div className="flex items-center gap-3">
-              <div className="p-2 rounded-lg bg-green-100">
-                <Users className="h-4 w-4 text-green-600" />
+              <div className="p-2 rounded-lg bg-green-100 dark:bg-green-950/40">
+                <Users className="h-4 w-4 text-green-600 dark:text-green-400" />
               </div>
               <div>
                 <p className="text-2xl font-bold">
@@ -383,8 +392,8 @@ export default function ContractorsPage() {
         <Card>
           <CardContent className="pt-6">
             <div className="flex items-center gap-3">
-              <div className="p-2 rounded-lg bg-orange-100">
-                <FileText className="h-4 w-4 text-orange-600" />
+              <div className="p-2 rounded-lg bg-orange-100 dark:bg-orange-950/40">
+                <FileText className="h-4 w-4 text-orange-600 dark:text-orange-400" />
               </div>
               <div>
                 <p className="text-2xl font-bold">

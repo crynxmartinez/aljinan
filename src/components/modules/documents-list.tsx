@@ -41,6 +41,7 @@ import {
   Sparkles,
 } from 'lucide-react'
 import { useTranslation } from '@/lib/i18n/use-translation'
+import { formatDate } from '@/lib/i18n/format-date'
 
 type SourceType = 'quote' | 'request' | 'report' | 'contract' | 'certificate' | 'generated' | 'payment_proof'
 
@@ -76,43 +77,43 @@ const SECTION_CONFIG: {
       source: 'payment_proof',
       labelKey: 'sectionPaymentUploads',
       icon: <CreditCard className="h-4 w-4" />,
-      badgeClass: 'bg-emerald-100 text-emerald-700',
+      badgeClass: 'bg-emerald-100 dark:bg-emerald-950/40 text-emerald-700 dark:text-emerald-400',
     },
     {
       source: 'certificate',
       labelKey: 'sectionEquipmentCertification',
       icon: <Award className="h-4 w-4" />,
-      badgeClass: 'bg-amber-100 text-amber-700',
+      badgeClass: 'bg-amber-100 dark:bg-amber-950/40 text-amber-700 dark:text-amber-400',
     },
     {
       source: 'contract',
       labelKey: 'sectionContracts',
       icon: <FileCheck className="h-4 w-4" />,
-      badgeClass: 'bg-orange-100 text-orange-700',
+      badgeClass: 'bg-orange-100 dark:bg-orange-950/40 text-orange-700 dark:text-orange-400',
     },
     {
       source: 'quote',
       labelKey: 'sectionQuotations',
       icon: <ScrollText className="h-4 w-4" />,
-      badgeClass: 'bg-purple-100 text-purple-700',
+      badgeClass: 'bg-purple-100 dark:bg-purple-950/40 text-purple-700 dark:text-purple-400',
     },
     {
       source: 'report',
       labelKey: 'sectionReports',
       icon: <Camera className="h-4 w-4" />,
-      badgeClass: 'bg-green-100 text-green-700',
+      badgeClass: 'bg-green-100 dark:bg-green-950/40 text-green-700 dark:text-green-400',
     },
     {
       source: 'request',
       labelKey: 'sectionRequestPhotos',
       icon: <Camera className="h-4 w-4" />,
-      badgeClass: 'bg-blue-100 text-blue-700',
+      badgeClass: 'bg-blue-100 dark:bg-blue-950/40 text-blue-700 dark:text-blue-400',
     },
     {
       source: 'generated',
       labelKey: 'sectionGeneratedDocuments',
       icon: <Sparkles className="h-4 w-4" />,
-      badgeClass: 'bg-gray-100 text-gray-700',
+      badgeClass: 'bg-gray-100 dark:bg-gray-800 text-gray-700 dark:text-gray-300',
     },
   ]
 
@@ -137,7 +138,7 @@ function getFileIcon(fileType: string) {
 }
 
 export function DocumentsList({ branchId }: DocumentsListProps) {
-  const { t } = useTranslation()
+  const { t, locale } = useTranslation()
   const td = t.dashboard.documentsList
   const [documents, setDocuments] = useState<UnifiedDocument[]>([])
   const [loading, setLoading] = useState(true)
@@ -230,7 +231,7 @@ export function DocumentsList({ branchId }: DocumentsListProps) {
               </Badge>
             )}
             {expiringCount > 0 && (
-              <Badge className="bg-orange-100 text-orange-700 flex items-center gap-1">
+              <Badge className="bg-orange-100 dark:bg-orange-950/40 text-orange-700 dark:text-orange-400 flex items-center gap-1">
                 <Clock className="h-3 w-3" />
                 {expiringCount} {td.expiringSoon}
               </Badge>
@@ -309,7 +310,7 @@ export function DocumentsList({ branchId }: DocumentsListProps) {
                                 <p className="text-sm text-muted-foreground">{doc.uploadedBy}</p>
                               </TableCell>
                               <TableCell>
-                                <p className="text-sm">{new Date(doc.uploadedAt).toLocaleDateString('ar-SA-u-nu-latn')}</p>
+                                <p className="text-sm">{formatDate(doc.uploadedAt, locale, {})}</p>
                               </TableCell>
                               <TableCell>
                                 {expiryInfo.status === 'expired' && (
@@ -318,12 +319,12 @@ export function DocumentsList({ branchId }: DocumentsListProps) {
                                   </Badge>
                                 )}
                                 {expiryInfo.status === 'expiring' && (
-                                  <Badge className="bg-orange-100 text-orange-700 flex items-center gap-1 w-fit">
+                                  <Badge className="bg-orange-100 dark:bg-orange-950/40 text-orange-700 dark:text-orange-400 flex items-center gap-1 w-fit">
                                     <Clock className="h-3 w-3" />{expiryInfo.daysLeft}d
                                   </Badge>
                                 )}
                                 {expiryInfo.status === 'valid' && (
-                                  <Badge className="bg-green-100 text-green-700 flex items-center gap-1 w-fit">
+                                  <Badge className="bg-green-100 dark:bg-green-950/40 text-green-700 dark:text-green-400 flex items-center gap-1 w-fit">
                                     <CheckCircle className="h-3 w-3" />{td.valid}
                                   </Badge>
                                 )}

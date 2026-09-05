@@ -3,6 +3,7 @@ import { getServerSession } from 'next-auth'
 import { authOptions } from '@/lib/auth'
 import { prisma } from '@/lib/prisma'
 import { getCached } from '@/lib/cache'
+import { getLocale, getTranslationsForLocale } from '@/lib/i18n/server'
 
 export async function GET() {
   try {
@@ -16,7 +17,10 @@ export async function GET() {
       return NextResponse.json({ error: 'Access denied' }, { status: 403 })
     }
 
-    const cacheKey = `analytics:${session.user.id}`
+    const locale = await getLocale()
+    const t = getTranslationsForLocale(locale)
+    const dateLocale = locale === 'en' ? 'en-US' : 'ar-SA-u-nu-latn'
+    const cacheKey = `analytics:${session.user.id}:${locale}`
 
     const data = await getCached(cacheKey, async () => {
       const now = new Date()
@@ -137,7 +141,7 @@ export async function GET() {
             },
             _sum: { price: true }
           }).then(agg => ({
-            month: monthStart.toLocaleDateString('ar-SA-u-nu-latn', { month: 'short' }),
+            month: monthStart.toLocaleDateString(dateLocale, { month: 'short' }),
             revenue: Number(agg._sum.price || 0)
           }))
         )
@@ -186,11 +190,11 @@ export async function GET() {
           revenue: {
             current: thisMonthRevenue,
             change: revenueChange,
-            label: 'مقارنة بالشهر الماضي'
+            label: t.dashboard.analyticsPage.comparedToLastMonth
           },
-          activeWorkOrders: { count: activeCount, label: 'نشط' },
-          overdueWorkOrders: { count: overdueCount, label: 'متأخر' },
-          completionRate: { rate: completionRate, label: 'معدل الإكمال' }
+          activeWorkOrders: { count: activeCount, label: t.dashboard.clientsPage.active },
+          overdueWorkOrders: { count: overdueCount, label: t.dashboard.analyticsPage.overdue },
+          completionRate: { rate: completionRate, label: t.dashboard.analyticsPage.completionRate }
         },
         charts: {
           revenueByMonth: {
@@ -198,11 +202,21 @@ export async function GET() {
             values: revenueByMonth.map(m => m.revenue)
           },
           workOrdersByStatus: {
-            labels: ['مجدول', 'قيد التنفيذ', 'للمراجعة', 'مكتمل'],
+            labels: [
+              t.dashboard.workOrdersPage.statusScheduled,
+              t.dashboard.workOrdersPage.statusInProgress,
+              t.dashboard.workOrdersPage.statusForReview,
+              t.dashboard.workOrdersPage.statusCompleted
+            ],
             values: [statusCounts.SCHEDULED, statusCounts.IN_PROGRESS, statusCounts.FOR_REVIEW, statusCounts.COMPLETED]
           },
           workOrdersByType: {
-            labels: ['خدمة', 'تفتيش', 'صيانة', 'تركيب'],
+            labels: [
+              t.dashboard.workOrdersPage.typeService,
+              t.dashboard.workOrdersPage.typeInspection,
+              t.dashboard.workOrdersPage.typeMaintenance,
+              t.dashboard.workOrdersPage.typeInstallation
+            ],
             values: [typeCounts.SERVICE, typeCounts.INSPECTION, typeCounts.MAINTENANCE, typeCounts.INSTALLATION]
           }
         },

@@ -5,6 +5,7 @@ import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, D
 import { Button } from '@/components/ui/button'
 import { Loader2, PenTool, Eraser } from 'lucide-react'
 import { useTranslation } from '@/lib/i18n/use-translation'
+import { formatDate } from '@/lib/i18n/format-date'
 
 interface SignatureDialogProps {
   open: boolean
@@ -27,7 +28,7 @@ export function SignatureDialog({
   const [isEmpty, setIsEmpty] = useState(true)
   const canvasRef = useRef<HTMLCanvasElement>(null)
   const [isDrawing, setIsDrawing] = useState(false)
-  const { t } = useTranslation()
+  const { t, locale } = useTranslation()
   const tu = t.uiComponents
 
   useEffect(() => {
@@ -156,7 +157,7 @@ export function SignatureDialog({
             <div className="flex items-center justify-between">
               <div>
                 <p className="text-sm font-medium">{tu.signatureDialog.signingAs} <span className="text-primary">{signerName}</span></p>
-                <p className="text-xs text-muted-foreground">{tu.signatureDialog.date} {new Date().toLocaleDateString('ar-SA-u-nu-latn')}</p>
+                <p className="text-xs text-muted-foreground">{tu.signatureDialog.date} {formatDate(new Date(), locale, {})}</p>
               </div>
               <Button
                 type="button"

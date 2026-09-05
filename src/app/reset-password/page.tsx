@@ -69,9 +69,9 @@ function ResetPasswordForm() {
 
   if (!token) {
     return (
-      <div className="min-h-screen flex items-center justify-center bg-gray-50 px-4">
+      <div className="min-h-screen flex items-center justify-center bg-muted px-4">
         <div className="w-full max-w-md">
-          <div className="bg-white p-8 rounded-lg shadow-sm border">
+          <div className="bg-card p-8 rounded-lg shadow-sm border">
             <div className="text-center py-8">
               <div className="mx-auto w-16 h-16 bg-red-100 rounded-full flex items-center justify-center mb-4">
                 <AlertCircle className="h-8 w-8 text-red-600" />
@@ -91,9 +91,9 @@ function ResetPasswordForm() {
   }
 
   return (
-    <div className="min-h-screen flex items-center justify-center bg-gray-50 px-4">
+    <div className="min-h-screen flex items-center justify-center bg-muted px-4">
       <div className="w-full max-w-md">
-        <div className="bg-white p-8 rounded-lg shadow-sm border">
+        <div className="bg-card p-8 rounded-lg shadow-sm border">
           {success ? (
             <div className="text-center py-8">
               <div className="mx-auto w-16 h-16 bg-green-100 rounded-full flex items-center justify-center mb-4">
@@ -171,7 +171,7 @@ function ResetPasswordForm() {
 export default function ResetPasswordPage() {
   return (
     <Suspense fallback={
-      <div className="min-h-screen flex items-center justify-center bg-gray-50">
+      <div className="min-h-screen flex items-center justify-center bg-muted">
         <Loader2 className="h-8 w-8 animate-spin text-primary" />
       </div>
     }>

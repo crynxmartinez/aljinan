@@ -8,6 +8,7 @@ import { prisma } from '@/lib/prisma'
  *   2. Tells the client when their work order starts today
  *   3. Auto-progresses SCHEDULED work orders to IN_PROGRESS on the day
  *   4. Warns about contracts expiring in 10 / 5 / 3 / 1 days
+ *   5. Warns about certificates expiring in 10 / 5 / 3 / 1 days
  *
  * Three things this used to get wrong:
  *
@@ -49,7 +50,7 @@ function riyadhDayKey(todayStart: Date): string {
 
 type PendingNotification = {
   userId: string
-  type: 'WORK_ORDER_REMINDER' | 'WORK_ORDER_STARTED' | 'CONTRACT_EXPIRING'
+  type: 'WORK_ORDER_REMINDER' | 'WORK_ORDER_STARTED' | 'CONTRACT_EXPIRING' | 'CERTIFICATE_EXPIRING'
   title: string
   message: string
   link: string | null
@@ -217,6 +218,70 @@ export async function GET(request: Request) {
       }
     }
 
+    // ---- certificates -------------------------------------------------------
+    const certificates = await prisma.certificate.findMany({
+      where: { expiryDate: { not: null } },
+      select: {
+        id: true,
+        title: true,
+        expiryDate: true,
+        branchId: true,
+        branch: {
+          select: {
+            id: true,
+            client: {
+              select: {
+                id: true,
+                companyName: true,
+                user: { select: { id: true } },
+                contractor: { select: { userId: true } },
+              },
+            },
+          },
+        },
+      },
+    })
+
+    for (const certificate of certificates) {
+      if (!certificate.expiryDate) continue
+
+      const client = certificate.branch?.client
+      if (!client) continue
+
+      const diffDays = daysUntil(certificate.expiryDate, todayStart)
+
+      const contractorLink = `/dashboard/clients/${client.id}/branches/${certificate.branchId}?tab=certificates`
+      const clientLink = `/portal/branches/${certificate.branchId}?tab=certificates`
+
+      if ([10, 5, 3, 1].includes(diffDays) && client.contractor?.userId) {
+        const dayText = diffDays === 1 ? 'tomorrow' : `in ${diffDays} days`
+
+        notifications.push({
+          userId: client.contractor.userId,
+          type: 'CERTIFICATE_EXPIRING',
+          title: 'Certificate Expiring Soon',
+          message: `Certificate "${certificate.title}" for ${client.companyName} expires ${dayText}`,
+          link: contractorLink,
+          relatedId: certificate.id,
+          relatedType: 'Certificate',
+          dedupeKey: `${client.contractor.userId}:CERTIFICATE_EXPIRING:${certificate.id}:${dayKey}`,
+        })
+      }
+
+      if (diffDays === 1 && client.user) {
+        notifications.push({
+          userId: client.user.id,
+          type: 'CERTIFICATE_EXPIRING',
+          title: 'Certificate Expiring Tomorrow',
+          message: `Your certificate "${certificate.title}" expires tomorrow`,
+          link: clientLink,
+          relatedId: certificate.id,
+          relatedType: 'Certificate',
+          dedupeKey: `${client.user.id}:CERTIFICATE_EXPIRING:${certificate.id}:${dayKey}`,
+        })
+      }
+    }
+
     // ---- write -------------------------------------------------------------
     // dedupeKey is unique, so a second run on the same day is a no-op rather than a
     // per-notification existence query.
@@ -243,6 +308,7 @@ export async function GET(request: Request) {
       riyadhDay: dayKey,
       workOrdersConsidered: workOrders.length,
       contractsConsidered: contracts.length,
+      certificatesConsidered: certificates.length,
       notificationsCreated,
       autoProgressed,
     })

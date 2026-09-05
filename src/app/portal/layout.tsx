@@ -7,6 +7,7 @@ import { ClientHeader } from '@/components/layout/client-header'
 import { NotificationPopup } from '@/components/notifications/notification-popup'
 import { ImpersonationBanner } from '@/components/admin/impersonation-banner'
 import { RescheduleNotificationProvider } from '@/components/providers/reschedule-notification-provider'
+import { MobileSidebarProvider } from '@/components/layout/mobile-sidebar-context'
 
 async function getClientData(userId: string) {
   const client = await prisma.client.findUnique({
@@ -78,25 +79,27 @@ export default async function PortalLayout({
 
   return (
     <RescheduleNotificationProvider>
-      <div className="flex h-screen overflow-hidden flex-col">
-        {session.user.isImpersonating && (
-          <ImpersonationBanner
-            targetUserName={session.user.name}
-            targetUserEmail={session.user.email}
-            realAdminEmail={session.user.realAdminEmail || ''}
-          />
-        )}
-        <div className="flex flex-1 overflow-hidden">
-          <ClientSidebar client={clientData} />
-          <div className="flex-1 flex flex-col overflow-hidden">
-            <ClientHeader userName={session.user.name} />
-            <main className="flex-1 overflow-auto bg-background">
-              {children}
-            </main>
+      <MobileSidebarProvider>
+        <div className="flex h-screen overflow-hidden flex-col">
+          {session.user.isImpersonating && (
+            <ImpersonationBanner
+              targetUserName={session.user.name}
+              targetUserEmail={session.user.email}
+              realAdminEmail={session.user.realAdminEmail || ''}
+            />
+          )}
+          <div className="flex flex-1 overflow-hidden">
+            <ClientSidebar client={clientData} />
+            <div className="flex-1 flex flex-col overflow-hidden">
+              <ClientHeader userName={session.user.name} />
+              <main className="flex-1 overflow-auto bg-background">
+                {children}
+              </main>
+            </div>
+            <NotificationPopup userRole="CLIENT" />
           </div>
-          <NotificationPopup userRole="CLIENT" />
         </div>
-      </div>
+      </MobileSidebarProvider>
     </RescheduleNotificationProvider>
   )
 }

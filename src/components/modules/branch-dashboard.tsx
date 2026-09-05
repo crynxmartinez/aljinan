@@ -96,11 +96,11 @@ export function BranchDashboard({ branchId }: BranchDashboardProps) {
   const [loading, setLoading] = useState(true)
   const [loadFailed, setLoadFailed] = useState(false)
   const STAGE_CONFIG: Record<string, { label: string; color: string; icon: React.ReactNode }> = {
-    SCHEDULED: { label: td.scheduled, color: 'bg-blue-100 text-blue-700', icon: <Calendar className="h-3 w-3" /> },
-    IN_PROGRESS: { label: td.inProgress, color: 'bg-green-100 text-green-700', icon: <Clock className="h-3 w-3" /> },
-    FOR_REVIEW: { label: td.forReview, color: 'bg-yellow-100 text-yellow-700', icon: <AlertCircle className="h-3 w-3" /> },
-    COMPLETED: { label: td.completed, color: 'bg-gray-100 text-gray-700', icon: <CheckCircle className="h-3 w-3" /> },
-    ARCHIVED: { label: td.archived, color: 'bg-gray-100 text-gray-500', icon: <FileText className="h-3 w-3" /> },
+    SCHEDULED: { label: td.scheduled, color: 'bg-blue-100 dark:bg-blue-950/40 text-blue-700 dark:text-blue-400', icon: <Calendar className="h-3 w-3" /> },
+    IN_PROGRESS: { label: td.inProgress, color: 'bg-green-100 dark:bg-green-950/40 text-green-700 dark:text-green-400', icon: <Clock className="h-3 w-3" /> },
+    FOR_REVIEW: { label: td.forReview, color: 'bg-yellow-100 dark:bg-yellow-950/40 text-yellow-700 dark:text-yellow-400', icon: <AlertCircle className="h-3 w-3" /> },
+    COMPLETED: { label: td.completed, color: 'bg-gray-100 dark:bg-gray-800 text-gray-700 dark:text-gray-300', icon: <CheckCircle className="h-3 w-3" /> },
+    ARCHIVED: { label: td.archived, color: 'bg-gray-100 dark:bg-gray-800 text-gray-500 dark:text-gray-400', icon: <FileText className="h-3 w-3" /> },
   }
 
   const [viewMode, setViewMode] = useState<ViewMode>('split')
@@ -428,8 +428,8 @@ export function BranchDashboard({ branchId }: BranchDashboardProps) {
                 <p className="text-sm text-muted-foreground">{td.activeWork}</p>
                 <p className="text-2xl font-bold">{contractStats.inProgress + adhocStats.inProgress}</p>
               </div>
-              <div className="p-3 rounded-full bg-green-100">
-                <Clock className="h-5 w-5 text-green-600" />
+              <div className="p-3 rounded-full bg-green-100 dark:bg-green-950/40">
+                <Clock className="h-5 w-5 text-green-600 dark:text-green-400" />
               </div>
             </div>
           </CardContent>
@@ -441,8 +441,8 @@ export function BranchDashboard({ branchId }: BranchDashboardProps) {
                 <p className="text-sm text-muted-foreground">{td.pendingReview}</p>
                 <p className="text-2xl font-bold">{contractStats.forReview + adhocStats.forReview}</p>
               </div>
-              <div className="p-3 rounded-full bg-yellow-100">
-                <AlertCircle className="h-5 w-5 text-yellow-600" />
+              <div className="p-3 rounded-full bg-yellow-100 dark:bg-yellow-950/40">
+                <AlertCircle className="h-5 w-5 text-yellow-600 dark:text-yellow-400" />
               </div>
             </div>
           </CardContent>
@@ -454,8 +454,8 @@ export function BranchDashboard({ branchId }: BranchDashboardProps) {
                 <p className="text-sm text-muted-foreground">{td.completed}</p>
                 <p className="text-2xl font-bold">{contractStats.completed + adhocStats.completed}</p>
               </div>
-              <div className="p-3 rounded-full bg-gray-100">
-                <CheckCircle className="h-5 w-5 text-gray-600" />
+              <div className="p-3 rounded-full bg-gray-100 dark:bg-gray-800">
+                <CheckCircle className="h-5 w-5 text-gray-600 dark:text-gray-400" />
               </div>
             </div>
           </CardContent>
@@ -465,12 +465,12 @@ export function BranchDashboard({ branchId }: BranchDashboardProps) {
             <div className="flex items-center justify-between">
               <div>
                 <p className="text-sm text-muted-foreground">{td.totalValue}</p>
-                <p className="text-2xl font-bold text-green-600">
+                <p className="text-2xl font-bold text-green-600 dark:text-green-400">
                   {formatCurrency(contractStats.totalValue + adhocStats.totalValue)}
                 </p>
               </div>
-              <div className="p-3 rounded-full bg-green-100">
-                <Banknote className="h-5 w-5 text-green-600" />
+              <div className="p-3 rounded-full bg-green-100 dark:bg-green-950/40">
+                <Banknote className="h-5 w-5 text-green-600 dark:text-green-400" />
               </div>
             </div>
           </CardContent>

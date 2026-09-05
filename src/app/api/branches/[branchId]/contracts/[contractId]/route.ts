@@ -4,6 +4,7 @@ import { authOptions } from '@/lib/auth'
 import { prisma } from '@/lib/prisma'
 import { ContractSystemFrequency } from '@prisma/client'
 import { verifyBranchAccess } from '@/lib/permissions'
+import { notifyContractSigned, notifyContractCompleted } from '@/lib/notification-service'
 
 const VALID_FREQUENCIES = ['MONTHLY', 'QUARTERLY', 'SEMI_ANNUALLY', 'ANNUALLY']
 
@@ -247,6 +248,20 @@ export async function PATCH(
         return updated
       })
 
+      const branchWithParties = await prisma.branch.findUnique({
+        where: { id: branchId },
+        include: { client: { select: { id: true, contractor: { select: { userId: true } } } } }
+      })
+      if (branchWithParties?.client?.contractor?.userId) {
+        await notifyContractSigned(
+          branchWithParties.client.contractor.userId,
+          branchWithParties.client.id,
+          result.title,
+          contractId,
+          branchId
+        )
+      }
+
       return NextResponse.json(result)
     }
 
@@ -296,6 +311,20 @@ export async function PATCH(
           status: 'COMPLETED'
         }
       })
+
+      const branchWithParties = await prisma.branch.findUnique({
+        where: { id: branchId },
+        include: { client: { select: { id: true, contractor: { select: { userId: true } } } } }
+      })
+      if (branchWithParties?.client?.contractor?.userId) {
+        await notifyContractCompleted(
+          branchWithParties.client.contractor.userId,
+          branchWithParties.client.id,
+          updated.title,
+          contractId,
+          branchId
+        )
+      }
 
       return NextResponse.json(updated)
     }

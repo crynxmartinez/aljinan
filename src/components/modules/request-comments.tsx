@@ -2,6 +2,7 @@
 
 import { useState, useEffect } from 'react'
 import { useTranslation } from '@/lib/i18n/use-translation'
+import { formatDate as formatDateUtil } from '@/lib/i18n/format-date'
 import { Button } from '@/components/ui/button'
 import { Textarea } from '@/components/ui/textarea'
 import { Badge } from '@/components/ui/badge'
@@ -36,7 +37,7 @@ interface RequestCommentsProps {
 }
 
 export function RequestComments({ branchId, requestId, currentUserId }: RequestCommentsProps) {
-  const { t } = useTranslation()
+  const { t, locale } = useTranslation()
   const trc = t.dashboard.requestComments
   const [comments, setComments] = useState<Comment[]>([])
   const [loading, setLoading] = useState(true)
@@ -140,18 +141,18 @@ export function RequestComments({ branchId, requestId, currentUserId }: RequestC
     if (diffMins < 60) return trc.minutesAgo.replace('{count}', String(diffMins))
     if (diffHours < 24) return trc.hoursAgo.replace('{count}', String(diffHours))
     if (diffDays < 7) return trc.daysAgo.replace('{count}', String(diffDays))
-    return date.toLocaleDateString('ar-SA-u-nu-latn')
+    return formatDateUtil(date, locale, {})
   }
 
   const getRoleBadge = (role: string) => {
     if (role === 'CONTRACTOR') {
-      return <Badge variant="outline" className="text-xs bg-blue-50 text-blue-700 border-blue-200">{trc.contractor}</Badge>
+      return <Badge variant="outline" className="text-xs bg-blue-50 dark:bg-blue-950/40 text-blue-700 dark:text-blue-400 border-blue-200 dark:border-blue-900">{trc.contractor}</Badge>
     }
     if (role === 'CLIENT') {
-      return <Badge variant="outline" className="text-xs bg-green-50 text-green-700 border-green-200">{trc.client}</Badge>
+      return <Badge variant="outline" className="text-xs bg-green-50 dark:bg-green-950/40 text-green-700 dark:text-green-400 border-green-200 dark:border-green-900">{trc.client}</Badge>
     }
     if (role === 'TEAM_MEMBER' || role === 'SUPERVISOR') {
-      return <Badge variant="outline" className="text-xs bg-purple-50 text-purple-700 border-purple-200">{trc.team}</Badge>
+      return <Badge variant="outline" className="text-xs bg-purple-50 dark:bg-purple-950/40 text-purple-700 dark:text-purple-400 border-purple-200 dark:border-purple-900">{trc.team}</Badge>
     }
     return null
   }

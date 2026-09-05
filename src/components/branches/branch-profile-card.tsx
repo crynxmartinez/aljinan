@@ -10,6 +10,7 @@ import {
 } from 'lucide-react'
 import { BranchProfileForm } from './branch-profile-form'
 import { useTranslation } from '@/lib/i18n/use-translation'
+import { formatDate as formatDateUtil } from '@/lib/i18n/format-date'
 
 interface BranchProfileCardProps {
   branch: {
@@ -38,7 +39,7 @@ interface BranchProfileCardProps {
 }
 
 export function BranchProfileCard({ branch, canEdit }: BranchProfileCardProps) {
-  const { t } = useTranslation()
+  const { t, locale } = useTranslation()
   const tb = t.dashboard.branchProfileCard
   const [editOpen, setEditOpen] = useState(false)
 
@@ -64,7 +65,7 @@ export function BranchProfileCard({ branch, canEdit }: BranchProfileCardProps) {
 
   const formatDate = (dateString: string | null) => {
     if (!dateString) return null
-    return new Date(dateString).toLocaleDateString('ar-SA-u-nu-latn', {
+    return formatDateUtil(dateString, locale, {
       year: 'numeric',
       month: 'short',
       day: 'numeric'
@@ -206,7 +207,7 @@ export function BranchProfileCard({ branch, canEdit }: BranchProfileCardProps) {
                       </Badge>
                     )}
                     {isCertificateExpiringSoon() && (
-                      <Badge className="bg-yellow-100 text-yellow-700 hover:bg-yellow-100 text-xs">
+                      <Badge className="bg-yellow-100 dark:bg-yellow-950/40 text-yellow-700 dark:text-yellow-400 hover:bg-yellow-100 dark:hover:bg-yellow-950/40 text-xs">
                         <AlertTriangle className="h-3 w-3 me-1" />
                         {tb.expiringSoon}
                       </Badge>
@@ -286,11 +287,11 @@ export function BranchProfileCard({ branch, canEdit }: BranchProfileCardProps) {
           {/* Edit prompt if profile is incomplete */}
           {canEdit && (!branch.municipality || !branch.buildingType || !branch.cdCertificateNumber) && (
             <div className="pt-4 border-t">
-              <div className="bg-amber-50 border border-amber-200 rounded-lg p-4 flex items-start gap-3">
-                <AlertTriangle className="h-5 w-5 text-amber-600 flex-shrink-0 mt-0.5" />
+              <div className="bg-amber-50 dark:bg-amber-950/40 border border-amber-200 dark:border-amber-900 rounded-lg p-4 flex items-start gap-3">
+                <AlertTriangle className="h-5 w-5 text-amber-600 dark:text-amber-400 flex-shrink-0 mt-0.5" />
                 <div>
-                  <p className="font-medium text-amber-800 text-sm">{tb.profileIncomplete}</p>
-                  <p className="text-xs text-amber-600 mt-1">
+                  <p className="font-medium text-amber-800 dark:text-amber-400 text-sm">{tb.profileIncomplete}</p>
+                  <p className="text-xs text-amber-600 dark:text-amber-400 mt-1">
                     {tb.completeProfileDesc}
                   </p>
                   <Button

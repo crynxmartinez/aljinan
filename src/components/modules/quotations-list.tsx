@@ -3,6 +3,7 @@
 import { useState, useEffect } from 'react'
 import { useRouter } from 'next/navigation'
 import { useTranslation } from '@/lib/i18n/use-translation'
+import { formatDate } from '@/lib/i18n/format-date'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
@@ -69,7 +70,7 @@ interface QuotationsListProps {
 
 export function QuotationsList({ branchId }: QuotationsListProps) {
   const router = useRouter()
-  const { t } = useTranslation()
+  const { t, locale } = useTranslation()
   const tql = t.dashboard.quotationsList
   const [quotations, setQuotations] = useState<Quotation[]>([])
   const [loading, setLoading] = useState(true)
@@ -212,11 +213,11 @@ export function QuotationsList({ branchId }: QuotationsListProps) {
 
   const getStatusBadge = (status: Quotation['status']) => {
     const config = {
-      DRAFT: { style: 'bg-gray-100 text-gray-700', icon: FileEdit, label: 'Draft' },
-      SENT: { style: 'bg-blue-100 text-blue-700', icon: Clock, label: 'Sent' },
-      APPROVED: { style: 'bg-green-100 text-green-700', icon: CheckCircle, label: 'Approved' },
-      REJECTED: { style: 'bg-red-100 text-red-700', icon: XCircle, label: 'Rejected' },
-      EXPIRED: { style: 'bg-orange-100 text-orange-700', icon: Clock, label: 'Expired' },
+      DRAFT: { style: 'bg-gray-100 dark:bg-gray-800 text-gray-700 dark:text-gray-300', icon: FileEdit, label: 'Draft' },
+      SENT: { style: 'bg-blue-100 dark:bg-blue-950/40 text-blue-700 dark:text-blue-400', icon: Clock, label: 'Sent' },
+      APPROVED: { style: 'bg-green-100 dark:bg-green-950/40 text-green-700 dark:text-green-400', icon: CheckCircle, label: 'Approved' },
+      REJECTED: { style: 'bg-red-100 dark:bg-red-950/40 text-red-700 dark:text-red-400', icon: XCircle, label: 'Rejected' },
+      EXPIRED: { style: 'bg-orange-100 dark:bg-orange-950/40 text-orange-700 dark:text-orange-400', icon: Clock, label: 'Expired' },
     }
     const { style, icon: Icon, label } = config[status]
     return (
@@ -298,7 +299,7 @@ export function QuotationsList({ branchId }: QuotationsListProps) {
                         {quotation.items.length} item{quotation.items.length !== 1 ? 's' : ''}
                       </span>
                       <span className="text-muted-foreground">
-                        Created {new Date(quotation.createdAt).toLocaleDateString('ar-SA-u-nu-latn')}
+                        Created {formatDate(quotation.createdAt, locale, {})}
                       </span>
                     </div>
                     {quotation.rejectionNote && (
@@ -566,32 +567,32 @@ export function QuotationsList({ branchId }: QuotationsListProps) {
               <div className="grid grid-cols-2 gap-4 text-sm">
                 <div>
                   <p className="font-medium text-muted-foreground">تم الإنشاء</p>
-                  <p>{new Date(selectedQuotation.createdAt).toLocaleDateString('ar-SA-u-nu-latn')}</p>
+                  <p>{formatDate(selectedQuotation.createdAt, locale, {})}</p>
                 </div>
                 {selectedQuotation.validUntil && (
                   <div>
                     <p className="font-medium text-muted-foreground">Valid Until</p>
-                    <p>{new Date(selectedQuotation.validUntil).toLocaleDateString('ar-SA-u-nu-latn')}</p>
+                    <p>{formatDate(selectedQuotation.validUntil, locale, {})}</p>
                   </div>
                 )}
                 {selectedQuotation.sentAt && (
                   <div>
                     <p className="font-medium text-muted-foreground">تم الإرسال</p>
-                    <p>{new Date(selectedQuotation.sentAt).toLocaleDateString('ar-SA-u-nu-latn')}</p>
+                    <p>{formatDate(selectedQuotation.sentAt, locale, {})}</p>
                   </div>
                 )}
                 {selectedQuotation.approvedAt && (
                   <div>
                     <p className="font-medium text-muted-foreground">موافق عليه</p>
-                    <p>{new Date(selectedQuotation.approvedAt).toLocaleDateString('ar-SA-u-nu-latn')}</p>
+                    <p>{formatDate(selectedQuotation.approvedAt, locale, {})}</p>
                   </div>
                 )}
               </div>
 
               {selectedQuotation.rejectionNote && (
-                <div className="p-3 bg-red-50 border border-red-200 rounded-lg">
-                  <p className="text-sm font-medium text-red-700">Rejection Note</p>
-                  <p className="text-sm text-red-600">{selectedQuotation.rejectionNote}</p>
+                <div className="p-3 bg-red-50 dark:bg-red-950/40 border border-red-200 dark:border-red-900 rounded-lg">
+                  <p className="text-sm font-medium text-red-700 dark:text-red-400">Rejection Note</p>
+                  <p className="text-sm text-red-600 dark:text-red-400">{selectedQuotation.rejectionNote}</p>
                 </div>
               )}
 

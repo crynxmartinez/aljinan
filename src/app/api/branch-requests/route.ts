@@ -2,6 +2,7 @@ import { getServerSession } from 'next-auth'
 import { NextResponse } from 'next/server'
 import { authOptions } from '@/lib/auth'
 import { prisma } from '@/lib/prisma'
+import { notifyBranchRequestCreated } from '@/lib/notification-service'
 
 // GET - Fetch branch requests
 // For CLIENT: returns their own requests
@@ -113,6 +114,14 @@ export async function POST(request: Request) {
         createdById: session.user.id,
       }
     })
+
+    const contractor = await prisma.contractor.findUnique({
+      where: { id: client.contractorId },
+      select: { userId: true }
+    })
+    if (contractor) {
+      await notifyBranchRequestCreated(contractor.userId, name, branchRequest.id)
+    }
 
     return NextResponse.json(branchRequest, { status: 201 })
   } catch (error) {

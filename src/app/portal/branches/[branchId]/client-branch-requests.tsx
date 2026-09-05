@@ -68,6 +68,7 @@ import {
   type ExportableRequest,
 } from '@/lib/export/export-utils'
 import { useTranslation } from '@/lib/i18n/use-translation'
+import { formatDate as formatDateUtil } from '@/lib/i18n/format-date'
 
 interface WorkOrder {
   id: string
@@ -200,7 +201,7 @@ function WorkOrdersGroupedView({ workOrders }: { workOrders: WorkOrder[] }) {
         const isSingleItem = items.length === 1
 
         return (
-          <div key={groupName} className="bg-white">
+          <div key={groupName} className="bg-white dark:bg-card">
             {/* Group Header */}
             <button
               onClick={() => !isSingleItem && toggleGroup(groupName)}
@@ -247,7 +248,7 @@ function WorkOrdersGroupedView({ workOrders }: { workOrders: WorkOrder[] }) {
                   {items[0].scheduledDate ? (
                     <div className="flex items-center gap-1">
                       <Calendar className="h-3 w-3" />
-                      {new Date(items[0].scheduledDate).toLocaleDateString(dateLocale)}
+                      {formatDateUtil(items[0].scheduledDate, locale)}
                     </div>
                   ) : (
                     <span>{tc.noDateScheduled}</span>
@@ -270,7 +271,7 @@ function WorkOrdersGroupedView({ workOrders }: { workOrders: WorkOrder[] }) {
                         {wo.scheduledDate && (
                           <span className="ms-2 flex items-center gap-1 inline-flex">
                             <Calendar className="h-3 w-3" />
-                            {new Date(wo.scheduledDate).toLocaleDateString(dateLocale)}
+                            {formatDateUtil(wo.scheduledDate, locale)}
                           </span>
                         )}
                       </div>
@@ -753,10 +754,10 @@ export function ClientBranchRequests({ branchId, onDataChange, userId }: ClientB
 
   const getPriorityBadge = (priority: Request['priority']) => {
     const styles: Record<Request['priority'], string> = {
-      LOW: 'bg-gray-100 text-gray-700',
-      MEDIUM: 'bg-blue-100 text-blue-700',
-      HIGH: 'bg-orange-100 text-orange-700',
-      URGENT: 'bg-red-100 text-red-700',
+      LOW: 'bg-gray-100 dark:bg-gray-800 text-gray-700 dark:text-gray-300',
+      MEDIUM: 'bg-blue-100 dark:bg-blue-950/40 text-blue-700 dark:text-blue-400',
+      HIGH: 'bg-orange-100 dark:bg-orange-950/40 text-orange-700 dark:text-orange-400',
+      URGENT: 'bg-red-100 dark:bg-red-950/40 text-red-700 dark:text-red-400',
     }
     const labels: Record<Request['priority'], string> = {
       LOW: tc.priorityLow,
@@ -769,16 +770,16 @@ export function ClientBranchRequests({ branchId, onDataChange, userId }: ClientB
 
   const getStatusBadge = (status: Request['status']) => {
     const config: Record<Request['status'], { style: string; icon: typeof Clock; label: string }> = {
-      REQUESTED: { style: 'bg-yellow-100 text-yellow-700', icon: Clock, label: tc.statusRequested },
-      QUOTED: { style: 'bg-purple-100 text-purple-700', icon: Clock, label: tc.statusQuoted },
-      SCHEDULED: { style: 'bg-blue-100 text-blue-700', icon: Clock, label: tc.statusScheduled },
-      IN_PROGRESS: { style: 'bg-blue-100 text-blue-700', icon: AlertCircle, label: tc.statusInProgress },
-      FOR_REVIEW: { style: 'bg-orange-100 text-orange-700', icon: AlertCircle, label: tc.statusForReview },
-      PENDING_APPROVAL: { style: 'bg-amber-100 text-amber-700', icon: Clock, label: tc.statusPendingApproval },
-      COMPLETED: { style: 'bg-green-100 text-green-700', icon: CheckCircle, label: tc.statusCompleted },
-      CLOSED: { style: 'bg-gray-100 text-gray-700', icon: CheckCircle, label: tc.statusClosed },
-      REJECTED: { style: 'bg-red-100 text-red-700', icon: XCircle, label: tc.statusRejected },
-      CANCELLED: { style: 'bg-gray-100 text-gray-700', icon: XCircle, label: tc.statusCancelled },
+      REQUESTED: { style: 'bg-yellow-100 dark:bg-yellow-950/40 text-yellow-700 dark:text-yellow-400', icon: Clock, label: tc.statusRequested },
+      QUOTED: { style: 'bg-purple-100 dark:bg-purple-950/40 text-purple-700 dark:text-purple-400', icon: Clock, label: tc.statusQuoted },
+      SCHEDULED: { style: 'bg-blue-100 dark:bg-blue-950/40 text-blue-700 dark:text-blue-400', icon: Clock, label: tc.statusScheduled },
+      IN_PROGRESS: { style: 'bg-blue-100 dark:bg-blue-950/40 text-blue-700 dark:text-blue-400', icon: AlertCircle, label: tc.statusInProgress },
+      FOR_REVIEW: { style: 'bg-orange-100 dark:bg-orange-950/40 text-orange-700 dark:text-orange-400', icon: AlertCircle, label: tc.statusForReview },
+      PENDING_APPROVAL: { style: 'bg-amber-100 dark:bg-amber-950/40 text-amber-700 dark:text-amber-400', icon: Clock, label: tc.statusPendingApproval },
+      COMPLETED: { style: 'bg-green-100 dark:bg-green-950/40 text-green-700 dark:text-green-400', icon: CheckCircle, label: tc.statusCompleted },
+      CLOSED: { style: 'bg-gray-100 dark:bg-gray-800 text-gray-700 dark:text-gray-300', icon: CheckCircle, label: tc.statusClosed },
+      REJECTED: { style: 'bg-red-100 dark:bg-red-950/40 text-red-700 dark:text-red-400', icon: XCircle, label: tc.statusRejected },
+      CANCELLED: { style: 'bg-gray-100 dark:bg-gray-800 text-gray-700 dark:text-gray-300', icon: XCircle, label: tc.statusCancelled },
     }
     const { style, icon: Icon, label } = config[status]
     return (
@@ -851,7 +852,7 @@ export function ClientBranchRequests({ branchId, onDataChange, userId }: ClientB
               }).map((request) => (
                 <div
                   key={request.id}
-                  className={`p-4 border-2 rounded-lg transition-colors ${request.status === 'QUOTED' ? 'border-purple-500 bg-purple-50 shadow-md ring-2 ring-purple-200' : 'border-gray-200 hover:bg-muted/50'}`}
+                  className={`p-4 border-2 rounded-lg transition-colors ${request.status === 'QUOTED' ? 'border-purple-500 dark:border-purple-700 bg-purple-50 dark:bg-purple-950/40 shadow-md ring-2 ring-purple-200 dark:ring-purple-900' : 'border-gray-200 dark:border-gray-800 hover:bg-muted/50'}`}
                 >
                   <div
                     className="space-y-2 cursor-pointer"
@@ -879,7 +880,7 @@ export function ClientBranchRequests({ branchId, onDataChange, userId }: ClientB
                         <Badge variant="secondary" className="text-xs">{request.recurringType === 'MONTHLY' ? tc.monthly : tc.quarterly}</Badge>
                       )}
                       {request.needsCertificate && (
-                        <Badge variant="outline" className="text-xs text-green-600">{tc.certificateBadge}</Badge>
+                        <Badge variant="outline" className="text-xs text-green-600 dark:text-green-400">{tc.certificateBadge}</Badge>
                       )}
                     </div>
                     {request.description && !request.title.startsWith('Project Proposal:') && (
@@ -888,31 +889,31 @@ export function ClientBranchRequests({ branchId, onDataChange, userId }: ClientB
                       </p>
                     )}
                     <p className="text-xs text-muted-foreground">
-                      {tc.createdLabel} {new Date(request.createdAt).toLocaleDateString(dateLocale)}
+                      {tc.createdLabel} {formatDateUtil(request.createdAt, locale)}
                       {request.dueDate && (
-                        <> · {tc.dueLabel} {new Date(request.dueDate).toLocaleDateString(dateLocale)}</>
+                        <> · {tc.dueLabel} {formatDateUtil(request.dueDate, locale)}</>
                       )}
                       {request.completedAt && (
-                        <> · {tc.completedLabel} {new Date(request.completedAt).toLocaleDateString(dateLocale)}</>
+                        <> · {tc.completedLabel} {formatDateUtil(request.completedAt, locale)}</>
                       )}
                     </p>
                   </div>
 
                   {/* Show quote info and action buttons for QUOTED requests */}
                   {request.status === 'QUOTED' && request.quotedPrice && (
-                    <div className="mt-3 pt-3 border-t border-purple-200">
+                    <div className="mt-3 pt-3 border-t border-purple-200 dark:border-purple-900">
                       <div className="flex items-center justify-between">
                         <div className="flex items-center gap-4 text-sm">
                           <div className="flex items-center gap-1">
-                            <Banknote className="h-4 w-4 text-purple-600" />
-                            <span className="font-semibold text-purple-700">
+                            <Banknote className="h-4 w-4 text-purple-600 dark:text-purple-400" />
+                            <span className="font-semibold text-purple-700 dark:text-purple-400">
                               {t.dashboard.requestsList.sar} {request.quotedPrice.toLocaleString(dateLocale, { minimumFractionDigits: 2 })}
                             </span>
                           </div>
                           {request.quotedDate && (
                             <div className="flex items-center gap-1 text-muted-foreground">
                               <Calendar className="h-4 w-4" />
-                              <span>{new Date(request.quotedDate).toLocaleDateString(dateLocale)}</span>
+                              <span>{formatDateUtil(request.quotedDate, locale)}</span>
                             </div>
                           )}
                         </div>
@@ -1043,17 +1044,17 @@ export function ClientBranchRequests({ branchId, onDataChange, userId }: ClientB
 
               {/* Equipment List - Only for Sticker Inspection */}
               {newRequest.workOrderType === 'STICKER_INSPECTION' && (
-                <div className="space-y-3 p-4 bg-amber-50 border border-amber-200 rounded-lg">
+                <div className="space-y-3 p-4 bg-amber-50 dark:bg-amber-950/40 border border-amber-200 dark:border-amber-900 rounded-lg">
                   <div className="flex items-center justify-between">
                     <div>
-                      <Label className="text-amber-800 font-medium">{tc.equipmentListLabel}</Label>
-                      <p className="text-xs text-amber-600 mt-1">{tc.equipmentListDesc}</p>
+                      <Label className="text-amber-800 dark:text-amber-400 font-medium">{tc.equipmentListLabel}</Label>
+                      <p className="text-xs text-amber-600 dark:text-amber-400 mt-1">{tc.equipmentListDesc}</p>
                     </div>
                     <Button
                       type="button"
                       size="sm"
                       variant="outline"
-                      className="border-amber-300 text-amber-700 hover:bg-amber-100"
+                      className="border-amber-300 dark:border-amber-900 text-amber-700 dark:text-amber-400 hover:bg-amber-100 dark:hover:bg-amber-950/60"
                       onClick={() => setShowEquipmentForm(true)}
                     >
                       <Plus className="h-4 w-4 me-1" />
@@ -1063,7 +1064,7 @@ export function ClientBranchRequests({ branchId, onDataChange, userId }: ClientB
 
                   {/* Equipment Form */}
                   {showEquipmentForm && (
-                    <div className="space-y-3 p-3 bg-white rounded-lg border border-amber-200">
+                    <div className="space-y-3 p-3 bg-white dark:bg-card rounded-lg border border-amber-200 dark:border-amber-900">
                       <div className="grid grid-cols-2 gap-3">
                         <div className="space-y-1">
                           <Label className="text-xs">{tc.equipmentNumberLabel}</Label>
@@ -1205,18 +1206,18 @@ export function ClientBranchRequests({ branchId, onDataChange, userId }: ClientB
 
                   {/* Equipment List Table */}
                   {equipment.length > 0 && (
-                    <div className="border border-amber-200 rounded-lg overflow-hidden">
+                    <div className="border border-amber-200 dark:border-amber-900 rounded-lg overflow-hidden">
                       <table className="w-full text-sm">
-                        <thead className="bg-amber-100">
+                        <thead className="bg-amber-100 dark:bg-amber-950/60">
                           <tr>
-                            <th className="px-3 py-2 text-start text-amber-800">{tc.tableEquipmentNumber}</th>
-                            <th className="px-3 py-2 text-start text-amber-800">{tc.tableType}</th>
-                            <th className="px-3 py-2 text-start text-amber-800">{tc.tableLocation}</th>
-                            <th className="px-3 py-2 text-start text-amber-800">{tc.tableExpiry}</th>
-                            <th className="px-3 py-2 text-end text-amber-800">{tc.tableAction}</th>
+                            <th className="px-3 py-2 text-start text-amber-800 dark:text-amber-400">{tc.tableEquipmentNumber}</th>
+                            <th className="px-3 py-2 text-start text-amber-800 dark:text-amber-400">{tc.tableType}</th>
+                            <th className="px-3 py-2 text-start text-amber-800 dark:text-amber-400">{tc.tableLocation}</th>
+                            <th className="px-3 py-2 text-start text-amber-800 dark:text-amber-400">{tc.tableExpiry}</th>
+                            <th className="px-3 py-2 text-end text-amber-800 dark:text-amber-400">{tc.tableAction}</th>
                           </tr>
                         </thead>
-                        <tbody className="bg-white divide-y divide-amber-100">
+                        <tbody className="bg-white dark:bg-card divide-y divide-amber-100 dark:divide-amber-900">
                           {equipment.map((eq, idx) => (
                             <tr key={idx}>
                               <td className="px-3 py-2 font-medium">{eq.equipmentNumber}</td>
@@ -1225,14 +1226,14 @@ export function ClientBranchRequests({ branchId, onDataChange, userId }: ClientB
                               </td>
                               <td className="px-3 py-2 text-muted-foreground">{eq.location || '-'}</td>
                               <td className="px-3 py-2 text-muted-foreground">
-                                {eq.expectedExpiry ? new Date(eq.expectedExpiry).toLocaleDateString(dateLocale) : '-'}
+                                {eq.expectedExpiry ? formatDateUtil(eq.expectedExpiry, locale) : '-'}
                               </td>
                               <td className="px-3 py-2 text-end">
                                 <Button
                                   type="button"
                                   size="sm"
                                   variant="ghost"
-                                  className="h-7 w-7 p-0 text-red-500 hover:text-red-700 hover:bg-red-50"
+                                  className="h-7 w-7 p-0 text-red-500 dark:text-red-400 hover:text-red-700 dark:hover:text-red-300 hover:bg-red-50 dark:hover:bg-red-950/40"
                                   onClick={() => setEquipment(equipment.filter((_, i) => i !== idx))}
                                 >
                                   <X className="h-4 w-4" />
@@ -1246,7 +1247,7 @@ export function ClientBranchRequests({ branchId, onDataChange, userId }: ClientB
                   )}
 
                   {equipment.length === 0 && !showEquipmentForm && (
-                    <p className="text-sm text-amber-600 text-center py-4">
+                    <p className="text-sm text-amber-600 dark:text-amber-400 text-center py-4">
                       {tc.noEquipmentYet}
                     </p>
                   )}
@@ -1356,12 +1357,12 @@ export function ClientBranchRequests({ branchId, onDataChange, userId }: ClientB
               <div className="grid grid-cols-2 md:grid-cols-3 gap-4 text-sm">
                 <div>
                   <p className="text-muted-foreground">{tc.createdDateLabel}</p>
-                  <p className="font-medium">{new Date(selectedRequest.createdAt).toLocaleDateString(dateLocale)}</p>
+                  <p className="font-medium">{formatDateUtil(selectedRequest.createdAt, locale)}</p>
                 </div>
                 {selectedRequest.preferredDate && (
                   <div>
                     <p className="text-muted-foreground">{tc.preferredDateLabel}</p>
-                    <p className="font-medium">{new Date(selectedRequest.preferredDate).toLocaleDateString(dateLocale)}</p>
+                    <p className="font-medium">{formatDateUtil(selectedRequest.preferredDate, locale)}</p>
                   </div>
                 )}
                 {selectedRequest.preferredTimeSlot && (
@@ -1392,19 +1393,19 @@ export function ClientBranchRequests({ branchId, onDataChange, userId }: ClientB
 
               {/* Equipment List - For Sticker Inspections */}
               {selectedRequest.workOrderType === 'STICKER_INSPECTION' && selectedRequest.equipment && selectedRequest.equipment.length > 0 && (
-                <div className="space-y-2 p-4 bg-amber-50 border border-amber-200 rounded-lg">
-                  <p className="text-sm font-medium text-amber-800">{tc.equipmentForInspectionLabel.replace('{count}', String(selectedRequest.equipment.length))}</p>
-                  <div className="border border-amber-200 rounded-lg overflow-hidden">
+                <div className="space-y-2 p-4 bg-amber-50 dark:bg-amber-950/40 border border-amber-200 dark:border-amber-900 rounded-lg">
+                  <p className="text-sm font-medium text-amber-800 dark:text-amber-400">{tc.equipmentForInspectionLabel.replace('{count}', String(selectedRequest.equipment.length))}</p>
+                  <div className="border border-amber-200 dark:border-amber-900 rounded-lg overflow-hidden">
                     <table className="w-full text-sm">
-                      <thead className="bg-amber-100">
+                      <thead className="bg-amber-100 dark:bg-amber-950/60">
                         <tr>
-                          <th className="px-3 py-2 text-start text-amber-800">{tc.tableEquipmentNumber}</th>
-                          <th className="px-3 py-2 text-start text-amber-800">{tc.tableType}</th>
-                          <th className="px-3 py-2 text-start text-amber-800">{tc.tableLocation}</th>
-                          <th className="px-3 py-2 text-start text-amber-800">{tc.tableExpiry}</th>
+                          <th className="px-3 py-2 text-start text-amber-800 dark:text-amber-400">{tc.tableEquipmentNumber}</th>
+                          <th className="px-3 py-2 text-start text-amber-800 dark:text-amber-400">{tc.tableType}</th>
+                          <th className="px-3 py-2 text-start text-amber-800 dark:text-amber-400">{tc.tableLocation}</th>
+                          <th className="px-3 py-2 text-start text-amber-800 dark:text-amber-400">{tc.tableExpiry}</th>
                         </tr>
                       </thead>
-                      <tbody className="bg-white divide-y divide-amber-100">
+                      <tbody className="bg-white dark:bg-card divide-y divide-amber-100 dark:divide-amber-900">
                         {selectedRequest.equipment.map((eq) => (
                           <tr key={eq.id}>
                             <td className="px-3 py-2 font-medium">{eq.equipmentNumber}</td>
@@ -1413,7 +1414,7 @@ export function ClientBranchRequests({ branchId, onDataChange, userId }: ClientB
                             </td>
                             <td className="px-3 py-2 text-muted-foreground">{eq.location || '-'}</td>
                             <td className="px-3 py-2 text-muted-foreground">
-                              {eq.expectedExpiry ? new Date(eq.expectedExpiry).toLocaleDateString(dateLocale) : '-'}
+                              {eq.expectedExpiry ? formatDateUtil(eq.expectedExpiry, locale) : '-'}
                             </td>
                           </tr>
                         ))}
@@ -1425,32 +1426,32 @@ export function ClientBranchRequests({ branchId, onDataChange, userId }: ClientB
 
               {/* Quote Response Section - If contractor has quoted */}
               {selectedRequest.status === 'QUOTED' && selectedRequest.quotedPrice && (
-                <div className="bg-purple-50 border border-purple-200 p-4 rounded-lg">
-                  <p className="text-sm font-medium text-purple-800 mb-2">{tc.quoteFromContractor}</p>
+                <div className="bg-purple-50 dark:bg-purple-950/40 border border-purple-200 dark:border-purple-900 p-4 rounded-lg">
+                  <p className="text-sm font-medium text-purple-800 dark:text-purple-400 mb-2">{tc.quoteFromContractor}</p>
 
                   {/* For recurring requests with occurrences - show table */}
                   {selectedRequest.recurringType && selectedRequest.recurringType !== 'ONCE' && selectedRequest.occurrences && selectedRequest.occurrences.length > 0 ? (
                     <div className="space-y-3">
-                      <p className="text-sm text-purple-700">
+                      <p className="text-sm text-purple-700 dark:text-purple-400">
                         {selectedRequest.recurringType === 'MONTHLY' ? `12 ${tc.monthly}` :
                           selectedRequest.recurringType === 'QUARTERLY' ? `4 ${tc.quarterly}` :
                             selectedRequest.recurringType === 'SEMI_ANNUALLY' ? `2 ${tc.semiAnnual}` : ''} {t.dashboard.requestsList.workOrdersCount}
                       </p>
-                      <div className="border border-purple-200 rounded-lg overflow-hidden bg-white">
+                      <div className="border border-purple-200 dark:border-purple-900 rounded-lg overflow-hidden bg-white dark:bg-card">
                         <table className="w-full text-sm">
-                          <thead className="bg-purple-100">
+                          <thead className="bg-purple-100 dark:bg-purple-950/60">
                             <tr>
-                              <th className="px-3 py-2 text-start text-purple-800 font-medium">#</th>
-                              <th className="px-3 py-2 text-start text-purple-800 font-medium">{tc.visitDateHeader}</th>
-                              <th className="px-3 py-2 text-end text-purple-800 font-medium">{tc.priceSarHeader}</th>
+                              <th className="px-3 py-2 text-start text-purple-800 dark:text-purple-400 font-medium">#</th>
+                              <th className="px-3 py-2 text-start text-purple-800 dark:text-purple-400 font-medium">{tc.visitDateHeader}</th>
+                              <th className="px-3 py-2 text-end text-purple-800 dark:text-purple-400 font-medium">{tc.priceSarHeader}</th>
                             </tr>
                           </thead>
-                          <tbody className="divide-y divide-purple-100">
+                          <tbody className="divide-y divide-purple-100 dark:divide-purple-900">
                             {selectedRequest.occurrences.map((occ, idx) => (
                               <tr key={idx}>
                                 <td className="px-3 py-2 text-muted-foreground">{occ.order}</td>
                                 <td className="px-3 py-2">
-                                  {occ.visitDate ? new Date(occ.visitDate).toLocaleDateString(dateLocale) : '-'}
+                                  {occ.visitDate ? formatDateUtil(occ.visitDate, locale) : '-'}
                                 </td>
                                 <td className="px-3 py-2 text-end font-medium">
                                   {occ.price ? occ.price.toLocaleString(dateLocale) : '-'}
@@ -1458,10 +1459,10 @@ export function ClientBranchRequests({ branchId, onDataChange, userId }: ClientB
                               </tr>
                             ))}
                           </tbody>
-                          <tfoot className="bg-purple-50 border-t border-purple-200">
+                          <tfoot className="bg-purple-50 dark:bg-purple-950/40 border-t border-purple-200 dark:border-purple-900">
                             <tr>
-                              <td colSpan={2} className="px-3 py-2 font-semibold text-purple-800">{tc.totalLabel}</td>
-                              <td className="px-3 py-2 text-end font-bold text-purple-900">
+                              <td colSpan={2} className="px-3 py-2 font-semibold text-purple-800 dark:text-purple-400">{tc.totalLabel}</td>
+                              <td className="px-3 py-2 text-end font-bold text-purple-900 dark:text-purple-300">
                                 {t.dashboard.requestsList.sar} {selectedRequest.quotedPrice.toLocaleString(dateLocale, { minimumFractionDigits: 2 })}
                               </td>
                             </tr>
@@ -1473,22 +1474,22 @@ export function ClientBranchRequests({ branchId, onDataChange, userId }: ClientB
                     /* For one-time requests - show simple view */
                     <div className="grid grid-cols-2 gap-4 text-sm mb-3">
                       <div>
-                        <p className="text-purple-600">{tc.offeredPrice}</p>
+                        <p className="text-purple-600 dark:text-purple-400">{tc.offeredPrice}</p>
                         <p className="font-bold text-lg">{t.dashboard.requestsList.sar} {selectedRequest.quotedPrice.toLocaleString(dateLocale, { minimumFractionDigits: 2 })}</p>
                       </div>
                       {selectedRequest.quotedDate && (
                         <div>
-                          <p className="text-purple-600">{tc.scheduledDateLabel}</p>
-                          <p className="font-semibold">{new Date(selectedRequest.quotedDate).toLocaleDateString(dateLocale)}</p>
+                          <p className="text-purple-600 dark:text-purple-400">{tc.scheduledDateLabel}</p>
+                          <p className="font-semibold">{formatDateUtil(selectedRequest.quotedDate, locale)}</p>
                         </div>
                       )}
                     </div>
                   )}
 
                   {selectedRequest.quotedNotes && (
-                    <div className="mt-3 pt-3 border-t border-purple-200">
-                      <p className="text-purple-600 text-sm mb-1">{tc.notesFromContractorLabel}</p>
-                      <p className="text-sm text-purple-900 whitespace-pre-wrap">{selectedRequest.quotedNotes}</p>
+                    <div className="mt-3 pt-3 border-t border-purple-200 dark:border-purple-900">
+                      <p className="text-purple-600 dark:text-purple-400 text-sm mb-1">{tc.notesFromContractorLabel}</p>
+                      <p className="text-sm text-purple-900 dark:text-purple-300 whitespace-pre-wrap">{selectedRequest.quotedNotes}</p>
                     </div>
                   )}
                   {selectedRequest.quotationUrl && (
@@ -1497,7 +1498,7 @@ export function ClientBranchRequests({ branchId, onDataChange, userId }: ClientB
                         href={selectedRequest.quotationUrl}
                         target="_blank"
                         rel="noopener noreferrer"
-                        className="inline-flex items-center gap-1.5 text-sm font-medium text-purple-800 hover:text-purple-900 underline"
+                        className="inline-flex items-center gap-1.5 text-sm font-medium text-purple-800 dark:text-purple-400 hover:text-purple-900 dark:hover:text-purple-300 underline"
                       >
                         <FileText className="h-4 w-4" />
                         {selectedRequest.quotationFileName || tc.viewQuotation}
@@ -1523,7 +1524,7 @@ export function ClientBranchRequests({ branchId, onDataChange, userId }: ClientB
                         openQuoteResponseDialog(selectedRequest)
                         setSelectedRequest(null)
                       }}
-                      className="border-red-300 text-red-600 hover:bg-red-50"
+                      className="border-red-300 dark:border-red-900 text-red-600 dark:text-red-400 hover:bg-red-50 dark:hover:bg-red-950/40"
                     >
                       <ThumbsDown className="me-2 h-4 w-4" />
                       {tc.rejectQuoteBtn}
@@ -1535,14 +1536,14 @@ export function ClientBranchRequests({ branchId, onDataChange, userId }: ClientB
               {/* Status Messages */}
               {selectedRequest.status === 'REQUESTED' && (
                 <div className="space-y-3">
-                  <div className="bg-yellow-50 border border-yellow-200 p-3 rounded-lg">
-                    <p className="text-sm text-yellow-800">
+                  <div className="bg-yellow-50 dark:bg-yellow-950/40 border border-yellow-200 dark:border-yellow-900 p-3 rounded-lg">
+                    <p className="text-sm text-yellow-800 dark:text-yellow-400">
                       {tc.waitingContractorReview}
                     </p>
                   </div>
-                  <div className="bg-blue-50 border border-blue-200 p-4 rounded-lg">
-                    <p className="text-sm font-medium text-blue-900 mb-2">{tc.needUrgentTitle}</p>
-                    <p className="text-sm text-blue-700 mb-3">
+                  <div className="bg-blue-50 dark:bg-blue-950/40 border border-blue-200 dark:border-blue-900 p-4 rounded-lg">
+                    <p className="text-sm font-medium text-blue-900 dark:text-blue-300 mb-2">{tc.needUrgentTitle}</p>
+                    <p className="text-sm text-blue-700 dark:text-blue-400 mb-3">
                       {tc.needUrgentDesc}
                     </p>
                     <Button
@@ -1559,22 +1560,22 @@ export function ClientBranchRequests({ branchId, onDataChange, userId }: ClientB
                 </div>
               )}
               {selectedRequest.status === 'SCHEDULED' && (
-                <div className="bg-blue-50 border border-blue-200 p-3 rounded-lg">
-                  <p className="text-sm text-blue-800">
+                <div className="bg-blue-50 dark:bg-blue-950/40 border border-blue-200 dark:border-blue-900 p-3 rounded-lg">
+                  <p className="text-sm text-blue-800 dark:text-blue-400">
                     {tc.scheduledStatusMsg}
                   </p>
                 </div>
               )}
               {selectedRequest.status === 'IN_PROGRESS' && (
-                <div className="bg-blue-50 border border-blue-200 p-3 rounded-lg">
-                  <p className="text-sm text-blue-800">
+                <div className="bg-blue-50 dark:bg-blue-950/40 border border-blue-200 dark:border-blue-900 p-3 rounded-lg">
+                  <p className="text-sm text-blue-800 dark:text-blue-400">
                     {tc.inProgressStatusMsg}
                   </p>
                 </div>
               )}
               {selectedRequest.status === 'COMPLETED' && (
-                <div className="bg-green-50 border border-green-200 p-3 rounded-lg">
-                  <p className="text-sm text-green-800">
+                <div className="bg-green-50 dark:bg-green-950/40 border border-green-200 dark:border-green-900 p-3 rounded-lg">
+                  <p className="text-sm text-green-800 dark:text-green-400">
                     {tc.completedStatusMsg}
                   </p>
                 </div>
@@ -1684,20 +1685,20 @@ export function ClientBranchRequests({ branchId, onDataChange, userId }: ClientB
                 <div className="grid grid-cols-2 md:grid-cols-4 gap-4 p-4 bg-muted/30 rounded-lg">
                   <div>
                     <p className="text-xs text-muted-foreground">{tc.statusLabel}</p>
-                    <Badge className={selectedProject.status === 'PENDING' ? 'bg-amber-100 text-amber-700' : 'bg-green-100 text-green-700'}>
+                    <Badge className={selectedProject.status === 'PENDING' ? 'bg-amber-100 dark:bg-amber-950/40 text-amber-700 dark:text-amber-400' : 'bg-green-100 dark:bg-green-950/40 text-green-700 dark:text-green-400'}>
                       {selectedProject.status === 'PENDING' ? tc.pendingReviewBadge : selectedProject.status}
                     </Badge>
                   </div>
                   {selectedProject.startDate && (
                     <div>
                       <p className="text-xs text-muted-foreground">{tc.startDateLabel}</p>
-                      <p className="font-medium text-sm">{new Date(selectedProject.startDate).toLocaleDateString(dateLocale)}</p>
+                      <p className="font-medium text-sm">{formatDateUtil(selectedProject.startDate, locale)}</p>
                     </div>
                   )}
                   {selectedProject.endDate && (
                     <div>
                       <p className="text-xs text-muted-foreground">{tc.endDateLabel}</p>
-                      <p className="font-medium text-sm">{new Date(selectedProject.endDate).toLocaleDateString(dateLocale)}</p>
+                      <p className="font-medium text-sm">{formatDateUtil(selectedProject.endDate, locale)}</p>
                     </div>
                   )}
                   <div>
@@ -1745,14 +1746,14 @@ export function ClientBranchRequests({ branchId, onDataChange, userId }: ClientB
                   return (
                     <div className="space-y-4 pt-4 border-t">
                       {hasPendingPrices ? (
-                        <div className="p-4 bg-orange-50 border border-orange-200 rounded-lg">
-                          <p className="text-sm text-orange-800">
+                        <div className="p-4 bg-orange-50 dark:bg-orange-950/40 border border-orange-200 dark:border-orange-900 rounded-lg">
+                          <p className="text-sm text-orange-800 dark:text-orange-400">
                             <strong>{tc.awaitingPricingTitle}</strong> {tc.awaitingPricingDesc}
                           </p>
                         </div>
                       ) : (
-                        <div className="p-4 bg-amber-50 border border-amber-200 rounded-lg">
-                          <p className="text-sm text-amber-800">
+                        <div className="p-4 bg-amber-50 dark:bg-amber-950/40 border border-amber-200 dark:border-amber-900 rounded-lg">
+                          <p className="text-sm text-amber-800 dark:text-amber-400">
                             <strong>{tc.readyTitle}</strong> {tc.readyDesc}
                           </p>
                         </div>
@@ -1786,8 +1787,8 @@ export function ClientBranchRequests({ branchId, onDataChange, userId }: ClientB
 
                 {/* Info for Active Projects */}
                 {selectedProject.status === 'ACTIVE' && (
-                  <div className="p-4 bg-green-50 border border-green-200 rounded-lg">
-                    <p className="text-sm text-green-800">
+                  <div className="p-4 bg-green-50 dark:bg-green-950/40 border border-green-200 dark:border-green-900 rounded-lg">
+                    <p className="text-sm text-green-800 dark:text-green-400">
                       <strong>{tc.projectActiveTitle}</strong> {tc.projectActiveDesc}
                     </p>
                   </div>
@@ -1901,52 +1902,52 @@ export function ClientBranchRequests({ branchId, onDataChange, userId }: ClientB
               </div>
 
               {/* Quote Details */}
-              <div className="p-4 bg-purple-50 border border-purple-200 rounded-lg space-y-3">
-                <h4 className="font-semibold text-purple-800">{tc.contractorQuoteHeading}</h4>
+              <div className="p-4 bg-purple-50 dark:bg-purple-950/40 border border-purple-200 dark:border-purple-900 rounded-lg space-y-3">
+                <h4 className="font-semibold text-purple-800 dark:text-purple-400">{tc.contractorQuoteHeading}</h4>
                 <div className="grid grid-cols-2 gap-4">
                   <div>
-                    <p className="text-xs text-purple-600 mb-1">
+                    <p className="text-xs text-purple-600 dark:text-purple-400 mb-1">
                       {quoteResponseRequest.recurringType && quoteResponseRequest.recurringType !== 'ONCE'
                         ? tc.totalPriceLabel
                         : tc.priceLabel}
                     </p>
-                    <p className="text-2xl font-bold text-purple-800">
+                    <p className="text-2xl font-bold text-purple-800 dark:text-purple-400">
                       {t.dashboard.requestsList.sar} {quoteResponseRequest.quotedPrice?.toLocaleString(dateLocale, { minimumFractionDigits: 2 })}
                     </p>
                   </div>
                   <div>
-                    <p className="text-xs text-purple-600 mb-1">
+                    <p className="text-xs text-purple-600 dark:text-purple-400 mb-1">
                       {quoteResponseRequest.recurringType && quoteResponseRequest.recurringType !== 'ONCE'
                         ? tc.firstScheduledDateLabel
                         : tc.scheduledDateLabel}
                     </p>
-                    <p className="text-lg font-semibold text-purple-800">
-                      {quoteResponseRequest.quotedDate ? new Date(quoteResponseRequest.quotedDate).toLocaleDateString(dateLocale) : tc.pendingSchedule}
+                    <p className="text-lg font-semibold text-purple-800 dark:text-purple-400">
+                      {quoteResponseRequest.quotedDate ? formatDateUtil(quoteResponseRequest.quotedDate, locale) : tc.pendingSchedule}
                     </p>
                   </div>
                 </div>
                 {quoteResponseRequest.assignedTo && (
                   <div>
-                    <p className="text-xs text-purple-600 mb-1">{tc.assignedTechnicianLabel}</p>
-                    <p className="text-sm font-medium text-purple-800">
+                    <p className="text-xs text-purple-600 dark:text-purple-400 mb-1">{tc.assignedTechnicianLabel}</p>
+                    <p className="text-sm font-medium text-purple-800 dark:text-purple-400">
                       {quoteResponseRequest.assignedToUser?.name || quoteResponseRequest.assignedToUser?.email || tc.assignedFallback}
                     </p>
                   </div>
                 )}
                 {quoteResponseRequest.quotedNotes && (
-                  <div className="pt-3 border-t border-purple-200">
-                    <p className="text-xs text-purple-600 mb-1">{tc.notesFromContractorLabel}</p>
-                    <p className="text-sm text-purple-900 whitespace-pre-wrap">{quoteResponseRequest.quotedNotes}</p>
+                  <div className="pt-3 border-t border-purple-200 dark:border-purple-900">
+                    <p className="text-xs text-purple-600 dark:text-purple-400 mb-1">{tc.notesFromContractorLabel}</p>
+                    <p className="text-sm text-purple-900 dark:text-purple-300 whitespace-pre-wrap">{quoteResponseRequest.quotedNotes}</p>
                   </div>
                 )}
                 {quoteResponseRequest.quotationUrl && (
                   <div>
-                    <p className="text-xs text-purple-600 mb-1">{tc.quotationDocumentLabel}</p>
+                    <p className="text-xs text-purple-600 dark:text-purple-400 mb-1">{tc.quotationDocumentLabel}</p>
                     <a
                       href={quoteResponseRequest.quotationUrl}
                       target="_blank"
                       rel="noopener noreferrer"
-                      className="inline-flex items-center gap-1.5 text-sm font-medium text-purple-800 hover:text-purple-900 underline"
+                      className="inline-flex items-center gap-1.5 text-sm font-medium text-purple-800 dark:text-purple-400 hover:text-purple-900 dark:hover:text-purple-300 underline"
                     >
                       <FileText className="h-4 w-4" />
                       {quoteResponseRequest.quotationFileName || tc.viewQuotation}
@@ -1957,8 +1958,8 @@ export function ClientBranchRequests({ branchId, onDataChange, userId }: ClientB
 
               {/* Recurring Work Orders Tree */}
               {quoteResponseRequest.recurringType && quoteResponseRequest.recurringType !== 'ONCE' && quoteResponseRequest.quotedDate && quoteResponseRequest.quotedPrice && (
-                <div className="p-4 bg-blue-50 border border-blue-200 rounded-lg">
-                  <h5 className="font-medium text-blue-800 mb-3">
+                <div className="p-4 bg-blue-50 dark:bg-blue-950/40 border border-blue-200 dark:border-blue-900 rounded-lg">
+                  <h5 className="font-medium text-blue-800 dark:text-blue-400 mb-3">
                     {tc.workOrdersParens.replace('{freq}', quoteResponseRequest.recurringType === 'MONTHLY' ? tc.monthly :
                       quoteResponseRequest.recurringType === 'QUARTERLY' ? tc.quarterly : tc.semiAnnual)}
                   </h5>
@@ -1969,18 +1970,18 @@ export function ClientBranchRequests({ branchId, onDataChange, userId }: ClientB
                         return (
                           <>
                             {quoteResponseRequest.occurrences.map((occ, idx) => (
-                              <div key={idx} className="flex justify-between items-center py-1 border-b border-blue-100 last:border-0">
-                                <span className="text-blue-700">
-                                  └ #{occ.order}: {occ.visitDate ? new Date(occ.visitDate).toLocaleDateString(dateLocale) : tc.pendingSchedule}
+                              <div key={idx} className="flex justify-between items-center py-1 border-b border-blue-100 dark:border-blue-900 last:border-0">
+                                <span className="text-blue-700 dark:text-blue-400">
+                                  └ #{occ.order}: {occ.visitDate ? formatDateUtil(occ.visitDate, locale) : tc.pendingSchedule}
                                 </span>
-                                <span className="font-medium text-blue-800">
+                                <span className="font-medium text-blue-800 dark:text-blue-400">
                                   {occ.price ? `${t.dashboard.requestsList.sar} ${occ.price.toLocaleString(dateLocale)}` : '-'}
                                 </span>
                               </div>
                             ))}
-                            <div className="flex justify-between items-center pt-3 mt-2 border-t border-blue-300 font-semibold">
-                              <span className="text-blue-800">{tc.workOrderTotalLabel.replace('{count}', String(quoteResponseRequest.occurrences.length))}</span>
-                              <span className="text-blue-900 text-lg">{t.dashboard.requestsList.sar} {quoteResponseRequest.quotedPrice?.toLocaleString(dateLocale, { minimumFractionDigits: 2 })}</span>
+                            <div className="flex justify-between items-center pt-3 mt-2 border-t border-blue-300 dark:border-blue-800 font-semibold">
+                              <span className="text-blue-800 dark:text-blue-400">{tc.workOrderTotalLabel.replace('{count}', String(quoteResponseRequest.occurrences.length))}</span>
+                              <span className="text-blue-900 dark:text-blue-300 text-lg">{t.dashboard.requestsList.sar} {quoteResponseRequest.quotedPrice?.toLocaleString(dateLocale, { minimumFractionDigits: 2 })}</span>
                             </div>
                           </>
                         )
@@ -2002,16 +2003,16 @@ export function ClientBranchRequests({ branchId, onDataChange, userId }: ClientB
                       return (
                         <>
                           {dates.map((date, idx) => (
-                            <div key={idx} className="flex justify-between items-center py-1 border-b border-blue-100 last:border-0">
-                              <span className="text-blue-700">
-                                └ #{idx + 1}: {date.toLocaleDateString(dateLocale)}
+                            <div key={idx} className="flex justify-between items-center py-1 border-b border-blue-100 dark:border-blue-900 last:border-0">
+                              <span className="text-blue-700 dark:text-blue-400">
+                                └ #{idx + 1}: {formatDateUtil(date, locale)}
                               </span>
-                              <span className="font-medium text-blue-800">{t.dashboard.requestsList.sar} {pricePerOccurrence.toLocaleString(dateLocale)}</span>
+                              <span className="font-medium text-blue-800 dark:text-blue-400">{t.dashboard.requestsList.sar} {pricePerOccurrence.toLocaleString(dateLocale)}</span>
                             </div>
                           ))}
-                          <div className="flex justify-between items-center pt-3 mt-2 border-t border-blue-300 font-semibold">
-                            <span className="text-blue-800">{tc.workOrderTotalLabel.replace('{count}', String(dates.length))}</span>
-                            <span className="text-blue-900 text-lg">{t.dashboard.requestsList.sar} {quoteResponseRequest.quotedPrice?.toLocaleString(dateLocale, { minimumFractionDigits: 2 })}</span>
+                          <div className="flex justify-between items-center pt-3 mt-2 border-t border-blue-300 dark:border-blue-800 font-semibold">
+                            <span className="text-blue-800 dark:text-blue-400">{tc.workOrderTotalLabel.replace('{count}', String(dates.length))}</span>
+                            <span className="text-blue-900 dark:text-blue-300 text-lg">{t.dashboard.requestsList.sar} {quoteResponseRequest.quotedPrice?.toLocaleString(dateLocale, { minimumFractionDigits: 2 })}</span>
                           </div>
                         </>
                       )
@@ -2053,8 +2054,8 @@ export function ClientBranchRequests({ branchId, onDataChange, userId }: ClientB
                 </div>
               ) : showSignatureForm ? (
                 <div className="space-y-4">
-                  <div className="p-4 bg-blue-50 border border-blue-200 rounded-lg">
-                    <p className="text-sm text-blue-800">
+                  <div className="p-4 bg-blue-50 dark:bg-blue-950/40 border border-blue-200 dark:border-blue-900 rounded-lg">
+                    <p className="text-sm text-blue-800 dark:text-blue-400">
                       <strong>{tc.signToAcceptTitle}</strong> - {tc.signToAcceptDesc}
                       {quoteResponseRequest.recurringType && quoteResponseRequest.recurringType !== 'ONCE'
                         ? ` ${tc.willCreateWorkOrders
@@ -2102,8 +2103,8 @@ export function ClientBranchRequests({ branchId, onDataChange, userId }: ClientB
                 </div>
               ) : (
                 <>
-                  <div className="p-4 bg-green-50 border border-green-200 rounded-lg">
-                    <p className="text-sm text-green-800">
+                  <div className="p-4 bg-green-50 dark:bg-green-950/40 border border-green-200 dark:border-green-900 rounded-lg">
+                    <p className="text-sm text-green-800 dark:text-green-400">
                       <strong>{tc.whatHappensNextTitle}</strong>{' '}
                       {quoteResponseRequest.recurringType && quoteResponseRequest.recurringType !== 'ONCE'
                         ? tc.whatHappensNextAcceptRecurring
@@ -2156,12 +2157,12 @@ export function ClientBranchRequests({ branchId, onDataChange, userId }: ClientB
                 </div>
               )}
 
-              <div className="p-4 bg-blue-50 border border-blue-200 rounded-lg">
-                <p className="text-sm text-blue-900 font-semibold mb-2">
+              <div className="p-4 bg-blue-50 dark:bg-blue-950/40 border border-blue-200 dark:border-blue-900 rounded-lg">
+                <p className="text-sm text-blue-900 dark:text-blue-300 font-semibold mb-2">
                   {tc.warningLabel}
                 </p>
-                <ul className="text-sm text-blue-800 space-y-1 ms-4 list-disc">
-                  <li><strong>{tc.warningCreateToday.replace('{date}', new Date().toLocaleDateString(dateLocale))}</strong></li>
+                <ul className="text-sm text-blue-800 dark:text-blue-400 space-y-1 ms-4 list-disc">
+                  <li><strong>{tc.warningCreateToday.replace('{date}', formatDateUtil(new Date(), locale))}</strong></li>
                   <li>{tc.warningMoveInProgress}</li>
                   <li>{tc.warningSkipQuote}</li>
                   {startImmediatelyRequest.recurringType && startImmediatelyRequest.recurringType !== 'ONCE' && (
@@ -2185,11 +2186,11 @@ export function ClientBranchRequests({ branchId, onDataChange, userId }: ClientB
 
               <input type="hidden" value={startImmediatelyDate} />
 
-              <div className="p-4 bg-blue-50 border border-blue-200 rounded-lg">
-                <p className="text-sm text-blue-800">
+              <div className="p-4 bg-blue-50 dark:bg-blue-950/40 border border-blue-200 dark:border-blue-900 rounded-lg">
+                <p className="text-sm text-blue-800 dark:text-blue-400">
                   <strong>{tc.whatHappensNextTitle}</strong>
                 </p>
-                <ul className="text-sm text-blue-700 mt-2 space-y-1 list-disc list-inside">
+                <ul className="text-sm text-blue-700 dark:text-blue-400 mt-2 space-y-1 list-disc list-inside">
                   <li>{tc.whatHappensNextStart1}</li>
                   <li>{tc.whatHappensNextStart2}</li>
                   <li>{tc.whatHappensNextStart3}</li>

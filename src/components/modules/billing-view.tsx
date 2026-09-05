@@ -14,6 +14,7 @@ import { BillingWorkOrdersDisplay, BillingWorkOrder } from './billing-work-order
 import { PaymentSubmitDialog } from './payment-submit-dialog'
 import { PaymentVerifyDialog } from './payment-verify-dialog'
 import { useTranslation } from '@/lib/i18n/use-translation'
+import { formatDate as formatDateUtil } from '@/lib/i18n/format-date'
 
 interface WorkOrder {
   id: string
@@ -59,7 +60,7 @@ interface BillingViewProps {
 }
 
 export function BillingView({ branchId, userRole }: BillingViewProps) {
-  const { t } = useTranslation()
+  const { t, locale } = useTranslation()
   const tb = t.dashboard.billingView
   const router = useRouter()
   const [workOrders, setWorkOrders] = useState<WorkOrder[]>([])
@@ -245,13 +246,13 @@ export function BillingView({ branchId, userRole }: BillingViewProps) {
           </CardContent>
         </Card>
 
-        <Card className="border-blue-200 bg-blue-50/30">
+        <Card className="border-blue-200 dark:border-blue-900 bg-blue-50/30 dark:bg-blue-950/20">
           <CardHeader className="pb-2">
-            <CardTitle className="text-sm font-medium text-blue-600">{tb.serviceRequests}</CardTitle>
+            <CardTitle className="text-sm font-medium text-blue-600 dark:text-blue-400">{tb.serviceRequests}</CardTitle>
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold text-blue-700">{formatCurrency(standaloneTotalValue)}</div>
-            <p className="text-xs text-blue-600 mt-1">
+            <div className="text-2xl font-bold text-blue-700 dark:text-blue-400">{formatCurrency(standaloneTotalValue)}</div>
+            <p className="text-xs text-blue-600 dark:text-blue-400 mt-1">
               {standaloneWorkOrders.length} {standaloneWorkOrders.length !== 1 ? tb.adhocWorkOrders : tb.adhocWorkOrder}
             </p>
           </CardContent>
@@ -269,12 +270,12 @@ export function BillingView({ branchId, userRole }: BillingViewProps) {
           </CardContent>
         </Card>
 
-        <Card className={totalUnpaidValue > 0 ? 'border-amber-200 bg-amber-50/50' : 'border-green-200 bg-green-50/50'}>
+        <Card className={totalUnpaidValue > 0 ? 'border-amber-200 dark:border-amber-900 bg-amber-50/50 dark:bg-amber-950/20' : 'border-green-200 dark:border-green-900 bg-green-50/50 dark:bg-green-950/20'}>
           <CardHeader className="pb-2">
             <CardTitle className="text-sm font-medium text-muted-foreground">{tb.outstanding}</CardTitle>
           </CardHeader>
           <CardContent>
-            <div className={`text-2xl font-bold ${totalUnpaidValue > 0 ? 'text-amber-600' : 'text-green-600'}`}>
+            <div className={`text-2xl font-bold ${totalUnpaidValue > 0 ? 'text-amber-600 dark:text-amber-400' : 'text-green-600 dark:text-green-400'}`}>
               {formatCurrency(totalUnpaidValue)}
             </div>
             <p className="text-xs text-muted-foreground mt-1">
@@ -351,24 +352,24 @@ export function BillingView({ branchId, userRole }: BillingViewProps) {
       {/* Contract Payments Section */}
       {contractPayments.length > 0 && (
         <Collapsible open={contractPaymentsExpanded} onOpenChange={setContractPaymentsExpanded}>
-          <Card className="border-purple-200 bg-purple-50/30">
+          <Card className="border-purple-200 dark:border-purple-900 bg-purple-50/30 dark:bg-purple-950/20">
             <CollapsibleTrigger className="w-full">
-              <CardHeader className="cursor-pointer hover:bg-purple-50/50 transition-colors">
+              <CardHeader className="cursor-pointer hover:bg-purple-50/50 dark:hover:bg-purple-950/40 transition-colors">
                 <div className="flex items-center justify-between">
                   <div className="flex items-center gap-2">
-                    {contractPaymentsExpanded ? <ChevronDown className="h-5 w-5 text-purple-600" /> : <ChevronRight className="h-5 w-5 text-purple-600" />}
-                    <CardTitle className="flex items-center gap-2 text-purple-700">
+                    {contractPaymentsExpanded ? <ChevronDown className="h-5 w-5 text-purple-600 dark:text-purple-400" /> : <ChevronRight className="h-5 w-5 text-purple-600 dark:text-purple-400" />}
+                    <CardTitle className="flex items-center gap-2 text-purple-700 dark:text-purple-400">
                       <Banknote className="h-5 w-5" />
                       {tb.contractPayments}
                     </CardTitle>
-                    <Badge className="bg-purple-100 text-purple-700">{tb.scheduled}</Badge>
+                    <Badge className="bg-purple-100 dark:bg-purple-950/40 text-purple-700 dark:text-purple-400">{tb.scheduled}</Badge>
                     <Badge variant="secondary">{contractPayments.length}</Badge>
                   </div>
                   <div className="text-end">
-                    <p className="font-semibold text-purple-700">
+                    <p className="font-semibold text-purple-700 dark:text-purple-400">
                       {formatCurrency(contractPayments.reduce((sum, p) => sum + (p.amount || 0), 0))}
                     </p>
-                    <p className="text-xs text-purple-600">
+                    <p className="text-xs text-purple-600 dark:text-purple-400">
                       {contractPayments.filter(p => p.status === 'PAID').length} {tb.of} {contractPayments.length} {tb.paid}
                     </p>
                   </div>
@@ -381,12 +382,12 @@ export function BillingView({ branchId, userRole }: BillingViewProps) {
                   {contractPayments.map(payment => (
                     <div
                       key={payment.id}
-                      className="flex items-center justify-between p-3 rounded-lg border bg-white"
+                      className="flex items-center justify-between p-3 rounded-lg border bg-white dark:bg-card"
                     >
                       <div>
                         <p className="font-medium text-sm">{payment.contractTitle}</p>
                         <p className="text-xs text-muted-foreground">
-                          {tb.payment} {payment.paymentNo} • {tb.due}: {payment.dueDate ? new Date(payment.dueDate).toLocaleDateString('ar-SA-u-nu-latn') : tb.notSet}
+                          {tb.payment} {payment.paymentNo} • {tb.due}: {payment.dueDate ? formatDateUtil(payment.dueDate, locale) : tb.notSet}
                         </p>
                       </div>
                       <div className="flex items-center gap-3">
@@ -394,9 +395,9 @@ export function BillingView({ branchId, userRole }: BillingViewProps) {
                         <Badge
                           variant={payment.status === 'PAID' ? 'default' : payment.status === 'PENDING_VERIFICATION' ? 'secondary' : 'outline'}
                           className={
-                            payment.status === 'PAID' ? 'bg-green-100 text-green-700' :
-                              payment.status === 'PENDING_VERIFICATION' ? 'bg-yellow-100 text-yellow-700' :
-                                'bg-gray-100 text-gray-700'
+                            payment.status === 'PAID' ? 'bg-green-100 dark:bg-green-950/40 text-green-700 dark:text-green-400' :
+                              payment.status === 'PENDING_VERIFICATION' ? 'bg-yellow-100 dark:bg-yellow-950/40 text-yellow-700 dark:text-yellow-400' :
+                                'bg-gray-100 dark:bg-gray-800 text-gray-700 dark:text-gray-300'
                           }
                         >
                           {payment.status === 'PAID' ? tb.statusPaid : payment.status === 'PENDING_VERIFICATION' ? tb.statusPending : tb.statusUnpaid}
@@ -414,22 +415,22 @@ export function BillingView({ branchId, userRole }: BillingViewProps) {
       {/* Service Requests Section */}
       {standaloneWorkOrders.length > 0 && (
         <Collapsible open={standaloneExpanded} onOpenChange={setStandaloneExpanded}>
-          <Card className="border-blue-200 bg-blue-50/30">
+          <Card className="border-blue-200 dark:border-blue-900 bg-blue-50/30 dark:bg-blue-950/20">
             <CollapsibleTrigger className="w-full">
-              <CardHeader className="cursor-pointer hover:bg-blue-50/50 transition-colors">
+              <CardHeader className="cursor-pointer hover:bg-blue-50/50 dark:hover:bg-blue-950/40 transition-colors">
                 <div className="flex items-center justify-between">
                   <div className="flex items-center gap-2">
-                    {standaloneExpanded ? <ChevronDown className="h-5 w-5 text-blue-600" /> : <ChevronRight className="h-5 w-5 text-blue-600" />}
-                    <CardTitle className="flex items-center gap-2 text-blue-700">
+                    {standaloneExpanded ? <ChevronDown className="h-5 w-5 text-blue-600 dark:text-blue-400" /> : <ChevronRight className="h-5 w-5 text-blue-600 dark:text-blue-400" />}
+                    <CardTitle className="flex items-center gap-2 text-blue-700 dark:text-blue-400">
                       <ClipboardList className="h-5 w-5" />
                       {tb.serviceRequestsTitle}
                     </CardTitle>
-                    <Badge className="bg-blue-100 text-blue-700">{tb.adhoc}</Badge>
+                    <Badge className="bg-blue-100 dark:bg-blue-950/40 text-blue-700 dark:text-blue-400">{tb.adhoc}</Badge>
                     <Badge variant="secondary">{standaloneWorkOrders.length}</Badge>
                   </div>
                   <div className="text-end">
-                    <p className="font-semibold text-blue-700">{formatCurrency(standaloneTotalValue)}</p>
-                    <p className="text-xs text-blue-600">
+                    <p className="font-semibold text-blue-700 dark:text-blue-400">{formatCurrency(standaloneTotalValue)}</p>
+                    <p className="text-xs text-blue-600 dark:text-blue-400">
                       {standaloneUnpaidValue > 0 ? `${formatCurrency(standaloneUnpaidValue)} ${tb.unpaid}` : tb.allPaid}
                     </p>
                   </div>
@@ -455,22 +456,22 @@ export function BillingView({ branchId, userRole }: BillingViewProps) {
       {/* Sticker Inspections Section */}
       {stickerInspectionWorkOrders.length > 0 && (
         <Collapsible open={stickerInspectionsExpanded} onOpenChange={setStickerInspectionsExpanded}>
-          <Card className="border-amber-200 bg-amber-50/30">
+          <Card className="border-amber-200 dark:border-amber-900 bg-amber-50/30 dark:bg-amber-950/20">
             <CollapsibleTrigger className="w-full">
-              <CardHeader className="cursor-pointer hover:bg-amber-50/50 transition-colors">
+              <CardHeader className="cursor-pointer hover:bg-amber-50/50 dark:hover:bg-amber-950/40 transition-colors">
                 <div className="flex items-center justify-between">
                   <div className="flex items-center gap-2">
-                    {stickerInspectionsExpanded ? <ChevronDown className="h-5 w-5 text-amber-600" /> : <ChevronRight className="h-5 w-5 text-amber-600" />}
-                    <CardTitle className="flex items-center gap-2 text-amber-700">
+                    {stickerInspectionsExpanded ? <ChevronDown className="h-5 w-5 text-amber-600 dark:text-amber-400" /> : <ChevronRight className="h-5 w-5 text-amber-600 dark:text-amber-400" />}
+                    <CardTitle className="flex items-center gap-2 text-amber-700 dark:text-amber-400">
                       <ClipboardList className="h-5 w-5" />
                       {tb.stickerInspections}
                     </CardTitle>
-                    <Badge className="bg-amber-100 text-amber-700">{tb.equipment}</Badge>
+                    <Badge className="bg-amber-100 dark:bg-amber-950/40 text-amber-700 dark:text-amber-400">{tb.equipment}</Badge>
                     <Badge variant="secondary">{stickerInspectionWorkOrders.length}</Badge>
                   </div>
                   <div className="text-end">
-                    <p className="font-semibold text-amber-700">{formatCurrency(stickerTotalValue)}</p>
-                    <p className="text-xs text-amber-600">
+                    <p className="font-semibold text-amber-700 dark:text-amber-400">{formatCurrency(stickerTotalValue)}</p>
+                    <p className="text-xs text-amber-600 dark:text-amber-400">
                       {stickerUnpaidValue > 0 ? `${formatCurrency(stickerUnpaidValue)} ${tb.unpaid}` : tb.allPaid}
                     </p>
                   </div>

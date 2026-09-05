@@ -51,6 +51,7 @@ import {
 import { Checkbox } from '@/components/ui/checkbox'
 import { Textarea } from '@/components/ui/textarea'
 import { useTranslation } from '@/lib/i18n/use-translation'
+import { formatDate } from '@/lib/i18n/format-date'
 
 interface Equipment {
   id: string
@@ -110,14 +111,14 @@ const EQUIPMENT_TYPE_KEYS: { value: string; labelKey: 'fireExtinguisher' | 'fire
 ]
 
 const STATUS_COLORS: Record<string, { bg: string; text: string; icon: typeof CheckCircle }> = {
-  'ACTIVE': { bg: 'bg-green-100', text: 'text-green-700', icon: CheckCircle },
-  'EXPIRING_SOON': { bg: 'bg-amber-100', text: 'text-amber-700', icon: Clock },
-  'EXPIRED': { bg: 'bg-red-100', text: 'text-red-700', icon: XCircle },
-  'NEEDS_ATTENTION': { bg: 'bg-orange-100', text: 'text-orange-700', icon: AlertTriangle },
+  'ACTIVE': { bg: 'bg-green-100 dark:bg-green-950/40', text: 'text-green-700 dark:text-green-400', icon: CheckCircle },
+  'EXPIRING_SOON': { bg: 'bg-amber-100 dark:bg-amber-950/40', text: 'text-amber-700 dark:text-amber-400', icon: Clock },
+  'EXPIRED': { bg: 'bg-red-100 dark:bg-red-950/40', text: 'text-red-700 dark:text-red-400', icon: XCircle },
+  'NEEDS_ATTENTION': { bg: 'bg-orange-100 dark:bg-orange-950/40', text: 'text-orange-700 dark:text-orange-400', icon: AlertTriangle },
 }
 
 export function EquipmentList({ branchId, userRole = 'CONTRACTOR' }: EquipmentListProps) {
-  const { t } = useTranslation()
+  const { t, locale } = useTranslation()
   const te = t.dashboard.equipmentList
   const EQUIPMENT_TYPES = EQUIPMENT_TYPE_KEYS.map(({ value, labelKey }) => ({ value, label: te[labelKey] }))
   const [equipment, setEquipment] = useState<Equipment[]>([])
@@ -468,21 +469,21 @@ export function EquipmentList({ branchId, userRole = 'CONTRACTOR' }: EquipmentLi
               <p className="text-2xl font-bold">{stats.total}</p>
               <p className="text-xs text-muted-foreground">{te.total}</p>
             </div>
-            <div className="p-4 bg-green-50 rounded-lg text-center">
-              <p className="text-2xl font-bold text-green-700">{stats.active}</p>
-              <p className="text-xs text-green-600">{te.active}</p>
+            <div className="p-4 bg-green-50 dark:bg-green-950/40 rounded-lg text-center">
+              <p className="text-2xl font-bold text-green-700 dark:text-green-400">{stats.active}</p>
+              <p className="text-xs text-green-600 dark:text-green-400">{te.active}</p>
             </div>
-            <div className="p-4 bg-amber-50 rounded-lg text-center">
-              <p className="text-2xl font-bold text-amber-700">{stats.expiringSoon}</p>
-              <p className="text-xs text-amber-600">{te.expiringSoon}</p>
+            <div className="p-4 bg-amber-50 dark:bg-amber-950/40 rounded-lg text-center">
+              <p className="text-2xl font-bold text-amber-700 dark:text-amber-400">{stats.expiringSoon}</p>
+              <p className="text-xs text-amber-600 dark:text-amber-400">{te.expiringSoon}</p>
             </div>
-            <div className="p-4 bg-red-50 rounded-lg text-center">
-              <p className="text-2xl font-bold text-red-700">{stats.expired}</p>
-              <p className="text-xs text-red-600">{te.expired}</p>
+            <div className="p-4 bg-red-50 dark:bg-red-950/40 rounded-lg text-center">
+              <p className="text-2xl font-bold text-red-700 dark:text-red-400">{stats.expired}</p>
+              <p className="text-xs text-red-600 dark:text-red-400">{te.expired}</p>
             </div>
-            <div className="p-4 bg-orange-50 rounded-lg text-center">
-              <p className="text-2xl font-bold text-orange-700">{stats.needsAttention}</p>
-              <p className="text-xs text-orange-600">{te.needsAttention}</p>
+            <div className="p-4 bg-orange-50 dark:bg-orange-950/40 rounded-lg text-center">
+              <p className="text-2xl font-bold text-orange-700 dark:text-orange-400">{stats.needsAttention}</p>
+              <p className="text-xs text-orange-600 dark:text-orange-400">{te.needsAttention}</p>
             </div>
           </div>
 
@@ -574,7 +575,7 @@ export function EquipmentList({ branchId, userRole = 'CONTRACTOR' }: EquipmentLi
                         {eq.expectedExpiry ? (
                           <span className="flex items-center gap-1 text-sm">
                             <Calendar className="h-3 w-3" />
-                            {new Date(eq.expectedExpiry).toLocaleDateString('ar-SA-u-nu-latn')}
+                            {formatDate(eq.expectedExpiry, locale, {})}
                           </span>
                         ) : (
                           <span className="text-muted-foreground">-</span>
@@ -583,7 +584,7 @@ export function EquipmentList({ branchId, userRole = 'CONTRACTOR' }: EquipmentLi
                       <TableCell>
                         {eq.lastInspected ? (
                           <span className="text-sm">
-                            {new Date(eq.lastInspected).toLocaleDateString('ar-SA-u-nu-latn')}
+                            {formatDate(eq.lastInspected, locale, {})}
                           </span>
                         ) : (
                           <span className="text-muted-foreground">{te.never}</span>
@@ -609,12 +610,12 @@ export function EquipmentList({ branchId, userRole = 'CONTRACTOR' }: EquipmentLi
                                       {te.expired}
                                     </Badge>
                                   ) : isExpiring ? (
-                                    <Badge className="text-xs bg-orange-100 text-orange-700 border-0">
+                                    <Badge className="text-xs bg-orange-100 dark:bg-orange-950/40 text-orange-700 dark:text-orange-400 border-0">
                                       <Clock className="h-3 w-3 me-1" />
                                       {te.expiring}
                                     </Badge>
                                   ) : (
-                                    <Badge className="text-xs bg-green-100 text-green-700 border-0">
+                                    <Badge className="text-xs bg-green-100 dark:bg-green-950/40 text-green-700 dark:text-green-400 border-0">
                                       <CheckCircle className="h-3 w-3 me-1" />
                                       {te.valid}
                                     </Badge>
@@ -622,7 +623,7 @@ export function EquipmentList({ branchId, userRole = 'CONTRACTOR' }: EquipmentLi
                                 </div>
                                 {certExpiry && (
                                   <span className="text-xs text-muted-foreground">
-                                    {certExpiry.toLocaleDateString('ar-SA-u-nu-latn')}
+                                    {formatDate(certExpiry, locale, {})}
                                   </span>
                                 )}
                                 <div className="flex items-center gap-1">
@@ -1058,7 +1059,7 @@ export function EquipmentList({ branchId, userRole = 'CONTRACTOR' }: EquipmentLi
                   </div>
                   {selectedEquipment.certificate.expiryDate && (
                     <p className="text-xs text-muted-foreground mt-1">
-                      {te.expires}: {new Date(selectedEquipment.certificate.expiryDate).toLocaleDateString('ar-SA-u-nu-latn')}
+                      {te.expires}: {formatDate(selectedEquipment.certificate.expiryDate, locale, {})}
                     </p>
                   )}
                 </div>
@@ -1105,17 +1106,17 @@ export function EquipmentList({ branchId, userRole = 'CONTRACTOR' }: EquipmentLi
 
             {/* Linked Work Order Info */}
             {(selectedEquipment?.workOrderId || selectedEquipment?.request) && (
-              <div className="p-3 bg-blue-50 border border-blue-200 rounded-lg">
-                <div className="flex items-center gap-2 text-blue-700">
+              <div className="p-3 bg-blue-50 dark:bg-blue-950/40 border border-blue-200 dark:border-blue-900 rounded-lg">
+                <div className="flex items-center gap-2 text-blue-700 dark:text-blue-400">
                   <Link2 className="h-4 w-4" />
                   <span className="text-sm font-medium">{te.linkedToWorkOrder}</span>
                 </div>
                 {selectedEquipment?.request && (
-                  <p className="text-xs text-blue-600 mt-1">
+                  <p className="text-xs text-blue-600 dark:text-blue-400 mt-1">
                     {selectedEquipment.request.title} - {selectedEquipment.request.status}
                   </p>
                 )}
-                <p className="text-xs text-blue-600 mt-1">
+                <p className="text-xs text-blue-600 dark:text-blue-400 mt-1">
                   {te.changesWillUpdate}
                 </p>
               </div>

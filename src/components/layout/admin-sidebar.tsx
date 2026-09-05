@@ -22,6 +22,7 @@ import { Separator } from '@/components/ui/separator'
 import { Badge } from '@/components/ui/badge'
 import { useState, useEffect } from 'react'
 import { useTranslation } from '@/lib/i18n/use-translation'
+import { SidebarShell } from './sidebar-shell'
 
 interface AdminSidebarProps {
   adminRole?: string
@@ -117,7 +118,8 @@ export function AdminSidebar({ adminRole }: AdminSidebarProps) {
   }
 
   return (
-    <div className="flex h-screen w-64 flex-col border-e bg-sidebar text-sidebar-foreground">
+    <SidebarShell>
+    <div className="flex h-screen w-full flex-col border-e bg-sidebar text-sidebar-foreground">
       {/* Logo */}
       <div className="flex h-16 items-center border-b px-6">
         <Link href="/admin" className="flex items-center gap-2">
@@ -140,7 +142,7 @@ export function AdminSidebar({ adminRole }: AdminSidebarProps) {
               href={item.href}
               onClick={(e) => handleNavClick(e, item.href)}
               className={cn(
-                'flex items-center gap-3 rounded-lg px-3 py-2 text-sm transition-colors',
+                'flex items-center gap-3 rounded-lg px-3 py-2 text-sm transition-all duration-200 hover:translate-x-0.5 rtl:hover:-translate-x-0.5',
                 isActive(item.href)
                   ? 'bg-sidebar-accent text-sidebar-accent-foreground'
                   : 'text-sidebar-foreground/70 hover:bg-sidebar-accent hover:text-sidebar-accent-foreground'
@@ -176,7 +178,7 @@ export function AdminSidebar({ adminRole }: AdminSidebarProps) {
               href={item.href}
               onClick={(e) => handleNavClick(e, item.href)}
               className={cn(
-                'flex items-center gap-3 rounded-lg px-3 py-2 text-sm transition-colors',
+                'flex items-center gap-3 rounded-lg px-3 py-2 text-sm transition-all duration-200 hover:translate-x-0.5 rtl:hover:-translate-x-0.5',
                 isActive(item.href)
                   ? 'bg-sidebar-accent text-sidebar-accent-foreground'
                   : 'text-sidebar-foreground/70 hover:bg-sidebar-accent hover:text-sidebar-accent-foreground'
@@ -220,5 +222,6 @@ export function AdminSidebar({ adminRole }: AdminSidebarProps) {
         </div>
       </div>
     </div>
+    </SidebarShell>
   )
 }

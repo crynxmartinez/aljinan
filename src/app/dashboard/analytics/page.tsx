@@ -10,6 +10,7 @@ import { TypePieChart } from '@/components/analytics/type-pie-chart'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
 import { Skeleton } from '@/components/ui/skeleton'
 import { useTranslation } from '@/lib/i18n/use-translation'
+import { formatCurrency } from '@/lib/i18n/format-date'
 
 interface AnalyticsData {
   stats: {
@@ -27,7 +28,7 @@ interface AnalyticsData {
 }
 
 export default function AnalyticsPage() {
-  const { t } = useTranslation()
+  const { t, locale } = useTranslation()
   const ta = t.dashboard.analyticsPage
   const { data: session } = useSession()
   const [data, setData] = useState<AnalyticsData | null>(null)
@@ -104,37 +105,37 @@ export default function AnalyticsPage() {
         {!isTechnician && (
           <StatsCard
             title={ta.totalRevenue}
-            value={`ر.س ${data.stats.revenue.current.toLocaleString('ar-SA-u-nu-latn', { minimumFractionDigits: 2 })}`}
+            value={formatCurrency(data.stats.revenue.current, locale)}
             change={{
               value: data.stats.revenue.change,
               label: data.stats.revenue.label,
               isPositive: data.stats.revenue.change >= 0,
             }}
             icon={Banknote}
-            iconColor="text-green-600"
-            iconBgColor="bg-green-100"
+            iconColor="text-green-600 dark:text-green-400"
+            iconBgColor="bg-green-100 dark:bg-green-950/40"
           />
         )}
         <StatsCard
           title={ta.activeWorkOrders}
           value={data.stats.activeWorkOrders.count}
           icon={ClipboardList}
-          iconColor="text-blue-600"
-          iconBgColor="bg-blue-100"
+          iconColor="text-blue-600 dark:text-blue-400"
+          iconBgColor="bg-blue-100 dark:bg-blue-950/40"
         />
         <StatsCard
           title={ta.overdue}
           value={data.stats.overdueWorkOrders.count}
           icon={AlertCircle}
-          iconColor="text-red-600"
-          iconBgColor="bg-red-100"
+          iconColor="text-red-600 dark:text-red-400"
+          iconBgColor="bg-red-100 dark:bg-red-950/40"
         />
         <StatsCard
           title={ta.completionRate}
           value={`${data.stats.completionRate.rate.toFixed(1)}%`}
           icon={TrendingUp}
-          iconColor="text-purple-600"
-          iconBgColor="bg-purple-100"
+          iconColor="text-purple-600 dark:text-purple-400"
+          iconBgColor="bg-purple-100 dark:bg-purple-950/40"
         />
       </div>
 
@@ -187,7 +188,7 @@ export default function AnalyticsPage() {
                         </div>
                       </div>
                       <p className="text-sm font-semibold">
-                        ر.س {client.revenue.toLocaleString('ar-SA-u-nu-latn', { minimumFractionDigits: 2 })}
+                        {formatCurrency(client.revenue, locale)}
                       </p>
                     </div>
                   ))}

@@ -18,6 +18,7 @@ import {
 } from 'lucide-react'
 import Link from 'next/link'
 import { useTranslation } from '@/lib/i18n/use-translation'
+import { formatDate } from '@/lib/i18n/format-date'
 import { api } from '@/lib/api-client'
 
 interface Notification {
@@ -34,7 +35,7 @@ interface Notification {
 }
 
 export function NotificationsList() {
-  const { t } = useTranslation()
+  const { t, locale } = useTranslation()
   const tn = t.dashboard.notificationsList
   const router = useRouter()
   const [notifications, setNotifications] = useState<Notification[]>([])
@@ -100,14 +101,14 @@ export function NotificationsList() {
 
   const getTypeBadge = (type: string) => {
     const config: Record<string, { style: string; label: string }> = {
-      WORK_ORDER_REMINDER: { style: 'bg-amber-100 text-amber-700', label: tn.typeReminder },
-      WORK_ORDER_STARTED: { style: 'bg-blue-100 text-blue-700', label: tn.typeStarted },
-      WORK_ORDER_FOR_REVIEW: { style: 'bg-purple-100 text-purple-700', label: tn.typeReview },
-      WORK_ORDER_COMPLETED: { style: 'bg-green-100 text-green-700', label: tn.typeCompleted },
-      CONTRACT_SIGNED: { style: 'bg-green-100 text-green-700', label: tn.typeSigned },
-      PROJECT_APPROVED: { style: 'bg-green-100 text-green-700', label: tn.typeApproved },
-      REQUEST_RECEIVED: { style: 'bg-blue-100 text-blue-700', label: tn.typeRequest },
-      GENERAL: { style: 'bg-gray-100 text-gray-700', label: tn.typeGeneral },
+      WORK_ORDER_REMINDER: { style: 'bg-amber-100 dark:bg-amber-950/40 text-amber-700 dark:text-amber-400', label: tn.typeReminder },
+      WORK_ORDER_STARTED: { style: 'bg-blue-100 dark:bg-blue-950/40 text-blue-700 dark:text-blue-400', label: tn.typeStarted },
+      WORK_ORDER_FOR_REVIEW: { style: 'bg-purple-100 dark:bg-purple-950/40 text-purple-700 dark:text-purple-400', label: tn.typeReview },
+      WORK_ORDER_COMPLETED: { style: 'bg-green-100 dark:bg-green-950/40 text-green-700 dark:text-green-400', label: tn.typeCompleted },
+      CONTRACT_SIGNED: { style: 'bg-green-100 dark:bg-green-950/40 text-green-700 dark:text-green-400', label: tn.typeSigned },
+      PROJECT_APPROVED: { style: 'bg-green-100 dark:bg-green-950/40 text-green-700 dark:text-green-400', label: tn.typeApproved },
+      REQUEST_RECEIVED: { style: 'bg-blue-100 dark:bg-blue-950/40 text-blue-700 dark:text-blue-400', label: tn.typeRequest },
+      GENERAL: { style: 'bg-gray-100 dark:bg-gray-800 text-gray-700 dark:text-gray-300', label: tn.typeGeneral },
     }
     const { style, label } = config[type] || config.GENERAL
     return <Badge className={style}>{label}</Badge>
@@ -125,7 +126,7 @@ export function NotificationsList() {
     if (diffMins < 60) return `${diffMins}${tn.mAgo}`
     if (diffHours < 24) return `${diffHours}${tn.hAgo}`
     if (diffDays < 7) return `${diffDays}${tn.dAgo}`
-    return date.toLocaleDateString('ar-SA-u-nu-latn')
+    return formatDate(date, locale, {})
   }
 
   if (loading) {

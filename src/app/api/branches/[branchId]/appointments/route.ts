@@ -3,6 +3,7 @@ import { NextResponse } from 'next/server'
 import { authOptions } from '@/lib/auth'
 import { prisma } from '@/lib/prisma'
 import { verifyBranchAccess } from '@/lib/permissions'
+import { notifyAppointmentScheduled } from '@/lib/notification-service'
 
 // GET - Fetch all appointments for a branch
 export async function GET(
@@ -84,6 +85,14 @@ export async function POST(
         createdById: session.user.id,
       }
     })
+
+    const branch = await prisma.branch.findUnique({
+      where: { id: branchId },
+      include: { client: { select: { userId: true } } }
+    })
+    if (branch?.client?.userId) {
+      await notifyAppointmentScheduled(branch.client.userId, appointment.title, appointment.id, branchId)
+    }
 
     return NextResponse.json(appointment, { status: 201 })
   } catch (error) {

@@ -64,9 +64,9 @@ export default function ChangePasswordPage() {
   }
 
   return (
-    <div className="min-h-screen flex items-center justify-center bg-gray-50 px-4">
+    <div className="min-h-screen flex items-center justify-center bg-muted px-4">
       <div className="w-full max-w-md">
-        <div className="bg-white p-8 rounded-lg shadow-sm border">
+        <div className="bg-card p-8 rounded-lg shadow-sm border">
           <div className="text-center mb-8">
             <div className="mx-auto w-12 h-12 bg-primary/10 rounded-full flex items-center justify-center mb-4">
               <Lock className="h-6 w-6 text-primary" />

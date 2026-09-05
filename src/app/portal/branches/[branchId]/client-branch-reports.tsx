@@ -19,6 +19,7 @@ import {
   Eye,
 } from 'lucide-react'
 import { useTranslation } from '@/lib/i18n/use-translation'
+import { formatDate as formatDateUtil } from '@/lib/i18n/format-date'
 
 interface ChecklistItem {
   id: string
@@ -46,7 +47,6 @@ interface ClientBranchReportsProps {
 export function ClientBranchReports({ branchId }: ClientBranchReportsProps) {
   const { t, locale } = useTranslation()
   const tc = t.dashboard.clientBranchReportsPage
-  const dateLocale = locale === 'ar' ? 'ar-SA-u-nu-latn' : 'en-US'
   const [reports, setReports] = useState<Checklist[]>([])
   const [loading, setLoading] = useState(true)
   const [selectedReport, setSelectedReport] = useState<Checklist | null>(null)
@@ -121,7 +121,7 @@ export function ClientBranchReports({ branchId }: ClientBranchReportsProps) {
                     <div className="flex items-center gap-2">
                       <ClipboardList className="h-4 w-4 text-muted-foreground" />
                       <h4 className="font-medium">{report.title}</h4>
-                      <Badge className="bg-green-100 text-green-700 flex items-center gap-1">
+                      <Badge className="bg-green-100 dark:bg-green-950/40 text-green-700 dark:text-green-400 flex items-center gap-1">
                         <CheckCircle className="h-3 w-3" />
                         {tc.completedBadge}
                       </Badge>
@@ -135,7 +135,7 @@ export function ClientBranchReports({ branchId }: ClientBranchReportsProps) {
                       <span>{tc.itemsChecked.replace('{count}', String(report.items.length))}</span>
                       <span>{tc.percentPassed.replace('{percent}', String(getCompletionRate(report.items)))}</span>
                       {report.completedAt && (
-                        <span>{tc.completedOn.replace('{date}', new Date(report.completedAt).toLocaleDateString(dateLocale))}</span>
+                        <span>{tc.completedOn.replace('{date}', formatDateUtil(report.completedAt, locale))}</span>
                       )}
                     </div>
                   </div>
@@ -161,7 +161,7 @@ export function ClientBranchReports({ branchId }: ClientBranchReportsProps) {
             <DialogTitle>{selectedReport?.title}</DialogTitle>
             <DialogDescription>
               {selectedReport?.completedAt && (
-                <>{tc.completedOnFull.replace('{date}', new Date(selectedReport.completedAt).toLocaleDateString(dateLocale))}</>
+                <>{tc.completedOnFull.replace('{date}', formatDateUtil(selectedReport.completedAt, locale))}</>
               )}
             </DialogDescription>
           </DialogHeader>
@@ -177,16 +177,16 @@ export function ClientBranchReports({ branchId }: ClientBranchReportsProps) {
                   {selectedReport.items.map((item) => (
                     <div
                       key={item.id}
-                      className={`flex items-start gap-3 p-3 border rounded-lg ${item.isCompleted ? 'bg-green-50 border-green-200' : 'bg-red-50 border-red-200'
+                      className={`flex items-start gap-3 p-3 border rounded-lg ${item.isCompleted ? 'bg-green-50 dark:bg-green-950/40 border-green-200 dark:border-green-900' : 'bg-red-50 dark:bg-red-950/40 border-red-200 dark:border-red-900'
                         }`}
                     >
                       {item.isCompleted ? (
-                        <CheckCircle className="h-5 w-5 text-green-600 mt-0.5" />
+                        <CheckCircle className="h-5 w-5 text-green-600 dark:text-green-400 mt-0.5" />
                       ) : (
-                        <XCircle className="h-5 w-5 text-red-600 mt-0.5" />
+                        <XCircle className="h-5 w-5 text-red-600 dark:text-red-400 mt-0.5" />
                       )}
                       <div className="flex-1">
-                        <span className={item.isCompleted ? 'text-green-800' : 'text-red-800'}>
+                        <span className={item.isCompleted ? 'text-green-800 dark:text-green-400' : 'text-red-800 dark:text-red-400'}>
                           {item.description}
                         </span>
                         {item.notes && (

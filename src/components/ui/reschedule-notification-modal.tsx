@@ -60,7 +60,7 @@ export function RescheduleNotificationModal({
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent className="sm:max-w-[500px]">
         <DialogHeader>
-          <DialogTitle className="flex items-center gap-2 text-orange-600">
+          <DialogTitle className="flex items-center gap-2 text-orange-600 dark:text-orange-400">
             <AlertCircle className="h-5 w-5" />
             {tr.title}
           </DialogTitle>
@@ -74,14 +74,14 @@ export function RescheduleNotificationModal({
             {rescheduledWorkOrders.map((wo) => (
               <div
                 key={wo.id}
-                className="p-4 border rounded-lg bg-orange-50 border-orange-200"
+                className="p-4 border rounded-lg bg-orange-50 dark:bg-orange-950/40 border-orange-200 dark:border-orange-900"
               >
                 <div className="flex items-start justify-between mb-2">
                   <div>
                     <p className="font-medium text-sm">{wo.description}</p>
                     <p className="text-xs text-muted-foreground">{wo.branchName}</p>
                   </div>
-                  <Badge variant="outline" className="text-xs border-orange-300 text-orange-700">
+                  <Badge variant="outline" className="text-xs border-orange-300 dark:border-orange-800 text-orange-700 dark:text-orange-400">
                     <CalendarClock className="h-3 w-3 me-1" />
                     {tr.rescheduled}
                   </Badge>
@@ -97,7 +97,7 @@ export function RescheduleNotificationModal({
                     })}
                   </div>
                   <ArrowRight className="h-4 w-4 text-orange-500" />
-                  <div className="flex items-center gap-1 font-medium text-orange-700">
+                  <div className="flex items-center gap-1 font-medium text-orange-700 dark:text-orange-400">
                     <Calendar className="h-3 w-3" />
                     {formatDate(wo.scheduledDate, locale, {
                       weekday: 'short',

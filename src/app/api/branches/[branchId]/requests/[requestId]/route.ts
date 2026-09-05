@@ -5,6 +5,7 @@ import { prisma } from '@/lib/prisma'
 import { logAuditEvent } from '@/lib/audit-log'
 import { roundMoney } from '@/lib/money'
 import { verifyBranchAccess } from '@/lib/permissions'
+import { notifyRequestQuoted, notifyRequestApproved, notifyRequestRejected } from '@/lib/notification-service'
 
 // GET - Fetch a single request
 export async function GET(
@@ -411,6 +412,47 @@ export async function PATCH(
         photos: true
       }
     })
+
+    // Notify the other party about quote/accept/reject actions. Kept outside the write
+    // above so a notification failure never rolls back the (already successful) status
+    // change.
+    if (action === 'quote' || action === 'accept' || action === 'reject') {
+      const branchWithParties = await prisma.branch.findUnique({
+        where: { id: branchId },
+        include: {
+          client: {
+            select: {
+              id: true,
+              userId: true,
+              contractor: { select: { userId: true } }
+            }
+          }
+        }
+      })
+
+      if (action === 'quote' && branchWithParties?.client?.userId) {
+        await notifyRequestQuoted(branchWithParties.client.userId, updatedRequest.title, requestId, branchId)
+      } else if (branchWithParties?.client?.contractor?.userId) {
+        if (action === 'accept') {
+          await notifyRequestApproved(
+            branchWithParties.client.contractor.userId,
+            branchWithParties.client.id,
+            updatedRequest.title,
+            requestId,
+            branchId
+          )
+        } else if (action === 'reject') {
+          await notifyRequestRejected(
+            branchWithParties.client.contractor.userId,
+            branchWithParties.client.id,
+            updatedRequest.title,
+            requestId,
+            branchId,
+            rejectionNote
+          )
+        }
+      }
+    }
 
     return NextResponse.json({
       ...updatedRequest,

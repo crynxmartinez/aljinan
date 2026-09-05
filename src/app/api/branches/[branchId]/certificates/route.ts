@@ -3,6 +3,7 @@ import { NextResponse } from 'next/server'
 import { authOptions } from '@/lib/auth'
 import { prisma } from '@/lib/prisma'
 import { verifyBranchAccess } from '@/lib/permissions'
+import { notifyCertificateGenerated } from '@/lib/notification-service'
 
 // GET - Fetch all certificates for a branch
 export async function GET(
@@ -139,6 +140,14 @@ export async function POST(
 
       return newCert
     })
+
+    const branch = await prisma.branch.findUnique({
+      where: { id: branchId },
+      include: { client: { select: { userId: true } } }
+    })
+    if (branch?.client?.userId) {
+      await notifyCertificateGenerated(branch.client.userId, certificate.title, certificate.id, branchId)
+    }
 
     return NextResponse.json(certificate, { status: 201 })
   } catch (error) {

@@ -2,6 +2,7 @@
 
 import { useState, useMemo } from 'react'
 import { useTranslation } from '@/lib/i18n/use-translation'
+import { formatDate as formatDateUtil } from '@/lib/i18n/format-date'
 import {
   Dialog,
   DialogContent,
@@ -119,7 +120,7 @@ export function ColumnDetailModal({
   items,
   onItemClick,
 }: ColumnDetailModalProps) {
-  const { t } = useTranslation()
+  const { t, locale } = useTranslation()
   const tcd = t.dashboard.columnDetail
   const [searchQuery, setSearchQuery] = useState('')
   const [selectedItems, setSelectedItems] = useState<Set<string>>(new Set())
@@ -236,7 +237,7 @@ export function ColumnDetailModal({
 
   const formatDate = (dateString: string | null) => {
     if (!dateString) return '-'
-    return new Date(dateString).toLocaleDateString('ar-SA-u-nu-latn', {
+    return formatDateUtil(dateString, locale, {
       month: 'short',
       day: 'numeric',
       year: 'numeric',

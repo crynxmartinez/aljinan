@@ -18,7 +18,9 @@ import {
 } from 'lucide-react'
 import Link from 'next/link'
 import { NotificationsList } from './notifications-list'
-import { getTranslations } from '@/lib/i18n/server'
+import { getLocale, getTranslations } from '@/lib/i18n/server'
+import { formatDate } from '@/lib/i18n/format-date'
+import type { Locale } from '@/lib/i18n/translations'
 
 interface ActivityItem {
   id: string
@@ -199,25 +201,25 @@ function getActivityIcon(type: string) {
 function getStatusBadge(status: string, tn?: { statusOpen: string; statusInProgress: string; statusCompleted: string; statusDraft: string; statusSent: string; statusApproved: string; statusScheduled: string }) {
   switch (status) {
     case 'OPEN':
-      return <Badge className="bg-blue-100 text-blue-700 hover:bg-blue-100">{tn?.statusOpen ?? 'Open'}</Badge>
+      return <Badge className="bg-blue-100 dark:bg-blue-950/40 text-blue-700 dark:text-blue-400 hover:bg-blue-100 dark:hover:bg-blue-950/40">{tn?.statusOpen ?? 'Open'}</Badge>
     case 'IN_PROGRESS':
-      return <Badge className="bg-yellow-100 text-yellow-700 hover:bg-yellow-100">{tn?.statusInProgress ?? 'In Progress'}</Badge>
+      return <Badge className="bg-yellow-100 dark:bg-yellow-950/40 text-yellow-700 dark:text-yellow-400 hover:bg-yellow-100 dark:hover:bg-yellow-950/40">{tn?.statusInProgress ?? 'In Progress'}</Badge>
     case 'COMPLETED':
-      return <Badge className="bg-green-100 text-green-700 hover:bg-green-100">{tn?.statusCompleted ?? 'Completed'}</Badge>
+      return <Badge className="bg-green-100 dark:bg-green-950/40 text-green-700 dark:text-green-400 hover:bg-green-100 dark:hover:bg-green-950/40">{tn?.statusCompleted ?? 'Completed'}</Badge>
     case 'DRAFT':
-      return <Badge className="bg-gray-100 text-gray-700 hover:bg-gray-100">{tn?.statusDraft ?? 'Draft'}</Badge>
+      return <Badge className="bg-gray-100 dark:bg-gray-800 text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-800">{tn?.statusDraft ?? 'Draft'}</Badge>
     case 'SENT':
-      return <Badge className="bg-blue-100 text-blue-700 hover:bg-blue-100">{tn?.statusSent ?? 'Sent'}</Badge>
+      return <Badge className="bg-blue-100 dark:bg-blue-950/40 text-blue-700 dark:text-blue-400 hover:bg-blue-100 dark:hover:bg-blue-950/40">{tn?.statusSent ?? 'Sent'}</Badge>
     case 'APPROVED':
-      return <Badge className="bg-green-100 text-green-700 hover:bg-green-100">{tn?.statusApproved ?? 'Approved'}</Badge>
+      return <Badge className="bg-green-100 dark:bg-green-950/40 text-green-700 dark:text-green-400 hover:bg-green-100 dark:hover:bg-green-950/40">{tn?.statusApproved ?? 'Approved'}</Badge>
     case 'SCHEDULED':
-      return <Badge className="bg-purple-100 text-purple-700 hover:bg-purple-100">{tn?.statusScheduled ?? 'Scheduled'}</Badge>
+      return <Badge className="bg-purple-100 dark:bg-purple-950/40 text-purple-700 dark:text-purple-400 hover:bg-purple-100 dark:hover:bg-purple-950/40">{tn?.statusScheduled ?? 'Scheduled'}</Badge>
     default:
       return <Badge variant="secondary">{status}</Badge>
   }
 }
 
-function formatTimeAgo(date: Date, tn?: { justNow: string; mAgo: string; hAgo: string; dAgo: string }) {
+function formatTimeAgo(date: Date, locale: Locale, tn?: { justNow: string; mAgo: string; hAgo: string; dAgo: string }) {
   const now = new Date()
   const diffMs = now.getTime() - date.getTime()
   const diffMins = Math.floor(diffMs / 60000)
@@ -228,7 +230,7 @@ function formatTimeAgo(date: Date, tn?: { justNow: string; mAgo: string; hAgo: s
   if (diffMins < 60) return `${diffMins}${tn?.mAgo ?? 'm ago'}`
   if (diffHours < 24) return `${diffHours}${tn?.hAgo ?? 'h ago'}`
   if (diffDays < 7) return `${diffDays}${tn?.dAgo ?? 'd ago'}`
-  return date.toLocaleDateString('ar-SA-u-nu-latn')
+  return formatDate(date, locale, {})
 }
 
 export default async function NotificationsPage() {
@@ -243,6 +245,7 @@ export default async function NotificationsPage() {
     getPendingCounts(session.user.id)
   ])
 
+  const locale = await getLocale()
   const t = await getTranslations()
   const tn = t.dashboard.notificationsPage
 
@@ -251,22 +254,22 @@ export default async function NotificationsPage() {
       label: tn.openRequests,
       value: counts.requests,
       icon: FileText,
-      color: 'text-blue-600',
-      bgColor: 'bg-blue-100'
+      color: 'text-blue-600 dark:text-blue-400',
+      bgColor: 'bg-blue-100 dark:bg-blue-950/40'
     },
     {
       label: tn.pendingQuotations,
       value: counts.quotations,
       icon: Receipt,
-      color: 'text-orange-600',
-      bgColor: 'bg-orange-100'
+      color: 'text-orange-600 dark:text-orange-400',
+      bgColor: 'bg-orange-100 dark:bg-orange-950/40'
     },
     {
       label: tn.upcomingAppointments,
       value: counts.appointments,
       icon: Calendar,
-      color: 'text-purple-600',
-      bgColor: 'bg-purple-100'
+      color: 'text-purple-600 dark:text-purple-400',
+      bgColor: 'bg-purple-100 dark:bg-purple-950/40'
     },
   ]
 
@@ -355,7 +358,7 @@ export default async function NotificationsPage() {
                           )}
                         </div>
                         <div className="text-xs text-muted-foreground whitespace-nowrap">
-                          {formatTimeAgo(activity.timestamp, tn)}
+                          {formatTimeAgo(activity.timestamp, locale, tn)}
                         </div>
                       </Link>
                     ))}

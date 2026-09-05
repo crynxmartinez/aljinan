@@ -25,6 +25,7 @@ import {
 } from 'lucide-react'
 import Link from 'next/link'
 import { useTranslation } from '@/lib/i18n/use-translation'
+import { formatDate } from '@/lib/i18n/format-date'
 
 // Types for each alert category
 interface DelayedWorkOrder {
@@ -78,7 +79,7 @@ interface ActionCenterTableProps {
 }
 
 export function ActionCenterTable({ userRole }: ActionCenterTableProps) {
-  const { t } = useTranslation()
+  const { t, locale } = useTranslation()
   const ta = t.dashboard.actionCenter
   const showClientColumn = userRole === 'CONTRACTOR' || userRole === 'TEAM_MEMBER'
   const [data, setData] = useState<ActionCenterData>({
@@ -153,11 +154,11 @@ export function ActionCenterTable({ userRole }: ActionCenterTableProps) {
   }
 
   return (
-    <Card className="border-amber-200">
+    <Card className="border-amber-200 dark:border-amber-900">
       <CardHeader className="pb-3">
         <div className="flex items-center justify-between">
           <div>
-            <CardTitle className="flex items-center gap-2 text-amber-700">
+            <CardTitle className="flex items-center gap-2 text-amber-700 dark:text-amber-400">
               <AlertTriangle className="h-5 w-5" />
               {ta.actionCenter}
             </CardTitle>
@@ -230,7 +231,9 @@ export function ActionCenterTable({ userRole }: ActionCenterTableProps) {
                     {data.delayedWorkOrders.map((wo) => (
                       <TableRow key={wo.id}>
                         <TableCell className="font-medium">
-                          {wo.workOrderNumber ? `أمر-${String(wo.workOrderNumber).padStart(4, '0')}` : '-'}
+                          {wo.workOrderNumber
+                            ? `${locale === 'en' ? 'WO' : 'أمر'}-${String(wo.workOrderNumber).padStart(4, '0')}`
+                            : '-'}
                         </TableCell>
                         {showClientColumn && (
                           <TableCell>
@@ -250,7 +253,7 @@ export function ActionCenterTable({ userRole }: ActionCenterTableProps) {
                           {wo.description}
                         </TableCell>
                         <TableCell>
-                          {new Date(wo.scheduledDate).toLocaleDateString('ar-SA-u-nu-latn')}
+                          {formatDate(wo.scheduledDate, locale)}
                         </TableCell>
                         <TableCell>
                           <Badge variant="destructive">
@@ -331,14 +334,14 @@ export function ActionCenterTable({ userRole }: ActionCenterTableProps) {
                         )}
                         <TableCell>
                           {eq.expectedExpiry
-                            ? new Date(eq.expectedExpiry).toLocaleDateString('ar-SA-u-nu-latn')
+                            ? formatDate(eq.expectedExpiry, locale)
                             : '-'}
                         </TableCell>
                         <TableCell>
                           {eq.isExpired ? (
                             <Badge variant="destructive">{ta.expired}</Badge>
                           ) : (
-                            <Badge className="bg-amber-100 text-amber-700">
+                            <Badge className="bg-amber-100 dark:bg-amber-950/40 text-amber-700 dark:text-amber-400">
                               {eq.daysLeft} {eq.daysLeft === 1 ? ta.dayLeft : ta.daysLeft}
                             </Badge>
                           )}
@@ -400,21 +403,21 @@ export function ActionCenterTable({ userRole }: ActionCenterTableProps) {
                           </TableCell>
                           <TableCell>
                             {contract.endDate
-                              ? new Date(contract.endDate).toLocaleDateString('ar-SA-u-nu-latn')
+                              ? formatDate(contract.endDate, locale)
                               : '-'}
                           </TableCell>
                           <TableCell>
                             {contract.isExpired ? (
                               <Badge variant="destructive">{ta.expired}</Badge>
                             ) : (
-                              <Badge className="bg-amber-100 text-amber-700">
+                              <Badge className="bg-amber-100 dark:bg-amber-950/40 text-amber-700 dark:text-amber-400">
                                 {contract.daysLeft} {contract.daysLeft === 1 ? ta.dayLeft : ta.daysLeft}
                               </Badge>
                             )}
                           </TableCell>
                           <TableCell>
                             {contract.autoRenew ? (
-                              <Badge variant="outline" className="text-green-600 border-green-600">
+                              <Badge variant="outline" className="text-green-600 dark:text-green-400 border-green-600 dark:border-green-800">
                                 {ta.yes}
                               </Badge>
                             ) : (

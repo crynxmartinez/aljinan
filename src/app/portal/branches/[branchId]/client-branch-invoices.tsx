@@ -12,6 +12,7 @@ import {
   XCircle,
 } from 'lucide-react'
 import { useTranslation } from '@/lib/i18n/use-translation'
+import { formatDate as formatDateUtil } from '@/lib/i18n/format-date'
 
 interface InvoiceItem {
   id: string
@@ -71,12 +72,12 @@ export function ClientBranchInvoices({ branchId }: ClientBranchInvoicesProps) {
 
   const getStatusBadge = (status: Invoice['status']) => {
     const config = {
-      DRAFT: { style: 'bg-gray-100 text-gray-700', icon: Clock, label: tc.statusDraft },
-      SENT: { style: 'bg-blue-100 text-blue-700', icon: Clock, label: tc.statusAwaitingPayment },
-      PAID: { style: 'bg-green-100 text-green-700', icon: CheckCircle, label: tc.statusPaid },
-      PARTIAL: { style: 'bg-yellow-100 text-yellow-700', icon: AlertTriangle, label: tc.statusPartialPayment },
-      OVERDUE: { style: 'bg-red-100 text-red-700', icon: AlertTriangle, label: tc.statusOverdue },
-      CANCELLED: { style: 'bg-gray-100 text-gray-700', icon: XCircle, label: tc.statusCancelled },
+      DRAFT: { style: 'bg-gray-100 dark:bg-gray-800 text-gray-700 dark:text-gray-300', icon: Clock, label: tc.statusDraft },
+      SENT: { style: 'bg-blue-100 dark:bg-blue-950/40 text-blue-700 dark:text-blue-400', icon: Clock, label: tc.statusAwaitingPayment },
+      PAID: { style: 'bg-green-100 dark:bg-green-950/40 text-green-700 dark:text-green-400', icon: CheckCircle, label: tc.statusPaid },
+      PARTIAL: { style: 'bg-yellow-100 dark:bg-yellow-950/40 text-yellow-700 dark:text-yellow-400', icon: AlertTriangle, label: tc.statusPartialPayment },
+      OVERDUE: { style: 'bg-red-100 dark:bg-red-950/40 text-red-700 dark:text-red-400', icon: AlertTriangle, label: tc.statusOverdue },
+      CANCELLED: { style: 'bg-gray-100 dark:bg-gray-800 text-gray-700 dark:text-gray-300', icon: XCircle, label: tc.statusCancelled },
     }
     const { style, icon: Icon, label } = config[status]
     return (
@@ -110,18 +111,18 @@ export function ClientBranchInvoices({ branchId }: ClientBranchInvoicesProps) {
     <div className="space-y-6">
       {/* Summary Card */}
       {unpaidInvoices.length > 0 && (
-        <Card className="border-amber-200 bg-amber-50/50">
+        <Card className="border-amber-200 dark:border-amber-900 bg-amber-50/50 dark:bg-amber-950/20">
           <CardHeader>
-            <CardTitle className="flex items-center gap-2 text-amber-800">
+            <CardTitle className="flex items-center gap-2 text-amber-800 dark:text-amber-400">
               <Banknote className="h-5 w-5" />
               {tc.outstandingBalance}
             </CardTitle>
           </CardHeader>
           <CardContent>
-            <div className="text-3xl font-bold text-amber-900">
+            <div className="text-3xl font-bold text-amber-900 dark:text-amber-300">
               {formatCurrency(totalUnpaid)}
             </div>
-            <p className="text-sm text-amber-700 mt-1">
+            <p className="text-sm text-amber-700 dark:text-amber-400 mt-1">
               {tc.invoiceCountAwaiting.replace('{count}', String(unpaidInvoices.length))}
             </p>
           </CardContent>
@@ -153,7 +154,7 @@ export function ClientBranchInvoices({ branchId }: ClientBranchInvoicesProps) {
                       <h4 className="font-medium">{invoice.title}</h4>
                       <div className="flex items-center gap-4 text-sm text-muted-foreground">
                         {invoice.dueDate && (
-                          <span>{tc.dueLabel} {new Date(invoice.dueDate).toLocaleDateString(dateLocale)}</span>
+                          <span>{tc.dueLabel} {formatDateUtil(invoice.dueDate, locale)}</span>
                         )}
                       </div>
                     </div>
@@ -257,7 +258,7 @@ export function ClientBranchInvoices({ branchId }: ClientBranchInvoicesProps) {
                     </div>
                     <h4 className="font-medium text-sm">{invoice.title}</h4>
                     <p className="text-xs text-muted-foreground">
-                      {tc.paidOnLabel.replace('{date}', invoice.paidAt ? new Date(invoice.paidAt).toLocaleDateString(dateLocale) : tc.notAvailable)}
+                      {tc.paidOnLabel.replace('{date}', invoice.paidAt ? formatDateUtil(invoice.paidAt, locale) : tc.notAvailable)}
                     </p>
                   </div>
                   <div className="text-end">

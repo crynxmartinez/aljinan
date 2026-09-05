@@ -4,6 +4,7 @@ import { authOptions } from '@/lib/auth'
 import { prisma } from '@/lib/prisma'
 import { roundMoney } from '@/lib/money'
 import { verifyBranchAccess } from '@/lib/permissions'
+import { notifyQuotationApproved, notifyQuotationRejected, notifyQuotationSent } from '@/lib/notification-service'
 
 // GET - Fetch a single quotation
 export async function GET(
@@ -91,6 +92,20 @@ export async function PATCH(
           include: { items: true }
         })
 
+        const branch = await prisma.branch.findUnique({
+          where: { id: branchId },
+          include: { client: { select: { id: true, contractor: { select: { userId: true } } } } }
+        })
+        if (branch?.client?.contractor?.userId) {
+          await notifyQuotationApproved(
+            branch.client.contractor.userId,
+            branch.client.id,
+            updated.title,
+            quotationId,
+            branchId
+          )
+        }
+
         return NextResponse.json(updated)
       } else if (action === 'reject') {
         if (currentQuotation.status !== 'SENT') {
@@ -107,6 +122,21 @@ export async function PATCH(
           },
           include: { items: true }
         })
+
+        const branch = await prisma.branch.findUnique({
+          where: { id: branchId },
+          include: { client: { select: { id: true, contractor: { select: { userId: true } } } } }
+        })
+        if (branch?.client?.contractor?.userId) {
+          await notifyQuotationRejected(
+            branch.client.contractor.userId,
+            branch.client.id,
+            updated.title,
+            quotationId,
+            branchId,
+            rejectionNote
+          )
+        }
 
         return NextResponse.json(updated)
       }
@@ -177,6 +207,17 @@ export async function PATCH(
         data: updateData,
         include: { items: true }
       })
+
+      // Notify the client only when this update is what actually sends the quotation.
+      if (updateData.status === 'SENT') {
+        const branch = await prisma.branch.findUnique({
+          where: { id: branchId },
+          include: { client: { select: { userId: true } } }
+        })
+        if (branch?.client?.userId) {
+          await notifyQuotationSent(branch.client.userId, updated.title, quotationId, branchId)
+        }
+      }
 
       return NextResponse.json(updated)
     }

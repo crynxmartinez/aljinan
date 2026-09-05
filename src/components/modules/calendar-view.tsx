@@ -21,7 +21,7 @@ import {
 } from 'lucide-react'
 import { cn } from '@/lib/utils'
 import { useTranslation } from '@/lib/i18n/use-translation'
-import { formatMonthYear, formatWeekdayLong, formatDate, getWeekdayNames } from '@/lib/i18n/format-date'
+import { formatMonthYear, formatWeekdayLong, formatDate, getWeekdayNames, formatCurrency } from '@/lib/i18n/format-date'
 
 type ChecklistItemStage = 'SCHEDULED' | 'IN_PROGRESS' | 'FOR_REVIEW' | 'COMPLETED'
 type ChecklistItemType = 'SCHEDULED' | 'ADHOC'
@@ -47,10 +47,6 @@ const STAGE_COLORS: Record<ChecklistItemStage, string> = {
   IN_PROGRESS: 'bg-orange-500',
   FOR_REVIEW: 'bg-purple-500',
   COMPLETED: 'bg-green-500',
-}
-
-function formatCurrency(amount: number) {
-  return `ر.س ${amount.toLocaleString('ar-SA-u-nu-latn', { minimumFractionDigits: 2 })}`
 }
 
 export function CalendarView({ branchId }: CalendarViewProps) {
@@ -319,8 +315,8 @@ export function CalendarView({ branchId }: CalendarViewProps) {
                               className={cn(
                                 'text-xs',
                                 task.type === 'ADHOC'
-                                  ? 'border-yellow-300 text-yellow-700 bg-yellow-50'
-                                  : 'border-blue-300 text-blue-700 bg-blue-50'
+                                  ? 'border-yellow-300 dark:border-yellow-900 text-yellow-700 dark:text-yellow-400 bg-yellow-50 dark:bg-yellow-950/40'
+                                  : 'border-blue-300 dark:border-blue-900 text-blue-700 dark:text-blue-400 bg-blue-50 dark:bg-blue-950/40'
                               )}
                             >
                               {task.type === 'ADHOC' ? tc.typeAdhoc : tc.typeScheduled}
@@ -408,7 +404,7 @@ export function CalendarView({ branchId }: CalendarViewProps) {
                   <div>
                     <h4 className="text-sm font-medium text-muted-foreground mb-1">{tc.price}</h4>
                     <p className="text-lg font-semibold text-green-700">
-                      {formatCurrency(selectedTask.price)}
+                      {formatCurrency(selectedTask.price, locale)}
                     </p>
                   </div>
                 )}

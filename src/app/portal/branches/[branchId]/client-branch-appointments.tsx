@@ -27,6 +27,7 @@ import {
   RefreshCw,
 } from 'lucide-react'
 import { useTranslation } from '@/lib/i18n/use-translation'
+import { formatDate as formatDateUtil } from '@/lib/i18n/format-date'
 
 interface Appointment {
   id: string
@@ -53,7 +54,6 @@ interface ClientBranchAppointmentsProps {
 export function ClientBranchAppointments({ branchId }: ClientBranchAppointmentsProps) {
   const { t, locale } = useTranslation()
   const tc = t.dashboard.clientBranchAppointmentsPage
-  const dateLocale = locale === 'ar' ? 'ar-SA-u-nu-latn' : 'en-US'
   const router = useRouter()
   const [appointments, setAppointments] = useState<Appointment[]>([])
   const [loading, setLoading] = useState(true)
@@ -136,7 +136,7 @@ export function ClientBranchAppointments({ branchId }: ClientBranchAppointmentsP
   }
 
   const formatDate = (dateStr: string) => {
-    return new Date(dateStr).toLocaleDateString(dateLocale, {
+    return formatDateUtil(dateStr, locale, {
       weekday: 'long',
       month: 'long',
       day: 'numeric',
@@ -190,7 +190,7 @@ export function ClientBranchAppointments({ branchId }: ClientBranchAppointmentsP
               {upcomingAppointments
                 .filter(a => a.status === 'SCHEDULED')
                 .map((appointment) => (
-                  <div key={appointment.id} className="p-4 bg-white border rounded-lg">
+                  <div key={appointment.id} className="p-4 bg-card border rounded-lg">
                     <div className="flex items-start justify-between mb-3">
                       <div>
                         <h4 className="font-semibold">{appointment.title}</h4>

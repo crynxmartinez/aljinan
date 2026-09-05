@@ -11,6 +11,8 @@ import {
   CornerDownRight,
 } from 'lucide-react'
 import { cn } from '@/lib/utils'
+import { formatDate as formatDateUtil } from '@/lib/i18n/format-date'
+import type { Locale } from '@/lib/i18n/translations'
 
 interface WorkOrder {
   id: string
@@ -45,9 +47,9 @@ function groupWorkOrders(workOrders: WorkOrder[]): Map<string, WorkOrder[]> {
   return groups
 }
 
-function formatDate(dateString: string | null, notScheduledLabel: string) {
+function formatDate(dateString: string | null, notScheduledLabel: string, locale: Locale) {
   if (!dateString) return notScheduledLabel
-  return new Date(dateString).toLocaleDateString('ar-SA-u-nu-latn', {
+  return formatDateUtil(dateString, locale, {
     month: 'short',
     day: 'numeric',
     year: 'numeric',
@@ -66,33 +68,33 @@ function formatCurrency(amount: number | null) {
 function getStageIcon(stage: string) {
   switch (stage) {
     case 'COMPLETED':
-      return <CheckCircle className="h-3 w-3 text-green-600" />
+      return <CheckCircle className="h-3 w-3 text-green-600 dark:text-green-400" />
     case 'IN_PROGRESS':
-      return <Clock className="h-3 w-3 text-orange-600" />
+      return <Clock className="h-3 w-3 text-orange-600 dark:text-orange-400" />
     case 'FOR_REVIEW':
-      return <AlertCircle className="h-3 w-3 text-purple-600" />
+      return <AlertCircle className="h-3 w-3 text-purple-600 dark:text-purple-400" />
     default:
-      return <Clock className="h-3 w-3 text-blue-600" />
+      return <Clock className="h-3 w-3 text-blue-600 dark:text-blue-400" />
   }
 }
 
 function getStageColor(stage: string) {
   switch (stage) {
     case 'COMPLETED':
-      return 'bg-green-100 text-green-700 border-green-200'
+      return 'bg-green-100 dark:bg-green-950/40 text-green-700 dark:text-green-400 border-green-200 dark:border-green-900'
     case 'IN_PROGRESS':
-      return 'bg-orange-100 text-orange-700 border-orange-200'
+      return 'bg-orange-100 dark:bg-orange-950/40 text-orange-700 dark:text-orange-400 border-orange-200 dark:border-orange-900'
     case 'FOR_REVIEW':
-      return 'bg-purple-100 text-purple-700 border-purple-200'
+      return 'bg-purple-100 dark:bg-purple-950/40 text-purple-700 dark:text-purple-400 border-purple-200 dark:border-purple-900'
     case 'SCHEDULED':
-      return 'bg-blue-100 text-blue-700 border-blue-200'
+      return 'bg-blue-100 dark:bg-blue-950/40 text-blue-700 dark:text-blue-400 border-blue-200 dark:border-blue-900'
     default:
-      return 'bg-gray-100 text-gray-700 border-gray-200'
+      return 'bg-gray-100 dark:bg-gray-800 text-gray-700 dark:text-gray-300 border-gray-200 dark:border-gray-700'
   }
 }
 
 export function ContractWorkOrdersDisplay({ workOrders, showStatus = true }: ContractWorkOrdersDisplayProps) {
-  const { t } = useTranslation()
+  const { t, locale } = useTranslation()
   const tb = t.dashboard.billingWorkOrders
   const STAGE_LABELS: Record<string, string> = {
     SCHEDULED: tb.stageScheduled,
@@ -137,7 +139,7 @@ export function ContractWorkOrdersDisplay({ workOrders, showStatus = true }: Con
               key={groupName}
               className={cn(
                 "rounded-lg border bg-card",
-                allCompleted && "border-green-200 bg-green-50/30"
+                allCompleted && "border-green-200 dark:border-green-900 bg-green-50/30 dark:bg-green-950/20"
               )}
             >
               {/* Group Header */}
@@ -159,7 +161,7 @@ export function ContractWorkOrdersDisplay({ workOrders, showStatus = true }: Con
                       {formatCurrency(groupTotal)}
                     </span>
                     {showStatus && allCompleted && (
-                      <Badge className="ms-2 bg-green-100 text-green-700 text-xs">
+                      <Badge className="ms-2 bg-green-100 dark:bg-green-950/40 text-green-700 dark:text-green-400 text-xs">
                         <CheckCircle className="h-3 w-3 me-1" />
                         {t.dashboard.contractsList.done}
                       </Badge>
@@ -179,7 +181,7 @@ export function ContractWorkOrdersDisplay({ workOrders, showStatus = true }: Con
                       key={wo.id}
                       className={cn(
                         "px-3 py-2 flex items-center justify-between",
-                        wo.stage === 'COMPLETED' && "bg-green-50/50"
+                        wo.stage === 'COMPLETED' && "bg-green-50/50 dark:bg-green-950/20"
                       )}
                     >
                       <div className="flex items-center gap-2 text-sm">
@@ -191,7 +193,7 @@ export function ContractWorkOrdersDisplay({ workOrders, showStatus = true }: Con
                         )}
                         <div className="flex items-center gap-1.5 text-muted-foreground">
                           <Calendar className="h-3 w-3" />
-                          <span>{formatDate(wo.scheduledDate, tb.notScheduled)}</span>
+                          <span>{formatDate(wo.scheduledDate, tb.notScheduled, locale)}</span>
                         </div>
                         {showStatus && (
                           <Badge

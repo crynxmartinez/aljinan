@@ -3,6 +3,7 @@
 import { useState, useEffect } from 'react'
 import { useRouter } from 'next/navigation'
 import { useTranslation } from '@/lib/i18n/use-translation'
+import { formatDate } from '@/lib/i18n/format-date'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
@@ -70,7 +71,7 @@ interface InvoicesListProps {
 
 export function InvoicesList({ branchId }: InvoicesListProps) {
   const router = useRouter()
-  const { t } = useTranslation()
+  const { t, locale } = useTranslation()
   const til = t.dashboard.invoicesList
   const [invoices, setInvoices] = useState<Invoice[]>([])
   const [loading, setLoading] = useState(true)
@@ -220,12 +221,12 @@ export function InvoicesList({ branchId }: InvoicesListProps) {
 
   const getStatusBadge = (status: Invoice['status']) => {
     const config = {
-      DRAFT: { style: 'bg-gray-100 text-gray-700', icon: FileEdit, label: 'Draft' },
-      SENT: { style: 'bg-blue-100 text-blue-700', icon: Clock, label: 'Sent' },
-      PAID: { style: 'bg-green-100 text-green-700', icon: CheckCircle, label: 'Paid' },
-      PARTIAL: { style: 'bg-yellow-100 text-yellow-700', icon: AlertTriangle, label: 'Partial' },
-      OVERDUE: { style: 'bg-red-100 text-red-700', icon: AlertTriangle, label: 'Overdue' },
-      CANCELLED: { style: 'bg-gray-100 text-gray-700', icon: XCircle, label: 'Cancelled' },
+      DRAFT: { style: 'bg-gray-100 dark:bg-gray-800 text-gray-700 dark:text-gray-300', icon: FileEdit, label: 'Draft' },
+      SENT: { style: 'bg-blue-100 dark:bg-blue-950/40 text-blue-700 dark:text-blue-400', icon: Clock, label: 'Sent' },
+      PAID: { style: 'bg-green-100 dark:bg-green-950/40 text-green-700 dark:text-green-400', icon: CheckCircle, label: 'Paid' },
+      PARTIAL: { style: 'bg-yellow-100 dark:bg-yellow-950/40 text-yellow-700 dark:text-yellow-400', icon: AlertTriangle, label: 'Partial' },
+      OVERDUE: { style: 'bg-red-100 dark:bg-red-950/40 text-red-700 dark:text-red-400', icon: AlertTriangle, label: 'Overdue' },
+      CANCELLED: { style: 'bg-gray-100 dark:bg-gray-800 text-gray-700 dark:text-gray-300', icon: XCircle, label: 'Cancelled' },
     }
     const { style, icon: Icon, label } = config[status]
     return (
@@ -304,7 +305,7 @@ export function InvoicesList({ branchId }: InvoicesListProps) {
                       )}
                       {invoice.dueDate && (
                         <span className="text-muted-foreground">
-                          Due: {new Date(invoice.dueDate).toLocaleDateString('ar-SA-u-nu-latn')}
+                          Due: {formatDate(invoice.dueDate, locale, {})}
                         </span>
                       )}
                     </div>
@@ -571,24 +572,24 @@ export function InvoicesList({ branchId }: InvoicesListProps) {
               <div className="grid grid-cols-2 gap-4 text-sm">
                 <div>
                   <p className="font-medium text-muted-foreground">تم الإنشاء</p>
-                  <p>{new Date(selectedInvoice.createdAt).toLocaleDateString('ar-SA-u-nu-latn')}</p>
+                  <p>{formatDate(selectedInvoice.createdAt, locale, {})}</p>
                 </div>
                 {selectedInvoice.dueDate && (
                   <div>
                     <p className="font-medium text-muted-foreground">تاريخ الاستحقاق</p>
-                    <p>{new Date(selectedInvoice.dueDate).toLocaleDateString('ar-SA-u-nu-latn')}</p>
+                    <p>{formatDate(selectedInvoice.dueDate, locale, {})}</p>
                   </div>
                 )}
                 {selectedInvoice.sentAt && (
                   <div>
                     <p className="font-medium text-muted-foreground">تم الإرسال</p>
-                    <p>{new Date(selectedInvoice.sentAt).toLocaleDateString('ar-SA-u-nu-latn')}</p>
+                    <p>{formatDate(selectedInvoice.sentAt, locale, {})}</p>
                   </div>
                 )}
                 {selectedInvoice.paidAt && (
                   <div>
                     <p className="font-medium text-muted-foreground">مدفوع</p>
-                    <p>{new Date(selectedInvoice.paidAt).toLocaleDateString('ar-SA-u-nu-latn')}</p>
+                    <p>{formatDate(selectedInvoice.paidAt, locale, {})}</p>
                   </div>
                 )}
               </div>

@@ -57,7 +57,7 @@ export default function LoginPage() {
 
   return (
     <div className="w-full max-w-md">
-      <div className="bg-white p-8 rounded-lg shadow-sm border">
+      <div className="bg-card p-8 rounded-lg shadow-sm border">
         <div className="text-center mb-8">
           <h1 className="text-2xl font-bold mb-2">{t.auth.login.title}</h1>
           <p className="text-sm text-muted-foreground">{t.auth.login.subtitle}</p>
@@ -127,7 +127,7 @@ export default function LoginPage() {
               <span className="w-full border-t" />
             </div>
             <div className="relative flex justify-center text-xs uppercase">
-              <span className="bg-white px-2 text-muted-foreground">{t.common.or}</span>
+              <span className="bg-card px-2 text-muted-foreground">{t.common.or}</span>
             </div>
           </div>
 

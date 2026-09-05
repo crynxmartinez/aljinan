@@ -3,6 +3,7 @@ import { NextResponse } from 'next/server'
 import { authOptions } from '@/lib/auth'
 import { prisma } from '@/lib/prisma'
 import { generateSlug, generateUniqueSlug } from '@/lib/utils/slugify'
+import { notifyBranchRequestApproved, notifyBranchRequestRejected } from '@/lib/notification-service'
 
 // GET - Fetch a single branch request
 export async function GET(
@@ -123,6 +124,10 @@ export async function PATCH(
         }
       })
 
+      if (branchRequest.client.userId) {
+        await notifyBranchRequestApproved(branchRequest.client.userId, branchRequest.name, requestId, branch.id)
+      }
+
       return NextResponse.json({ branchRequest: updated, branch })
     } else if (action === 'reject') {
       const updated = await prisma.branchRequest.update({
@@ -134,6 +139,10 @@ export async function PATCH(
           rejectionNote: rejectionNote || null,
         }
       })
+
+      if (branchRequest.client.userId) {
+        await notifyBranchRequestRejected(branchRequest.client.userId, branchRequest.name, requestId, rejectionNote)
+      }
 
       return NextResponse.json(updated)
     }

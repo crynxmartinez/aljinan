@@ -43,7 +43,7 @@ export default function ForgotPasswordPage() {
   }
 
   return (
-    <div className="min-h-screen flex items-center justify-center bg-gray-50 px-4">
+    <div className="min-h-screen flex items-center justify-center bg-muted px-4">
       <div className="w-full max-w-md">
         <div className="mb-6">
           <Link href="/login" className="inline-flex items-center text-sm text-muted-foreground hover:text-foreground">
@@ -52,7 +52,7 @@ export default function ForgotPasswordPage() {
           </Link>
         </div>
 
-        <div className="bg-white p-8 rounded-lg shadow-sm border">
+        <div className="bg-card p-8 rounded-lg shadow-sm border">
           {submitted ? (
             <div className="text-center py-8">
               <div className="mx-auto w-16 h-16 bg-green-100 rounded-full flex items-center justify-center mb-4">

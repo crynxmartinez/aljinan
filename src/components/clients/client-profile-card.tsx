@@ -198,13 +198,13 @@ export function ClientProfileCard({ client, canEdit }: ClientProfileCardProps) {
 
       {/* Profile Incomplete Warning */}
       {canEdit && isProfileIncomplete && (
-        <Card className="mt-6 border-amber-200 bg-amber-50">
+        <Card className="mt-6 border-amber-200 dark:border-amber-900 bg-amber-50 dark:bg-amber-950/40">
           <CardContent className="p-4">
             <div className="flex items-start gap-3">
-              <AlertTriangle className="h-5 w-5 text-amber-600 flex-shrink-0 mt-0.5" />
+              <AlertTriangle className="h-5 w-5 text-amber-600 dark:text-amber-400 flex-shrink-0 mt-0.5" />
               <div className="flex-1">
-                <p className="font-medium text-amber-800">{tc.profileIncomplete}</p>
-                <p className="text-sm text-amber-600 mt-1">
+                <p className="font-medium text-amber-800 dark:text-amber-400">{tc.profileIncomplete}</p>
+                <p className="text-sm text-amber-600 dark:text-amber-400 mt-1">
                   {tc.completeProfileDesc}
                 </p>
               </div>

@@ -5,8 +5,10 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/com
 import { Users, Building2, MapPin, FileText, ClipboardList, Shield } from 'lucide-react'
 import { AdminCharts } from '@/components/admin/admin-charts'
 import { RecentActivity } from '@/components/admin/recent-activity'
-import { getTranslations } from '@/lib/i18n/server'
+import { getLocale, getTranslations } from '@/lib/i18n/server'
 import { getCached } from '@/lib/cache'
+import { getMonthKey } from '@/lib/i18n/format-date'
+import type { Locale } from '@/lib/i18n/translations'
 
 async function getAdminStats() {
   return getCached('admin-stats', async () => {
@@ -49,8 +51,8 @@ async function getAdminStats() {
   }, 300) // Cache for 5 minutes
 }
 
-async function getRequestsByMonth() {
-  return getCached('admin-requests-by-month', async () => {
+async function getRequestsByMonth(locale: Locale) {
+  return getCached(`admin-requests-by-month:${locale}`, async () => {
     try {
       const sixMonthsAgo = new Date()
       sixMonthsAgo.setMonth(sixMonthsAgo.getMonth() - 5)
@@ -67,12 +69,12 @@ async function getRequestsByMonth() {
       for (let i = 0; i < 6; i++) {
         const d = new Date()
         d.setMonth(d.getMonth() - (5 - i))
-        const key = d.toLocaleDateString('ar-SA-u-nu-latn', { month: 'short', year: '2-digit' })
+        const key = getMonthKey(d, locale)
         monthMap.set(key, 0)
       }
 
       requests.forEach((r) => {
-        const key = r.createdAt.toLocaleDateString('ar-SA-u-nu-latn', { month: 'short', year: '2-digit' })
+        const key = getMonthKey(r.createdAt, locale)
         if (monthMap.has(key)) {
           monthMap.set(key, (monthMap.get(key) || 0) + 1)
         }
@@ -187,11 +189,12 @@ async function getRecentActivity() {
 
 export default async function AdminDashboardPage() {
   const session = await getServerSession(authOptions)
+  const locale = await getLocale()
   const t = await getTranslations()
   const ta = t.dashboard.adminPage
   const [stats, requestsByMonth, requestsByStatus, recentActivity] = await Promise.all([
     getAdminStats(),
-    getRequestsByMonth(),
+    getRequestsByMonth(locale),
     getRequestsByStatus(),
     getRecentActivity(),
   ])
@@ -202,48 +205,48 @@ export default async function AdminDashboardPage() {
       value: stats.contractors,
       description: ta.registeredContractors,
       icon: Building2,
-      color: 'text-blue-600',
-      bgColor: 'bg-blue-100',
+      color: 'text-blue-600 dark:text-blue-400',
+      bgColor: 'bg-blue-100 dark:bg-blue-950/40',
     },
     {
       title: ta.totalClients,
       value: stats.clients,
       description: ta.acrossAllContractors,
       icon: Users,
-      color: 'text-green-600',
-      bgColor: 'bg-green-100',
+      color: 'text-green-600 dark:text-green-400',
+      bgColor: 'bg-green-100 dark:bg-green-950/40',
     },
     {
       title: ta.activeBranches,
       value: stats.branches,
       description: ta.activeLocations,
       icon: MapPin,
-      color: 'text-purple-600',
-      bgColor: 'bg-purple-100',
+      color: 'text-purple-600 dark:text-purple-400',
+      bgColor: 'bg-purple-100 dark:bg-purple-950/40',
     },
     {
       title: ta.totalRequests,
       value: stats.requests,
       description: ta.allServiceRequests,
       icon: FileText,
-      color: 'text-orange-600',
-      bgColor: 'bg-orange-100',
+      color: 'text-orange-600 dark:text-orange-400',
+      bgColor: 'bg-orange-100 dark:bg-orange-950/40',
     },
     {
       title: ta.totalWorkOrders,
       value: stats.workOrders,
       description: ta.allWorkOrders,
       icon: ClipboardList,
-      color: 'text-cyan-600',
-      bgColor: 'bg-cyan-100',
+      color: 'text-cyan-600 dark:text-cyan-400',
+      bgColor: 'bg-cyan-100 dark:bg-cyan-950/40',
     },
     {
       title: ta.adminUsers,
       value: stats.admins,
       description: ta.platformAdministrators,
       icon: Shield,
-      color: 'text-red-600',
-      bgColor: 'bg-red-100',
+      color: 'text-red-600 dark:text-red-400',
+      bgColor: 'bg-red-100 dark:bg-red-950/40',
     },
   ]
 

@@ -28,6 +28,7 @@ import {
 } from 'lucide-react'
 import { CalendarView } from './calendar-view'
 import { useTranslation } from '@/lib/i18n/use-translation'
+import { formatDate as formatDateUtil } from '@/lib/i18n/format-date'
 import { api } from '@/lib/api-client'
 
 interface Appointment {
@@ -53,7 +54,7 @@ interface AppointmentsListProps {
 }
 
 export function AppointmentsList({ branchId }: AppointmentsListProps) {
-  const { t } = useTranslation()
+  const { t, locale } = useTranslation()
   const ta = t.dashboard.appointmentsList
   const router = useRouter()
   const [appointments, setAppointments] = useState<Appointment[]>([])
@@ -168,12 +169,12 @@ export function AppointmentsList({ branchId }: AppointmentsListProps) {
 
   const getStatusBadge = (status: Appointment['status']) => {
     const config = {
-      SCHEDULED: { style: 'bg-blue-100 text-blue-700', icon: Clock, label: ta.statusScheduled },
-      CONFIRMED: { style: 'bg-green-100 text-green-700', icon: CalendarCheck, label: ta.statusConfirmed },
-      IN_PROGRESS: { style: 'bg-yellow-100 text-yellow-700', icon: AlertCircle, label: ta.statusInProgress },
-      COMPLETED: { style: 'bg-gray-100 text-gray-700', icon: CheckCircle, label: ta.statusCompleted },
-      CANCELLED: { style: 'bg-red-100 text-red-700', icon: XCircle, label: ta.statusCancelled },
-      RESCHEDULED: { style: 'bg-orange-100 text-orange-700', icon: Clock, label: ta.statusRescheduled },
+      SCHEDULED: { style: 'bg-blue-100 dark:bg-blue-950/40 text-blue-700 dark:text-blue-400', icon: Clock, label: ta.statusScheduled },
+      CONFIRMED: { style: 'bg-green-100 dark:bg-green-950/40 text-green-700 dark:text-green-400', icon: CalendarCheck, label: ta.statusConfirmed },
+      IN_PROGRESS: { style: 'bg-yellow-100 dark:bg-yellow-950/40 text-yellow-700 dark:text-yellow-400', icon: AlertCircle, label: ta.statusInProgress },
+      COMPLETED: { style: 'bg-gray-100 dark:bg-gray-800 text-gray-700 dark:text-gray-300', icon: CheckCircle, label: ta.statusCompleted },
+      CANCELLED: { style: 'bg-red-100 dark:bg-red-950/40 text-red-700 dark:text-red-400', icon: XCircle, label: ta.statusCancelled },
+      RESCHEDULED: { style: 'bg-orange-100 dark:bg-orange-950/40 text-orange-700 dark:text-orange-400', icon: Clock, label: ta.statusRescheduled },
     }
     const { style, icon: Icon, label } = config[status]
     return (
@@ -185,7 +186,7 @@ export function AppointmentsList({ branchId }: AppointmentsListProps) {
   }
 
   const formatDate = (dateStr: string) => {
-    return new Date(dateStr).toLocaleDateString('ar-SA-u-nu-latn', {
+    return formatDateUtil(dateStr, locale, {
       weekday: 'short',
       month: 'short',
       day: 'numeric',
@@ -380,16 +381,16 @@ export function AppointmentsList({ branchId }: AppointmentsListProps) {
               )}
 
               {selectedAppointment.rescheduleNote && (
-                <div className="p-3 bg-orange-50 border border-orange-200 rounded-lg">
-                  <p className="text-sm font-medium text-orange-700">{ta.rescheduleRequested}</p>
-                  <p className="text-sm text-orange-600">{selectedAppointment.rescheduleNote}</p>
+                <div className="p-3 bg-orange-50 dark:bg-orange-950/40 border border-orange-200 dark:border-orange-900 rounded-lg">
+                  <p className="text-sm font-medium text-orange-700 dark:text-orange-400">{ta.rescheduleRequested}</p>
+                  <p className="text-sm text-orange-600 dark:text-orange-400">{selectedAppointment.rescheduleNote}</p>
                 </div>
               )}
 
               {selectedAppointment.cancellationNote && (
-                <div className="p-3 bg-red-50 border border-red-200 rounded-lg">
-                  <p className="text-sm font-medium text-red-700">{ta.cancellationNote}</p>
-                  <p className="text-sm text-red-600">{selectedAppointment.cancellationNote}</p>
+                <div className="p-3 bg-red-50 dark:bg-red-950/40 border border-red-200 dark:border-red-900 rounded-lg">
+                  <p className="text-sm font-medium text-red-700 dark:text-red-400">{ta.cancellationNote}</p>
+                  <p className="text-sm text-red-600 dark:text-red-400">{selectedAppointment.cancellationNote}</p>
                 </div>
               )}
 

@@ -3,6 +3,12 @@ import { NextResponse } from 'next/server'
 import { authOptions } from '@/lib/auth'
 import { prisma } from '@/lib/prisma'
 import { verifyBranchAccess } from '@/lib/permissions'
+import {
+  notifyAppointmentConfirmed,
+  notifyAppointmentCancelled,
+  notifyAppointmentRescheduleRequested,
+  notifyAppointmentTimeChanged
+} from '@/lib/notification-service'
 
 // GET - Fetch a single appointment
 export async function GET(
@@ -87,6 +93,14 @@ export async function PATCH(
           }
         })
 
+        const branch = await prisma.branch.findUnique({
+          where: { id: branchId },
+          include: { client: { select: { id: true, contractor: { select: { userId: true } } } } }
+        })
+        if (branch?.client?.contractor?.userId) {
+          await notifyAppointmentConfirmed(branch.client.contractor.userId, branch.client.id, updated.title, appointmentId, branchId)
+        }
+
         return NextResponse.json(updated)
       } else if (action === 'cancel') {
         if (currentAppointment.status === 'COMPLETED' || currentAppointment.status === 'CANCELLED') {
@@ -103,6 +117,14 @@ export async function PATCH(
           }
         })
 
+        const branch = await prisma.branch.findUnique({
+          where: { id: branchId },
+          include: { client: { select: { id: true, contractor: { select: { userId: true } } } } }
+        })
+        if (branch?.client?.contractor?.userId) {
+          await notifyAppointmentCancelled(branch.client.contractor.userId, branch.client.id, updated.title, appointmentId, branchId)
+        }
+
         return NextResponse.json(updated)
       } else if (action === 'request_reschedule') {
         if (currentAppointment.status === 'COMPLETED' || currentAppointment.status === 'CANCELLED') {
@@ -116,6 +138,14 @@ export async function PATCH(
             rescheduleNote: rescheduleNote || null,
           }
         })
+
+        const branch = await prisma.branch.findUnique({
+          where: { id: branchId },
+          include: { client: { select: { id: true, contractor: { select: { userId: true } } } } }
+        })
+        if (branch?.client?.contractor?.userId) {
+          await notifyAppointmentRescheduleRequested(branch.client.contractor.userId, branch.client.id, updated.title, appointmentId, branchId)
+        }
 
         return NextResponse.json(updated)
       }
@@ -148,6 +178,21 @@ export async function PATCH(
         where: { id: appointmentId },
         data: updateData
       })
+
+      // Notify the client whenever the contractor actually moves the appointment to a
+      // new date or start time -- a plain field edit (title, description) is not worth
+      // interrupting them for.
+      const dateChanged = date !== undefined && new Date(date).getTime() !== currentAppointment.date.getTime()
+      const timeChanged = startTime !== undefined && startTime !== currentAppointment.startTime
+      if (dateChanged || timeChanged) {
+        const branch = await prisma.branch.findUnique({
+          where: { id: branchId },
+          include: { client: { select: { userId: true } } }
+        })
+        if (branch?.client?.userId) {
+          await notifyAppointmentTimeChanged(branch.client.userId, updated.title, appointmentId, branchId)
+        }
+      }
 
       return NextResponse.json(updated)
     }

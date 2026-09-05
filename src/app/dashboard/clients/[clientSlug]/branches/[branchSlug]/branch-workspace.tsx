@@ -1,11 +1,13 @@
 'use client'
 
 import { useState, useEffect, useCallback } from 'react'
+import { useSearchParams } from 'next/navigation'
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
 import { Button } from '@/components/ui/button'
 import { RequestsList } from '@/components/modules/requests-list'
 import { AppointmentsList } from '@/components/modules/appointments-list'
 import { BillingView } from '@/components/modules/billing-view'
+import { QuotationsList } from '@/components/modules/quotations-list'
 import { ContractsList } from '@/components/modules/contracts-list'
 import { ChecklistsList } from '@/components/modules/checklists-list'
 import { DocumentsList } from '@/components/modules/documents-list'
@@ -18,6 +20,7 @@ import {
   FileText,
   Calendar,
   Banknote,
+  Receipt,
   FileCheck,
   ClipboardList,
   MessageSquare,
@@ -105,6 +108,7 @@ export function BranchWorkspace({ branchId, branch, userRole, teamMemberRole }: 
     { id: 'checklists', label: tw.kanbanBoard, icon: ClipboardList },
     { id: 'calendar', label: tw.calendar, icon: Calendar },
     { id: 'billing', label: tw.billing, icon: Banknote, restrictedForTechnician: true },
+    { id: 'quotations', label: tw.quotations, icon: Receipt, restrictedForTechnician: true },
     { id: 'contracts', label: tw.contracts, icon: FileCheck, restrictedForTechnician: true },
     { id: 'certificates', label: tw.documents, icon: Award, restrictedForTechnician: true },
     { id: 'settings', label: tw.settings, icon: Settings, restrictedForTechnician: true },
@@ -114,6 +118,18 @@ export function BranchWorkspace({ branchId, branch, userRole, teamMemberRole }: 
   const modules = isTechnician
     ? allModules.filter(m => !m.restrictedForTechnician)
     : allModules
+
+  // Notification links deep-link into a specific tab via ?tab= — pick it up once on
+  // load so those links actually land where they claim to, instead of always
+  // opening on the dashboard tab.
+  const searchParams = useSearchParams()
+  useEffect(() => {
+    const tabParam = searchParams.get('tab')
+    if (tabParam && modules.some(m => m.id === tabParam)) {
+      setActiveTab(tabParam)
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [searchParams])
 
   return (
     <>
@@ -176,6 +192,10 @@ export function BranchWorkspace({ branchId, branch, userRole, teamMemberRole }: 
 
           <TabsContent value="billing" className="mt-0">
             <BillingView branchId={branchId} userRole="CONTRACTOR" />
+          </TabsContent>
+
+          <TabsContent value="quotations" className="mt-0">
+            <QuotationsList branchId={branchId} />
           </TabsContent>
 
           <TabsContent value="contracts" className="mt-0">

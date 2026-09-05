@@ -14,6 +14,7 @@ import {
 } from 'chart.js'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
 import { useTranslation } from '@/lib/i18n/use-translation'
+import { formatCurrency } from '@/lib/i18n/format-date'
 
 ChartJS.register(
   CategoryScale,
@@ -36,7 +37,7 @@ interface RevenueChartProps {
 }
 
 export function RevenueChart({ data, title, description }: RevenueChartProps) {
-  const { t } = useTranslation()
+  const { t, locale } = useTranslation()
   const ta = t.dashboard.revenueChart
   const resolvedTitle = title ?? ta.revenueTrend
   const resolvedDescription = description ?? ta.monthlyRevenueOverTime
@@ -77,7 +78,7 @@ export function RevenueChart({ data, title, description }: RevenueChartProps) {
         },
         callbacks: {
           label: function (context: any) {
-            return `ر.س ${context.parsed.y.toLocaleString('ar-SA-u-nu-latn')}`
+            return formatCurrency(context.parsed.y, locale)
           },
         },
       },
@@ -90,7 +91,7 @@ export function RevenueChart({ data, title, description }: RevenueChartProps) {
         },
         ticks: {
           callback: function (value: any) {
-            return `ر.س ${value.toLocaleString('ar-SA-u-nu-latn')}`
+            return formatCurrency(value, locale)
           },
         },
       },

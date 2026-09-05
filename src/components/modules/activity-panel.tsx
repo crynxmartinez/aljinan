@@ -18,6 +18,7 @@ import {
   AlertTriangle,
 } from 'lucide-react'
 import { useTranslation } from '@/lib/i18n/use-translation'
+import { formatDate } from '@/lib/i18n/format-date'
 
 interface Activity {
   id: string
@@ -48,7 +49,6 @@ const activityIcons: Record<string, React.ReactNode> = {
 export function ActivityPanel({ branchId, isOpen, onClose }: ActivityPanelProps) {
   const { t, locale } = useTranslation()
   const ta = t.dashboard.activityPanel
-  const dateLocale = locale === 'ar' ? 'ar-SA-u-nu-latn' : 'en-US'
   const [activities, setActivities] = useState<Activity[]>([])
   const [loading, setLoading] = useState(false)
   const [comment, setComment] = useState('')
@@ -108,7 +108,7 @@ export function ActivityPanel({ branchId, isOpen, onClose }: ActivityPanelProps)
     if (minutes < 60) return `${minutes}${ta.mAgo}`
     if (hours < 24) return `${hours}${ta.hAgo}`
     if (days < 7) return `${days}${ta.dAgo}`
-    return date.toLocaleDateString(dateLocale)
+    return formatDate(date, locale, {})
   }
 
   if (!isOpen) return null

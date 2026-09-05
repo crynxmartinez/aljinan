@@ -31,6 +31,7 @@ import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
 import { toast } from 'sonner'
 import { useTranslation } from '@/lib/i18n/use-translation'
+import { SidebarShell } from './sidebar-shell'
 
 interface Branch {
   id: string
@@ -130,7 +131,8 @@ export function ClientSidebar({ client }: ClientSidebarProps) {
   }
 
   return (
-    <div className="flex h-screen w-64 flex-col border-e bg-sidebar text-sidebar-foreground">
+    <SidebarShell>
+    <div className="flex h-screen w-full flex-col border-e bg-sidebar text-sidebar-foreground">
       {/* Logo */}
       <div className="flex h-16 items-center border-b px-6">
         <Link href="/portal" className="flex items-center gap-2">
@@ -165,7 +167,7 @@ export function ClientSidebar({ client }: ClientSidebarProps) {
             href="/portal"
             onClick={(e) => handleNavClick(e, '/portal')}
             className={cn(
-              'flex items-center gap-3 rounded-lg px-3 py-2 text-sm transition-colors',
+              'flex items-center gap-3 rounded-lg px-3 py-2 text-sm transition-all duration-200 hover:translate-x-0.5 rtl:hover:-translate-x-0.5',
               pathname === '/portal'
                 ? 'bg-sidebar-accent text-sidebar-accent-foreground'
                 : 'text-sidebar-foreground/70 hover:bg-sidebar-accent hover:text-sidebar-accent-foreground'
@@ -183,7 +185,7 @@ export function ClientSidebar({ client }: ClientSidebarProps) {
             href="/portal/work-orders"
             onClick={(e) => handleNavClick(e, '/portal/work-orders')}
             className={cn(
-              'flex items-center gap-3 rounded-lg px-3 py-2 text-sm transition-colors',
+              'flex items-center gap-3 rounded-lg px-3 py-2 text-sm transition-all duration-200 hover:translate-x-0.5 rtl:hover:-translate-x-0.5',
               pathname === '/portal/work-orders'
                 ? 'bg-sidebar-accent text-sidebar-accent-foreground'
                 : 'text-sidebar-foreground/70 hover:bg-sidebar-accent hover:text-sidebar-accent-foreground'
@@ -223,7 +225,7 @@ export function ClientSidebar({ client }: ClientSidebarProps) {
                   href={`/portal/branches/${branch.slug || branch.id}`}
                   onClick={(e) => handleNavClick(e, `/portal/branches/${branch.slug || branch.id}`)}
                   className={cn(
-                    'flex items-center gap-2 rounded-lg px-3 py-2 text-sm transition-colors',
+                    'flex items-center gap-2 rounded-lg px-3 py-2 text-sm transition-all duration-200 hover:translate-x-0.5 rtl:hover:-translate-x-0.5',
                     pathname === `/portal/branches/${branch.slug || branch.id}`
                       ? 'bg-sidebar-accent text-sidebar-accent-foreground'
                       : 'text-sidebar-foreground/70 hover:bg-sidebar-accent hover:text-sidebar-accent-foreground'
@@ -277,7 +279,7 @@ export function ClientSidebar({ client }: ClientSidebarProps) {
             href="/portal/settings"
             onClick={(e) => handleNavClick(e, '/portal/settings')}
             className={cn(
-              'flex items-center gap-3 rounded-lg px-3 py-2 text-sm transition-colors',
+              'flex items-center gap-3 rounded-lg px-3 py-2 text-sm transition-all duration-200 hover:translate-x-0.5 rtl:hover:-translate-x-0.5',
               pathname === '/portal/settings'
                 ? 'bg-sidebar-accent text-sidebar-accent-foreground'
                 : 'text-sidebar-foreground/70 hover:bg-sidebar-accent hover:text-sidebar-accent-foreground'
@@ -379,5 +381,6 @@ export function ClientSidebar({ client }: ClientSidebarProps) {
         </DialogContent>
       </Dialog>
     </div>
+    </SidebarShell>
   )
 }

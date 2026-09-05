@@ -3,6 +3,7 @@ import { redirect } from 'next/navigation'
 import { authOptions } from '@/lib/auth'
 import { AdminSidebar } from '@/components/layout/admin-sidebar'
 import { AdminHeader } from '@/components/layout/admin-header'
+import { MobileSidebarProvider } from '@/components/layout/mobile-sidebar-context'
 
 export default async function AdminLayout({
   children,
@@ -27,14 +28,16 @@ export default async function AdminLayout({
   }
 
   return (
-    <div className="flex h-screen overflow-hidden">
-      <AdminSidebar adminRole={session.user.adminRole} />
-      <div className="flex-1 flex flex-col overflow-hidden">
-        <AdminHeader userName={session.user.name} />
-        <main className="flex-1 overflow-auto bg-background">
-          {children}
-        </main>
+    <MobileSidebarProvider>
+      <div className="flex h-screen overflow-hidden">
+        <AdminSidebar adminRole={session.user.adminRole} />
+        <div className="flex-1 flex flex-col overflow-hidden">
+          <AdminHeader userName={session.user.name} />
+          <main className="flex-1 overflow-auto bg-background">
+            {children}
+          </main>
+        </div>
       </div>
-    </div>
+    </MobileSidebarProvider>
   )
 }

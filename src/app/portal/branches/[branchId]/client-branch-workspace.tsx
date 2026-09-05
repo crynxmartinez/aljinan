@@ -1,6 +1,7 @@
 'use client'
 
 import { useState, useEffect, useCallback } from 'react'
+import { useSearchParams } from 'next/navigation'
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
 import { Button } from '@/components/ui/button'
 import { Badge } from '@/components/ui/badge'
@@ -8,6 +9,8 @@ import { ActivityPanel } from '@/components/modules/activity-panel'
 import { BranchDashboard } from '@/components/modules/branch-dashboard'
 import { ClientBranchRequests } from './client-branch-requests'
 import { ClientBranchContracts } from './client-branch-contracts'
+import { ClientBranchQuotations } from './client-branch-quotations'
+import { ClientBranchAppointments } from './client-branch-appointments'
 import { BillingView } from '@/components/modules/billing-view'
 import { CalendarView } from '@/components/modules/calendar-view'
 import { ChecklistKanban } from '@/components/modules/checklist-kanban'
@@ -18,6 +21,7 @@ import {
   FileText,
   Calendar,
   Banknote,
+  Receipt,
   FileCheck,
   MessageSquare,
   ClipboardList,
@@ -56,12 +60,29 @@ interface ClientBranchWorkspaceProps {
   branch: Branch
 }
 
+const VALID_CLIENT_BRANCH_TABS = [
+  'dashboard', 'requests', 'checklist', 'calendar', 'billing',
+  'quotations', 'contracts', 'equipment', 'certificates', 'settings',
+]
+
 export function ClientBranchWorkspace({ branchId, branch }: ClientBranchWorkspaceProps) {
   const { t } = useTranslation()
   const tw = t.dashboard.branchWorkspace
   const [activityPanelOpen, setActivityPanelOpen] = useState(false)
   const [openRequestsCount, setOpenRequestsCount] = useState(0)
   const [activeTab, setActiveTab] = useState('dashboard')
+
+  // Notification links deep-link into a specific tab via ?tab= — pick it up once on
+  // load so those links actually land where they claim to, instead of always
+  // opening on the dashboard tab.
+  const searchParams = useSearchParams()
+  useEffect(() => {
+    const tabParam = searchParams.get('tab')
+    if (tabParam && VALID_CLIENT_BRANCH_TABS.includes(tabParam)) {
+      setActiveTab(tabParam)
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [searchParams])
 
   const fetchRequestsCount = useCallback(async () => {
     try {
@@ -128,6 +149,10 @@ export function ClientBranchWorkspace({ branchId, branch }: ClientBranchWorkspac
             <Banknote className="h-4 w-4" />
             {tw.billing}
           </TabsTrigger>
+          <TabsTrigger value="quotations" className="flex items-center gap-2">
+            <Receipt className="h-4 w-4" />
+            {tw.quotations}
+          </TabsTrigger>
           <TabsTrigger value="contracts" className="flex items-center gap-2">
             <FileCheck className="h-4 w-4" />
             {tw.contracts}
@@ -163,13 +188,19 @@ export function ClientBranchWorkspace({ branchId, branch }: ClientBranchWorkspac
           </TabsContent>
 
           {/* Calendar Tab */}
-          <TabsContent value="calendar" className="mt-0">
+          <TabsContent value="calendar" className="mt-0 space-y-6">
+            <ClientBranchAppointments branchId={branchId} />
             <CalendarView branchId={branchId} />
           </TabsContent>
 
           {/* Billing Tab */}
           <TabsContent value="billing" className="mt-0">
             <BillingView branchId={branchId} userRole="CLIENT" />
+          </TabsContent>
+
+          {/* Quotations Tab */}
+          <TabsContent value="quotations" className="mt-0">
+            <ClientBranchQuotations branchId={branchId} />
           </TabsContent>
 
           {/* Contracts Tab */}

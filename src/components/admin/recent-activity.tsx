@@ -4,6 +4,8 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Badge } from '@/components/ui/badge'
 import { Building2, FileText, UserPlus, Clock } from 'lucide-react'
 import { useTranslation } from '@/lib/i18n/use-translation'
+import { formatDateShort } from '@/lib/i18n/format-date'
+import type { Locale } from '@/lib/i18n/translations'
 
 interface ActivityItem {
   id: string
@@ -19,13 +21,13 @@ interface RecentActivityProps {
 }
 
 const typeConfig = {
-  contractor_registered: { icon: Building2, color: 'text-blue-600', bg: 'bg-blue-100', labelKey: 'newContractor' as const },
-  client_added: { icon: UserPlus, color: 'text-green-600', bg: 'bg-green-100', labelKey: 'newClient' as const },
-  request_created: { icon: FileText, color: 'text-orange-600', bg: 'bg-orange-100', labelKey: 'newRequest' as const },
-  request_completed: { icon: FileText, color: 'text-emerald-600', bg: 'bg-emerald-100', labelKey: 'completed' as const },
+  contractor_registered: { icon: Building2, color: 'text-blue-600 dark:text-blue-400', bg: 'bg-blue-100 dark:bg-blue-950/40', labelKey: 'newContractor' as const },
+  client_added: { icon: UserPlus, color: 'text-green-600 dark:text-green-400', bg: 'bg-green-100 dark:bg-green-950/40', labelKey: 'newClient' as const },
+  request_created: { icon: FileText, color: 'text-orange-600 dark:text-orange-400', bg: 'bg-orange-100 dark:bg-orange-950/40', labelKey: 'newRequest' as const },
+  request_completed: { icon: FileText, color: 'text-emerald-600 dark:text-emerald-400', bg: 'bg-emerald-100 dark:bg-emerald-950/40', labelKey: 'completed' as const },
 }
 
-function timeAgo(dateStr: string, ta: { justNow: string; minutesAgo: string; hoursAgo: string; daysAgo: string }): string {
+function timeAgo(dateStr: string, ta: { justNow: string; minutesAgo: string; hoursAgo: string; daysAgo: string }, locale: Locale): string {
   const now = new Date()
   const date = new Date(dateStr)
   const diffMs = now.getTime() - date.getTime()
@@ -37,11 +39,11 @@ function timeAgo(dateStr: string, ta: { justNow: string; minutesAgo: string; hou
   if (diffMins < 60) return ta.minutesAgo.replace('{count}', String(diffMins))
   if (diffHours < 24) return ta.hoursAgo.replace('{count}', String(diffHours))
   if (diffDays < 7) return ta.daysAgo.replace('{count}', String(diffDays))
-  return date.toLocaleDateString('ar-SA-u-nu-latn', { month: 'short', day: 'numeric' })
+  return formatDateShort(date, locale)
 }
 
 export function RecentActivity({ activities }: RecentActivityProps) {
-  const { t } = useTranslation()
+  const { t, locale } = useTranslation()
   const ta = t.dashboard.recentActivity
   return (
     <Card className="mt-6">
@@ -79,7 +81,7 @@ export function RecentActivity({ activities }: RecentActivityProps) {
                     )}
                   </div>
                   <span className="text-xs text-muted-foreground whitespace-nowrap shrink-0">
-                    {timeAgo(activity.timestamp, ta)}
+                    {timeAgo(activity.timestamp, ta, locale)}
                   </span>
                 </div>
               )

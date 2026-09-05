@@ -89,13 +89,13 @@ export function MaintenanceReportForm({ data, onChange, readOnly = false }: Main
   const getConditionBadge = (condition: string) => {
     switch (condition) {
       case 'good':
-        return <Badge className="bg-green-100 text-green-800">{tr.good}</Badge>
+        return <Badge className="bg-green-100 dark:bg-green-950/40 text-green-800 dark:text-green-400">{tr.good}</Badge>
       case 'fair':
-        return <Badge className="bg-yellow-100 text-yellow-800">{tr.fair}</Badge>
+        return <Badge className="bg-yellow-100 dark:bg-yellow-950/40 text-yellow-800 dark:text-yellow-400">{tr.fair}</Badge>
       case 'poor':
-        return <Badge className="bg-orange-100 text-orange-800">{tr.poor}</Badge>
+        return <Badge className="bg-orange-100 dark:bg-orange-950/40 text-orange-800 dark:text-orange-400">{tr.poor}</Badge>
       case 'critical':
-        return <Badge className="bg-red-100 text-red-800">{tr.critical}</Badge>
+        return <Badge className="bg-red-100 dark:bg-red-950/40 text-red-800 dark:text-red-400">{tr.critical}</Badge>
       default:
         return null
     }

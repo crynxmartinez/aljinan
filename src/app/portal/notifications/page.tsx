@@ -94,24 +94,24 @@ export default async function ClientNotificationsPage() {
       label: tn.awaitingReview,
       value: stats.workOrdersForReview,
       icon: Eye,
-      color: 'text-purple-600',
-      bgColor: 'bg-purple-100',
+      color: 'text-purple-600 dark:text-purple-400',
+      bgColor: 'bg-purple-100 dark:bg-purple-950/40',
       description: tn.awaitingReviewDesc
     },
     {
       label: tn.workInProgress,
       value: stats.workOrdersInProgress,
       icon: Wrench,
-      color: 'text-orange-600',
-      bgColor: 'bg-orange-100',
+      color: 'text-orange-600 dark:text-orange-400',
+      bgColor: 'bg-orange-100 dark:bg-orange-950/40',
       description: tn.workInProgressDesc
     },
     {
       label: tn.completedThisMonth,
       value: stats.workOrdersCompleted,
       icon: CheckCircle,
-      color: 'text-green-600',
-      bgColor: 'bg-green-100',
+      color: 'text-green-600 dark:text-green-400',
+      bgColor: 'bg-green-100 dark:bg-green-950/40',
       description: tn.completedThisMonthDesc
     },
   ]

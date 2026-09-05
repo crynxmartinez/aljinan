@@ -11,6 +11,7 @@ import {
 } from 'lucide-react'
 import { ContractorProfileForm } from './contractor-profile-form'
 import { useTranslation } from '@/lib/i18n/use-translation'
+import { formatDate as formatDateUtil } from '@/lib/i18n/format-date'
 
 interface ContractorProfileCardProps {
   contractor: {
@@ -41,7 +42,7 @@ interface ContractorProfileCardProps {
 }
 
 export function ContractorProfileCard({ contractor }: ContractorProfileCardProps) {
-  const { t } = useTranslation()
+  const { t, locale } = useTranslation()
   const tc = t.dashboard.contractorProfileCard
   const [editOpen, setEditOpen] = useState(false)
 
@@ -58,7 +59,7 @@ export function ContractorProfileCard({ contractor }: ContractorProfileCardProps
 
   const formatDate = (dateString: string | null) => {
     if (!dateString) return null
-    return new Date(dateString).toLocaleDateString('ar-SA-u-nu-latn', {
+    return formatDateUtil(dateString, locale, {
       year: 'numeric',
       month: 'short',
       day: 'numeric'
@@ -177,7 +178,7 @@ export function ContractorProfileCard({ contractor }: ContractorProfileCardProps
               <div>
                 <div className="flex items-center gap-2">
                   <h3 className="font-semibold text-lg">{tc.subscription}</h3>
-                  <Badge className="bg-green-100 text-green-700 hover:bg-green-100">
+                  <Badge className="bg-green-100 dark:bg-green-950/40 text-green-700 dark:text-green-400 hover:bg-green-100 dark:hover:bg-green-950/40">
                     <CheckCircle className="h-3 w-3 me-1" />
                     {tc.active}
                   </Badge>
@@ -290,11 +291,11 @@ export function ContractorProfileCard({ contractor }: ContractorProfileCardProps
                           {tc.expired}
                         </Badge>
                       ) : isExpiringSoon(contractor.licenseExpiry) ? (
-                        <Badge className="bg-yellow-100 text-yellow-700 hover:bg-yellow-100 text-xs">
+                        <Badge className="bg-yellow-100 dark:bg-yellow-950/40 text-yellow-700 dark:text-yellow-400 hover:bg-yellow-100 dark:hover:bg-yellow-950/40 text-xs">
                           {getTimeRemaining(contractor.licenseExpiry)}
                         </Badge>
                       ) : (
-                        <Badge className="bg-green-100 text-green-700 hover:bg-green-100 text-xs">
+                        <Badge className="bg-green-100 dark:bg-green-950/40 text-green-700 dark:text-green-400 hover:bg-green-100 dark:hover:bg-green-950/40 text-xs">
                           {getTimeRemaining(contractor.licenseExpiry)}
                         </Badge>
                       )}
@@ -345,11 +346,11 @@ export function ContractorProfileCard({ contractor }: ContractorProfileCardProps
                           {tc.expired}
                         </Badge>
                       ) : isExpiringSoon(contractor.insuranceExpiry) ? (
-                        <Badge className="bg-yellow-100 text-yellow-700 hover:bg-yellow-100 text-xs">
+                        <Badge className="bg-yellow-100 dark:bg-yellow-950/40 text-yellow-700 dark:text-yellow-400 hover:bg-yellow-100 dark:hover:bg-yellow-950/40 text-xs">
                           {getTimeRemaining(contractor.insuranceExpiry)}
                         </Badge>
                       ) : (
-                        <Badge className="bg-green-100 text-green-700 hover:bg-green-100 text-xs">
+                        <Badge className="bg-green-100 dark:bg-green-950/40 text-green-700 dark:text-green-400 hover:bg-green-100 dark:hover:bg-green-950/40 text-xs">
                           {getTimeRemaining(contractor.insuranceExpiry)}
                         </Badge>
                       )}
@@ -387,13 +388,13 @@ export function ContractorProfileCard({ contractor }: ContractorProfileCardProps
 
       {/* Profile Incomplete Warning */}
       {isProfileIncomplete && (
-        <Card className="mt-6 border-amber-200 bg-amber-50">
+        <Card className="mt-6 border-amber-200 dark:border-amber-900 bg-amber-50 dark:bg-amber-950/40">
           <CardContent className="p-4">
             <div className="flex items-start gap-3">
-              <AlertTriangle className="h-5 w-5 text-amber-600 flex-shrink-0 mt-0.5" />
+              <AlertTriangle className="h-5 w-5 text-amber-600 dark:text-amber-400 flex-shrink-0 mt-0.5" />
               <div className="flex-1">
-                <p className="font-medium text-amber-800">{tc.profileIncomplete}</p>
-                <p className="text-sm text-amber-600 mt-1">
+                <p className="font-medium text-amber-800 dark:text-amber-400">{tc.profileIncomplete}</p>
+                <p className="text-sm text-amber-600 dark:text-amber-400 mt-1">
                   {tc.completeProfileDesc}
                 </p>
               </div>

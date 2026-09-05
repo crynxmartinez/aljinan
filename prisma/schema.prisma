@@ -1131,6 +1131,7 @@ model BranchRequest {
 enum NotificationType {
   NEW_REQUEST // New service request created
   REQUEST_RECEIVED // New request from client
+  REQUEST_QUOTED // Contractor sent a quote for a request
   REQUEST_APPROVED // Request approved
   REQUEST_REJECTED // Request rejected
   REQUEST_COMMENT // New comment on a request
@@ -1146,10 +1147,21 @@ enum NotificationType {
   SIGNATURE_REQUIRED // Signature required
   PAYMENT_SUBMITTED // Client submitted payment proof
   PAYMENT_VERIFIED // Contractor verified payment
+  QUOTATION_SENT // Contractor sent a quotation
+  QUOTATION_APPROVED // Client approved a quotation
+  QUOTATION_REJECTED // Client rejected a quotation
+  APPOINTMENT_SCHEDULED // Contractor scheduled an appointment
+  APPOINTMENT_CONFIRMED // Client confirmed an appointment
+  APPOINTMENT_CANCELLED // Appointment was cancelled
+  APPOINTMENT_RESCHEDULED // Appointment was rescheduled
+  BRANCH_REQUEST_CREATED // Client requested a new branch
+  BRANCH_REQUEST_APPROVED // Contractor approved a branch request
+  BRANCH_REQUEST_REJECTED // Contractor rejected a branch request
   CONTRACT_SIGNED // Client signed contract
   CONTRACT_EXPIRING // Contract expiring soon
   PROJECT_APPROVED // Client approved project
   CERTIFICATE_GENERATED // Certificate generated
+  CERTIFICATE_EXPIRING // Certificate expiring soon
   PAYMENT_RECEIVED // Payment received
   EQUIPMENT_EXPIRING // Equipment inspection due soon
   EQUIPMENT_EXPIRED // Equipment inspection overdue

@@ -1,6 +1,7 @@
 'use client'
 
 import { useState, useEffect } from 'react'
+import { useRouter, useSearchParams } from 'next/navigation'
 import {
   MessageSquare,
   Loader2,
@@ -23,6 +24,7 @@ import {
 } from '@/components/ui/select'
 
 import { useTranslation } from '@/lib/i18n/use-translation'
+import { formatDate, formatDateShort } from '@/lib/i18n/format-date'
 
 interface Inquiry {
   id: string
@@ -39,14 +41,16 @@ interface Inquiry {
 }
 
 export default function MessagesPage() {
-  const { t } = useTranslation()
+  const router = useRouter()
+  const searchParams = useSearchParams()
+  const { t, locale } = useTranslation()
   const tm = t.dashboard.adminMessagesPage
   const statusConfig: Record<string, { label: string; color: string; bg: string }> = {
-    NEW: { label: tm.statusNew, color: 'text-blue-700', bg: 'bg-blue-100' },
-    CONTACTED: { label: tm.statusContacted, color: 'text-amber-700', bg: 'bg-amber-100' },
-    IN_PROGRESS: { label: tm.statusInProgress, color: 'text-purple-700', bg: 'bg-purple-100' },
-    CONVERTED: { label: tm.statusConverted, color: 'text-green-700', bg: 'bg-green-100' },
-    DECLINED: { label: tm.statusDeclined, color: 'text-gray-700', bg: 'bg-gray-100' },
+    NEW: { label: tm.statusNew, color: 'text-blue-700 dark:text-blue-400', bg: 'bg-blue-100 dark:bg-blue-950/40' },
+    CONTACTED: { label: tm.statusContacted, color: 'text-amber-700 dark:text-amber-400', bg: 'bg-amber-100 dark:bg-amber-950/40' },
+    IN_PROGRESS: { label: tm.statusInProgress, color: 'text-purple-700 dark:text-purple-400', bg: 'bg-purple-100 dark:bg-purple-950/40' },
+    CONVERTED: { label: tm.statusConverted, color: 'text-green-700 dark:text-green-400', bg: 'bg-green-100 dark:bg-green-950/40' },
+    DECLINED: { label: tm.statusDeclined, color: 'text-gray-700 dark:text-gray-300', bg: 'bg-gray-100 dark:bg-gray-800' },
   }
   const [inquiries, setInquiries] = useState<Inquiry[]>([])
   const [loading, setLoading] = useState(true)
@@ -58,6 +62,17 @@ export default function MessagesPage() {
   useEffect(() => {
     fetchInquiries()
   }, [])
+
+  // Auto-select the inquiry when arriving from a global-search result (?id=...)
+  useEffect(() => {
+    const id = searchParams.get('id')
+    if (id && inquiries.some((i) => i.id === id)) {
+      const inquiry = inquiries.find((i) => i.id === id)
+      setSelectedId(id)
+      setEditingNotes(inquiry?.adminNotes || '')
+      router.replace('/admin/messages')
+    }
+  }, [searchParams, inquiries, router])
 
   const fetchInquiries = async () => {
     try {
@@ -112,7 +127,7 @@ export default function MessagesPage() {
     if (diffMins < 60) return `${diffMins}${tm.mAgo}`
     if (diffHours < 24) return `${diffHours}${tm.hAgo}`
     if (diffDays < 7) return `${diffDays}${tm.dAgo}`
-    return date.toLocaleDateString('ar-SA-u-nu-latn', { month: 'short', day: 'numeric' })
+    return formatDateShort(date, locale)
   }
 
   if (loading) {
@@ -209,7 +224,7 @@ export default function MessagesPage() {
                   <div>
                     <CardTitle>{selectedInquiry.name}</CardTitle>
                     <p className="text-sm text-muted-foreground mt-1">
-                      {tm.submitted} {new Date(selectedInquiry.createdAt).toLocaleDateString('ar-SA-u-nu-latn', {
+                      {tm.submitted} {formatDate(selectedInquiry.createdAt, locale, {
                         month: 'long', day: 'numeric', year: 'numeric', hour: '2-digit', minute: '2-digit',
                       })}
                     </p>

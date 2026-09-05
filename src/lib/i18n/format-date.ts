@@ -7,6 +7,14 @@ const DATE_LOCALE: Record<Locale, string> = {
   ar: 'ar-SA-u-nu-latn',
 }
 
+// Riyal amounts throughout the app were hardcoded to the Arabic "ر.س" symbol regardless of
+// the selected language. SAR is the correct ISO display for English; Arabic keeps the
+// familiar "ر.س" suffix.
+export function formatCurrency(amount: number, locale: Locale = 'ar'): string {
+  const formatted = amount.toLocaleString(DATE_LOCALE[locale], { minimumFractionDigits: 2, maximumFractionDigits: 2 })
+  return locale === 'ar' ? `${formatted} ر.س` : `SAR ${formatted}`
+}
+
 export function formatDate(
   date: string | Date | null | undefined,
   locale: Locale = 'ar',

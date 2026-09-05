@@ -110,7 +110,7 @@ export function CompanyProfileForm({ contractor }: CompanyProfileFormProps) {
               )}
 
               {success && (
-                <div className="bg-green-100 text-green-700 p-3 rounded-lg text-sm flex items-center gap-2">
+                <div className="bg-green-100 dark:bg-green-950/40 text-green-700 dark:text-green-400 p-3 rounded-lg text-sm flex items-center gap-2">
                   <CheckCircle className="h-4 w-4" />
                   Profile updated successfully
                 </div>

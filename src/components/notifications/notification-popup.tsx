@@ -67,19 +67,19 @@ export function NotificationPopup({ userRole }: NotificationPopupProps) {
   const getIcon = (type: string) => {
     switch (type) {
       case 'NEW_REQUEST':
-        return <Bell className="h-8 w-8 text-blue-600" />
+        return <Bell className="h-8 w-8 text-blue-600 dark:text-blue-400" />
       case 'WORK_ORDER_FOR_REVIEW':
-        return <Eye className="h-8 w-8 text-purple-600" />
+        return <Eye className="h-8 w-8 text-purple-600 dark:text-purple-400" />
       case 'WORK_ORDER_STARTED':
-        return <Wrench className="h-8 w-8 text-blue-600" />
+        return <Wrench className="h-8 w-8 text-blue-600 dark:text-blue-400" />
       case 'WORK_ORDER_COMPLETED':
-        return <CheckCircle className="h-8 w-8 text-green-600" />
+        return <CheckCircle className="h-8 w-8 text-green-600 dark:text-green-400" />
       case 'WORK_ORDER_REJECTED':
-        return <XCircle className="h-8 w-8 text-red-600" />
+        return <XCircle className="h-8 w-8 text-red-600 dark:text-red-400" />
       case 'WORK_ORDER_REMINDER':
-        return <Clock className="h-8 w-8 text-amber-600" />
+        return <Clock className="h-8 w-8 text-amber-600 dark:text-amber-400" />
       default:
-        return <AlertCircle className="h-8 w-8 text-gray-600" />
+        return <AlertCircle className="h-8 w-8 text-gray-600 dark:text-gray-400" />
     }
   }
 
@@ -99,17 +99,17 @@ export function NotificationPopup({ userRole }: NotificationPopupProps) {
   const getBackgroundColor = (type: string) => {
     switch (type) {
       case 'NEW_REQUEST':
-        return 'bg-blue-50'
+        return 'bg-blue-50 dark:bg-blue-950/40'
       case 'WORK_ORDER_FOR_REVIEW':
-        return 'bg-purple-50'
+        return 'bg-purple-50 dark:bg-purple-950/40'
       case 'WORK_ORDER_COMPLETED':
-        return 'bg-green-50'
+        return 'bg-green-50 dark:bg-green-950/40'
       case 'WORK_ORDER_REJECTED':
-        return 'bg-red-50'
+        return 'bg-red-50 dark:bg-red-950/40'
       case 'WORK_ORDER_REMINDER':
-        return 'bg-amber-50'
+        return 'bg-amber-50 dark:bg-amber-950/40'
       default:
-        return 'bg-gray-50'
+        return 'bg-gray-50 dark:bg-gray-900'
     }
   }
 

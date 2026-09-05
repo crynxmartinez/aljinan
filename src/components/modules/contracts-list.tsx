@@ -3,6 +3,7 @@
 import { useState, useEffect } from 'react'
 import { useRouter } from 'next/navigation'
 import { useTranslation } from '@/lib/i18n/use-translation'
+import { formatDate, formatCurrency } from '@/lib/i18n/format-date'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
@@ -132,7 +133,7 @@ interface ContractsListProps {
 
 export function ContractsList({ branchId }: ContractsListProps) {
   const router = useRouter()
-  const { t } = useTranslation()
+  const { t, locale } = useTranslation()
   const tcl = t.dashboard.contractsList
   const [contracts, setContracts] = useState<Contract[]>([])
   const [loading, setLoading] = useState(true)
@@ -925,12 +926,12 @@ export function ContractsList({ branchId }: ContractsListProps) {
 
   const getStatusBadge = (status: Contract['status']) => {
     const config: Record<string, { style: string; icon: typeof FileText; label: string }> = {
-      DRAFT: { style: 'bg-gray-100 text-gray-700', icon: FileText, label: 'Draft' },
-      PENDING_SIGNATURE: { style: 'bg-amber-100 text-amber-700', icon: Clock, label: 'Awaiting Signature' },
-      SIGNED: { style: 'bg-blue-100 text-blue-700', icon: CheckCircle, label: 'Active' },
-      COMPLETED: { style: 'bg-green-100 text-green-700', icon: CheckCircle, label: 'Completed' },
-      EXPIRED: { style: 'bg-orange-100 text-orange-700', icon: Clock, label: 'Expired' },
-      TERMINATED: { style: 'bg-red-100 text-red-700', icon: XCircle, label: 'Terminated' },
+      DRAFT: { style: 'bg-gray-100 text-gray-700 dark:bg-gray-800 dark:text-gray-300', icon: FileText, label: tcl.statusDraft },
+      PENDING_SIGNATURE: { style: 'bg-amber-100 text-amber-700 dark:bg-amber-950/40 dark:text-amber-400', icon: Clock, label: tcl.statusAwaitingSignature },
+      SIGNED: { style: 'bg-blue-100 text-blue-700 dark:bg-blue-950/40 dark:text-blue-400', icon: CheckCircle, label: tcl.statusActive },
+      COMPLETED: { style: 'bg-green-100 text-green-700 dark:bg-green-950/40 dark:text-green-400', icon: CheckCircle, label: tcl.statusCompleted },
+      EXPIRED: { style: 'bg-orange-100 text-orange-700 dark:bg-orange-950/40 dark:text-orange-400', icon: Clock, label: tcl.statusExpired },
+      TERMINATED: { style: 'bg-red-100 text-red-700 dark:bg-red-950/40 dark:text-red-400', icon: XCircle, label: tcl.statusTerminated },
     }
     const { style, icon: Icon, label } = config[status] || config.DRAFT
     return (
@@ -973,14 +974,14 @@ export function ContractsList({ branchId }: ContractsListProps) {
       {/* Success Message Notification */}
       {successMessage && (
         <div className="fixed top-4 end-4 z-50 max-w-md animate-in slide-in-from-top-2 fade-in duration-300">
-          <div className="bg-amber-50 border border-amber-200 text-amber-800 px-4 py-3 rounded-lg shadow-lg flex items-start gap-3">
-            <CheckCircle className="h-5 w-5 text-amber-600 flex-shrink-0 mt-0.5" />
+          <div className="bg-amber-50 dark:bg-amber-950/40 border border-amber-200 dark:border-amber-900 text-amber-800 dark:text-amber-400 px-4 py-3 rounded-lg shadow-lg flex items-start gap-3">
+            <CheckCircle className="h-5 w-5 text-amber-600 dark:text-amber-400 flex-shrink-0 mt-0.5" />
             <div className="flex-1">
               <p className="text-sm font-medium">{successMessage}</p>
             </div>
             <button
               onClick={() => setSuccessMessage('')}
-              className="text-amber-600 hover:text-amber-800"
+              className="text-amber-600 dark:text-amber-400 hover:text-amber-800 dark:hover:text-amber-300"
             >
               <X className="h-4 w-4" />
             </button>
@@ -996,7 +997,7 @@ export function ContractsList({ branchId }: ContractsListProps) {
           </div>
           <Button onClick={() => setCreateDialogOpen(true)}>
             <Plus className="me-2 h-4 w-4" />
-            Add Contract
+            {tcl.addContract}
           </Button>
         </CardHeader>
         <CardContent>
@@ -1009,7 +1010,7 @@ export function ContractsList({ branchId }: ContractsListProps) {
               </p>
               <Button onClick={() => setCreateDialogOpen(true)}>
                 <Plus className="me-2 h-4 w-4" />
-                Add Contract
+                {tcl.addContract}
               </Button>
             </div>
           ) : (
@@ -1042,12 +1043,12 @@ export function ContractsList({ branchId }: ContractsListProps) {
                           {contract.startDate && contract.endDate && (
                             <span className="flex items-center gap-1">
                               <Calendar className="h-3 w-3" />
-                              {new Date(contract.startDate).toLocaleDateString('ar-SA-u-nu-latn')} - {new Date(contract.endDate).toLocaleDateString('ar-SA-u-nu-latn')}
+                              {formatDate(contract.startDate, locale)} - {formatDate(contract.endDate, locale)}
                             </span>
                           )}
                           {contract.totalValue && (
                             <span className="font-medium text-primary">
-                              ر.س {contract.totalValue.toLocaleString('ar-SA-u-nu-latn', { minimumFractionDigits: 2 })}
+                              {formatCurrency(contract.totalValue, locale)}
                             </span>
                           )}
                           {workOrderCount > 0 && (
@@ -1065,8 +1066,8 @@ export function ContractsList({ branchId }: ContractsListProps) {
                       <Badge
                         variant="outline"
                         className={contract.fileUrl
-                          ? "bg-blue-50 text-blue-700 border-blue-200"
-                          : "bg-gray-50 text-gray-500 border-gray-200"
+                          ? "bg-blue-50 dark:bg-blue-950/40 text-blue-700 dark:text-blue-400 border-blue-200 dark:border-blue-900"
+                          : "bg-gray-50 dark:bg-gray-900 text-gray-500 dark:text-gray-400 border-gray-200 dark:border-gray-800"
                         }
                       >
                         <FileText className="h-3 w-3 me-1" />
@@ -1075,8 +1076,8 @@ export function ContractsList({ branchId }: ContractsListProps) {
                       <Badge
                         variant="outline"
                         className={contract.certificateUrl
-                          ? "bg-amber-50 text-amber-700 border-amber-200"
-                          : "bg-gray-50 text-gray-500 border-gray-200"
+                          ? "bg-amber-50 dark:bg-amber-950/40 text-amber-700 dark:text-amber-400 border-amber-200 dark:border-amber-900"
+                          : "bg-gray-50 dark:bg-gray-900 text-gray-500 dark:text-gray-400 border-gray-200 dark:border-gray-800"
                         }
                       >
                         <Award className="h-3 w-3 me-1" />
@@ -1085,8 +1086,8 @@ export function ContractsList({ branchId }: ContractsListProps) {
                       <Badge
                         variant="outline"
                         className={contract.startSignedAt
-                          ? "bg-green-50 text-green-700 border-green-200"
-                          : "bg-gray-50 text-gray-500 border-gray-200"
+                          ? "bg-green-50 dark:bg-green-950/40 text-green-700 dark:text-green-400 border-green-200 dark:border-green-900"
+                          : "bg-gray-50 dark:bg-gray-900 text-gray-500 dark:text-gray-400 border-gray-200 dark:border-gray-800"
                         }
                       >
                         <PenTool className="h-3 w-3 me-1" />
@@ -1103,7 +1104,7 @@ export function ContractsList({ branchId }: ContractsListProps) {
                           openEditDialog(contract)
                         }}
                       >
-                        Edit
+                        {tcl.edit}
                       </Button>
                       <Button
                         variant="outline"
@@ -1114,7 +1115,7 @@ export function ContractsList({ branchId }: ContractsListProps) {
                           setDetailDialogOpen(true)
                         }}
                       >
-                        View Details
+                        {tcl.viewDetails}
                       </Button>
                     </div>
                   </div>
@@ -1128,27 +1129,27 @@ export function ContractsList({ branchId }: ContractsListProps) {
       {/* Service Requests Section - Read-only, no signatures needed */}
       {standaloneWorkOrders.length > 0 && (
         <Collapsible open={standaloneExpanded} onOpenChange={setStandaloneExpanded}>
-          <Card className="border-blue-200 bg-blue-50/30 mt-6">
+          <Card className="border-blue-200 dark:border-blue-900 bg-blue-50/30 dark:bg-blue-950/20 mt-6">
             <CollapsibleTrigger className="w-full">
-              <CardHeader className="cursor-pointer hover:bg-blue-50/50 transition-colors">
+              <CardHeader className="cursor-pointer hover:bg-blue-50/50 dark:hover:bg-blue-950/40 transition-colors">
                 <div className="flex items-center justify-between">
                   <div className="flex items-center gap-2">
-                    {standaloneExpanded ? <ChevronDown className="h-5 w-5 text-blue-600" /> : <ChevronRight className="h-5 w-5 text-blue-600" />}
-                    <CardTitle className="flex items-center gap-2 text-blue-700">
+                    {standaloneExpanded ? <ChevronDown className="h-5 w-5 text-blue-600 dark:text-blue-400" /> : <ChevronRight className="h-5 w-5 text-blue-600 dark:text-blue-400" />}
+                    <CardTitle className="flex items-center gap-2 text-blue-700 dark:text-blue-400">
                       <ClipboardList className="h-5 w-5" />
-                      Service Requests
+                      {tcl.serviceRequests}
                     </CardTitle>
-                    <Badge className="bg-blue-100 text-blue-700">{tcl.adhoc}</Badge>
+                    <Badge className="bg-blue-100 dark:bg-blue-950/40 text-blue-700 dark:text-blue-400">{tcl.adhoc}</Badge>
                     <Badge variant="secondary">{standaloneWorkOrders.length}</Badge>
                   </div>
                   <div className="text-end">
-                    <p className="font-semibold text-blue-700">
-                      ر.س {standaloneWorkOrders.reduce((sum, wo) => sum + (wo.price || 0), 0).toLocaleString('ar-SA-u-nu-latn', { minimumFractionDigits: 2 })}
+                    <p className="font-semibold text-blue-700 dark:text-blue-400">
+                      {formatCurrency(standaloneWorkOrders.reduce((sum, wo) => sum + (wo.price || 0), 0), locale)}
                     </p>
-                    <p className="text-xs text-blue-600">{tcl.totalValue}</p>
+                    <p className="text-xs text-blue-600 dark:text-blue-400">{tcl.totalValue}</p>
                   </div>
                 </div>
-                <CardDescription className="text-blue-600 text-start mt-2">
+                <CardDescription className="text-blue-600 dark:text-blue-400 text-start mt-2">
                   {tcl.serviceRequestsDesc}
                 </CardDescription>
               </CardHeader>
@@ -1159,7 +1160,7 @@ export function ContractsList({ branchId }: ContractsListProps) {
                   {standaloneWorkOrders.map((wo) => (
                     <div
                       key={wo.id}
-                      className="flex items-center justify-between p-3 bg-white rounded-lg border border-blue-200"
+                      className="flex items-center justify-between p-3 bg-white dark:bg-card rounded-lg border border-blue-200 dark:border-blue-900"
                     >
                       <div className="space-y-1">
                         <span className="font-medium">{wo.description}</span>
@@ -1167,7 +1168,7 @@ export function ContractsList({ branchId }: ContractsListProps) {
                           {wo.scheduledDate && (
                             <span className="flex items-center gap-1">
                               <Calendar className="h-3 w-3" />
-                              {new Date(wo.scheduledDate).toLocaleDateString('ar-SA-u-nu-latn')}
+                              {formatDate(wo.scheduledDate, locale)}
                             </span>
                           )}
                           <Badge variant="outline" className="text-xs">
@@ -1176,16 +1177,16 @@ export function ContractsList({ branchId }: ContractsListProps) {
                         </div>
                       </div>
                       {wo.price && (
-                        <span className="font-semibold text-blue-700">
-                          ر.س {wo.price.toLocaleString('ar-SA-u-nu-latn', { minimumFractionDigits: 2 })}
+                        <span className="font-semibold text-blue-700 dark:text-blue-400">
+                          {formatCurrency(wo.price, locale)}
                         </span>
                       )}
                     </div>
                   ))}
                 </div>
-                <div className="flex items-center gap-2 mt-4 p-3 bg-blue-100/50 rounded-lg border border-blue-200">
-                  <CheckCircle className="h-4 w-4 text-blue-600" />
-                  <p className="text-sm text-blue-700">
+                <div className="flex items-center gap-2 mt-4 p-3 bg-blue-100/50 dark:bg-blue-950/40 rounded-lg border border-blue-200 dark:border-blue-900">
+                  <CheckCircle className="h-4 w-4 text-blue-600 dark:text-blue-400" />
+                  <p className="text-sm text-blue-700 dark:text-blue-400">
                     {tcl.serviceRequestsNote}
                   </p>
                 </div>
@@ -1198,27 +1199,27 @@ export function ContractsList({ branchId }: ContractsListProps) {
       {/* Sticker Inspections Section - Read-only, no signatures needed */}
       {stickerInspections.length > 0 && (
         <Collapsible open={stickerInspectionsExpanded} onOpenChange={setStickerInspectionsExpanded}>
-          <Card className="border-amber-200 bg-amber-50/30 mt-6">
+          <Card className="border-amber-200 dark:border-amber-900 bg-amber-50/30 dark:bg-amber-950/20 mt-6">
             <CollapsibleTrigger className="w-full">
-              <CardHeader className="cursor-pointer hover:bg-amber-50/50 transition-colors">
+              <CardHeader className="cursor-pointer hover:bg-amber-50/50 dark:hover:bg-amber-950/40 transition-colors">
                 <div className="flex items-center justify-between">
                   <div className="flex items-center gap-2">
-                    {stickerInspectionsExpanded ? <ChevronDown className="h-5 w-5 text-amber-600" /> : <ChevronRight className="h-5 w-5 text-amber-600" />}
-                    <CardTitle className="flex items-center gap-2 text-amber-700">
+                    {stickerInspectionsExpanded ? <ChevronDown className="h-5 w-5 text-amber-600 dark:text-amber-400" /> : <ChevronRight className="h-5 w-5 text-amber-600 dark:text-amber-400" />}
+                    <CardTitle className="flex items-center gap-2 text-amber-700 dark:text-amber-400">
                       <ClipboardList className="h-5 w-5" />
-                      Sticker Inspections
+                      {tcl.stickerInspections}
                     </CardTitle>
-                    <Badge className="bg-amber-100 text-amber-700">{tcl.equipment}</Badge>
+                    <Badge className="bg-amber-100 dark:bg-amber-950/40 text-amber-700 dark:text-amber-400">{tcl.equipment}</Badge>
                     <Badge variant="secondary">{stickerInspections.length}</Badge>
                   </div>
                   <div className="text-end">
-                    <p className="font-semibold text-amber-700">
-                      ر.س {stickerInspections.reduce((sum, wo) => sum + (wo.price || 0), 0).toLocaleString('ar-SA-u-nu-latn', { minimumFractionDigits: 2 })}
+                    <p className="font-semibold text-amber-700 dark:text-amber-400">
+                      {formatCurrency(stickerInspections.reduce((sum, wo) => sum + (wo.price || 0), 0), locale)}
                     </p>
-                    <p className="text-xs text-amber-600">{tcl.totalValue}</p>
+                    <p className="text-xs text-amber-600 dark:text-amber-400">{tcl.totalValue}</p>
                   </div>
                 </div>
-                <CardDescription className="text-amber-600 text-start mt-2">
+                <CardDescription className="text-amber-600 dark:text-amber-400 text-start mt-2">
                   {tcl.stickerInspectionsDesc}
                 </CardDescription>
               </CardHeader>
@@ -1229,7 +1230,7 @@ export function ContractsList({ branchId }: ContractsListProps) {
                   {stickerInspections.map((wo) => (
                     <div
                       key={wo.id}
-                      className="flex items-center justify-between p-3 bg-white rounded-lg border border-amber-200"
+                      className="flex items-center justify-between p-3 bg-white dark:bg-card rounded-lg border border-amber-200 dark:border-amber-900"
                     >
                       <div className="space-y-1">
                         <span className="font-medium">{wo.description}</span>
@@ -1237,7 +1238,7 @@ export function ContractsList({ branchId }: ContractsListProps) {
                           {wo.scheduledDate && (
                             <span className="flex items-center gap-1">
                               <Calendar className="h-3 w-3" />
-                              {new Date(wo.scheduledDate).toLocaleDateString('ar-SA-u-nu-latn')}
+                              {formatDate(wo.scheduledDate, locale)}
                             </span>
                           )}
                           <Badge variant="outline" className="text-xs">
@@ -1246,16 +1247,16 @@ export function ContractsList({ branchId }: ContractsListProps) {
                         </div>
                       </div>
                       {wo.price && (
-                        <span className="font-semibold text-amber-700">
-                          ر.س {wo.price.toLocaleString('ar-SA-u-nu-latn', { minimumFractionDigits: 2 })}
+                        <span className="font-semibold text-amber-700 dark:text-amber-400">
+                          {formatCurrency(wo.price, locale)}
                         </span>
                       )}
                     </div>
                   ))}
                 </div>
-                <div className="flex items-center gap-2 mt-4 p-3 bg-amber-100/50 rounded-lg border border-amber-200">
-                  <CheckCircle className="h-4 w-4 text-amber-600" />
-                  <p className="text-sm text-amber-700">
+                <div className="flex items-center gap-2 mt-4 p-3 bg-amber-100/50 dark:bg-amber-950/40 rounded-lg border border-amber-200 dark:border-amber-900">
+                  <CheckCircle className="h-4 w-4 text-amber-600 dark:text-amber-400" />
+                  <p className="text-sm text-amber-700 dark:text-amber-400">
                     {tcl.stickerInspectionsNote}
                   </p>
                 </div>
@@ -1856,7 +1857,7 @@ export function ContractsList({ branchId }: ContractsListProps) {
                 <div>
                   <p className="text-xs text-muted-foreground mb-1">{tcl.totalValue}</p>
                   <p className="font-bold text-lg text-primary">
-                    ر.س {(selectedContract.totalValue || 0).toLocaleString('ar-SA-u-nu-latn', { minimumFractionDigits: 2 })}
+                    {formatCurrency(selectedContract.totalValue || 0, locale)}
                   </p>
                 </div>
                 {selectedContract.startDate && (
@@ -1864,7 +1865,7 @@ export function ContractsList({ branchId }: ContractsListProps) {
                     <p className="text-xs text-muted-foreground mb-1">{tcl.startDate}</p>
                     <p className="font-medium text-sm flex items-center gap-1">
                       <Calendar className="h-3 w-3" />
-                      {new Date(selectedContract.startDate).toLocaleDateString('ar-SA-u-nu-latn')}
+                      {formatDate(selectedContract.startDate, locale)}
                     </p>
                   </div>
                 )}
@@ -1873,7 +1874,7 @@ export function ContractsList({ branchId }: ContractsListProps) {
                     <p className="text-xs text-muted-foreground mb-1">{tcl.endDate}</p>
                     <p className="font-medium text-sm flex items-center gap-1">
                       <Calendar className="h-3 w-3" />
-                      {new Date(selectedContract.endDate).toLocaleDateString('ar-SA-u-nu-latn')}
+                      {formatDate(selectedContract.endDate, locale)}
                     </p>
                   </div>
                 )}
@@ -1883,14 +1884,14 @@ export function ContractsList({ branchId }: ContractsListProps) {
               <div className="p-4 border rounded-lg bg-card">
                 <h3 className="font-semibold text-sm flex items-center gap-2 mb-3">
                   <PenTool className="h-4 w-4" />
-                  Signatures
+                  {tcl.signatures}
                 </h3>
                 <div className="grid grid-cols-2 gap-4 text-sm">
                   <div className="flex items-center gap-2">
                     {selectedContract.startSignedAt ? (
                       <>
                         <CheckCircle className="h-4 w-4 text-green-600" />
-                        <span>{tcl.startSigned} {new Date(selectedContract.startSignedAt).toLocaleDateString('ar-SA-u-nu-latn')}</span>
+                        <span>{tcl.startSigned} {formatDate(selectedContract.startSignedAt, locale)}</span>
                       </>
                     ) : (
                       <>
@@ -1903,7 +1904,7 @@ export function ContractsList({ branchId }: ContractsListProps) {
                     {selectedContract.endSignedAt ? (
                       <>
                         <CheckCircle className="h-4 w-4 text-green-600" />
-                        <span>{tcl.endSigned} {new Date(selectedContract.endSignedAt).toLocaleDateString('ar-SA-u-nu-latn')}</span>
+                        <span>{tcl.endSigned} {formatDate(selectedContract.endSignedAt, locale)}</span>
                       </>
                     ) : (
                       <>
@@ -1959,13 +1960,13 @@ export function ContractsList({ branchId }: ContractsListProps) {
                                 <div key={i} className="grid grid-cols-3 gap-2 text-sm">
                                   <div className="flex items-center gap-1">
                                     <Calendar className="h-3 w-3 text-muted-foreground" />
-                                    {date ? new Date(date).toLocaleDateString('ar-SA-u-nu-latn') : '—'}
+                                    {date ? formatDate(date, locale) : '—'}
                                   </div>
                                   <div className="text-muted-foreground">
-                                    {paymentDueDates[i] ? new Date(paymentDueDates[i]).toLocaleDateString('ar-SA-u-nu-latn') : '—'}
+                                    {paymentDueDates[i] ? formatDate(paymentDueDates[i], locale) : '—'}
                                   </div>
                                   <div className="font-medium">
-                                    {paymentAmounts[i] ? `ر.س ${paymentAmounts[i]?.toLocaleString('ar-SA-u-nu-latn', { minimumFractionDigits: 2 })}` : '—'}
+                                    {paymentAmounts[i] ? formatCurrency(paymentAmounts[i] || 0, locale) : '—'}
                                   </div>
                                 </div>
                               ))}
@@ -1983,7 +1984,7 @@ export function ContractsList({ branchId }: ContractsListProps) {
                 <div className="space-y-3">
                   <h3 className="font-semibold text-sm flex items-center gap-2">
                     <FileText className="h-4 w-4" />
-                    Payment Terms
+                    {tcl.paymentTerms}
                   </h3>
                   <Table>
                     <TableHeader>
@@ -1999,10 +2000,10 @@ export function ContractsList({ branchId }: ContractsListProps) {
                         <TableRow key={payment.id}>
                           <TableCell className="font-medium">{tcl.payment} #{payment.paymentNo}</TableCell>
                           <TableCell>
-                            {payment.dueDate ? new Date(payment.dueDate).toLocaleDateString('ar-SA-u-nu-latn') : '—'}
+                            {payment.dueDate ? formatDate(payment.dueDate, locale) : '—'}
                           </TableCell>
                           <TableCell>
-                            {payment.amount ? `ر.س ${payment.amount.toLocaleString('ar-SA-u-nu-latn', { minimumFractionDigits: 2 })}` : '—'}
+                            {payment.amount ? formatCurrency(payment.amount, locale) : '—'}
                           </TableCell>
                           <TableCell>
                             <Badge variant={payment.status === 'PAID' ? 'default' : payment.status === 'OVERDUE' ? 'destructive' : 'secondary'}>

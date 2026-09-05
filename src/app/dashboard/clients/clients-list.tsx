@@ -259,9 +259,9 @@ export function ClientsList({ clients }: ClientsListProps) {
   const getStatusBadge = (status: string) => {
     switch (status) {
       case 'ACTIVE':
-        return <Badge className="bg-green-100 text-green-700 hover:bg-green-100">{tc.active}</Badge>
+        return <Badge className="bg-green-100 dark:bg-green-950/40 text-green-700 dark:text-green-400 hover:bg-green-100 dark:hover:bg-green-950/40">{tc.active}</Badge>
       case 'PENDING':
-        return <Badge className="bg-yellow-100 text-yellow-700 hover:bg-yellow-100">{tc.pending}</Badge>
+        return <Badge className="bg-yellow-100 dark:bg-yellow-950/40 text-yellow-700 dark:text-yellow-400 hover:bg-yellow-100 dark:hover:bg-yellow-950/40">{tc.pending}</Badge>
       case 'ARCHIVED':
         return <Badge className="bg-gray-100 text-gray-700 hover:bg-gray-100">{tc.archived}</Badge>
       default:

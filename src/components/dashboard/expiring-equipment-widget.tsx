@@ -14,6 +14,7 @@ import {
 } from 'lucide-react'
 import Link from 'next/link'
 import { useTranslation } from '@/lib/i18n/use-translation'
+import { formatDate } from '@/lib/i18n/format-date'
 
 interface ExpiringEquipment {
   id: string
@@ -33,7 +34,7 @@ interface ExpiringEquipmentWidgetProps {
 }
 
 export function ExpiringEquipmentWidget({ contractorId }: ExpiringEquipmentWidgetProps) {
-  const { t } = useTranslation()
+  const { t, locale } = useTranslation()
   const ta = t.dashboard.expiringEquipmentWidget
   const [equipment, setEquipment] = useState<ExpiringEquipment[]>([])
   const [loading, setLoading] = useState(true)
@@ -68,7 +69,7 @@ export function ExpiringEquipmentWidget({ contractorId }: ExpiringEquipmentWidge
     return (
       <Card>
         <CardHeader>
-          <CardTitle className="flex items-center gap-2 text-amber-700">
+          <CardTitle className="flex items-center gap-2 text-amber-700 dark:text-amber-400">
             <Tag className="h-5 w-5" />
             {ta.equipmentStatus}
           </CardTitle>
@@ -91,11 +92,11 @@ export function ExpiringEquipmentWidget({ contractorId }: ExpiringEquipmentWidge
   }
 
   return (
-    <Card className="border-amber-200">
+    <Card className="border-amber-200 dark:border-amber-900">
       <CardHeader className="pb-3">
         <div className="flex items-center justify-between">
           <div>
-            <CardTitle className="flex items-center gap-2 text-amber-700">
+            <CardTitle className="flex items-center gap-2 text-amber-700 dark:text-amber-400">
               <Tag className="h-5 w-5" />
               {ta.equipmentAlerts}
             </CardTitle>
@@ -111,7 +112,7 @@ export function ExpiringEquipmentWidget({ contractorId }: ExpiringEquipmentWidge
               </Badge>
             )}
             {expiringSoonCount > 0 && (
-              <Badge className="bg-amber-100 text-amber-700 flex items-center gap-1">
+              <Badge className="bg-amber-100 dark:bg-amber-950/40 text-amber-700 dark:text-amber-400 flex items-center gap-1">
                 <Clock className="h-3 w-3" />
                 {expiringSoonCount} {ta.expiringSoon}
               </Badge>
@@ -138,7 +139,7 @@ export function ExpiringEquipmentWidget({ contractorId }: ExpiringEquipmentWidge
                       {ta.expired}
                     </Badge>
                   ) : (
-                    <Badge className="bg-amber-100 text-amber-700 text-xs">
+                    <Badge className="bg-amber-100 dark:bg-amber-950/40 text-amber-700 dark:text-amber-400 text-xs">
                       <Clock className="h-3 w-3 me-1" />
                       {ta.expiringSoon}
                     </Badge>
@@ -153,7 +154,7 @@ export function ExpiringEquipmentWidget({ contractorId }: ExpiringEquipmentWidge
                   )}
                   {eq.expectedExpiry && (
                     <span>
-                      {ta.expires} {new Date(eq.expectedExpiry).toLocaleDateString('ar-SA-u-nu-latn')}
+                      {ta.expires} {formatDate(eq.expectedExpiry, locale, {})}
                     </span>
                   )}
                 </div>

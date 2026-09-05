@@ -15,6 +15,7 @@ import {
   type ExportOptions,
 } from '@/lib/export/export-utils'
 import { useTranslation } from '@/lib/i18n/use-translation'
+import { formatDate, formatCurrency } from '@/lib/i18n/format-date'
 
 interface WorkOrder {
   id: string
@@ -30,7 +31,7 @@ interface WorkOrder {
 }
 
 export default function ClientWorkOrdersPage() {
-  const { t } = useTranslation()
+  const { t, locale } = useTranslation()
   const tw = t.dashboard.portalWorkOrdersPage
   const [workOrders, setWorkOrders] = useState<WorkOrder[]>([])
   const [filteredWorkOrders, setFilteredWorkOrders] = useState<WorkOrder[]>([])
@@ -256,22 +257,22 @@ export default function ClientWorkOrdersPage() {
 
   const getStatusColor = (stage: string) => {
     const colors: Record<string, string> = {
-      SCHEDULED: 'bg-blue-100 text-blue-800',
-      IN_PROGRESS: 'bg-amber-100 text-amber-800',
-      FOR_REVIEW: 'bg-purple-100 text-purple-800',
-      COMPLETED: 'bg-green-100 text-green-800',
+      SCHEDULED: 'bg-blue-100 dark:bg-blue-950/40 text-blue-800 dark:text-blue-400',
+      IN_PROGRESS: 'bg-amber-100 dark:bg-amber-950/40 text-amber-800 dark:text-amber-400',
+      FOR_REVIEW: 'bg-purple-100 dark:bg-purple-950/40 text-purple-800 dark:text-purple-400',
+      COMPLETED: 'bg-green-100 dark:bg-green-950/40 text-green-800 dark:text-green-400',
     }
-    return colors[stage] || 'bg-gray-100 text-gray-800'
+    return colors[stage] || 'bg-gray-100 dark:bg-gray-800 text-gray-800 dark:text-gray-300'
   }
 
   const getTypeColor = (type: string) => {
     const colors: Record<string, string> = {
-      SERVICE: 'bg-blue-50 text-blue-700 border-blue-200',
-      INSPECTION: 'bg-green-50 text-green-700 border-green-200',
-      MAINTENANCE: 'bg-amber-50 text-amber-700 border-amber-200',
-      INSTALLATION: 'bg-purple-50 text-purple-700 border-purple-200',
+      SERVICE: 'bg-blue-50 dark:bg-blue-950/40 text-blue-700 dark:text-blue-400 border-blue-200 dark:border-blue-900',
+      INSPECTION: 'bg-green-50 dark:bg-green-950/40 text-green-700 dark:text-green-400 border-green-200 dark:border-green-900',
+      MAINTENANCE: 'bg-amber-50 dark:bg-amber-950/40 text-amber-700 dark:text-amber-400 border-amber-200 dark:border-amber-900',
+      INSTALLATION: 'bg-purple-50 dark:bg-purple-950/40 text-purple-700 dark:text-purple-400 border-purple-200 dark:border-purple-900',
     }
-    return colors[type] || 'bg-gray-50 text-gray-700 border-gray-200'
+    return colors[type] || 'bg-gray-50 dark:bg-gray-900 text-gray-700 dark:text-gray-400 border-gray-200 dark:border-gray-800'
   }
 
   return (
@@ -402,12 +403,12 @@ export default function ClientWorkOrdersPage() {
                   </div>
                   <div className="col-span-1 flex items-center">
                     <p className="text-sm">
-                      {wo.scheduledDate ? new Date(wo.scheduledDate).toLocaleDateString('ar-SA-u-nu-latn') : '-'}
+                      {wo.scheduledDate ? formatDate(wo.scheduledDate, locale) : '-'}
                     </p>
                   </div>
                   <div className="col-span-1 flex items-center justify-end">
                     <p className="text-sm font-medium">
-                      {wo.price ? `ر.س ${wo.price.toLocaleString()}` : '-'}
+                      {wo.price ? formatCurrency(wo.price, locale) : '-'}
                     </p>
                   </div>
                 </div>

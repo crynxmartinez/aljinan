@@ -1,5 +1,6 @@
 import type { Metadata, Viewport } from "next";
 import { SessionProvider } from "@/components/providers/session-provider";
+import { ThemeProvider } from "@/components/providers/theme-provider";
 import { TranslationProvider } from "@/lib/i18n/use-translation";
 import { getLocale, getTranslationsForLocale } from "@/lib/i18n/server";
 import { getDirection } from "@/lib/i18n/translations";
@@ -8,6 +9,7 @@ import { SpeedInsights } from '@vercel/speed-insights/next';
 import { OrganizationSchema } from "@/components/seo/organization-schema";
 import { ImpersonationBanner } from "@/components/layout/impersonation-banner";
 import { Toaster } from 'sonner';
+import { displayFont } from "@/lib/fonts";
 import "./globals.css";
 
 export async function generateMetadata(): Promise<Metadata> {
@@ -42,7 +44,10 @@ export const viewport: Viewport = {
   width: "device-width",
   initialScale: 1,
   maximumScale: 1,
-  themeColor: "#0f172a",
+  themeColor: [
+    { media: "(prefers-color-scheme: light)", color: "#d97706" },
+    { media: "(prefers-color-scheme: dark)", color: "#1c1917" },
+  ],
 };
 
 export default async function RootLayout({
@@ -53,23 +58,25 @@ export default async function RootLayout({
   const locale = await getLocale();
 
   return (
-    <html lang={locale} dir={getDirection(locale)}>
+    <html lang={locale} dir={getDirection(locale)} suppressHydrationWarning>
       <head>
         <link rel="preconnect" href="https://fonts.googleapis.com" />
         <link rel="preconnect" href="https://fonts.gstatic.com" crossOrigin="anonymous" />
         <link href="https://fonts.googleapis.com/css2?family=Tajawal:wght@400;500;700;800&display=swap" rel="stylesheet" />
         <OrganizationSchema />
       </head>
-      <body className="antialiased">
-        <TranslationProvider initialLocale={locale}>
-          <SessionProvider>
-            <ImpersonationBanner />
-            {children}
-          </SessionProvider>
-          <Toaster position="top-left" richColors />
-          <Analytics />
-          <SpeedInsights />
-        </TranslationProvider>
+      <body className={`antialiased ${displayFont.variable}`} suppressHydrationWarning>
+        <ThemeProvider>
+          <TranslationProvider initialLocale={locale}>
+            <SessionProvider>
+              <ImpersonationBanner />
+              {children}
+            </SessionProvider>
+            <Toaster position="top-left" richColors />
+            <Analytics />
+            <SpeedInsights />
+          </TranslationProvider>
+        </ThemeProvider>
       </body>
     </html>
   );

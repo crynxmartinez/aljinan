@@ -26,6 +26,7 @@ import {
   ThumbsDown,
 } from 'lucide-react'
 import { useTranslation } from '@/lib/i18n/use-translation'
+import { formatDate as formatDateUtil } from '@/lib/i18n/format-date'
 
 interface QuotationItem {
   id: string
@@ -125,11 +126,11 @@ export function ClientBranchQuotations({ branchId }: ClientBranchQuotationsProps
 
   const getStatusBadge = (status: Quotation['status']) => {
     const config = {
-      DRAFT: { style: 'bg-gray-100 text-gray-700', icon: FileEdit, label: tc.statusDraft },
-      SENT: { style: 'bg-blue-100 text-blue-700', icon: Clock, label: tc.statusPendingReview },
-      APPROVED: { style: 'bg-green-100 text-green-700', icon: CheckCircle, label: tc.statusApproved },
-      REJECTED: { style: 'bg-red-100 text-red-700', icon: XCircle, label: tc.statusRejected },
-      EXPIRED: { style: 'bg-orange-100 text-orange-700', icon: Clock, label: tc.statusExpired },
+      DRAFT: { style: 'bg-gray-100 dark:bg-gray-800 text-gray-700 dark:text-gray-300', icon: FileEdit, label: tc.statusDraft },
+      SENT: { style: 'bg-blue-100 dark:bg-blue-950/40 text-blue-700 dark:text-blue-400', icon: Clock, label: tc.statusPendingReview },
+      APPROVED: { style: 'bg-green-100 dark:bg-green-950/40 text-green-700 dark:text-green-400', icon: CheckCircle, label: tc.statusApproved },
+      REJECTED: { style: 'bg-red-100 dark:bg-red-950/40 text-red-700 dark:text-red-400', icon: XCircle, label: tc.statusRejected },
+      EXPIRED: { style: 'bg-orange-100 dark:bg-orange-950/40 text-orange-700 dark:text-orange-400', icon: Clock, label: tc.statusExpired },
     }
     const { style, icon: Icon, label } = config[status]
     return (
@@ -162,9 +163,9 @@ export function ClientBranchQuotations({ branchId }: ClientBranchQuotationsProps
       <div className="space-y-6">
         {/* Pending Approval Section */}
         {pendingQuotations.length > 0 && (
-          <Card className="border-amber-200 bg-amber-50/50">
+          <Card className="border-amber-200 dark:border-amber-900 bg-amber-50/50 dark:bg-amber-950/20">
             <CardHeader>
-              <CardTitle className="flex items-center gap-2 text-amber-800">
+              <CardTitle className="flex items-center gap-2 text-amber-800 dark:text-amber-400">
                 <Clock className="h-5 w-5" />
                 {tc.pendingApprovalTitle}
               </CardTitle>
@@ -230,9 +231,9 @@ export function ClientBranchQuotations({ branchId }: ClientBranchQuotationsProps
 
                   <div className="flex items-center justify-between">
                     <div className="text-sm text-muted-foreground">
-                      {tc.sentOn.replace('{date}', new Date(quotation.sentAt!).toLocaleDateString(dateLocale))}
+                      {tc.sentOn.replace('{date}', formatDateUtil(quotation.sentAt!, locale))}
                       {quotation.validUntil && (
-                        <> · {tc.validUntil.replace('{date}', new Date(quotation.validUntil).toLocaleDateString(dateLocale))}</>
+                        <> · {tc.validUntil.replace('{date}', formatDateUtil(quotation.validUntil, locale))}</>
                       )}
                     </div>
                     <div className="flex gap-2">
@@ -295,10 +296,10 @@ export function ClientBranchQuotations({ branchId }: ClientBranchQuotationsProps
                           <span className="font-semibold text-foreground">{formatCurrency(quotation.total)}</span>
                           <span>{tc.itemCount.replace('{count}', String(quotation.items.length))}</span>
                           {quotation.approvedAt && (
-                            <span>{tc.approvedOn.replace('{date}', new Date(quotation.approvedAt).toLocaleDateString(dateLocale))}</span>
+                            <span>{tc.approvedOn.replace('{date}', formatDateUtil(quotation.approvedAt, locale))}</span>
                           )}
                           {quotation.rejectedAt && (
-                            <span>{tc.rejectedOn.replace('{date}', new Date(quotation.rejectedAt).toLocaleDateString(dateLocale))}</span>
+                            <span>{tc.rejectedOn.replace('{date}', formatDateUtil(quotation.rejectedAt, locale))}</span>
                           )}
                         </div>
                         {quotation.rejectionNote && (

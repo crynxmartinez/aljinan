@@ -3,6 +3,7 @@
 import { useState, useEffect } from 'react'
 import { useRouter } from 'next/navigation'
 import { useTranslation } from '@/lib/i18n/use-translation'
+import { formatDate } from '@/lib/i18n/format-date'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
@@ -120,7 +121,7 @@ function getExpiryStatus(expiryDate: string | null): { status: 'valid' | 'expiri
 
 export function CertificatesList({ branchId, userRole }: CertificatesListProps) {
   const router = useRouter()
-  const { t } = useTranslation()
+  const { t, locale } = useTranslation()
   const tcl = t.dashboard.certificatesList
   const [certificates, setCertificates] = useState<Certificate[]>([])
   const [loading, setLoading] = useState(true)
@@ -296,7 +297,7 @@ export function CertificatesList({ branchId, userRole }: CertificatesListProps) 
               </Badge>
             )}
             {expiringCount > 0 && (
-              <Badge className="bg-orange-100 text-orange-700 flex items-center gap-1">
+              <Badge className="bg-orange-100 dark:bg-orange-950/40 text-orange-700 dark:text-orange-400 flex items-center gap-1">
                 <Clock className="h-3 w-3" />
                 {expiringCount} Expiring Soon
               </Badge>
@@ -367,11 +368,11 @@ export function CertificatesList({ branchId, userRole }: CertificatesListProps) 
                         )}
                       </TableCell>
                       <TableCell>
-                        {new Date(certificate.issueDate).toLocaleDateString('ar-SA-u-nu-latn')}
+                        {formatDate(certificate.issueDate, locale, {})}
                       </TableCell>
                       <TableCell>
                         {certificate.expiryDate
-                          ? new Date(certificate.expiryDate).toLocaleDateString('ar-SA-u-nu-latn')
+                          ? formatDate(certificate.expiryDate, locale, {})
                           : <span className="text-muted-foreground">{tcl.noExpiry}</span>
                         }
                       </TableCell>
@@ -383,13 +384,13 @@ export function CertificatesList({ branchId, userRole }: CertificatesListProps) 
                           </Badge>
                         )}
                         {expiryInfo.status === 'expiring' && (
-                          <Badge className="bg-orange-100 text-orange-700 flex items-center gap-1 w-fit">
+                          <Badge className="bg-orange-100 dark:bg-orange-950/40 text-orange-700 dark:text-orange-400 flex items-center gap-1 w-fit">
                             <Clock className="h-3 w-3" />
                             {expiryInfo.daysLeft} {tcl.daysLeft}
                           </Badge>
                         )}
                         {expiryInfo.status === 'valid' && (
-                          <Badge className="bg-green-100 text-green-700 flex items-center gap-1 w-fit">
+                          <Badge className="bg-green-100 dark:bg-green-950/40 text-green-700 dark:text-green-400 flex items-center gap-1 w-fit">
                             <CheckCircle className="h-3 w-3" />
                             {tcl.valid}
                           </Badge>
@@ -590,7 +591,7 @@ export function CertificatesList({ branchId, userRole }: CertificatesListProps) 
                   <p className="text-sm text-muted-foreground">{tcl.issueDate}</p>
                   <p className="font-medium flex items-center gap-1">
                     <Calendar className="h-4 w-4" />
-                    {new Date(selectedCertificate.issueDate).toLocaleDateString('ar-SA-u-nu-latn')}
+                    {formatDate(selectedCertificate.issueDate, locale, {})}
                   </p>
                 </div>
                 <div>
@@ -599,7 +600,7 @@ export function CertificatesList({ branchId, userRole }: CertificatesListProps) 
                     <>
                       <p className="font-medium flex items-center gap-1">
                         <Calendar className="h-4 w-4" />
-                        {new Date(selectedCertificate.expiryDate).toLocaleDateString('ar-SA-u-nu-latn')}
+                        {formatDate(selectedCertificate.expiryDate, locale, {})}
                       </p>
                       {(() => {
                         const expiryInfo = getExpiryStatus(selectedCertificate.expiryDate)
@@ -607,9 +608,9 @@ export function CertificatesList({ branchId, userRole }: CertificatesListProps) 
                           return <Badge variant="destructive" className="mt-1">{tcl.expired}</Badge>
                         }
                         if (expiryInfo.status === 'expiring') {
-                          return <Badge className="bg-orange-100 text-orange-700 mt-1">{expiryInfo.daysLeft} {tcl.daysLeft}</Badge>
+                          return <Badge className="bg-orange-100 dark:bg-orange-950/40 text-orange-700 dark:text-orange-400 mt-1">{expiryInfo.daysLeft} {tcl.daysLeft}</Badge>
                         }
-                        return <Badge className="bg-green-100 text-green-700 mt-1">{tcl.valid}</Badge>
+                        return <Badge className="bg-green-100 dark:bg-green-950/40 text-green-700 dark:text-green-400 mt-1">{tcl.valid}</Badge>
                       })()}
                     </>
                   ) : (

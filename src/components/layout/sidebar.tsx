@@ -32,6 +32,7 @@ import {
 import { Separator } from '@/components/ui/separator'
 import { useState, useEffect } from 'react'
 import { useTranslation } from '@/lib/i18n/use-translation'
+import { SidebarShell } from './sidebar-shell'
 
 interface Client {
   id: string
@@ -166,7 +167,8 @@ export function Sidebar({ clients = [], userRole, teamMemberRole }: SidebarProps
   }
 
   return (
-    <div className="flex h-screen w-64 flex-col border-e bg-sidebar text-sidebar-foreground">
+    <SidebarShell>
+    <div className="flex h-screen w-full flex-col border-e bg-sidebar text-sidebar-foreground">
       {/* Logo */}
       <div className="flex h-16 items-center border-b px-6">
         <Link href="/dashboard" className="flex items-center gap-2">
@@ -194,7 +196,7 @@ export function Sidebar({ clients = [], userRole, teamMemberRole }: SidebarProps
                 href={item.href}
                 onClick={(e) => handleNavClick(e, item.href)}
                 className={cn(
-                  'flex items-center gap-3 rounded-lg px-3 py-2 text-sm transition-colors relative',
+                  'flex items-center gap-3 rounded-lg px-3 py-2 text-sm transition-all duration-200 hover:translate-x-0.5 rtl:hover:-translate-x-0.5 relative',
                   pathname === item.href
                     ? 'bg-sidebar-accent text-sidebar-accent-foreground'
                     : 'text-sidebar-foreground/70 hover:bg-sidebar-accent hover:text-sidebar-accent-foreground'
@@ -266,7 +268,7 @@ export function Sidebar({ clients = [], userRole, teamMemberRole }: SidebarProps
                       href={`/dashboard/clients/${client.slug || client.id}`}
                       onClick={(e) => handleNavClick(e, `/dashboard/clients/${client.slug || client.id}`)}
                       className={cn(
-                        'flex flex-1 items-center gap-2 rounded-lg px-2 py-2 text-sm transition-colors',
+                        'flex flex-1 items-center gap-2 rounded-lg px-2 py-2 text-sm transition-all duration-200 hover:translate-x-0.5 rtl:hover:-translate-x-0.5',
                         pathname === `/dashboard/clients/${client.slug || client.id}` || pathname.startsWith(`/dashboard/clients/${client.slug || client.id}/`)
                           ? 'bg-sidebar-accent text-sidebar-accent-foreground'
                           : 'text-sidebar-foreground/70 hover:bg-sidebar-accent hover:text-sidebar-accent-foreground'
@@ -288,7 +290,7 @@ export function Sidebar({ clients = [], userRole, teamMemberRole }: SidebarProps
                         href={`/dashboard/clients/${client.slug || client.id}/branches/${branch.slug || branch.id}`}
                         onClick={(e) => handleNavClick(e, `/dashboard/clients/${client.slug || client.id}/branches/${branch.slug || branch.id}`)}
                         className={cn(
-                          'flex items-center gap-2 rounded-lg px-3 py-2 text-sm transition-colors',
+                          'flex items-center gap-2 rounded-lg px-3 py-2 text-sm transition-all duration-200 hover:translate-x-0.5 rtl:hover:-translate-x-0.5',
                           pathname === `/dashboard/clients/${client.slug || client.id}/branches/${branch.slug || branch.id}`
                             ? 'bg-sidebar-accent text-sidebar-accent-foreground'
                             : 'text-sidebar-foreground/60 hover:bg-sidebar-accent hover:text-sidebar-accent-foreground'
@@ -330,7 +332,7 @@ export function Sidebar({ clients = [], userRole, teamMemberRole }: SidebarProps
               href={item.href}
               onClick={(e) => handleNavClick(e, item.href)}
               className={cn(
-                'flex items-center gap-3 rounded-lg px-3 py-2 text-sm transition-colors',
+                'flex items-center gap-3 rounded-lg px-3 py-2 text-sm transition-all duration-200 hover:translate-x-0.5 rtl:hover:-translate-x-0.5',
                 pathname === item.href
                   ? 'bg-sidebar-accent text-sidebar-accent-foreground'
                   : 'text-sidebar-foreground/70 hover:bg-sidebar-accent hover:text-sidebar-accent-foreground'
@@ -350,7 +352,7 @@ export function Sidebar({ clients = [], userRole, teamMemberRole }: SidebarProps
               href={item.href}
               onClick={(e) => handleNavClick(e, item.href)}
               className={cn(
-                'flex items-center gap-3 rounded-lg px-3 py-2 text-sm transition-colors',
+                'flex items-center gap-3 rounded-lg px-3 py-2 text-sm transition-all duration-200 hover:translate-x-0.5 rtl:hover:-translate-x-0.5',
                 pathname === item.href
                   ? 'bg-sidebar-accent text-sidebar-accent-foreground'
                   : 'text-sidebar-foreground/70 hover:bg-sidebar-accent hover:text-sidebar-accent-foreground'
@@ -394,5 +396,6 @@ export function Sidebar({ clients = [], userRole, teamMemberRole }: SidebarProps
         </div>
       </div>
     </div>
+    </SidebarShell>
   )
 }

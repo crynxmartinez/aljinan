@@ -40,6 +40,7 @@ import {
 import { ContractWorkOrdersDisplay } from '@/components/modules/contract-work-orders-display'
 import { ContractAttachmentsSection } from '@/components/modules/contract-attachments-section'
 import { useTranslation } from '@/lib/i18n/use-translation'
+import { formatDate as formatDateUtil } from '@/lib/i18n/format-date'
 
 interface WorkOrder {
   id: string
@@ -150,12 +151,12 @@ export function ClientBranchContracts({ branchId }: ClientBranchContractsProps) 
 
   const getStatusBadge = (status: Contract['status']) => {
     const config: Record<string, { style: string; icon: typeof FileText; label: string }> = {
-      DRAFT: { style: 'bg-gray-100 text-gray-700', icon: FileText, label: tc.statusDraft },
-      PENDING_SIGNATURE: { style: 'bg-amber-100 text-amber-700', icon: PenTool, label: tc.statusAwaitingStartSignature },
-      SIGNED: { style: 'bg-blue-100 text-blue-700', icon: CheckCircle, label: tc.statusActive },
-      COMPLETED: { style: 'bg-green-100 text-green-700', icon: CheckCircle, label: tc.statusCompleted },
-      EXPIRED: { style: 'bg-orange-100 text-orange-700', icon: Clock, label: tc.statusExpired },
-      TERMINATED: { style: 'bg-red-100 text-red-700', icon: XCircle, label: tc.statusTerminated },
+      DRAFT: { style: 'bg-gray-100 dark:bg-gray-800 text-gray-700 dark:text-gray-300', icon: FileText, label: tc.statusDraft },
+      PENDING_SIGNATURE: { style: 'bg-amber-100 dark:bg-amber-950/40 text-amber-700 dark:text-amber-400', icon: PenTool, label: tc.statusAwaitingStartSignature },
+      SIGNED: { style: 'bg-blue-100 dark:bg-blue-950/40 text-blue-700 dark:text-blue-400', icon: CheckCircle, label: tc.statusActive },
+      COMPLETED: { style: 'bg-green-100 dark:bg-green-950/40 text-green-700 dark:text-green-400', icon: CheckCircle, label: tc.statusCompleted },
+      EXPIRED: { style: 'bg-orange-100 dark:bg-orange-950/40 text-orange-700 dark:text-orange-400', icon: Clock, label: tc.statusExpired },
+      TERMINATED: { style: 'bg-red-100 dark:bg-red-950/40 text-red-700 dark:text-red-400', icon: XCircle, label: tc.statusTerminated },
     }
     const { style, icon: Icon, label } = config[status] || config.DRAFT
     return (
@@ -376,9 +377,9 @@ export function ClientBranchContracts({ branchId }: ClientBranchContractsProps) 
     <div className="space-y-6">
       {/* Contracts Pending Signature */}
       {pendingSignature.length > 0 && (
-        <Card className="border-amber-200 bg-amber-50/50">
+        <Card className="border-amber-200 dark:border-amber-900 bg-amber-50/50 dark:bg-amber-950/20">
           <CardHeader>
-            <CardTitle className="flex items-center gap-2 text-amber-800">
+            <CardTitle className="flex items-center gap-2 text-amber-800 dark:text-amber-400">
               <PenTool className="h-5 w-5" />
               {tc.awaitingSignatureTitle}
             </CardTitle>
@@ -390,7 +391,7 @@ export function ClientBranchContracts({ branchId }: ClientBranchContractsProps) 
             {pendingSignature.map((contract) => (
               <div
                 key={contract.id}
-                className="p-4 bg-white border border-amber-200 rounded-lg"
+                className="p-4 bg-white dark:bg-card border border-amber-200 dark:border-amber-900 rounded-lg"
               >
                 <div className="flex items-start justify-between">
                   <div className="space-y-1">
@@ -433,9 +434,9 @@ export function ClientBranchContracts({ branchId }: ClientBranchContractsProps) 
 
       {/* Active Contracts */}
       {activeContracts.length > 0 && (
-        <Card className="border-green-200 bg-green-50/50">
+        <Card className="border-green-200 dark:border-green-900 bg-green-50/50 dark:bg-green-950/20">
           <CardHeader>
-            <CardTitle className="flex items-center gap-2 text-green-800">
+            <CardTitle className="flex items-center gap-2 text-green-800 dark:text-green-400">
               <CheckCircle className="h-5 w-5" />
               {tc.activeContractsTitle}
             </CardTitle>
@@ -451,7 +452,7 @@ export function ClientBranchContracts({ branchId }: ClientBranchContractsProps) 
               return (
                 <div
                   key={contract.id}
-                  className="p-4 bg-white border rounded-lg"
+                  className="p-4 bg-white dark:bg-card border rounded-lg"
                 >
                   <div className="flex items-start justify-between">
                     <div className="space-y-1">
@@ -469,7 +470,7 @@ export function ClientBranchContracts({ branchId }: ClientBranchContractsProps) 
                         {contract.startDate && contract.endDate && (
                           <span className="flex items-center gap-1">
                             <Calendar className="h-3 w-3" />
-                            {new Date(contract.startDate).toLocaleDateString(dateLocale)} - {new Date(contract.endDate).toLocaleDateString(dateLocale)}
+                            {formatDateUtil(contract.startDate, locale)} - {formatDateUtil(contract.endDate, locale)}
                           </span>
                         )}
                         <span className="font-medium text-primary">
@@ -508,8 +509,8 @@ export function ClientBranchContracts({ branchId }: ClientBranchContractsProps) 
                       <Badge
                         variant="outline"
                         className={contract.fileUrl
-                          ? "bg-blue-50 text-blue-700 border-blue-200"
-                          : "bg-gray-50 text-gray-500 border-gray-200"
+                          ? "bg-blue-50 dark:bg-blue-950/40 text-blue-700 dark:text-blue-400 border-blue-200 dark:border-blue-900"
+                          : "bg-gray-50 dark:bg-gray-900 text-gray-500 dark:text-gray-400 border-gray-200 dark:border-gray-800"
                         }
                       >
                         <FileText className="h-3 w-3 me-1" />
@@ -518,8 +519,8 @@ export function ClientBranchContracts({ branchId }: ClientBranchContractsProps) 
                       <Badge
                         variant="outline"
                         className={contract.certificateUrl
-                          ? "bg-amber-50 text-amber-700 border-amber-200"
-                          : "bg-gray-50 text-gray-500 border-gray-200"
+                          ? "bg-amber-50 dark:bg-amber-950/40 text-amber-700 dark:text-amber-400 border-amber-200 dark:border-amber-900"
+                          : "bg-gray-50 dark:bg-gray-900 text-gray-500 dark:text-gray-400 border-gray-200 dark:border-gray-800"
                         }
                       >
                         <Award className="h-3 w-3 me-1" />
@@ -530,8 +531,8 @@ export function ClientBranchContracts({ branchId }: ClientBranchContractsProps) 
                         <Badge
                           variant="outline"
                           className={completedCount === workOrders.length
-                            ? "bg-green-50 text-green-700 border-green-200"
-                            : "bg-blue-50 text-blue-700 border-blue-200"
+                            ? "bg-green-50 dark:bg-green-950/40 text-green-700 dark:text-green-400 border-green-200 dark:border-green-900"
+                            : "bg-blue-50 dark:bg-blue-950/40 text-blue-700 dark:text-blue-400 border-blue-200 dark:border-blue-900"
                           }
                         >
                           <ClipboardList className="h-3 w-3 me-1" />
@@ -560,9 +561,9 @@ export function ClientBranchContracts({ branchId }: ClientBranchContractsProps) 
 
       {/* Completed Contracts - With Downloads */}
       {completedContracts.length > 0 && (
-        <Card className="border-blue-200 bg-blue-50/50">
+        <Card className="border-blue-200 dark:border-blue-900 bg-blue-50/50 dark:bg-blue-950/20">
           <CardHeader>
-            <CardTitle className="flex items-center gap-2 text-blue-800">
+            <CardTitle className="flex items-center gap-2 text-blue-800 dark:text-blue-400">
               <CheckCircle className="h-5 w-5" />
               {tc.completedContractsTitle}
             </CardTitle>
@@ -574,7 +575,7 @@ export function ClientBranchContracts({ branchId }: ClientBranchContractsProps) 
             {completedContracts.map((contract) => (
               <div
                 key={contract.id}
-                className="p-4 bg-white border rounded-lg"
+                className="p-4 bg-white dark:bg-card border rounded-lg"
               >
                 <div className="flex items-start justify-between">
                   <div className="space-y-1">
@@ -591,7 +592,7 @@ export function ClientBranchContracts({ branchId }: ClientBranchContractsProps) 
                     <div className="flex items-center gap-4 text-sm text-muted-foreground">
                       {contract.startDate && contract.endDate && (
                         <span>
-                          {new Date(contract.startDate).toLocaleDateString(dateLocale)} - {new Date(contract.endDate).toLocaleDateString(dateLocale)}
+                          {formatDateUtil(contract.startDate, locale)} - {formatDateUtil(contract.endDate, locale)}
                         </span>
                       )}
                       <span className="font-medium text-green-700">
@@ -684,7 +685,7 @@ export function ClientBranchContracts({ branchId }: ClientBranchContractsProps) 
                       <span>{contract.fileName}</span>
                       {contract.startDate && contract.endDate && (
                         <span>
-                          {new Date(contract.startDate).toLocaleDateString(dateLocale)} - {new Date(contract.endDate).toLocaleDateString(dateLocale)}
+                          {formatDateUtil(contract.startDate, locale)} - {formatDateUtil(contract.endDate, locale)}
                         </span>
                       )}
                     </div>
@@ -739,7 +740,7 @@ export function ClientBranchContracts({ branchId }: ClientBranchContractsProps) 
                     <p className="text-xs text-muted-foreground mb-1">{tc.startDateLabel}</p>
                     <p className="font-medium text-sm flex items-center gap-1">
                       <Calendar className="h-3 w-3" />
-                      {new Date(selectedContract.startDate).toLocaleDateString(dateLocale)}
+                      {formatDateUtil(selectedContract.startDate, locale)}
                     </p>
                   </div>
                 )}
@@ -748,7 +749,7 @@ export function ClientBranchContracts({ branchId }: ClientBranchContractsProps) 
                     <p className="text-xs text-muted-foreground mb-1">{tc.endDateLabel}</p>
                     <p className="font-medium text-sm flex items-center gap-1">
                       <Calendar className="h-3 w-3" />
-                      {new Date(selectedContract.endDate).toLocaleDateString(dateLocale)}
+                      {formatDateUtil(selectedContract.endDate, locale)}
                     </p>
                   </div>
                 )}
@@ -765,7 +766,7 @@ export function ClientBranchContracts({ branchId }: ClientBranchContractsProps) 
                     {selectedContract.startSignedAt ? (
                       <>
                         <CheckCircle className="h-4 w-4 text-green-600" />
-                        <span>{tc.startSignedOn.replace('{date}', new Date(selectedContract.startSignedAt).toLocaleDateString(dateLocale))}</span>
+                        <span>{tc.startSignedOn.replace('{date}', formatDateUtil(selectedContract.startSignedAt, locale))}</span>
                       </>
                     ) : (
                       <>
@@ -778,7 +779,7 @@ export function ClientBranchContracts({ branchId }: ClientBranchContractsProps) 
                     {selectedContract.endSignedAt ? (
                       <>
                         <CheckCircle className="h-4 w-4 text-green-600" />
-                        <span>{tc.endSignedOn.replace('{date}', new Date(selectedContract.endSignedAt).toLocaleDateString(dateLocale))}</span>
+                        <span>{tc.endSignedOn.replace('{date}', formatDateUtil(selectedContract.endSignedAt, locale))}</span>
                       </>
                     ) : (
                       <>
@@ -821,10 +822,10 @@ export function ClientBranchContracts({ branchId }: ClientBranchContractsProps) 
                                 <div key={i} className="grid grid-cols-3 gap-2 text-sm">
                                   <div className="flex items-center gap-1">
                                     <Calendar className="h-3 w-3 text-muted-foreground" />
-                                    {date ? new Date(date).toLocaleDateString(dateLocale) : '—'}
+                                    {date ? formatDateUtil(date, locale) : '—'}
                                   </div>
                                   <div className="text-muted-foreground">
-                                    {paymentDueDates[i] ? new Date(paymentDueDates[i]).toLocaleDateString(dateLocale) : '—'}
+                                    {paymentDueDates[i] ? formatDateUtil(paymentDueDates[i], locale) : '—'}
                                   </div>
                                   <div className="font-medium">
                                     {paymentAmounts[i] ? `${t.dashboard.requestsList.sar} ${paymentAmounts[i]?.toLocaleString(dateLocale, { minimumFractionDigits: 2 })}` : '—'}
@@ -861,7 +862,7 @@ export function ClientBranchContracts({ branchId }: ClientBranchContractsProps) 
                         <TableRow key={payment.id}>
                           <TableCell className="font-medium">{tc.paymentNumberLabel.replace('{n}', String(payment.paymentNo))}</TableCell>
                           <TableCell>
-                            {payment.dueDate ? new Date(payment.dueDate).toLocaleDateString(dateLocale) : '—'}
+                            {payment.dueDate ? formatDateUtil(payment.dueDate, locale) : '—'}
                           </TableCell>
                           <TableCell>
                             {payment.amount ? `${t.dashboard.requestsList.sar} ${payment.amount.toLocaleString(dateLocale, { minimumFractionDigits: 2 })}` : '—'}
@@ -991,13 +992,13 @@ export function ClientBranchContracts({ branchId }: ClientBranchContractsProps) 
 
           {contractToSign && (
             <div className="space-y-4">
-              <div className="p-4 bg-green-50 rounded-lg border border-green-200">
-                <p className="font-medium text-green-800">{contractToSign.title}</p>
-                <p className="text-sm text-green-700">
+              <div className="p-4 bg-green-50 dark:bg-green-950/40 rounded-lg border border-green-200 dark:border-green-900">
+                <p className="font-medium text-green-800 dark:text-green-400">{contractToSign.title}</p>
+                <p className="text-sm text-green-700 dark:text-green-400">
                   {tc.totalValueLabel} {t.dashboard.requestsList.sar} {(contractToSign.totalValue || 0).toLocaleString(dateLocale, { minimumFractionDigits: 2 })}
                 </p>
                 {contractToSign.project && (
-                  <p className="text-sm text-green-700 mt-1">
+                  <p className="text-sm text-green-700 dark:text-green-400 mt-1">
                     {tc.workOrdersCompletedCount.replace('{count}', String(contractToSign.project.checklists.flatMap(c => c.items).length))}
                   </p>
                 )}

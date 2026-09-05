@@ -67,6 +67,7 @@ import {
 import { useDraggable, useDroppable } from '@dnd-kit/core'
 import { api } from '@/lib/api-client'
 import { useTranslation } from '@/lib/i18n/use-translation'
+import { formatCurrency } from '@/lib/i18n/format-date'
 import {
   ServiceReportData,
   MaintenanceReportData,
@@ -185,13 +186,21 @@ interface ChecklistKanbanProps {
   userRole?: 'CONTRACTOR' | 'CLIENT' | 'TEAM_MEMBER'
 }
 
-const STAGES: { id: ChecklistItemStage; label: string; color: string; bgColor: string; icon: typeof Clock }[] = [
-  { id: 'SCHEDULED', label: 'مجدول', color: 'text-blue-700', bgColor: 'bg-blue-50 border-blue-200', icon: Calendar },
-  { id: 'IN_PROGRESS', label: 'قيد التنفيذ', color: 'text-orange-700', bgColor: 'bg-orange-50 border-orange-200', icon: Clock },
-  { id: 'FOR_REVIEW', label: 'للمراجعة', color: 'text-purple-700', bgColor: 'bg-purple-50 border-purple-200', icon: FileText },
-  { id: 'COMPLETED', label: 'مكتمل', color: 'text-green-700', bgColor: 'bg-green-50 border-green-200', icon: CheckCircle },
-  { id: 'ARCHIVED', label: 'مؤرشف', color: 'text-gray-600', bgColor: 'bg-gray-50 border-gray-300', icon: Archive },
-]
+type Stage = { id: ChecklistItemStage; label: string; color: string; bgColor: string; icon: typeof Clock }
+
+// Column labels must come from the active translation — this used to be a module-scope
+// constant with hardcoded Arabic labels, which meant the Kanban column headers never
+// reacted to the selected language. Called once per render inside the component body.
+function getStages(t: ReturnType<typeof useTranslation>['t']): Stage[] {
+  const tk = t.dashboard.checklistKanban
+  return [
+    { id: 'SCHEDULED', label: tk.stageScheduled, color: 'text-blue-700 dark:text-blue-400', bgColor: 'bg-blue-50 dark:bg-blue-950/40 border-blue-200 dark:border-blue-900', icon: Calendar },
+    { id: 'IN_PROGRESS', label: tk.stageInProgress, color: 'text-orange-700 dark:text-orange-400', bgColor: 'bg-orange-50 dark:bg-orange-950/40 border-orange-200 dark:border-orange-900', icon: Clock },
+    { id: 'FOR_REVIEW', label: tk.stageForReview, color: 'text-purple-700 dark:text-purple-400', bgColor: 'bg-purple-50 dark:bg-purple-950/40 border-purple-200 dark:border-purple-900', icon: FileText },
+    { id: 'COMPLETED', label: tk.stageCompleted, color: 'text-green-700 dark:text-green-400', bgColor: 'bg-green-50 dark:bg-green-950/40 border-green-200 dark:border-green-900', icon: CheckCircle },
+    { id: 'ARCHIVED', label: tk.stageArchived, color: 'text-gray-600 dark:text-gray-400', bgColor: 'bg-gray-50 dark:bg-gray-900 border-gray-300 dark:border-gray-700', icon: Archive },
+  ]
+}
 
 // Allowed stage transitions
 // Contractor: SCHEDULED → IN_PROGRESS → FOR_REVIEW
@@ -230,13 +239,18 @@ function DraggableCard({
   disabled,
   assigneeName,
   clickable = true,
+  t,
+  locale,
 }: {
   item: ChecklistItem
   onClick: () => void
   disabled: boolean
   assigneeName?: string | null
   clickable?: boolean
+  t: ReturnType<typeof useTranslation>['t']
+  locale: ReturnType<typeof useTranslation>['locale']
 }) {
+  const tk = t.dashboard.checklistKanban
   const { attributes, listeners, setNodeRef, transform, isDragging } = useDraggable({
     id: item.id,
     data: { item },
@@ -251,10 +265,10 @@ function DraggableCard({
   } : undefined
 
   const priorityStyles: Record<DatePriority, string> = {
-    'overdue': 'border-red-500 border-2 bg-red-50',
-    'due-today': 'border-orange-500 border-2 bg-orange-50',
-    'due-soon': 'border-yellow-500 border-2 bg-yellow-50',
-    'normal': 'border bg-white',
+    'overdue': 'border-red-500 border-2 bg-red-50 dark:bg-red-950/40',
+    'due-today': 'border-orange-500 border-2 bg-orange-50 dark:bg-orange-950/40',
+    'due-soon': 'border-yellow-500 border-2 bg-yellow-50 dark:bg-yellow-950/40',
+    'normal': 'border bg-white dark:bg-card',
   }
 
   // Special styling for archived items
@@ -268,15 +282,15 @@ function DraggableCard({
   const hasNoPrice = item.price === null
 
   // Determine card styling based on acceptance and price
-  let cardStyle = isArchived ? 'border border-gray-300 bg-gray-100 opacity-75' : priorityStyles[priority]
+  let cardStyle = isArchived ? 'border border-gray-300 dark:border-gray-700 bg-gray-100 dark:bg-gray-900 opacity-75' : priorityStyles[priority]
 
   // Orange border for FOR_REVIEW cards without price (blocking completion)
   if (isInReview && hasNoPrice) {
-    cardStyle = 'border-2 border-orange-500 bg-orange-50'
+    cardStyle = 'border-2 border-orange-500 bg-orange-50 dark:bg-orange-950/40'
   } else if (isInReview && bothAccepted) {
-    cardStyle = 'border-2 border-green-500 bg-green-50'
+    cardStyle = 'border-2 border-green-500 bg-green-50 dark:bg-green-950/40'
   } else if (isInReview && (hasClientAcceptance || hasSupervisorAcceptance)) {
-    cardStyle = 'border-2 border-blue-500 bg-blue-50'
+    cardStyle = 'border-2 border-blue-500 bg-blue-50 dark:bg-blue-950/40'
   }
 
   return (
@@ -305,7 +319,7 @@ function DraggableCard({
         <div className="flex-1 min-w-0">
           {item.workOrderNumber && (
             <span className="text-xs font-mono bg-muted px-1.5 py-0.5 rounded text-muted-foreground mb-1 inline-block">
-              أمر-{String(item.workOrderNumber).padStart(4, '0')}
+              {tk.workOrderPrefix}-{String(item.workOrderNumber).padStart(4, '0')}
             </span>
           )}
           <p className="font-medium text-sm line-clamp-2 mb-2">
@@ -315,39 +329,39 @@ function DraggableCard({
           {/* Priority badges */}
           {priority === 'overdue' && (
             <Badge variant="destructive" className="text-xs mb-2">
-              متأخر {Math.abs(daysOverdue)} يوم
+              {tk.overdueDays.replace('{days}', String(Math.abs(daysOverdue)))}
             </Badge>
           )}
           {priority === 'due-today' && (
             <Badge className="text-xs mb-2 bg-orange-500">
-              مستحق اليوم
+              {tk.dueToday}
             </Badge>
           )}
           {priority === 'due-soon' && (
             <Badge className="text-xs mb-2 bg-yellow-500 text-yellow-900">
-              مستحق خلال {daysOverdue} يوم
+              {tk.dueInDays.replace('{days}', String(daysOverdue))}
             </Badge>
           )}
 
           <div className="flex items-center justify-between text-xs text-muted-foreground">
             <div className="flex items-center gap-1 flex-wrap">
               {isArchived ? (
-                <Badge variant="outline" className="text-xs border-gray-400 text-gray-600 bg-gray-200">
+                <Badge variant="outline" className="text-xs border-gray-400 dark:border-gray-700 text-gray-600 dark:text-gray-400 bg-gray-200 dark:bg-gray-800">
                   <Archive className="h-3 w-3 me-1" />
-                  مؤرشف
+                  {tk.stageArchived}
                 </Badge>
               ) : item.type === 'ADHOC' ? (
-                <Badge variant="outline" className="text-xs border-yellow-300 text-yellow-700 bg-yellow-50">
-                  مؤقت
+                <Badge variant="outline" className="text-xs border-yellow-300 dark:border-yellow-900 text-yellow-700 dark:text-yellow-400 bg-yellow-50 dark:bg-yellow-950/40">
+                  {tk.typeAdhoc}
                 </Badge>
               ) : (
-                <Badge variant="outline" className="text-xs border-blue-300 text-blue-700 bg-blue-50">
-                  مجدول
+                <Badge variant="outline" className="text-xs border-blue-300 dark:border-blue-900 text-blue-700 dark:text-blue-400 bg-blue-50 dark:bg-blue-950/40">
+                  {tk.stageScheduled}
                 </Badge>
               )}
               {!isArchived && item.price === null && (
-                <Badge variant="outline" className="text-xs border-orange-300 text-orange-700 bg-orange-50">
-                  بانتظار السعر
+                <Badge variant="outline" className="text-xs border-orange-300 dark:border-orange-900 text-orange-700 dark:text-orange-400 bg-orange-50 dark:bg-orange-950/40">
+                  {tk.awaitingPrice}
                 </Badge>
               )}
             </div>
@@ -355,21 +369,21 @@ function DraggableCard({
             {!isArchived && item.scheduledDate && (
               <div className="flex items-center gap-1">
                 <Calendar className="h-3 w-3" />
-                {formatDate(item.scheduledDate)}
+                {formatDate(item.scheduledDate, locale, { month: 'short', day: 'numeric' })}
               </div>
             )}
 
             {isArchived && item.deletedAt && (
               <div className="flex items-center gap-1 text-gray-500">
                 <Clock className="h-3 w-3" />
-                {formatDate(item.deletedAt)}
+                {formatDate(item.deletedAt, locale, { month: 'short', day: 'numeric' })}
               </div>
             )}
           </div>
 
           {item.price && (
             <div className="mt-2 text-xs font-medium text-green-700">
-              {formatCurrency(item.price)}
+              {formatCurrency(item.price, locale)}
             </div>
           )}
 
@@ -382,14 +396,14 @@ function DraggableCard({
           {/* Contract Work Order badge */}
           {item.contractTitle && (
             <div className="mt-2 space-y-1">
-              <Badge variant="outline" className="text-xs border-purple-300 text-purple-700 bg-purple-50">
+              <Badge variant="outline" className="text-xs border-purple-300 dark:border-purple-900 text-purple-700 dark:text-purple-400 bg-purple-50 dark:bg-purple-950/40">
                 <ClipboardList className="h-3 w-3 me-1" />
-                أمر عمل تعاقدي
+                {tk.contractWorkOrder}
               </Badge>
               <div className="text-xs text-purple-600 truncate">{item.contractTitle}</div>
               {item.paymentDueDate && (
                 <div className="text-xs text-muted-foreground">
-                  استحقاق الدفع: {new Date(item.paymentDueDate).toLocaleDateString('ar-SA-u-nu-latn')}
+                  {tk.paymentDue} {formatDate(item.paymentDueDate, locale)}
                 </div>
               )}
             </div>
@@ -406,15 +420,15 @@ function DraggableCard({
           {isInReview && (hasClientAcceptance || hasSupervisorAcceptance) && (
             <div className="mt-2 flex items-center gap-1 flex-wrap">
               {hasSupervisorAcceptance && (
-                <Badge variant="outline" className="text-xs border-green-500 text-green-700 bg-green-100">
+                <Badge variant="outline" className="text-xs border-green-500 dark:border-green-800 text-green-700 dark:text-green-400 bg-green-100 dark:bg-green-950/40">
                   <CheckCircle className="h-3 w-3 me-1" />
-                  المشرف
+                  {tk.roleSupervisor}
                 </Badge>
               )}
               {hasClientAcceptance && (
-                <Badge variant="outline" className="text-xs border-green-500 text-green-700 bg-green-100">
+                <Badge variant="outline" className="text-xs border-green-500 dark:border-green-800 text-green-700 dark:text-green-400 bg-green-100 dark:bg-green-950/40">
                   <CheckCircle className="h-3 w-3 me-1" />
-                  العميل
+                  {tk.roleClient}
                 </Badge>
               )}
             </div>
@@ -433,7 +447,7 @@ function DroppableColumn({
   isOver,
   onHeaderClick
 }: {
-  stage: typeof STAGES[number]
+  stage: Stage
   count: number
   children: React.ReactNode
   isOver: boolean
@@ -478,16 +492,17 @@ function DroppableColumn({
   )
 }
 
-function formatDate(dateString: string | null, locale: 'en' | 'ar' = 'ar') {
+// `options` is optional (not defaulted) so a call site that wants the browser's plain
+// numeric date (year/month/day, no options) can omit it — passing a default here would
+// force every call site into the same short month/day shape.
+function formatDate(dateString: string | null, locale: 'en' | 'ar' = 'ar', options?: Intl.DateTimeFormatOptions) {
   if (!dateString) return null
-  return new Date(dateString).toLocaleDateString(locale === 'ar' ? 'ar-SA-u-nu-latn' : 'en-US', {
-    month: 'short',
-    day: 'numeric',
-  })
+  return new Date(dateString).toLocaleDateString(locale === 'ar' ? 'ar-SA-u-nu-latn' : 'en-US', options)
 }
 
-function formatCurrency(amount: number) {
-  return `ر.س ${amount.toLocaleString('ar-SA-u-nu-latn', { minimumFractionDigits: 2 })}`
+function formatTime(dateString: string | null, locale: 'en' | 'ar' = 'ar') {
+  if (!dateString) return null
+  return new Date(dateString).toLocaleTimeString(locale === 'ar' ? 'ar-SA-u-nu-latn' : 'en-US')
 }
 
 // Date priority types for visual indicators
@@ -563,10 +578,12 @@ function sortByPriority(items: ChecklistItem[]): ChecklistItem[] {
 export function ChecklistKanban({ branchId, readOnly = false, userRole }: ChecklistKanbanProps) {
   const router = useRouter()
   const { t, locale } = useTranslation()
+  const tk = t.dashboard.checklistKanban
+  const stages = getStages(t)
   const [items, setItems] = useState<ChecklistItem[]>([])
   const [loading, setLoading] = useState(true)
   const [columnModalOpen, setColumnModalOpen] = useState(false)
-  const [selectedStage, setSelectedStage] = useState<typeof STAGES[number] | null>(null)
+  const [selectedStage, setSelectedStage] = useState<Stage | null>(null)
   const [selectedItem, setSelectedItem] = useState<ChecklistItem | null>(null)
   const [detailsOpen, setDetailsOpen] = useState(false)
   const [updating, setUpdating] = useState(false)
@@ -723,7 +740,7 @@ export function ChecklistKanban({ branchId, readOnly = false, userRole }: Checkl
     return sortByPriority(stageItems)
   }
 
-  const handleColumnHeaderClick = (stage: typeof STAGES[number]) => {
+  const handleColumnHeaderClick = (stage: Stage) => {
     setSelectedStage(stage)
     setColumnModalOpen(true)
   }
@@ -1230,14 +1247,14 @@ export function ChecklistKanban({ branchId, readOnly = false, userRole }: Checkl
             <div>
               <CardTitle className="flex items-center gap-2">
                 <ClipboardList className="h-5 w-5" />
-                Work Orders
+                {tk.title}
               </CardTitle>
               <CardDescription>
-                عرض كانبان لجميع أوامر العمل المعتمدة
+                {tk.subtitle}
               </CardDescription>
             </div>
             <div className="text-sm text-muted-foreground">
-              {items.length} عنصر
+              {tk.itemCount.replace('{count}', String(items.length))}
             </div>
           </div>
         </CardHeader>
@@ -1245,9 +1262,9 @@ export function ChecklistKanban({ branchId, readOnly = false, userRole }: Checkl
           {items.length === 0 ? (
             <div className="text-center py-12 bg-muted/50 rounded-lg">
               <ClipboardList className="h-12 w-12 text-muted-foreground/50 mx-auto mb-4" />
-              <p className="text-muted-foreground mb-2">لا توجد أوامر عمل بعد</p>
+              <p className="text-muted-foreground mb-2">{tk.noWorkOrdersYet}</p>
               <p className="text-sm text-muted-foreground">
-                ستظهر أوامر العمل هنا بعد الموافقة على التسعيرات
+                {tk.workOrdersAppearAfterApproval}
               </p>
             </div>
           ) : (
@@ -1259,7 +1276,7 @@ export function ChecklistKanban({ branchId, readOnly = false, userRole }: Checkl
               onDragEnd={handleDragEnd}
             >
               <div className="flex gap-4 overflow-x-auto pb-4">
-                {STAGES.map((stage) => {
+                {stages.map((stage) => {
                   const stageItems = getItemsByStage(stage.id)
 
                   return (
@@ -1289,13 +1306,15 @@ export function ChecklistKanban({ branchId, readOnly = false, userRole }: Checkl
                             disabled={!canDrag}
                             clickable={canClick}
                             assigneeName={item.assignedTo ? teamMemberMap[item.assignedTo] || null : null}
+                            t={t}
+                            locale={locale}
                           />
                         )
                       })}
 
                       {stageItems.length === 0 && (
                         <div className="text-center py-8 text-muted-foreground text-sm">
-                          لا توجد عناصر
+                          {tk.noItems}
                         </div>
                       )}
                     </DroppableColumn>
@@ -1324,10 +1343,10 @@ export function ChecklistKanban({ branchId, readOnly = false, userRole }: Checkl
           <DialogHeader>
             <DialogTitle className="flex items-center gap-2">
               <ClipboardCheck className="h-5 w-5" />
-              Work Order Details
+              {tk.workOrderDetailsTitle}
             </DialogTitle>
             <DialogDescription>
-              {inspectionMode ? 'Fill in the report details' : 'View and manage this work order'}
+              {inspectionMode ? tk.fillReportDetails : tk.viewManageWorkOrder}
             </DialogDescription>
           </DialogHeader>
 
@@ -1338,21 +1357,21 @@ export function ChecklistKanban({ branchId, readOnly = false, userRole }: Checkl
                 <h4 className="font-medium mb-2">{selectedItem.description}</h4>
                 <div className="flex items-center gap-2 flex-wrap">
                   <Badge className={cn(
-                    STAGES.find(s => s.id === selectedItem.stage)?.bgColor,
-                    STAGES.find(s => s.id === selectedItem.stage)?.color
+                    stages.find(s => s.id === selectedItem.stage)?.bgColor,
+                    stages.find(s => s.id === selectedItem.stage)?.color
                   )}>
-                    {STAGES.find(s => s.id === selectedItem.stage)?.label}
+                    {stages.find(s => s.id === selectedItem.stage)?.label}
                   </Badge>
                   <Badge variant="outline">
-                    {selectedItem.type === 'ADHOC' ? 'مؤقت' : 'مجدول'}
+                    {selectedItem.type === 'ADHOC' ? tk.typeAdhoc : tk.stageScheduled}
                   </Badge>
                   {selectedItem.workOrderType && (
                     <Badge variant="secondary">
-                      {selectedItem.workOrderType === 'SERVICE' ? 'خدمة' :
-                        selectedItem.workOrderType === 'INSPECTION' ? 'تفتيش' :
-                          selectedItem.workOrderType === 'MAINTENANCE' ? 'صيانة' :
-                            selectedItem.workOrderType === 'INSTALLATION' ? 'تركيب' :
-                              selectedItem.workOrderType === 'STICKER_INSPECTION' ? 'تفتيش ملصقات' : 'أخرى'}
+                      {selectedItem.workOrderType === 'SERVICE' ? tk.workOrderTypeService :
+                        selectedItem.workOrderType === 'INSPECTION' ? tk.workOrderTypeInspection :
+                          selectedItem.workOrderType === 'MAINTENANCE' ? tk.workOrderTypeMaintenance :
+                            selectedItem.workOrderType === 'INSTALLATION' ? tk.workOrderTypeInstallation :
+                              selectedItem.workOrderType === 'STICKER_INSPECTION' ? tk.workOrderTypeStickerInspection : tk.workOrderTypeOther}
                     </Badge>
                   )}
                 </div>
@@ -1362,10 +1381,10 @@ export function ChecklistKanban({ branchId, readOnly = false, userRole }: Checkl
               <div className="grid grid-cols-2 md:grid-cols-3 gap-4 text-sm">
                 {selectedItem.scheduledDate && (
                   <div>
-                    <p className="text-muted-foreground">مجدول</p>
+                    <p className="text-muted-foreground">{tk.stageScheduled}</p>
                     <p className="font-medium flex items-center gap-1">
                       <Calendar className="h-4 w-4" />
-                      {new Date(selectedItem.scheduledDate).toLocaleDateString('ar-SA-u-nu-latn')}
+                      {formatDate(selectedItem.scheduledDate, locale)}
                     </p>
                     {/* Reschedule button - only for SCHEDULED stage and contractors */}
                     {!readOnly && userRole !== 'CLIENT' && selectedItem.stage === 'SCHEDULED' && (
@@ -1379,22 +1398,22 @@ export function ChecklistKanban({ branchId, readOnly = false, userRole }: Checkl
                           })
                           setRescheduleDialogOpen(true)
                         }}
-                        className="h-7 text-xs mt-2 text-blue-700 border-blue-300 hover:bg-blue-50"
+                        className="h-7 text-xs mt-2 text-blue-700 dark:text-blue-400 border-blue-300 dark:border-blue-900 hover:bg-blue-50 dark:hover:bg-blue-950/40"
                       >
                         <CalendarClock className="h-3 w-3 me-1" />
-                        Reschedule
+                        {tk.reschedule}
                       </Button>
                     )}
                   </div>
                 )}
                 <div>
-                  <p className="text-muted-foreground">السعر</p>
+                  <p className="text-muted-foreground">{tk.price}</p>
                   {selectedItem.price ? (
-                    <p className="font-semibold text-green-700">{formatCurrency(selectedItem.price)}</p>
+                    <p className="font-semibold text-green-700">{formatCurrency(selectedItem.price, locale)}</p>
                   ) : (
                     <div className="flex flex-col gap-2">
-                      <Badge variant="outline" className="text-xs border-orange-300 text-orange-700 bg-orange-50 w-fit">
-                        No Price Set
+                      <Badge variant="outline" className="text-xs border-orange-300 dark:border-orange-900 text-orange-700 dark:text-orange-400 bg-orange-50 dark:bg-orange-950/40 w-fit">
+                        {tk.noPriceSet}
                       </Badge>
                       {!readOnly && userRole !== 'CLIENT' ? (
                         <Button
@@ -1406,11 +1425,11 @@ export function ChecklistKanban({ branchId, readOnly = false, userRole }: Checkl
                           }}
                           className="h-7 text-xs w-fit"
                         >
-                          Set Price
+                          {t.uiComponents.priceDialog.setPrice}
                         </Button>
                       ) : userRole === 'CLIENT' ? (
                         <p className="text-xs text-muted-foreground italic">
-                          بانتظار المقاول لتحديد السعر
+                          {tk.awaitingContractorPrice}
                         </p>
                       ) : null}
                     </div>
@@ -1418,7 +1437,7 @@ export function ChecklistKanban({ branchId, readOnly = false, userRole }: Checkl
                 </div>
                 {selectedItem.projectTitle && (
                   <div>
-                    <p className="text-muted-foreground">المشروع</p>
+                    <p className="text-muted-foreground">{tk.project}</p>
                     <p className="font-medium">{selectedItem.projectTitle}</p>
                   </div>
                 )}
@@ -1426,17 +1445,17 @@ export function ChecklistKanban({ branchId, readOnly = false, userRole }: Checkl
 
               {/* Assigned Personnel */}
               <div className="p-4 bg-muted/50 rounded-lg">
-                <Label className="text-sm text-muted-foreground mb-2 block">الموظفون المعينون</Label>
+                <Label className="text-sm text-muted-foreground mb-2 block">{tk.assignedPersonnel}</Label>
                 {userRole === 'CONTRACTOR' ? (
                   <Select
                     value={selectedItem.assignedTo || 'unassigned'}
                     onValueChange={(value) => handleAssignPersonnel(selectedItem.id, value === 'unassigned' ? null : value)}
                   >
                     <SelectTrigger className="w-full">
-                      <SelectValue placeholder="غير معين" />
+                      <SelectValue placeholder={tk.unassigned} />
                     </SelectTrigger>
                     <SelectContent>
-                      <SelectItem value="unassigned">غير معين</SelectItem>
+                      <SelectItem value="unassigned">{tk.unassigned}</SelectItem>
                       {teamMembers.map((member) => (
                         <SelectItem key={member.userId} value={member.userId}>
                           {member.user.name || member.user.email} ({member.teamRole.toLowerCase()})
@@ -1454,12 +1473,12 @@ export function ChecklistKanban({ branchId, readOnly = false, userRole }: Checkl
                       className="font-medium flex items-center gap-1 text-primary hover:underline cursor-pointer"
                     >
                       <User className="h-4 w-4" />
-                      {teamMemberMap[selectedItem.assignedTo] || 'غير معروف'}
+                      {teamMemberMap[selectedItem.assignedTo] || tk.unknown}
                     </button>
                   ) : (
                     <p className="font-medium flex items-center gap-1 text-muted-foreground">
                       <User className="h-4 w-4" />
-                      Unassigned
+                      {tk.unassigned}
                     </p>
                   )
                 )}
@@ -1473,15 +1492,15 @@ export function ChecklistKanban({ branchId, readOnly = false, userRole }: Checkl
                       {/* Dynamic Report Form Header */}
                       <h4 className="font-semibold flex items-center gap-2 text-blue-600">
                         <FileText className="h-4 w-4" />
-                        {selectedItem.workOrderType === 'SERVICE' ? 'تقرير خدمة' :
-                          selectedItem.workOrderType === 'INSTALLATION' ? 'تقرير تركيب' :
-                            selectedItem.workOrderType === 'MAINTENANCE' ? 'تقرير صيانة' :
-                              selectedItem.workOrderType === 'INSPECTION' ? 'تقرير تفتيش' : 'تقرير عمل'}
+                        {selectedItem.workOrderType === 'SERVICE' ? tk.reportTypeService :
+                          selectedItem.workOrderType === 'INSTALLATION' ? tk.reportTypeInstallation :
+                            selectedItem.workOrderType === 'MAINTENANCE' ? tk.reportTypeMaintenance :
+                              selectedItem.workOrderType === 'INSPECTION' ? tk.reportTypeInspection : tk.reportTypeGeneric}
                       </h4>
 
                       {/* Date Field - Universal */}
                       <div className="space-y-2">
-                        <Label htmlFor="inspectionDate">التاريخ</Label>
+                        <Label htmlFor="inspectionDate">{tk.date}</Label>
                         <Input
                           id="inspectionDate"
                           type="date"
@@ -1494,51 +1513,51 @@ export function ChecklistKanban({ branchId, readOnly = false, userRole }: Checkl
                       {selectedItem.workOrderType === 'SERVICE' && (
                         <>
                           <div className="space-y-2">
-                            <Label htmlFor="problemScope">المشكلة المبلغة</Label>
+                            <Label htmlFor="problemScope">{tk.problemReported}</Label>
                             <Textarea
                               id="problemScope"
                               value={inspectionData.problemScope}
                               onChange={(e) => setInspectionData({ ...inspectionData, problemScope: e.target.value })}
-                              placeholder="ما هي المشكلة المبلغة..."
+                              placeholder={tk.problemReportedPlaceholder}
                               rows={2}
                             />
                           </div>
                           <div className="space-y-2">
-                            <Label htmlFor="findings">النتائج</Label>
+                            <Label htmlFor="findings">{tk.findings}</Label>
                             <Textarea
                               id="findings"
                               value={inspectionData.findings}
                               onChange={(e) => setInspectionData({ ...inspectionData, findings: e.target.value })}
-                              placeholder="ما الذي تم اكتشافه..."
+                              placeholder={tk.findingsPlaceholder}
                               rows={2}
                             />
                           </div>
                           <div className="space-y-2">
-                            <Label htmlFor="actionTaken">الإجراء المتخذ</Label>
+                            <Label htmlFor="actionTaken">{tk.actionTaken}</Label>
                             <Textarea
                               id="actionTaken"
                               value={inspectionData.actionTaken}
                               onChange={(e) => setInspectionData({ ...inspectionData, actionTaken: e.target.value })}
-                              placeholder="ما الذي تم عمله لإصلاح المشكلة..."
+                              placeholder={tk.actionTakenPlaceholder}
                               rows={2}
                             />
                           </div>
                           <div className="space-y-2">
-                            <Label htmlFor="partsReplaced">القطع المستبدلة</Label>
+                            <Label htmlFor="partsReplaced">{tk.partsReplaced}</Label>
                             <Input
                               id="partsReplaced"
                               value={inspectionData.partsReplaced}
                               onChange={(e) => setInspectionData({ ...inspectionData, partsReplaced: e.target.value })}
-                              placeholder="مثال: 1x كاشف دخان، 2x بطاريات"
+                              placeholder={tk.partsReplacedPlaceholder}
                             />
                           </div>
                           <div className="space-y-2">
-                            <Label>حالة النظام</Label>
+                            <Label>{tk.systemStatus}</Label>
                             <div className="flex gap-2">
                               {[
-                                { value: 'WORKING', label: '✅ يعمل', color: 'bg-green-100 border-green-500 text-green-700' },
-                                { value: 'NEEDS_ATTENTION', label: '⚠️ يحتاج انتباه', color: 'bg-yellow-100 border-yellow-500 text-yellow-700' },
-                                { value: 'CRITICAL', label: '❌ حرج', color: 'bg-red-100 border-red-500 text-red-700' },
+                                { value: 'WORKING', label: tk.statusWorking, color: 'bg-green-100 dark:bg-green-950/40 border-green-500 dark:border-green-700 text-green-700 dark:text-green-400' },
+                                { value: 'NEEDS_ATTENTION', label: tk.statusNeedsAttention, color: 'bg-yellow-100 dark:bg-yellow-950/40 border-yellow-500 dark:border-yellow-700 text-yellow-700 dark:text-yellow-400' },
+                                { value: 'CRITICAL', label: tk.statusCritical, color: 'bg-red-100 dark:bg-red-950/40 border-red-500 dark:border-red-700 text-red-700 dark:text-red-400' },
                               ].map((status) => (
                                 <button
                                   key={status.value}
@@ -1546,7 +1565,7 @@ export function ChecklistKanban({ branchId, readOnly = false, userRole }: Checkl
                                   onClick={() => setInspectionData({ ...inspectionData, systemStatus: status.value as 'WORKING' | 'NEEDS_ATTENTION' | 'CRITICAL' })}
                                   className={`flex-1 py-2 px-3 rounded-lg border-2 text-sm font-medium transition-all ${inspectionData.systemStatus === status.value
                                     ? status.color + ' border-2'
-                                    : 'bg-gray-50 border-gray-200 text-gray-600 hover:bg-gray-100'
+                                    : 'bg-gray-50 dark:bg-gray-900 border-gray-200 dark:border-gray-800 text-gray-600 dark:text-gray-400 hover:bg-gray-100 dark:hover:bg-gray-800'
                                     }`}
                                 >
                                   {status.label}
@@ -1561,52 +1580,52 @@ export function ChecklistKanban({ branchId, readOnly = false, userRole }: Checkl
                       {selectedItem.workOrderType === 'INSTALLATION' && (
                         <>
                           <div className="space-y-2">
-                            <Label htmlFor="problemScope">نطاق التركيب</Label>
+                            <Label htmlFor="problemScope">{tk.installationScope}</Label>
                             <Textarea
                               id="problemScope"
                               value={inspectionData.problemScope}
                               onChange={(e) => setInspectionData({ ...inspectionData, problemScope: e.target.value })}
-                              placeholder="ما الذي تم تركيبه..."
+                              placeholder={tk.installationScopePlaceholder}
                               rows={2}
                             />
                           </div>
                           <div className="grid grid-cols-2 gap-4">
                             <div className="space-y-2">
-                              <Label htmlFor="equipmentInstalled">المعدات المركبة</Label>
+                              <Label htmlFor="equipmentInstalled">{tk.equipmentInstalled}</Label>
                               <Input
                                 id="equipmentInstalled"
                                 value={inspectionData.equipmentInstalled}
                                 onChange={(e) => setInspectionData({ ...inspectionData, equipmentInstalled: e.target.value })}
-                                placeholder="مثال: كواشف الدخان، MCPs"
+                                placeholder={tk.equipmentInstalledPlaceholder}
                               />
                             </div>
                             <div className="space-y-2">
-                              <Label htmlFor="installQuantity">الكمية</Label>
+                              <Label htmlFor="installQuantity">{tk.quantity}</Label>
                               <Input
                                 id="installQuantity"
                                 value={inspectionData.installQuantity}
                                 onChange={(e) => setInspectionData({ ...inspectionData, installQuantity: e.target.value })}
-                                placeholder="مثال: 12 جهاز"
+                                placeholder={tk.quantityPlaceholder}
                               />
                             </div>
                           </div>
                           <div className="space-y-2">
-                            <Label htmlFor="findings">نتيجة الاختبار</Label>
+                            <Label htmlFor="findings">{tk.testResultLabel}</Label>
                             <Textarea
                               id="findings"
                               value={inspectionData.findings}
                               onChange={(e) => setInspectionData({ ...inspectionData, findings: e.target.value })}
-                              placeholder="نتائج الاختبار..."
+                              placeholder={tk.testResultPlaceholder}
                               rows={2}
                             />
                           </div>
                           <div className="space-y-2">
-                            <Label>حالة الإكمال</Label>
+                            <Label>{tk.completionStatus}</Label>
                             <div className="flex gap-2">
                               {[
-                                { value: 'COMPLETED', label: '✅ مكتمل', color: 'bg-green-100 border-green-500 text-green-700' },
-                                { value: 'PARTIAL', label: '⚠️ جزئي', color: 'bg-yellow-100 border-yellow-500 text-yellow-700' },
-                                { value: 'PENDING', label: '⏳ قيد الانتظار', color: 'bg-gray-100 border-gray-500 text-gray-700' },
+                                { value: 'COMPLETED', label: tk.statusCompletedEmoji, color: 'bg-green-100 dark:bg-green-950/40 border-green-500 dark:border-green-700 text-green-700 dark:text-green-400' },
+                                { value: 'PARTIAL', label: tk.statusPartial, color: 'bg-yellow-100 dark:bg-yellow-950/40 border-yellow-500 dark:border-yellow-700 text-yellow-700 dark:text-yellow-400' },
+                                { value: 'PENDING', label: tk.statusPending, color: 'bg-gray-100 dark:bg-gray-800 border-gray-500 dark:border-gray-600 text-gray-700 dark:text-gray-300' },
                               ].map((status) => (
                                 <button
                                   key={status.value}
@@ -1614,7 +1633,7 @@ export function ChecklistKanban({ branchId, readOnly = false, userRole }: Checkl
                                   onClick={() => setInspectionData({ ...inspectionData, completionStatus: status.value as 'COMPLETED' | 'PARTIAL' | 'PENDING' })}
                                   className={`flex-1 py-2 px-3 rounded-lg border-2 text-sm font-medium transition-all ${inspectionData.completionStatus === status.value
                                     ? status.color + ' border-2'
-                                    : 'bg-gray-50 border-gray-200 text-gray-600 hover:bg-gray-100'
+                                    : 'bg-gray-50 dark:bg-gray-900 border-gray-200 dark:border-gray-800 text-gray-600 dark:text-gray-400 hover:bg-gray-100 dark:hover:bg-gray-800'
                                     }`}
                                 >
                                   {status.label}
@@ -1630,61 +1649,61 @@ export function ChecklistKanban({ branchId, readOnly = false, userRole }: Checkl
                         <>
                           <div className="grid grid-cols-2 gap-4">
                             <div className="space-y-2">
-                              <Label htmlFor="areasInspected">المناطق المفحوصة</Label>
+                              <Label htmlFor="areasInspected">{tk.areasInspected}</Label>
                               <Input
                                 id="areasInspected"
                                 value={inspectionData.areasInspected}
                                 onChange={(e) => setInspectionData({ ...inspectionData, areasInspected: e.target.value })}
-                                placeholder="مثال: الطابق الأرضي، غرفة الكهرباء"
+                                placeholder={tk.areasInspectedPlaceholder}
                               />
                             </div>
                             <div className="space-y-2">
-                              <Label htmlFor="systemsChecked">الأنظمة المفحوصة</Label>
+                              <Label htmlFor="systemsChecked">{tk.systemsChecked}</Label>
                               <Input
                                 id="systemsChecked"
                                 value={inspectionData.systemsChecked}
                                 onChange={(e) => setInspectionData({ ...inspectionData, systemsChecked: e.target.value })}
-                                placeholder="مثال: إنذار الحريق، مضخة الحريق"
+                                placeholder={tk.systemsCheckedPlaceholder}
                               />
                             </div>
                           </div>
                           <div className="space-y-2">
-                            <Label htmlFor="findings">النتائج</Label>
+                            <Label htmlFor="findings">{tk.findings}</Label>
                             <Textarea
                               id="findings"
                               value={inspectionData.findings}
                               onChange={(e) => setInspectionData({ ...inspectionData, findings: e.target.value })}
-                              placeholder="ما الذي تم اكتشافه أثناء التفتيش..."
+                              placeholder={tk.findingsPlaceholderInspection}
                               rows={2}
                             />
                           </div>
                           <div className="space-y-2">
-                            <Label htmlFor="deficiencies">النقائص</Label>
+                            <Label htmlFor="deficiencies">{tk.deficiencies}</Label>
                             <Textarea
                               id="deficiencies"
                               value={inspectionData.deficiencies}
                               onChange={(e) => setInspectionData({ ...inspectionData, deficiencies: e.target.value })}
-                              placeholder="المشاكل المكتشفة..."
+                              placeholder={tk.deficienciesPlaceholder}
                               rows={2}
                             />
                           </div>
                           <div className="space-y-2">
-                            <Label htmlFor="recommendations">التوصيات</Label>
+                            <Label htmlFor="recommendations">{tk.recommendations}</Label>
                             <Textarea
                               id="recommendations"
                               value={inspectionData.recommendations}
                               onChange={(e) => setInspectionData({ ...inspectionData, recommendations: e.target.value })}
-                              placeholder="ما الذي يجب عمله..."
+                              placeholder={tk.recommendationsPlaceholder}
                               rows={2}
                             />
                           </div>
                           <div className="space-y-2">
-                            <Label>نتيجة التفتيش</Label>
+                            <Label>{tk.inspectionResultLabel}</Label>
                             <div className="flex gap-2">
                               {[
-                                { value: 'PASSED', label: '✅ نجح', color: 'bg-green-100 border-green-500 text-green-700' },
-                                { value: 'ATTENTION_REQUIRED', label: '⚠️ يحتاج انتباه', color: 'bg-yellow-100 border-yellow-500 text-yellow-700' },
-                                { value: 'FAILED', label: '❌ فشل', color: 'bg-red-100 border-red-500 text-red-700' },
+                                { value: 'PASSED', label: tk.statusPassed, color: 'bg-green-100 dark:bg-green-950/40 border-green-500 dark:border-green-700 text-green-700 dark:text-green-400' },
+                                { value: 'ATTENTION_REQUIRED', label: tk.statusNeedsAttention, color: 'bg-yellow-100 dark:bg-yellow-950/40 border-yellow-500 dark:border-yellow-700 text-yellow-700 dark:text-yellow-400' },
+                                { value: 'FAILED', label: tk.statusFailed, color: 'bg-red-100 dark:bg-red-950/40 border-red-500 dark:border-red-700 text-red-700 dark:text-red-400' },
                               ].map((status) => (
                                 <button
                                   key={status.value}
@@ -1692,7 +1711,7 @@ export function ChecklistKanban({ branchId, readOnly = false, userRole }: Checkl
                                   onClick={() => setInspectionData({ ...inspectionData, inspectionResult: status.value as 'PASSED' | 'ATTENTION_REQUIRED' | 'FAILED' })}
                                   className={`flex-1 py-2 px-3 rounded-lg border-2 text-sm font-medium transition-all ${inspectionData.inspectionResult === status.value
                                     ? status.color + ' border-2'
-                                    : 'bg-gray-50 border-gray-200 text-gray-600 hover:bg-gray-100'
+                                    : 'bg-gray-50 dark:bg-gray-900 border-gray-200 dark:border-gray-800 text-gray-600 dark:text-gray-400 hover:bg-gray-100 dark:hover:bg-gray-800'
                                     }`}
                                 >
                                   {status.label}
@@ -1707,40 +1726,40 @@ export function ChecklistKanban({ branchId, readOnly = false, userRole }: Checkl
                       {selectedItem.workOrderType === 'MAINTENANCE' && (
                         <>
                           <div className="space-y-2">
-                            <Label htmlFor="systemsMaintained">الأنظمة التي تمت صيانتها</Label>
+                            <Label htmlFor="systemsMaintained">{tk.systemsMaintained}</Label>
                             <Input
                               id="systemsMaintained"
                               value={inspectionData.systemsMaintained}
                               onChange={(e) => setInspectionData({ ...inspectionData, systemsMaintained: e.target.value })}
-                              placeholder="مثال: نظام إنذار الحريق، مضخة الحريق"
+                              placeholder={tk.systemsMaintainedPlaceholder}
                             />
                           </div>
                           <div className="space-y-2">
-                            <Label htmlFor="maintenancePerformed">الصيانة المُنجزة</Label>
+                            <Label htmlFor="maintenancePerformed">{tk.maintenancePerformed}</Label>
                             <Textarea
                               id="maintenancePerformed"
                               value={inspectionData.maintenancePerformed}
                               onChange={(e) => setInspectionData({ ...inspectionData, maintenancePerformed: e.target.value })}
-                              placeholder="تنظيف، اختبار، معايرة..."
+                              placeholder={tk.maintenancePerformedPlaceholder}
                               rows={2}
                             />
                           </div>
                           <div className="space-y-2">
-                            <Label htmlFor="partsServiced">القطع التي تمت صيانتها</Label>
+                            <Label htmlFor="partsServiced">{tk.partsServiced}</Label>
                             <Input
                               id="partsServiced"
                               value={inspectionData.partsServiced}
                               onChange={(e) => setInspectionData({ ...inspectionData, partsServiced: e.target.value })}
-                              placeholder="مثال: كواشف الدخان، اللوحة"
+                              placeholder={tk.partsServicedPlaceholder}
                             />
                           </div>
                           <div className="space-y-2">
-                            <Label>نتيجة الاختبار</Label>
+                            <Label>{tk.testResultLabel}</Label>
                             <div className="flex gap-2">
                               {[
-                                { value: 'PASSED', label: '✅ نجح', color: 'bg-green-100 border-green-500 text-green-700' },
-                                { value: 'PARTIAL', label: '⚠️ جزئي', color: 'bg-yellow-100 border-yellow-500 text-yellow-700' },
-                                { value: 'FAILED', label: '❌ فشل', color: 'bg-red-100 border-red-500 text-red-700' },
+                                { value: 'PASSED', label: tk.statusPassed, color: 'bg-green-100 dark:bg-green-950/40 border-green-500 dark:border-green-700 text-green-700 dark:text-green-400' },
+                                { value: 'PARTIAL', label: tk.statusPartial, color: 'bg-yellow-100 dark:bg-yellow-950/40 border-yellow-500 dark:border-yellow-700 text-yellow-700 dark:text-yellow-400' },
+                                { value: 'FAILED', label: tk.statusFailed, color: 'bg-red-100 dark:bg-red-950/40 border-red-500 dark:border-red-700 text-red-700 dark:text-red-400' },
                               ].map((status) => (
                                 <button
                                   key={status.value}
@@ -1748,7 +1767,7 @@ export function ChecklistKanban({ branchId, readOnly = false, userRole }: Checkl
                                   onClick={() => setInspectionData({ ...inspectionData, testResult: status.value as 'PASSED' | 'PARTIAL' | 'FAILED' })}
                                   className={`flex-1 py-2 px-3 rounded-lg border-2 text-sm font-medium transition-all ${inspectionData.testResult === status.value
                                     ? status.color + ' border-2'
-                                    : 'bg-gray-50 border-gray-200 text-gray-600 hover:bg-gray-100'
+                                    : 'bg-gray-50 dark:bg-gray-900 border-gray-200 dark:border-gray-800 text-gray-600 dark:text-gray-400 hover:bg-gray-100 dark:hover:bg-gray-800'
                                     }`}
                                 >
                                   {status.label}
@@ -1757,7 +1776,7 @@ export function ChecklistKanban({ branchId, readOnly = false, userRole }: Checkl
                             </div>
                           </div>
                           <div className="space-y-2">
-                            <Label htmlFor="nextMaintenanceDate">تاريخ الصيانة القادمة</Label>
+                            <Label htmlFor="nextMaintenanceDate">{tk.nextMaintenanceDate}</Label>
                             <div className="flex gap-2">
                               <Input
                                 id="nextMaintenanceDate"
@@ -1767,22 +1786,18 @@ export function ChecklistKanban({ branchId, readOnly = false, userRole }: Checkl
                                 className="flex-1"
                               />
                               <div className="flex gap-1">
-                                {[
-                                  { label: '+٣ شهر', months: 3 },
-                                  { label: '+٦ شهر', months: 6 },
-                                  { label: '+١٢ شهر', months: 12 },
-                                ].map((opt) => (
+                                {[3, 6, 12].map((months) => (
                                   <button
-                                    key={opt.months}
+                                    key={months}
                                     type="button"
                                     onClick={() => {
                                       const date = new Date()
-                                      date.setMonth(date.getMonth() + opt.months)
+                                      date.setMonth(date.getMonth() + months)
                                       setInspectionData({ ...inspectionData, nextMaintenanceDate: date.toISOString().split('T')[0] })
                                     }}
-                                    className="px-2 py-1 text-xs bg-blue-50 text-blue-600 rounded hover:bg-blue-100"
+                                    className="px-2 py-1 text-xs bg-blue-50 dark:bg-blue-950/40 text-blue-600 dark:text-blue-400 rounded hover:bg-blue-100 dark:hover:bg-blue-950/60"
                                   >
-                                    {opt.label}
+                                    {tk.monthsSuffix.replace('{months}', String(months))}
                                   </button>
                                 ))}
                               </div>
@@ -1793,19 +1808,19 @@ export function ChecklistKanban({ branchId, readOnly = false, userRole }: Checkl
 
                       {/* Technician Notes - Universal */}
                       <div className="space-y-2">
-                        <Label htmlFor="technicianNotes">ملاحظات الفني <span className="text-xs text-muted-foreground">(اختياري)</span></Label>
+                        <Label htmlFor="technicianNotes">{tk.technicianNotes} <span className="text-xs text-muted-foreground">{tk.optional}</span></Label>
                         <Textarea
                           id="technicianNotes"
                           value={inspectionData.technicianNotes}
                           onChange={(e) => setInspectionData({ ...inspectionData, technicianNotes: e.target.value })}
-                          placeholder="أي ملاحظات إضافية..."
+                          placeholder={tk.technicianNotesPlaceholder}
                           rows={2}
                         />
                       </div>
 
                       {/* File Upload - Common for all report types */}
                       <div className="space-y-2">
-                        <Label>المرفقات</Label>
+                        <Label>{tk.attachments}</Label>
                         <FileUploadDropzone
                           onFilesSelected={(files) => {
                             const event = {
@@ -1819,23 +1834,22 @@ export function ChecklistKanban({ branchId, readOnly = false, userRole }: Checkl
                           uploading={uploadingPhoto}
                           uploadedFiles={inspectionPhotos}
                           onRemoveFile={removeInspectionPhoto}
-                          label="رفع ملفات (PDF، DOC، صور)"
                           showPreview={true}
                         />
                       </div>
 
                       {/* Equipment Inspection Section - Only for STICKER_INSPECTION work orders */}
                       {selectedItem.workOrderType === 'STICKER_INSPECTION' && selectedItem.equipment && selectedItem.equipment.length > 0 && (
-                        <div className="space-y-3 p-4 bg-amber-50 border border-amber-200 rounded-lg">
+                        <div className="space-y-3 p-4 bg-amber-50 dark:bg-amber-950/40 border border-amber-200 dark:border-amber-900 rounded-lg">
                           <div className="flex items-center justify-between">
-                            <h5 className="font-medium text-amber-800 flex items-center gap-2">
+                            <h5 className="font-medium text-amber-800 dark:text-amber-400 flex items-center gap-2">
                               <Tag className="h-4 w-4" />
-                              تفتيش المعدات ({selectedItem.equipment.length} عناصر)
+                              {tk.equipmentInspectionCount.replace('{count}', String(selectedItem.equipment.length))}
                             </h5>
                           </div>
                           <div className="space-y-2 max-h-60 overflow-y-auto">
                             {selectedItem.equipment.map((eq) => (
-                              <div key={eq.id} className="p-3 bg-white rounded-lg border border-amber-200">
+                              <div key={eq.id} className="p-3 bg-white dark:bg-card rounded-lg border border-amber-200 dark:border-amber-900">
                                 <div className="flex items-start justify-between">
                                   <div className="flex-1">
                                     <div className="flex items-center gap-2">
@@ -1852,23 +1866,23 @@ export function ChecklistKanban({ branchId, readOnly = false, userRole }: Checkl
                                     variant={eq.isInspected ? 'default' : 'secondary'}
                                     className={eq.isInspected ? 'bg-green-600' : ''}
                                   >
-                                    {eq.isInspected ? 'تم التفتيش' : 'قيد الانتظار'}
+                                    {eq.isInspected ? tk.inspected : tk.pending}
                                   </Badge>
                                 </div>
                                 {eq.isInspected && (
                                   <div className="mt-2 pt-2 border-t flex items-center gap-4 text-xs">
                                     {eq.certificateId ? (
                                       <span className="flex items-center gap-1 text-green-600">
-                                        <Award className="h-3 w-3" /> تم إصدار شهادة
+                                        <Award className="h-3 w-3" /> {tk.certificateIssued}
                                       </span>
                                     ) : (
                                       <span className="flex items-center gap-1 text-muted-foreground">
-                                        <Award className="h-3 w-3" /> لا توجد شهادة
+                                        <Award className="h-3 w-3" /> {tk.noCertificate}
                                       </span>
                                     )}
                                     {eq.stickerApplied && (
                                       <span className="flex items-center gap-1 text-green-600">
-                                        <Check className="h-3 w-3" /> Sticker
+                                        <Check className="h-3 w-3" /> {tk.stickerApplied}
                                       </span>
                                     )}
                                     {eq.inspectionResult && (
@@ -1881,19 +1895,19 @@ export function ChecklistKanban({ branchId, readOnly = false, userRole }: Checkl
                               </div>
                             ))}
                           </div>
-                          <p className="text-xs text-amber-600">
-                            يمكن تحديث تفاصيل تفتيش المعدات في تبويب المعدات
+                          <p className="text-xs text-amber-600 dark:text-amber-400">
+                            {tk.updateEquipmentInTab}
                           </p>
                         </div>
                       )}
 
                       <div className="flex gap-2 pt-4">
                         <Button variant="outline" onClick={() => setInspectionMode(false)} className="flex-1">
-                          Cancel
+                          {t.uiComponents.cancel}
                         </Button>
                         <Button onClick={handleSaveInspection} disabled={savingInspection} className="flex-1">
                           {savingInspection && <Loader2 className="me-2 h-4 w-4 animate-spin" />}
-                          Save Report
+                          {tk.saveReport}
                         </Button>
                       </div>
                     </div>
@@ -1901,7 +1915,7 @@ export function ChecklistKanban({ branchId, readOnly = false, userRole }: Checkl
                     <div className="flex gap-2 pt-4 border-t">
                       <Button variant="outline" onClick={() => setInspectionMode(true)} className="flex-1">
                         <FileText className="me-2 h-4 w-4" />
-                        Fill Report
+                        {tk.fillReport}
                       </Button>
                       <Button
                         onClick={() => handleSendToReview(selectedItem.id)}
@@ -1913,7 +1927,7 @@ export function ChecklistKanban({ branchId, readOnly = false, userRole }: Checkl
                         ) : (
                           <Send className="me-2 h-4 w-4" />
                         )}
-                        Send to Review
+                        {tk.sendToReview}
                       </Button>
                     </div>
                   )}
@@ -1932,46 +1946,46 @@ export function ChecklistKanban({ branchId, readOnly = false, userRole }: Checkl
                   <div className="space-y-4 border-t pt-4">
                     <h4 className="font-semibold flex items-center gap-2">
                       <FileText className="h-4 w-4" />
-                      Report
+                      {tk.report}
                     </h4>
 
                     {selectedItem.inspectionDate && (
                       <div>
                         <p className="text-sm text-muted-foreground">
-                          {selectedItem.workOrderType === 'INSTALLATION' ? 'تاريخ التركيب' :
-                            selectedItem.workOrderType === 'SERVICE' ? 'تاريخ الخدمة' :
-                              selectedItem.workOrderType === 'MAINTENANCE' ? 'تاريخ الصيانة' :
-                                selectedItem.workOrderType === 'INSPECTION' || selectedItem.workOrderType === 'STICKER_INSPECTION' ? 'تاريخ التفتيش' :
-                                  'التاريخ'}
+                          {selectedItem.workOrderType === 'INSTALLATION' ? tk.installationDate :
+                            selectedItem.workOrderType === 'SERVICE' ? tk.serviceDate :
+                              selectedItem.workOrderType === 'MAINTENANCE' ? tk.maintenanceDate :
+                                selectedItem.workOrderType === 'INSPECTION' || selectedItem.workOrderType === 'STICKER_INSPECTION' ? tk.inspectionDate :
+                                  tk.date}
                         </p>
-                        <p className="text-sm">{new Date(selectedItem.inspectionDate).toLocaleDateString('ar-SA-u-nu-latn')}</p>
+                        <p className="text-sm">{formatDate(selectedItem.inspectionDate, locale)}</p>
                       </div>
                     )}
 
                     {selectedItem.systemsChecked && (
                       <div>
-                        <p className="text-sm text-muted-foreground">الأنظمة المفحوصة</p>
+                        <p className="text-sm text-muted-foreground">{tk.systemsChecked}</p>
                         <p className="text-sm">{selectedItem.systemsChecked}</p>
                       </div>
                     )}
 
                     {selectedItem.findings && (
                       <div>
-                        <p className="text-sm text-muted-foreground">النتائج</p>
+                        <p className="text-sm text-muted-foreground">{tk.findings}</p>
                         <p className="text-sm whitespace-pre-wrap">{selectedItem.findings}</p>
                       </div>
                     )}
 
                     {selectedItem.deficiencies && (
                       <div>
-                        <p className="text-sm text-muted-foreground">النقائص</p>
+                        <p className="text-sm text-muted-foreground">{tk.deficiencies}</p>
                         <p className="text-sm whitespace-pre-wrap text-orange-700">{selectedItem.deficiencies}</p>
                       </div>
                     )}
 
                     {selectedItem.recommendations && (
                       <div>
-                        <p className="text-sm text-muted-foreground">التوصيات</p>
+                        <p className="text-sm text-muted-foreground">{tk.recommendations}</p>
                         <p className="text-sm whitespace-pre-wrap">{selectedItem.recommendations}</p>
                       </div>
                     )}
@@ -1979,13 +1993,13 @@ export function ChecklistKanban({ branchId, readOnly = false, userRole }: Checkl
                     {/* Photos */}
                     {selectedItem.photos && selectedItem.photos.length > 0 && (
                       <div>
-                        <p className="text-sm text-muted-foreground mb-2">الصور ({selectedItem.photos.length})</p>
+                        <p className="text-sm text-muted-foreground mb-2">{tk.photosCount.replace('{count}', String(selectedItem.photos.length))}</p>
                         <div className="flex flex-wrap gap-2">
                           {selectedItem.photos.map((photo) => photo?.url ? (
                             <a key={photo.id} href={photo.url} target="_blank" rel="noopener noreferrer">
                               <img
                                 src={photo.url}
-                                alt={photo.caption || 'صورة تفتيش'}
+                                alt={photo.caption || tk.inspectionPhotoAlt}
                                 className="h-20 w-20 object-cover rounded-lg border hover:opacity-80"
                               />
                             </a>
@@ -2000,14 +2014,14 @@ export function ChecklistKanban({ branchId, readOnly = false, userRole }: Checkl
               {/* Signatures Section - Show for FOR_REVIEW and COMPLETED stages */}
               {(selectedItem.stage === 'FOR_REVIEW' || selectedItem.stage === 'COMPLETED') && (
                 <div className="border-t pt-4">
-                  <h4 className="font-semibold mb-3">التوقيعات</h4>
+                  <h4 className="font-semibold mb-3">{tk.signatures}</h4>
                   <div className="grid grid-cols-2 gap-4">
                     <div>
-                      <p className="text-sm text-muted-foreground mb-2">المشرف</p>
+                      <p className="text-sm text-muted-foreground mb-2">{tk.roleSupervisor}</p>
                       {selectedItem.supervisorSignature ? (
                         <div className="flex items-center gap-2 text-green-700">
                           <CheckCircle className="h-4 w-4" />
-                          <span className="text-sm">موقّع {selectedItem.supervisorSignedAt && new Date(selectedItem.supervisorSignedAt).toLocaleDateString('ar-SA-u-nu-latn')}</span>
+                          <span className="text-sm">{tk.signed} {selectedItem.supervisorSignedAt && formatDate(selectedItem.supervisorSignedAt, locale)}</span>
                         </div>
                       ) : userRole === 'CONTRACTOR' ? (
                         <Button
@@ -2019,24 +2033,24 @@ export function ChecklistKanban({ branchId, readOnly = false, userRole }: Checkl
                               return
                             }
                             setSignatureType('supervisor')
-                            setSignerName(currentUserName || 'مشرف')
+                            setSignerName(currentUserName || tk.roleSupervisor)
                             setSignatureDialogOpen(true)
                           }}
                           disabled={updating}
                         >
                           {updating ? <Loader2 className="me-2 h-3 w-3 animate-spin" /> : <PenTool className="me-2 h-3 w-3" />}
-                          Sign
+                          {tk.sign}
                         </Button>
                       ) : (
-                        <span className="text-sm text-muted-foreground">غير موقّع</span>
+                        <span className="text-sm text-muted-foreground">{tk.notSigned}</span>
                       )}
                     </div>
                     <div>
-                      <p className="text-sm text-muted-foreground mb-2">العميل</p>
+                      <p className="text-sm text-muted-foreground mb-2">{tk.roleClient}</p>
                       {selectedItem.clientSignature ? (
                         <div className="flex items-center gap-2 text-green-700">
                           <CheckCircle className="h-4 w-4" />
-                          <span className="text-sm">موقّع {selectedItem.clientSignedAt && new Date(selectedItem.clientSignedAt).toLocaleDateString('ar-SA-u-nu-latn')}</span>
+                          <span className="text-sm">{tk.signed} {selectedItem.clientSignedAt && formatDate(selectedItem.clientSignedAt, locale)}</span>
                         </div>
                       ) : userRole === 'CLIENT' ? (
                         <Button
@@ -2048,16 +2062,16 @@ export function ChecklistKanban({ branchId, readOnly = false, userRole }: Checkl
                               return
                             }
                             setSignatureType('client')
-                            setSignerName(currentUserName || 'عميل')
+                            setSignerName(currentUserName || tk.roleClient)
                             setSignatureDialogOpen(true)
                           }}
                           disabled={updating}
                         >
                           {updating ? <Loader2 className="me-2 h-3 w-3 animate-spin" /> : <PenTool className="me-2 h-3 w-3" />}
-                          Sign
+                          {tk.sign}
                         </Button>
                       ) : (
-                        <span className="text-sm text-muted-foreground">غير موقّع</span>
+                        <span className="text-sm text-muted-foreground">{tk.notSigned}</span>
                       )}
                     </div>
                   </div>
@@ -2066,64 +2080,66 @@ export function ChecklistKanban({ branchId, readOnly = false, userRole }: Checkl
 
               {/* Archived Info - Show deletion details */}
               {selectedItem.stage === 'ARCHIVED' && (
-                <div className="border-t pt-4 bg-gray-50 p-4 rounded-lg">
+                <div className="border-t pt-4 bg-gray-50 dark:bg-gray-900 p-4 rounded-lg">
                   <div className="flex items-center gap-2 mb-3">
-                    <Archive className="h-5 w-5 text-gray-600" />
-                    <h4 className="font-semibold text-gray-700">أمر عمل مؤرشف</h4>
+                    <Archive className="h-5 w-5 text-gray-600 dark:text-gray-400" />
+                    <h4 className="font-semibold text-gray-700 dark:text-gray-300">{tk.archivedWorkOrder}</h4>
                   </div>
                   {selectedItem.deletedAt && (
-                    <p className="text-sm text-gray-600 mb-2">
-                      تمت الأرشفة في: {new Date(selectedItem.deletedAt).toLocaleDateString('ar-SA-u-nu-latn')} الساعة {new Date(selectedItem.deletedAt).toLocaleTimeString('ar-SA-u-nu-latn')}
+                    <p className="text-sm text-gray-600 dark:text-gray-400 mb-2">
+                      {tk.archivedOn
+                        .replace('{date}', formatDate(selectedItem.deletedAt, locale) || '')
+                        .replace('{time}', formatTime(selectedItem.deletedAt, locale) || '')}
                     </p>
                   )}
                   {selectedItem.deletedReason && (
-                    <p className="text-sm text-gray-600 mb-3">
-                      السبب: {selectedItem.deletedReason}
+                    <p className="text-sm text-gray-600 dark:text-gray-400 mb-3">
+                      {tk.reason} {selectedItem.deletedReason}
                     </p>
                   )}
                   {!readOnly && (
                     <div className="space-y-2">
-                      <p className="text-sm text-gray-600 mb-2">استعادة أمر العمل إلى:</p>
+                      <p className="text-sm text-gray-600 dark:text-gray-400 mb-2">{tk.restoreWorkOrderTo}</p>
                       <div className="grid grid-cols-2 gap-2">
                         <Button
                           size="sm"
                           variant="outline"
                           onClick={() => handleStageChange('SCHEDULED')}
                           disabled={updating}
-                          className="text-blue-700 border-blue-300 hover:bg-blue-50"
+                          className="text-blue-700 dark:text-blue-400 border-blue-300 dark:border-blue-900 hover:bg-blue-50 dark:hover:bg-blue-950/40"
                         >
                           <Calendar className="me-2 h-4 w-4" />
-                          Scheduled
+                          {tk.stageScheduled}
                         </Button>
                         <Button
                           size="sm"
                           variant="outline"
                           onClick={() => handleStageChange('IN_PROGRESS')}
                           disabled={updating}
-                          className="text-orange-700 border-orange-300 hover:bg-orange-50"
+                          className="text-orange-700 dark:text-orange-400 border-orange-300 dark:border-orange-900 hover:bg-orange-50 dark:hover:bg-orange-950/40"
                         >
                           <Clock className="me-2 h-4 w-4" />
-                          In Progress
+                          {tk.stageInProgress}
                         </Button>
                         <Button
                           size="sm"
                           variant="outline"
                           onClick={() => handleStageChange('FOR_REVIEW')}
                           disabled={updating}
-                          className="text-purple-700 border-purple-300 hover:bg-purple-50"
+                          className="text-purple-700 dark:text-purple-400 border-purple-300 dark:border-purple-900 hover:bg-purple-50 dark:hover:bg-purple-950/40"
                         >
                           <FileText className="me-2 h-4 w-4" />
-                          For Review
+                          {tk.stageForReview}
                         </Button>
                         <Button
                           size="sm"
                           variant="outline"
                           onClick={() => handleStageChange('COMPLETED')}
                           disabled={updating}
-                          className="text-green-700 border-green-300 hover:bg-green-50"
+                          className="text-green-700 dark:text-green-400 border-green-300 dark:border-green-900 hover:bg-green-50 dark:hover:bg-green-950/40"
                         >
                           <CheckCircle className="me-2 h-4 w-4" />
-                          Completed
+                          {tk.stageCompleted}
                         </Button>
                       </div>
                     </div>
@@ -2134,7 +2150,7 @@ export function ChecklistKanban({ branchId, readOnly = false, userRole }: Checkl
               {/* Notes */}
               {selectedItem.notes && (
                 <div className="border-t pt-4">
-                  <p className="text-sm text-muted-foreground">ملاحظات</p>
+                  <p className="text-sm text-muted-foreground">{tk.notes}</p>
                   <p className="text-sm">{selectedItem.notes}</p>
                 </div>
               )}
@@ -2147,7 +2163,7 @@ export function ChecklistKanban({ branchId, readOnly = false, userRole }: Checkl
                   onClick={() => window.open(`/print/work-orders/${selectedItem.id}`, '_blank', 'noopener,noreferrer')}
                 >
                   <Printer className="me-2 h-4 w-4" />
-                  Print Work Order
+                  {tk.printWorkOrder}
                 </Button>
               </div>
 
@@ -2156,14 +2172,14 @@ export function ChecklistKanban({ branchId, readOnly = false, userRole }: Checkl
                 <div className="border-t pt-4">
                   <Button
                     variant="outline"
-                    className="w-full text-green-700 border-green-300 hover:bg-green-50"
+                    className="w-full text-green-700 dark:text-green-400 border-green-300 dark:border-green-900 hover:bg-green-50 dark:hover:bg-green-950/40"
                     onClick={() => {
                       // Navigate to certificates tab or open certificate
                       window.open(`/dashboard/clients/${branchId.split('/')[0]}/branches/${branchId}?tab=certificates`, '_blank')
                     }}
                   >
                     <Award className="me-2 h-4 w-4" />
-                    View Certificate
+                    {tk.viewCertificate}
                   </Button>
                 </div>
               )}
@@ -2192,10 +2208,10 @@ export function ChecklistKanban({ branchId, readOnly = false, userRole }: Checkl
           <DialogHeader>
             <DialogTitle className="flex items-center gap-2">
               <CheckCircle className="h-5 w-5 text-green-600" />
-              Accept Work Order?
+              {tk.acceptWorkOrderTitle}
             </DialogTitle>
             <DialogDescription>
-              راجع تفاصيل أمر العمل والتقرير قبل القبول.
+              {tk.acceptWorkOrderDesc}
             </DialogDescription>
           </DialogHeader>
 
@@ -2207,13 +2223,13 @@ export function ChecklistKanban({ branchId, readOnly = false, userRole }: Checkl
                 <div className="grid grid-cols-2 gap-2 text-sm">
                   {selectedItem.scheduledDate && (
                     <div>
-                      <p className="text-muted-foreground">مجدول</p>
-                      <p className="font-medium">{new Date(selectedItem.scheduledDate).toLocaleDateString('ar-SA-u-nu-latn')}</p>
+                      <p className="text-muted-foreground">{tk.stageScheduled}</p>
+                      <p className="font-medium">{formatDate(selectedItem.scheduledDate, locale)}</p>
                     </div>
                   )}
                   {selectedItem.price && (
                     <div>
-                      <p className="text-muted-foreground">السعر</p>
+                      <p className="text-muted-foreground">{tk.price}</p>
                       <p className="font-semibold text-green-700">{formatCurrency(selectedItem.price)}</p>
                     </div>
                   )}
@@ -2225,21 +2241,21 @@ export function ChecklistKanban({ branchId, readOnly = false, userRole }: Checkl
                 <div className="border-t pt-4">
                   <h4 className="font-semibold mb-2 flex items-center gap-2">
                     <FileText className="h-4 w-4" />
-                    Report
+                    {tk.report}
                   </h4>
                   {selectedItem.inspectionDate && (
                     <p className="text-sm mb-1">
-                      <span className="text-muted-foreground">التاريخ:</span> {new Date(selectedItem.inspectionDate).toLocaleDateString('ar-SA-u-nu-latn')}
+                      <span className="text-muted-foreground">{tk.date}:</span> {formatDate(selectedItem.inspectionDate, locale)}
                     </p>
                   )}
                   {selectedItem.systemsChecked && (
                     <p className="text-sm mb-1">
-                      <span className="text-muted-foreground">الأنظمة المفحوصة:</span> {selectedItem.systemsChecked}
+                      <span className="text-muted-foreground">{tk.systemsChecked}:</span> {selectedItem.systemsChecked}
                     </p>
                   )}
                   {selectedItem.findings && (
                     <p className="text-sm">
-                      <span className="text-muted-foreground">النتائج:</span> {selectedItem.findings}
+                      <span className="text-muted-foreground">{tk.findings}:</span> {selectedItem.findings}
                     </p>
                   )}
                 </div>
@@ -2247,7 +2263,7 @@ export function ChecklistKanban({ branchId, readOnly = false, userRole }: Checkl
 
               {/* Acceptance Status */}
               <div className="border-t pt-4">
-                <h4 className="font-semibold mb-2">حالة القبول</h4>
+                <h4 className="font-semibold mb-2">{tk.acceptanceStatus}</h4>
                 <div className="grid grid-cols-2 gap-2 text-sm">
                   <div className="flex items-center gap-2">
                     {selectedItem.supervisorSignature ? (
@@ -2255,7 +2271,7 @@ export function ChecklistKanban({ branchId, readOnly = false, userRole }: Checkl
                     ) : (
                       <XCircle className="h-4 w-4 text-gray-400" />
                     )}
-                    <span>المشرف</span>
+                    <span>{tk.roleSupervisor}</span>
                   </div>
                   <div className="flex items-center gap-2">
                     {selectedItem.clientSignature ? (
@@ -2263,16 +2279,16 @@ export function ChecklistKanban({ branchId, readOnly = false, userRole }: Checkl
                     ) : (
                       <XCircle className="h-4 w-4 text-gray-400" />
                     )}
-                    <span>العميل</span>
+                    <span>{tk.roleClient}</span>
                   </div>
                 </div>
               </div>
 
               {/* Warning if no acceptances */}
               {!selectedItem.supervisorSignature && !selectedItem.clientSignature && (
-                <div className="bg-yellow-50 border border-yellow-200 rounded-lg p-3">
-                  <p className="text-sm text-yellow-800">
-                    ⚠️ لم يقم المشرف ولا العميل بقبول أمر العمل هذا بعد.
+                <div className="bg-yellow-50 dark:bg-yellow-950/40 border border-yellow-200 dark:border-yellow-900 rounded-lg p-3">
+                  <p className="text-sm text-yellow-800 dark:text-yellow-400">
+                    {tk.noAcceptanceWarning}
                   </p>
                 </div>
               )}
@@ -2287,7 +2303,7 @@ export function ChecklistKanban({ branchId, readOnly = false, userRole }: Checkl
                 setPendingMove(null)
               }}
             >
-              Cancel
+              {t.uiComponents.cancel}
             </Button>
             <Button
               onClick={handleConfirmMove}
@@ -2295,7 +2311,7 @@ export function ChecklistKanban({ branchId, readOnly = false, userRole }: Checkl
               className="bg-green-600 hover:bg-green-700"
             >
               <CheckCircle className="me-2 h-4 w-4" />
-              Sign & Complete
+              {tk.signAndComplete}
             </Button>
           </DialogFooter>
         </DialogContent>
@@ -2315,14 +2331,14 @@ export function ChecklistKanban({ branchId, readOnly = false, userRole }: Checkl
           }
         }}
         title={
-          signatureType === 'technician' ? 'توقيع التقرير' :
-            signatureType === 'supervisor' ? 'توقيع أمر العمل (مشرف)' :
-              'توقيع أمر العمل (عميل)'
+          signatureType === 'technician' ? tk.signReportTitle :
+            signatureType === 'supervisor' ? tk.signWorkOrderSupervisorTitle :
+              tk.signWorkOrderClientTitle
         }
         description={
-          signatureType === 'technician' ? 'وقّع لتأكيد إكمال التفتيش قبل الإرسال للمراجعة' :
-            signatureType === 'supervisor' ? 'وقّع للموافقة على أمر العمل المكتمل' :
-              'وقّع لقبول العمل المكتمل'
+          signatureType === 'technician' ? tk.signReportDesc :
+            signatureType === 'supervisor' ? tk.signSupervisorDesc :
+              tk.signClientDesc
         }
         signerName={signerName}
       />
@@ -2353,18 +2369,18 @@ export function ChecklistKanban({ branchId, readOnly = false, userRole }: Checkl
           <DialogHeader>
             <DialogTitle className="flex items-center gap-2">
               <CalendarClock className="h-5 w-5 text-blue-600" />
-              إعادة جدولة أمر العمل
+              {tk.rescheduleWorkOrderTitle}
             </DialogTitle>
             <DialogDescription>
-              قم بتغيير التاريخ المجدول لأمر العمل. سيتم إخطار العميل.
+              {tk.rescheduleWorkOrderDesc}
             </DialogDescription>
           </DialogHeader>
           <div className="space-y-4 py-4">
             {selectedItem?.scheduledDate && (
               <div className="p-3 bg-muted/50 rounded-lg">
-                <p className="text-sm text-muted-foreground">الجدول الحالي</p>
+                <p className="text-sm text-muted-foreground">{tk.currentSchedule}</p>
                 <p className="font-medium">
-                  {new Date(selectedItem.scheduledDate).toLocaleDateString(locale === 'ar' ? 'ar-SA-u-nu-latn' : 'en-US', {
+                  {formatDate(selectedItem.scheduledDate, locale, {
                     weekday: 'long',
                     year: 'numeric',
                     month: 'long',
@@ -2374,7 +2390,7 @@ export function ChecklistKanban({ branchId, readOnly = false, userRole }: Checkl
               </div>
             )}
             <div className="space-y-2">
-              <Label htmlFor="newDate">التاريخ الجديد *</Label>
+              <Label htmlFor="newDate">{tk.newDate}</Label>
               <Input
                 id="newDate"
                 type="date"
@@ -2384,12 +2400,12 @@ export function ChecklistKanban({ branchId, readOnly = false, userRole }: Checkl
               />
             </div>
             <div className="space-y-2">
-              <Label htmlFor="reason">سبب إعادة الجدولة</Label>
+              <Label htmlFor="reason">{tk.rescheduleReason}</Label>
               <Textarea
                 id="reason"
                 value={rescheduleData.reason}
                 onChange={(e) => setRescheduleData({ ...rescheduleData, reason: e.target.value })}
-                placeholder="مثال: طلب العميل تاريخاً مختلفاً، الفني غير متاح..."
+                placeholder={tk.rescheduleReasonPlaceholder}
                 rows={3}
               />
             </div>
@@ -2402,7 +2418,7 @@ export function ChecklistKanban({ branchId, readOnly = false, userRole }: Checkl
                 setRescheduleData({ newDate: '', reason: '' })
               }}
             >
-              إلغاء
+              {t.uiComponents.cancel}
             </Button>
             <Button
               onClick={handleReschedule}
@@ -2411,7 +2427,7 @@ export function ChecklistKanban({ branchId, readOnly = false, userRole }: Checkl
             >
               {rescheduling && <Loader2 className="me-2 h-4 w-4 animate-spin" />}
               <CalendarClock className="me-2 h-4 w-4" />
-              تأكيد إعادة الجدولة
+              {tk.confirmReschedule}
             </Button>
           </DialogFooter>
         </DialogContent>

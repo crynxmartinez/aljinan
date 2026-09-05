@@ -1,19 +1,13 @@
 import { NextResponse } from 'next/server'
 import { prisma } from '@/lib/prisma'
 
-// POST - Check for expiring equipment and create notifications
-// This can be called by a cron job or manually
-export async function POST(request: Request) {
-  try {
-    // Optional: Add API key verification for cron jobs
-    const authHeader = request.headers.get('authorization')
-    const cronSecret = process.env.CRON_SECRET
-    
-    // If CRON_SECRET is set, verify it
-    if (cronSecret && authHeader !== `Bearer ${cronSecret}`) {
-      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
-    }
-
+/**
+ * Shared implementation for both entry points below. Vercel Cron only ever issues a GET,
+ * so the actual check has to run there -- it used to live only in POST, which meant the
+ * "check-expiry" cron job was configured to do nothing every day and equipment expiry
+ * notifications never fired unless someone called POST by hand.
+ */
+async function runEquipmentExpiryCheck() {
     const now = new Date()
     const sevenDaysFromNow = new Date()
     sevenDaysFromNow.setDate(sevenDaysFromNow.getDate() + 7)
@@ -135,11 +129,29 @@ export async function POST(request: Request) {
       })
     }
 
-    return NextResponse.json({
-      success: true,
-      equipmentChecked: expiringEquipment.length,
-      notificationsCreated
-    })
+  return {
+    equipmentChecked: expiringEquipment.length,
+    notificationsCreated
+  }
+}
+
+function isAuthorized(request: Request): boolean {
+  const authHeader = request.headers.get('authorization')
+  const cronSecret = process.env.CRON_SECRET
+  // Optional: if CRON_SECRET isn't configured, allow through (matches this route's
+  // original POST behavior so manual/local calls keep working without one).
+  return !cronSecret || authHeader === `Bearer ${cronSecret}`
+}
+
+// GET - Invoked by Vercel Cron (cron jobs are always a GET request)
+export async function GET(request: Request) {
+  try {
+    if (!isAuthorized(request)) {
+      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
+    }
+
+    const result = await runEquipmentExpiryCheck()
+    return NextResponse.json({ success: true, ...result })
   } catch (error) {
     console.error('Error checking equipment expiry:', error)
     return NextResponse.json(
@@ -149,11 +161,20 @@ export async function POST(request: Request) {
   }
 }
 
-// GET - Manual trigger for testing
-export async function GET() {
-  // Redirect to POST for actual processing
-  return NextResponse.json({
-    message: 'Use POST to trigger equipment expiry check',
-    usage: 'POST /api/equipment/check-expiry with optional Authorization: Bearer <CRON_SECRET>'
-  })
+// POST - Kept for manual/on-demand triggering (e.g. from an admin action)
+export async function POST(request: Request) {
+  try {
+    if (!isAuthorized(request)) {
+      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
+    }
+
+    const result = await runEquipmentExpiryCheck()
+    return NextResponse.json({ success: true, ...result })
+  } catch (error) {
+    console.error('Error checking equipment expiry:', error)
+    return NextResponse.json(
+      { error: 'Failed to check equipment expiry' },
+      { status: 500 }
+    )
+  }
 }

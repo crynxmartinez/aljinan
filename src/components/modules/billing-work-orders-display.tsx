@@ -24,6 +24,8 @@ import {
   Eye,
 } from 'lucide-react'
 import { cn } from '@/lib/utils'
+import { formatDate as formatDateUtil } from '@/lib/i18n/format-date'
+import type { Locale } from '@/lib/i18n/translations'
 
 export interface BillingWorkOrder {
   id: string
@@ -72,9 +74,9 @@ function groupWorkOrders(workOrders: BillingWorkOrder[]): Map<string, BillingWor
   return groups
 }
 
-function formatDate(dateString: string | null, notScheduledLabel: string) {
+function formatDate(dateString: string | null, notScheduledLabel: string, locale: Locale) {
   if (!dateString) return notScheduledLabel
-  return new Date(dateString).toLocaleDateString('ar-SA-u-nu-latn', {
+  return formatDateUtil(dateString, locale, {
     month: 'short',
     day: 'numeric',
     year: 'numeric'
@@ -94,21 +96,21 @@ function getPaymentStatusBadge(status: BillingWorkOrder['paymentStatus'], labels
   switch (status) {
     case 'PAID':
       return (
-        <Badge className="bg-green-100 text-green-700 border-green-200">
+        <Badge className="bg-green-100 dark:bg-green-950/40 text-green-700 dark:text-green-400 border-green-200 dark:border-green-900">
           <CheckCircle className="h-3 w-3 me-1" />
           {labels.paid}
         </Badge>
       )
     case 'PENDING_VERIFICATION':
       return (
-        <Badge className="bg-amber-100 text-amber-700 border-amber-200">
+        <Badge className="bg-amber-100 dark:bg-amber-950/40 text-amber-700 dark:text-amber-400 border-amber-200 dark:border-amber-900">
           <Clock className="h-3 w-3 me-1" />
           {labels.pendingVerification}
         </Badge>
       )
     default:
       return (
-        <Badge variant="outline" className="bg-gray-50 text-gray-600 border-gray-200">
+        <Badge variant="outline" className="bg-gray-50 dark:bg-gray-900 text-gray-600 dark:text-gray-400 border-gray-200 dark:border-gray-800">
           <AlertCircle className="h-3 w-3 me-1" />
           {labels.unpaid}
         </Badge>
@@ -118,12 +120,12 @@ function getPaymentStatusBadge(status: BillingWorkOrder['paymentStatus'], labels
 
 function getStageBadge(stage: string, labels: { scheduled: string; inProgress: string; forReview: string; completed: string }) {
   const config: Record<string, { style: string; label: string }> = {
-    SCHEDULED: { style: 'bg-blue-100 text-blue-700', label: labels.scheduled },
-    IN_PROGRESS: { style: 'bg-orange-100 text-orange-700', label: labels.inProgress },
-    FOR_REVIEW: { style: 'bg-purple-100 text-purple-700', label: labels.forReview },
-    COMPLETED: { style: 'bg-green-100 text-green-700', label: labels.completed },
+    SCHEDULED: { style: 'bg-blue-100 dark:bg-blue-950/40 text-blue-700 dark:text-blue-400', label: labels.scheduled },
+    IN_PROGRESS: { style: 'bg-orange-100 dark:bg-orange-950/40 text-orange-700 dark:text-orange-400', label: labels.inProgress },
+    FOR_REVIEW: { style: 'bg-purple-100 dark:bg-purple-950/40 text-purple-700 dark:text-purple-400', label: labels.forReview },
+    COMPLETED: { style: 'bg-green-100 dark:bg-green-950/40 text-green-700 dark:text-green-400', label: labels.completed },
   }
-  const { style, label } = config[stage] || { style: 'bg-gray-100 text-gray-700', label: stage }
+  const { style, label } = config[stage] || { style: 'bg-gray-100 dark:bg-gray-800 text-gray-700 dark:text-gray-300', label: stage }
   return <Badge className={style}>{label}</Badge>
 }
 
@@ -135,7 +137,7 @@ export function BillingWorkOrdersDisplay({
   onVerifyPayment,
   onViewProof,
 }: BillingWorkOrdersDisplayProps) {
-  const { t } = useTranslation()
+  const { t, locale } = useTranslation()
   const tb = t.dashboard.billingWorkOrders
   const [expandedGroups, setExpandedGroups] = useState<Set<string>>(new Set())
   const [payAllMode, setPayAllMode] = useState<Record<string, boolean>>({})
@@ -204,7 +206,7 @@ export function BillingWorkOrdersDisplay({
             >
               <div className={cn(
                 "rounded-lg border bg-card overflow-hidden",
-                allPaid && "border-green-200 bg-green-50/30"
+                allPaid && "border-green-200 dark:border-green-900 bg-green-50/30 dark:bg-green-950/20"
               )}>
                 {/* Group Header */}
                 <CollapsibleTrigger asChild>
@@ -227,12 +229,12 @@ export function BillingWorkOrdersDisplay({
                       <div className="flex items-center gap-3">
                         {/* Payment status summary */}
                         {allPaid ? (
-                          <Badge className="bg-green-100 text-green-700">
+                          <Badge className="bg-green-100 dark:bg-green-950/40 text-green-700 dark:text-green-400">
                             <CheckCircle className="h-3 w-3 me-1" />
                             {tb.fullyPaid}
                           </Badge>
                         ) : pendingCount > 0 ? (
-                          <Badge className="bg-amber-100 text-amber-700">
+                          <Badge className="bg-amber-100 dark:bg-amber-950/40 text-amber-700 dark:text-amber-400">
                             <Clock className="h-3 w-3 me-1" />
                             {pendingCount} {tb.pending}
                           </Badge>
@@ -302,7 +304,7 @@ export function BillingWorkOrdersDisplay({
                             key={wo.id}
                             className={cn(
                               "px-4 py-3",
-                              wo.paymentStatus === 'PAID' && "bg-green-50/50"
+                              wo.paymentStatus === 'PAID' && "bg-green-50/50 dark:bg-green-950/20"
                             )}
                           >
                             <div className="flex items-center justify-between">
@@ -317,21 +319,21 @@ export function BillingWorkOrdersDisplay({
                                     )}
                                     <span className="text-sm flex items-center gap-1 text-muted-foreground">
                                       <Calendar className="h-3 w-3" />
-                                      {formatDate(wo.scheduledDate, tb.notScheduled)}
+                                      {formatDate(wo.scheduledDate, tb.notScheduled, locale)}
                                     </span>
                                     {getStageBadge(wo.stage, { scheduled: tb.stageScheduled, inProgress: tb.stageInProgress, forReview: tb.stageForReview, completed: tb.stageCompleted })}
                                     {wo.type === 'ADHOC' && (
                                       <Badge variant="outline" className="text-xs">{tb.adhoc}</Badge>
                                     )}
                                     {wo.contractTitle && (
-                                      <Badge variant="outline" className="text-xs border-purple-300 text-purple-700 bg-purple-50">
+                                      <Badge variant="outline" className="text-xs border-purple-300 dark:border-purple-900 text-purple-700 dark:text-purple-400 bg-purple-50 dark:bg-purple-950/40">
                                         {tb.contract}
                                       </Badge>
                                     )}
                                   </div>
                                   {wo.paymentDueDate && (
                                     <div className="text-xs text-muted-foreground">
-                                      {tb.paymentDue} {formatDate(wo.paymentDueDate, tb.notScheduled)}
+                                      {tb.paymentDue} {formatDate(wo.paymentDueDate, tb.notScheduled, locale)}
                                     </div>
                                   )}
                                 </div>

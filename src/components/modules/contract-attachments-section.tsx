@@ -94,17 +94,17 @@ export function ContractAttachmentsSection({
           <div className={cn(
             "rounded-lg border-2 p-4 transition-colors",
             fileUrl
-              ? "border-blue-200 bg-blue-50/50"
-              : "border-dashed border-gray-300 bg-gray-50/50"
+              ? "border-blue-200 dark:border-blue-900 bg-blue-50/50 dark:bg-blue-950/20"
+              : "border-dashed border-gray-300 dark:border-gray-700 bg-gray-50/50 dark:bg-gray-900/50"
           )}>
             <div className="flex items-start gap-3">
               <div className={cn(
                 "p-2 rounded-lg",
-                fileUrl ? "bg-blue-100" : "bg-gray-100"
+                fileUrl ? "bg-blue-100 dark:bg-blue-950/40" : "bg-gray-100 dark:bg-gray-800"
               )}>
                 <FileText className={cn(
                   "h-5 w-5",
-                  fileUrl ? "text-blue-600" : "text-gray-400"
+                  fileUrl ? "text-blue-600 dark:text-blue-400" : "text-gray-400"
                 )} />
               </div>
               <div className="flex-1 min-w-0">

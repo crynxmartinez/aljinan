@@ -207,8 +207,8 @@ export default async function PortalDashboardPage() {
                 <p className="text-sm text-muted-foreground">{tp.branches}</p>
                 <p className="text-3xl font-bold">{client.branches.length}</p>
               </div>
-              <div className="p-3 rounded-full bg-blue-100">
-                <MapPin className="h-5 w-5 text-blue-600" />
+              <div className="p-3 rounded-full bg-blue-100 dark:bg-blue-950/40">
+                <MapPin className="h-5 w-5 text-blue-600 dark:text-blue-400" />
               </div>
             </div>
           </CardContent>
@@ -220,8 +220,8 @@ export default async function PortalDashboardPage() {
                 <p className="text-sm text-muted-foreground">{tp.pendingQuotes}</p>
                 <p className="text-3xl font-bold">{stats.pendingQuotes}</p>
               </div>
-              <div className="p-3 rounded-full bg-amber-100">
-                <Receipt className="h-5 w-5 text-amber-600" />
+              <div className="p-3 rounded-full bg-amber-100 dark:bg-amber-950/40">
+                <Receipt className="h-5 w-5 text-amber-600 dark:text-amber-400" />
               </div>
             </div>
           </CardContent>
@@ -233,8 +233,8 @@ export default async function PortalDashboardPage() {
                 <p className="text-sm text-muted-foreground">{tp.appointments}</p>
                 <p className="text-3xl font-bold">{stats.upcomingAppointments}</p>
               </div>
-              <div className="p-3 rounded-full bg-green-100">
-                <Calendar className="h-5 w-5 text-green-600" />
+              <div className="p-3 rounded-full bg-green-100 dark:bg-green-950/40">
+                <Calendar className="h-5 w-5 text-green-600 dark:text-green-400" />
               </div>
             </div>
           </CardContent>
@@ -246,8 +246,8 @@ export default async function PortalDashboardPage() {
                 <p className="text-sm text-muted-foreground">{tp.unpaid}</p>
                 <p className="text-3xl font-bold">{stats.unpaidInvoices}</p>
               </div>
-              <div className="p-3 rounded-full bg-red-100">
-                <Banknote className="h-5 w-5 text-red-600" />
+              <div className="p-3 rounded-full bg-red-100 dark:bg-red-950/40">
+                <Banknote className="h-5 w-5 text-red-600 dark:text-red-400" />
               </div>
             </div>
           </CardContent>
@@ -263,8 +263,8 @@ export default async function PortalDashboardPage() {
                 <p className="text-sm text-muted-foreground">{tp.awaitingMyReview}</p>
                 <p className="text-3xl font-bold">{stats.workOrdersForReview}</p>
               </div>
-              <div className="p-3 rounded-full bg-purple-100">
-                <Eye className="h-5 w-5 text-purple-600" />
+              <div className="p-3 rounded-full bg-purple-100 dark:bg-purple-950/40">
+                <Eye className="h-5 w-5 text-purple-600 dark:text-purple-400" />
               </div>
             </div>
           </CardContent>
@@ -276,8 +276,8 @@ export default async function PortalDashboardPage() {
                 <p className="text-sm text-muted-foreground">{tp.workInProgress}</p>
                 <p className="text-3xl font-bold">{stats.workOrdersInProgress}</p>
               </div>
-              <div className="p-3 rounded-full bg-orange-100">
-                <Wrench className="h-5 w-5 text-orange-600" />
+              <div className="p-3 rounded-full bg-orange-100 dark:bg-orange-950/40">
+                <Wrench className="h-5 w-5 text-orange-600 dark:text-orange-400" />
               </div>
             </div>
           </CardContent>
@@ -289,8 +289,8 @@ export default async function PortalDashboardPage() {
                 <p className="text-sm text-muted-foreground">{tp.completedThisMonth}</p>
                 <p className="text-3xl font-bold">{stats.workOrdersCompletedThisMonth}</p>
               </div>
-              <div className="p-3 rounded-full bg-green-100">
-                <CheckCircle className="h-5 w-5 text-green-600" />
+              <div className="p-3 rounded-full bg-green-100 dark:bg-green-950/40">
+                <CheckCircle className="h-5 w-5 text-green-600 dark:text-green-400" />
               </div>
             </div>
           </CardContent>
@@ -302,8 +302,8 @@ export default async function PortalDashboardPage() {
                 <p className="text-sm text-muted-foreground">{tp.overdueWork}</p>
                 <p className="text-3xl font-bold">{stats.overdueWorkOrders}</p>
               </div>
-              <div className="p-3 rounded-full bg-red-100">
-                <AlertTriangle className="h-5 w-5 text-red-600" />
+              <div className="p-3 rounded-full bg-red-100 dark:bg-red-950/40">
+                <AlertTriangle className="h-5 w-5 text-red-600 dark:text-red-400" />
               </div>
             </div>
           </CardContent>

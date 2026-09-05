@@ -17,6 +17,7 @@ import {
 } from 'lucide-react'
 import { cn } from '@/lib/utils'
 import { useTranslation } from '@/lib/i18n/use-translation'
+import { formatDate } from '@/lib/i18n/format-date'
 import { api } from '@/lib/api-client'
 
 interface Notification {
@@ -33,7 +34,7 @@ interface Notification {
 }
 
 export function NotificationsList() {
-  const { t } = useTranslation()
+  const { t, locale } = useTranslation()
   const tn = t.dashboard.notificationsList
   const router = useRouter()
   const [notifications, setNotifications] = useState<Notification[]>([])
@@ -112,7 +113,7 @@ export function NotificationsList() {
     if (diffMins < 60) return `${diffMins}${tn.mAgo}`
     if (diffHours < 24) return `${diffHours}${tn.hAgo}`
     if (diffDays < 7) return `${diffDays}${tn.dAgo}`
-    return date.toLocaleDateString('ar-SA-u-nu-latn')
+    return formatDate(date, locale, {})
   }
 
   if (loading) {

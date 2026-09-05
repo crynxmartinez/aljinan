@@ -51,9 +51,9 @@ function VerifyEmailContent() {
 
   if (verifying) {
     return (
-      <div className="min-h-screen flex items-center justify-center bg-gray-50 px-4">
+      <div className="min-h-screen flex items-center justify-center bg-muted px-4">
         <div className="w-full max-w-md">
-          <div className="bg-white p-8 rounded-lg shadow-sm border">
+          <div className="bg-card p-8 rounded-lg shadow-sm border">
             <div className="text-center py-8">
               <Loader2 className="h-16 w-16 animate-spin text-primary mx-auto mb-4" />
               <h1 className="text-2xl font-bold mb-2">{tr.verifyingTitle}</h1>
@@ -69,9 +69,9 @@ function VerifyEmailContent() {
 
   if (error) {
     return (
-      <div className="min-h-screen flex items-center justify-center bg-gray-50 px-4">
+      <div className="min-h-screen flex items-center justify-center bg-muted px-4">
         <div className="w-full max-w-md">
-          <div className="bg-white p-8 rounded-lg shadow-sm border">
+          <div className="bg-card p-8 rounded-lg shadow-sm border">
             <div className="text-center py-8">
               <div className="mx-auto w-16 h-16 bg-red-100 rounded-full flex items-center justify-center mb-4">
                 <AlertCircle className="h-8 w-8 text-red-600" />
@@ -97,9 +97,9 @@ function VerifyEmailContent() {
 
   if (success) {
     return (
-      <div className="min-h-screen flex items-center justify-center bg-gray-50 px-4">
+      <div className="min-h-screen flex items-center justify-center bg-muted px-4">
         <div className="w-full max-w-md">
-          <div className="bg-white p-8 rounded-lg shadow-sm border">
+          <div className="bg-card p-8 rounded-lg shadow-sm border">
             <div className="text-center py-8">
               <div className="mx-auto w-16 h-16 bg-green-100 rounded-full flex items-center justify-center mb-4">
                 <CheckCircle className="h-8 w-8 text-green-600" />
@@ -144,7 +144,7 @@ function VerifyEmailContent() {
 export default function VerifyEmailPage() {
   return (
     <Suspense fallback={
-      <div className="min-h-screen flex items-center justify-center bg-gray-50">
+      <div className="min-h-screen flex items-center justify-center bg-muted">
         <Loader2 className="h-8 w-8 animate-spin text-primary" />
       </div>
     }>

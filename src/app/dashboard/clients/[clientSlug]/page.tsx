@@ -8,6 +8,7 @@ import { Button } from '@/components/ui/button'
 import { Badge } from '@/components/ui/badge'
 import { ArrowLeft, MapPin, Plus, Building2 } from 'lucide-react'
 import { ClientProfileCard } from '@/components/clients/client-profile-card'
+import { getTranslations } from '@/lib/i18n/server'
 
 async function getClient(clientSlugOrId: string, userId: string) {
   const contractor = await prisma.contractor.findUnique({
@@ -101,15 +102,17 @@ export default async function ClientDetailPage({
   }
 
   const isTeamMember = session.user.role === 'TEAM_MEMBER'
+  const t = await getTranslations()
+  const tc = t.dashboard.clientsPage
 
   const getStatusBadge = (status: string) => {
     switch (status) {
       case 'ACTIVE':
-        return <Badge className="bg-green-100 text-green-700 hover:bg-green-100">نشط</Badge>
+        return <Badge className="bg-green-100 dark:bg-green-950/40 text-green-700 dark:text-green-400 hover:bg-green-100 dark:hover:bg-green-950/40">{tc.active}</Badge>
       case 'PENDING':
-        return <Badge className="bg-yellow-100 text-yellow-700 hover:bg-yellow-100">قيد الانتظار</Badge>
+        return <Badge className="bg-yellow-100 dark:bg-yellow-950/40 text-yellow-700 dark:text-yellow-400 hover:bg-yellow-100 dark:hover:bg-yellow-950/40">{tc.pending}</Badge>
       case 'ARCHIVED':
-        return <Badge className="bg-gray-100 text-gray-700 hover:bg-gray-100">Archived</Badge>
+        return <Badge className="bg-gray-100 dark:bg-gray-800 text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-800">{tc.archived}</Badge>
       default:
         return null
     }
@@ -202,7 +205,7 @@ export default async function ClientDetailPage({
                         </div>
                       </div>
                       {!branch.isActive && (
-                        <Badge variant="secondary">غير نشط</Badge>
+                        <Badge variant="secondary">{tc.inactive}</Badge>
                       )}
                     </Link>
                   ))}

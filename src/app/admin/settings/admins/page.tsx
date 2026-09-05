@@ -65,9 +65,9 @@ export default function AdminUsersPage() {
   }
 
   const roleLabels: Record<string, { label: string; color: string }> = {
-    SUPER_ADMIN: { label: ta.superAdmin, color: 'bg-red-100 text-red-800' },
-    SUPPORT_ADMIN: { label: ta.supportAdmin, color: 'bg-blue-100 text-blue-800' },
-    CUSTOM: { label: ta.custom, color: 'bg-purple-100 text-purple-800' },
+    SUPER_ADMIN: { label: ta.superAdmin, color: 'bg-red-100 dark:bg-red-950/40 text-red-800 dark:text-red-400' },
+    SUPPORT_ADMIN: { label: ta.supportAdmin, color: 'bg-blue-100 dark:bg-blue-950/40 text-blue-800 dark:text-blue-400' },
+    CUSTOM: { label: ta.custom, color: 'bg-purple-100 dark:bg-purple-950/40 text-purple-800 dark:text-purple-400' },
   }
   const [admins, setAdmins] = useState<AdminData[]>([])
   const [loading, setLoading] = useState(true)
@@ -207,8 +207,8 @@ export default function AdminUsersPage() {
             <CardHeader>
               <div className="flex items-center justify-between">
                 <div className="flex items-center gap-3">
-                  <div className="h-10 w-10 rounded-full bg-red-100 flex items-center justify-center">
-                    <Shield className="h-5 w-5 text-red-600" />
+                  <div className="h-10 w-10 rounded-full bg-red-100 dark:bg-red-950/40 flex items-center justify-center">
+                    <Shield className="h-5 w-5 text-red-600 dark:text-red-400" />
                   </div>
                   <div>
                     <CardTitle className="text-base">{admin.user.name || admin.user.email}</CardTitle>
@@ -270,13 +270,13 @@ export default function AdminUsersPage() {
 
           {createdResult ? (
             <div className="space-y-4 py-4">
-              <div className="bg-green-50 border border-green-200 rounded-lg p-4 space-y-3">
+              <div className="bg-green-50 dark:bg-green-950/40 border border-green-200 dark:border-green-900 rounded-lg p-4 space-y-3">
                 <div>
-                  <p className="text-xs text-green-600 font-medium mb-1">{ta.emailLabel}</p>
+                  <p className="text-xs text-green-600 dark:text-green-400 font-medium mb-1">{ta.emailLabel}</p>
                   <p className="text-sm font-mono font-medium">{createdResult.email}</p>
                 </div>
                 <div>
-                  <p className="text-xs text-green-600 font-medium mb-1">{ta.tempPassword}</p>
+                  <p className="text-xs text-green-600 dark:text-green-400 font-medium mb-1">{ta.tempPassword}</p>
                   <p className="text-sm font-mono font-medium">{createdResult.tempPassword}</p>
                 </div>
               </div>

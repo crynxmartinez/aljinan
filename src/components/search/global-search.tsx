@@ -5,13 +5,17 @@ import {
   Search, Loader2, X,
   Users, MapPin, ClipboardList, FileText,
   ScrollText, Banknote, Wrench, Award,
+  UserCog, Building, CalendarDays, Building2, MessageSquare,
 } from 'lucide-react'
 import { Input } from '@/components/ui/input'
 import { Button } from '@/components/ui/button'
 import { cn } from '@/lib/utils'
 import { useRouter } from 'next/navigation'
+import { useTranslation } from '@/lib/i18n/use-translation'
 
-type ResultType = 'client' | 'branch' | 'work_order' | 'request' | 'contract' | 'invoice' | 'equipment' | 'certificate'
+type ResultType =
+  | 'client' | 'branch' | 'work_order' | 'request' | 'contract' | 'invoice' | 'equipment' | 'certificate'
+  | 'team_member' | 'branch_request' | 'appointment' | 'contractor' | 'inquiry'
 
 interface SearchResult {
   id: string
@@ -21,20 +25,31 @@ interface SearchResult {
   link: string
 }
 
-const TYPE_CONFIG: Record<ResultType, { icon: React.ElementType; label: string; color: string }> = {
-  client: { icon: Users, label: 'Clients', color: 'text-green-600' },
-  branch: { icon: MapPin, label: 'Branches', color: 'text-blue-600' },
-  work_order: { icon: ClipboardList, label: 'Work Orders', color: 'text-indigo-600' },
-  request: { icon: FileText, label: 'Requests', color: 'text-purple-600' },
-  contract: { icon: ScrollText, label: 'Contracts', color: 'text-orange-600' },
-  invoice: { icon: Banknote, label: 'Invoices', color: 'text-emerald-600' },
-  equipment: { icon: Wrench, label: 'Equipment', color: 'text-cyan-600' },
-  certificate: { icon: Award, label: 'Certificates', color: 'text-amber-600' },
-}
-
-const TYPE_ORDER: ResultType[] = ['client', 'branch', 'work_order', 'request', 'contract', 'invoice', 'equipment', 'certificate']
-
 export function GlobalSearch() {
+  const { t } = useTranslation()
+  const ts = t.dashboard.globalSearch
+
+  const TYPE_CONFIG: Record<ResultType, { icon: React.ElementType; label: string; color: string }> = {
+    client: { icon: Users, label: ts.categoryClients, color: 'text-green-600' },
+    branch: { icon: MapPin, label: ts.categoryBranches, color: 'text-blue-600' },
+    work_order: { icon: ClipboardList, label: ts.categoryWorkOrders, color: 'text-indigo-600' },
+    request: { icon: FileText, label: ts.categoryRequests, color: 'text-purple-600' },
+    contract: { icon: ScrollText, label: ts.categoryContracts, color: 'text-orange-600' },
+    invoice: { icon: Banknote, label: ts.categoryInvoices, color: 'text-emerald-600' },
+    equipment: { icon: Wrench, label: ts.categoryEquipment, color: 'text-cyan-600' },
+    certificate: { icon: Award, label: ts.categoryCertificates, color: 'text-amber-600' },
+    team_member: { icon: UserCog, label: ts.categoryTeamMembers, color: 'text-slate-600' },
+    branch_request: { icon: Building, label: ts.categoryBranchRequests, color: 'text-rose-600' },
+    appointment: { icon: CalendarDays, label: ts.categoryAppointments, color: 'text-sky-600' },
+    contractor: { icon: Building2, label: ts.categoryContractors, color: 'text-blue-700' },
+    inquiry: { icon: MessageSquare, label: ts.categoryMessages, color: 'text-fuchsia-600' },
+  }
+
+  const TYPE_ORDER: ResultType[] = [
+    'client', 'branch', 'work_order', 'request', 'contract', 'invoice', 'equipment', 'certificate',
+    'team_member', 'branch_request', 'appointment', 'contractor', 'inquiry',
+  ]
+
   const [query, setQuery] = useState('')
   const [results, setResults] = useState<SearchResult[]>([])
   const [loading, setLoading] = useState(false)
@@ -115,7 +130,7 @@ export function GlobalSearch() {
         <Search className="absolute start-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground pointer-events-none" />
         <Input
           type="text"
-          placeholder="Search clients, branches, work orders, equipment..."
+          placeholder={ts.placeholder}
           value={query}
           onChange={(e) => { setQuery(e.target.value); setIsOpen(true) }}
           onFocus={() => setIsOpen(true)}
@@ -142,9 +157,9 @@ export function GlobalSearch() {
           ) : !hasResults ? (
             <div className="flex flex-col items-center justify-center py-8 text-center px-4">
               <Search className="h-10 w-10 text-muted-foreground/30 mb-2" />
-              <p className="text-sm font-medium">No results for &quot;{query}&quot;</p>
+              <p className="text-sm font-medium">{ts.noResultsTitle.replace('{query}', query)}</p>
               <p className="text-xs text-muted-foreground mt-1">
-                Try a different keyword
+                {ts.noResultsHint}
               </p>
             </div>
           ) : (
@@ -180,7 +195,7 @@ export function GlobalSearch() {
               })}
               <div className="px-4 py-2 bg-muted/20 border-t">
                 <p className="text-xs text-muted-foreground text-center">
-                  {results.length} result{results.length !== 1 ? 's' : ''} — click any to navigate
+                  {ts.resultsFooter.replace('{count}', String(results.length))}
                 </p>
               </div>
             </div>

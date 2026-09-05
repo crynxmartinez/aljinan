@@ -63,6 +63,7 @@ import {
 import { RequestComments } from './request-comments'
 import { toast } from 'sonner'
 import { useTranslation } from '@/lib/i18n/use-translation'
+import { formatDate, formatCurrency } from '@/lib/i18n/format-date'
 import { api } from '@/lib/api-client'
 
 // Helper function to extract base name from work order title (removes Q1, Q2, Month1, etc.)
@@ -179,7 +180,7 @@ function WorkOrdersGroupedViewContractor({
   onEditChange,
   onSaveGroupPrice,
 }: WorkOrdersGroupedViewContractorProps) {
-  const { t } = useTranslation()
+  const { t, locale } = useTranslation()
   const tr = t.dashboard.requestsList
   const [expandedGroups, setExpandedGroups] = useState<Set<string>>(new Set())
   const [editingGroup, setEditingGroup] = useState<string | null>(null)
@@ -258,13 +259,13 @@ function WorkOrdersGroupedViewContractor({
                       </Badge>
                     )}
                     {hasAdhoc && (
-                      <Badge variant="outline" className="text-purple-600 text-xs">
+                      <Badge variant="outline" className="text-purple-600 dark:text-purple-400 text-xs">
                         {tr.clientAdded}
                       </Badge>
                     )}
                     {/* Show recurring type for client-added items */}
                     {hasAdhoc && items[0].recurringType && items[0].recurringType !== 'ONCE' && (
-                      <Badge variant="outline" className="text-blue-600 text-xs">
+                      <Badge variant="outline" className="text-blue-600 dark:text-blue-400 text-xs">
                         {items[0].recurringType === 'MONTHLY' ? tr.monthly : tr.quarterly}
                       </Badge>
                     )}
@@ -326,12 +327,12 @@ function WorkOrdersGroupedViewContractor({
                   <>
                     <div className="text-end">
                       {hasPendingPrice ? (
-                        <Badge variant="outline" className="text-orange-600 border-orange-300">
+                        <Badge variant="outline" className="text-orange-600 dark:text-orange-400 border-orange-300 dark:border-orange-800">
                           {tr.needsPrice}
                         </Badge>
                       ) : (
                         <span className="font-semibold text-primary">
-                          ر.س {groupTotal.toLocaleString('ar-SA-u-nu-latn', { minimumFractionDigits: 2 })}
+                          {formatCurrency(groupTotal, locale)}
                         </span>
                       )}
                     </div>
@@ -356,7 +357,7 @@ function WorkOrdersGroupedViewContractor({
                   {items[0].scheduledDate ? (
                     <div className="flex items-center gap-1">
                       <Calendar className="h-3 w-3" />
-                      {new Date(items[0].scheduledDate).toLocaleDateString('ar-SA-u-nu-latn')}
+                      {formatDate(items[0].scheduledDate, locale)}
                     </div>
                   ) : (
                     <span>{tr.noDateScheduled}</span>
@@ -379,7 +380,7 @@ function WorkOrdersGroupedViewContractor({
                         {wo.scheduledDate && (
                           <span className="ms-2 inline-flex items-center gap-1">
                             <Calendar className="h-3 w-3" />
-                            {new Date(wo.scheduledDate).toLocaleDateString('ar-SA-u-nu-latn')}
+                            {formatDate(wo.scheduledDate, locale)}
                           </span>
                         )}
                       </div>
@@ -405,9 +406,9 @@ function WorkOrdersGroupedViewContractor({
                       ) : (
                         <>
                           {wo.price !== null ? (
-                            <span className="font-medium">{tr.sar} {wo.price.toLocaleString('ar-SA-u-nu-latn', { minimumFractionDigits: 2 })}</span>
+                            <span className="font-medium">{formatCurrency(wo.price, locale)}</span>
                           ) : (
-                            <Badge variant="outline" className="text-xs text-orange-600">{tr.pending}</Badge>
+                            <Badge variant="outline" className="text-xs text-orange-600 dark:text-orange-400">{tr.pending}</Badge>
                           )}
                           <Button size="sm" variant="ghost" onClick={() => onStartEdit(wo)}>
                             <Pencil className="h-3 w-3" />
@@ -427,7 +428,7 @@ function WorkOrdersGroupedViewContractor({
 }
 
 export function RequestsList({ branchId, userRole, userId }: RequestsListProps) {
-  const { t } = useTranslation()
+  const { t, locale } = useTranslation()
   const tr = t.dashboard.requestsList
   const router = useRouter()
   const [requests, setRequests] = useState<Request[]>([])
@@ -940,26 +941,26 @@ export function RequestsList({ branchId, userRole, userId }: RequestsListProps) 
 
   const getPriorityBadge = (priority: Request['priority']) => {
     const styles = {
-      LOW: 'bg-gray-100 text-gray-700',
-      MEDIUM: 'bg-blue-100 text-blue-700',
-      HIGH: 'bg-orange-100 text-orange-700',
-      URGENT: 'bg-red-100 text-red-700',
+      LOW: 'bg-gray-100 dark:bg-gray-800 text-gray-700 dark:text-gray-300',
+      MEDIUM: 'bg-blue-100 dark:bg-blue-950/40 text-blue-700 dark:text-blue-400',
+      HIGH: 'bg-orange-100 dark:bg-orange-950/40 text-orange-700 dark:text-orange-400',
+      URGENT: 'bg-red-100 dark:bg-red-950/40 text-red-700 dark:text-red-400',
     }
     return <Badge className={styles[priority]}>{priority}</Badge>
   }
 
   const getStatusBadge = (status: Request['status']) => {
     const config: Record<Request['status'], { style: string; icon: typeof Clock }> = {
-      REQUESTED: { style: 'bg-yellow-100 text-yellow-700', icon: Clock },
-      QUOTED: { style: 'bg-purple-100 text-purple-700', icon: Clock },
-      SCHEDULED: { style: 'bg-blue-100 text-blue-700', icon: Clock },
-      IN_PROGRESS: { style: 'bg-blue-100 text-blue-700', icon: AlertCircle },
-      FOR_REVIEW: { style: 'bg-orange-100 text-orange-700', icon: AlertCircle },
-      PENDING_APPROVAL: { style: 'bg-amber-100 text-amber-700', icon: Clock },
-      COMPLETED: { style: 'bg-green-100 text-green-700', icon: CheckCircle },
-      CLOSED: { style: 'bg-gray-100 text-gray-700', icon: CheckCircle },
-      REJECTED: { style: 'bg-red-100 text-red-700', icon: XCircle },
-      CANCELLED: { style: 'bg-gray-100 text-gray-700', icon: XCircle },
+      REQUESTED: { style: 'bg-yellow-100 dark:bg-yellow-950/40 text-yellow-700 dark:text-yellow-400', icon: Clock },
+      QUOTED: { style: 'bg-purple-100 dark:bg-purple-950/40 text-purple-700 dark:text-purple-400', icon: Clock },
+      SCHEDULED: { style: 'bg-blue-100 dark:bg-blue-950/40 text-blue-700 dark:text-blue-400', icon: Clock },
+      IN_PROGRESS: { style: 'bg-blue-100 dark:bg-blue-950/40 text-blue-700 dark:text-blue-400', icon: AlertCircle },
+      FOR_REVIEW: { style: 'bg-orange-100 dark:bg-orange-950/40 text-orange-700 dark:text-orange-400', icon: AlertCircle },
+      PENDING_APPROVAL: { style: 'bg-amber-100 dark:bg-amber-950/40 text-amber-700 dark:text-amber-400', icon: Clock },
+      COMPLETED: { style: 'bg-green-100 dark:bg-green-950/40 text-green-700 dark:text-green-400', icon: CheckCircle },
+      CLOSED: { style: 'bg-gray-100 dark:bg-gray-800 text-gray-700 dark:text-gray-300', icon: CheckCircle },
+      REJECTED: { style: 'bg-red-100 dark:bg-red-950/40 text-red-700 dark:text-red-400', icon: XCircle },
+      CANCELLED: { style: 'bg-gray-100 dark:bg-gray-800 text-gray-700 dark:text-gray-300', icon: XCircle },
     }
     const { style, icon: Icon } = config[status]
     return (
@@ -1077,7 +1078,7 @@ export function RequestsList({ branchId, userRole, userId }: RequestsListProps) 
               }).map((request) => (
                 <div
                   key={request.id}
-                  className={`flex items-start justify-between p-4 border-2 rounded-lg transition-colors cursor-pointer ${request.status === 'QUOTED' ? 'border-purple-500 bg-purple-50 shadow-md ring-2 ring-purple-200' : 'border-gray-200 hover:bg-muted/50'}`}
+                  className={`flex items-start justify-between p-4 border-2 rounded-lg transition-colors cursor-pointer ${request.status === 'QUOTED' ? 'border-purple-500 dark:border-purple-700 bg-purple-50 dark:bg-purple-950/40 shadow-md ring-2 ring-purple-200 dark:ring-purple-900' : 'border-gray-200 dark:border-gray-800 hover:bg-muted/50'}`}
                   onClick={() => {
                     setSelectedRequest(request)
                     setDetailDialogOpen(true)
@@ -1100,9 +1101,9 @@ export function RequestsList({ branchId, userRole, userId }: RequestsListProps) 
                       </p>
                     )}
                     <p className="text-xs text-muted-foreground">
-                      Created {new Date(request.createdAt).toLocaleDateString('ar-SA-u-nu-latn')}
+                      {tr.created} {formatDate(request.createdAt, locale)}
                       {request.dueDate && (
-                        <> · Due {new Date(request.dueDate).toLocaleDateString('ar-SA-u-nu-latn')}</>
+                        <> · {tr.due} {formatDate(request.dueDate, locale)}</>
                       )}
                     </p>
                   </div>
@@ -1507,9 +1508,9 @@ export function RequestsList({ branchId, userRole, userId }: RequestsListProps) 
                       </div>
 
                       {/* Total */}
-                      <div className="p-3 bg-blue-50 border border-blue-200 rounded-lg">
-                        <p className="text-sm text-blue-800">
-                          <strong>{tr.totalLabel}</strong> {tr.sar} {occurrences.reduce((sum, o) => sum + (o.price ? parseFloat(o.price) : 0), 0).toLocaleString('ar-SA-u-nu-latn', { minimumFractionDigits: 2 })}
+                      <div className="p-3 bg-blue-50 dark:bg-blue-950/40 border border-blue-200 dark:border-blue-900 rounded-lg">
+                        <p className="text-sm text-blue-800 dark:text-blue-400">
+                          <strong>{tr.totalLabel}</strong> {formatCurrency(occurrences.reduce((sum, o) => sum + (o.price ? parseFloat(o.price) : 0), 0), locale)}
                           {' '}({occurrences.length} {tr.workOrdersCount})
                         </p>
                       </div>
@@ -1580,12 +1581,12 @@ export function RequestsList({ branchId, userRole, userId }: RequestsListProps) 
               <div className="grid grid-cols-2 md:grid-cols-3 gap-4 text-sm">
                 <div>
                   <p className="font-medium text-muted-foreground">{tr.created}</p>
-                  <p>{new Date(selectedRequest.createdAt).toLocaleDateString('ar-SA-u-nu-latn')}</p>
+                  <p>{formatDate(selectedRequest.createdAt, locale)}</p>
                 </div>
                 {selectedRequest.preferredDate && (
                   <div>
                     <p className="font-medium text-muted-foreground">{tr.preferredDate}</p>
-                    <p>{new Date(selectedRequest.preferredDate).toLocaleDateString('ar-SA-u-nu-latn')}</p>
+                    <p>{formatDate(selectedRequest.preferredDate, locale)}</p>
                   </div>
                 )}
                 {selectedRequest.preferredTimeSlot && (
@@ -1630,19 +1631,19 @@ export function RequestsList({ branchId, userRole, userId }: RequestsListProps) 
 
               {/* Equipment List - For Sticker Inspections */}
               {selectedRequest.workOrderType === 'STICKER_INSPECTION' && selectedRequest.equipment && selectedRequest.equipment.length > 0 && (
-                <div className="space-y-2 p-4 bg-amber-50 border border-amber-200 rounded-lg">
-                  <p className="text-sm font-medium text-amber-800">{tr.equipmentForInspection} ({selectedRequest.equipment.length} {tr.items})</p>
-                  <div className="border border-amber-200 rounded-lg overflow-hidden">
+                <div className="space-y-2 p-4 bg-amber-50 dark:bg-amber-950/40 border border-amber-200 dark:border-amber-900 rounded-lg">
+                  <p className="text-sm font-medium text-amber-800 dark:text-amber-400">{tr.equipmentForInspection} ({selectedRequest.equipment.length} {tr.items})</p>
+                  <div className="border border-amber-200 dark:border-amber-900 rounded-lg overflow-hidden">
                     <table className="w-full text-sm">
-                      <thead className="bg-amber-100">
+                      <thead className="bg-amber-100 dark:bg-amber-950/60">
                         <tr>
-                          <th className="px-3 py-2 text-start text-amber-800">{tr.equipmentNumber}</th>
-                          <th className="px-3 py-2 text-start text-amber-800">{tr.type}</th>
-                          <th className="px-3 py-2 text-start text-amber-800">{tr.location}</th>
-                          <th className="px-3 py-2 text-start text-amber-800">{tr.expiry}</th>
+                          <th className="px-3 py-2 text-start text-amber-800 dark:text-amber-400">{tr.equipmentNumber}</th>
+                          <th className="px-3 py-2 text-start text-amber-800 dark:text-amber-400">{tr.type}</th>
+                          <th className="px-3 py-2 text-start text-amber-800 dark:text-amber-400">{tr.location}</th>
+                          <th className="px-3 py-2 text-start text-amber-800 dark:text-amber-400">{tr.expiry}</th>
                         </tr>
                       </thead>
-                      <tbody className="bg-white divide-y divide-amber-100">
+                      <tbody className="bg-white dark:bg-card divide-y divide-amber-100 dark:divide-amber-900">
                         {selectedRequest.equipment.map((eq) => (
                           <tr key={eq.id}>
                             <td className="px-3 py-2 font-medium">{eq.equipmentNumber}</td>
@@ -1651,7 +1652,7 @@ export function RequestsList({ branchId, userRole, userId }: RequestsListProps) 
                             </td>
                             <td className="px-3 py-2 text-muted-foreground">{eq.location || '-'}</td>
                             <td className="px-3 py-2 text-muted-foreground">
-                              {eq.expectedExpiry ? new Date(eq.expectedExpiry).toLocaleDateString('ar-SA-u-nu-latn') : '-'}
+                              {eq.expectedExpiry ? formatDate(eq.expectedExpiry, locale) : '-'}
                             </td>
                           </tr>
                         ))}
@@ -1663,32 +1664,32 @@ export function RequestsList({ branchId, userRole, userId }: RequestsListProps) 
 
               {/* Quote Info (if already quoted) */}
               {selectedRequest.quotedPrice && (
-                <div className="bg-purple-50 border border-purple-200 p-4 rounded-lg">
-                  <p className="text-sm font-medium text-purple-800 mb-2">{tr.quoteSent}</p>
+                <div className="bg-purple-50 dark:bg-purple-950/40 border border-purple-200 dark:border-purple-900 p-4 rounded-lg">
+                  <p className="text-sm font-medium text-purple-800 dark:text-purple-400 mb-2">{tr.quoteSent}</p>
 
                   {/* For recurring requests with occurrences - show table */}
                   {selectedRequest.recurringType && selectedRequest.recurringType !== 'ONCE' && selectedRequest.occurrences && selectedRequest.occurrences.length > 0 ? (
                     <div className="space-y-3">
-                      <p className="text-sm text-purple-700">
+                      <p className="text-sm text-purple-700 dark:text-purple-400">
                         {selectedRequest.recurringType === 'MONTHLY' ? `12 ${tr.monthlyWorkOrders}` :
                           selectedRequest.recurringType === 'QUARTERLY' ? `4 ${tr.quarterlyWorkOrders}` :
                             selectedRequest.recurringType === 'SEMI_ANNUALLY' ? `2 ${tr.semiAnnualWorkOrders}` : ''}
                       </p>
-                      <div className="border border-purple-200 rounded-lg overflow-hidden bg-white">
+                      <div className="border border-purple-200 dark:border-purple-900 rounded-lg overflow-hidden bg-white dark:bg-card">
                         <table className="w-full text-sm">
-                          <thead className="bg-purple-100">
+                          <thead className="bg-purple-100 dark:bg-purple-950/60">
                             <tr>
-                              <th className="px-3 py-2 text-start text-purple-800 font-medium">#</th>
-                              <th className="px-3 py-2 text-start text-purple-800 font-medium">{tr.visitDate}</th>
-                              <th className="px-3 py-2 text-end text-purple-800 font-medium">{tr.priceSarShort}</th>
+                              <th className="px-3 py-2 text-start text-purple-800 dark:text-purple-400 font-medium">#</th>
+                              <th className="px-3 py-2 text-start text-purple-800 dark:text-purple-400 font-medium">{tr.visitDate}</th>
+                              <th className="px-3 py-2 text-end text-purple-800 dark:text-purple-400 font-medium">{tr.priceSarShort}</th>
                             </tr>
                           </thead>
-                          <tbody className="divide-y divide-purple-100">
+                          <tbody className="divide-y divide-purple-100 dark:divide-purple-900">
                             {selectedRequest.occurrences.map((occ, idx) => (
                               <tr key={idx}>
                                 <td className="px-3 py-2 text-muted-foreground">{occ.order}</td>
                                 <td className="px-3 py-2">
-                                  {occ.visitDate ? new Date(occ.visitDate).toLocaleDateString('ar-SA-u-nu-latn') : '-'}
+                                  {occ.visitDate ? formatDate(occ.visitDate, locale) : '-'}
                                 </td>
                                 <td className="px-3 py-2 text-end font-medium">
                                   {occ.price ? occ.price.toLocaleString() : '-'}
@@ -1696,11 +1697,11 @@ export function RequestsList({ branchId, userRole, userId }: RequestsListProps) 
                               </tr>
                             ))}
                           </tbody>
-                          <tfoot className="bg-purple-50 border-t border-purple-200">
+                          <tfoot className="bg-purple-50 dark:bg-purple-950/40 border-t border-purple-200 dark:border-purple-900">
                             <tr>
-                              <td colSpan={2} className="px-3 py-2 font-semibold text-purple-800">{tr.total}</td>
-                              <td className="px-3 py-2 text-end font-bold text-purple-900">
-                                ر.س {selectedRequest.quotedPrice.toLocaleString()}
+                              <td colSpan={2} className="px-3 py-2 font-semibold text-purple-800 dark:text-purple-400">{tr.total}</td>
+                              <td className="px-3 py-2 text-end font-bold text-purple-900 dark:text-purple-300">
+                                {formatCurrency(selectedRequest.quotedPrice, locale)}
                               </td>
                             </tr>
                           </tfoot>
@@ -1711,26 +1712,26 @@ export function RequestsList({ branchId, userRole, userId }: RequestsListProps) 
                     /* For one-time requests - show simple view */
                     <div className="grid grid-cols-2 gap-2 text-sm">
                       <div>
-                        <p className="text-purple-600">{tr.price}</p>
+                        <p className="text-purple-600 dark:text-purple-400">{tr.price}</p>
                         <p className="font-semibold">{tr.sar} {selectedRequest.quotedPrice.toLocaleString()}</p>
                       </div>
                       {selectedRequest.quotedDate && (
                         <div>
-                          <p className="text-purple-600">{tr.scheduledDate.replace(' *', '')}</p>
-                          <p className="font-semibold">{new Date(selectedRequest.quotedDate).toLocaleDateString('ar-SA-u-nu-latn')}</p>
+                          <p className="text-purple-600 dark:text-purple-400">{tr.scheduledDate.replace(' *', '')}</p>
+                          <p className="font-semibold">{formatDate(selectedRequest.quotedDate, locale)}</p>
                         </div>
                       )}
                     </div>
                   )}
 
                   {selectedRequest.quotedNotes && (
-                    <div className="mt-3 pt-3 border-t border-purple-200">
-                      <p className="text-purple-600 text-sm mb-1">{tr.notesFromContractor}</p>
-                      <p className="text-sm text-purple-900 whitespace-pre-wrap">{selectedRequest.quotedNotes}</p>
+                    <div className="mt-3 pt-3 border-t border-purple-200 dark:border-purple-900">
+                      <p className="text-purple-600 dark:text-purple-400 text-sm mb-1">{tr.notesFromContractor}</p>
+                      <p className="text-sm text-purple-900 dark:text-purple-300 whitespace-pre-wrap">{selectedRequest.quotedNotes}</p>
                     </div>
                   )}
                   {selectedRequest.status === 'QUOTED' && (
-                    <p className="text-xs text-purple-600 mt-2">{tr.waitingForApproval}</p>
+                    <p className="text-xs text-purple-600 dark:text-purple-400 mt-2">{tr.waitingForApproval}</p>
                   )}
                 </div>
               )}
@@ -1862,7 +1863,7 @@ export function RequestsList({ branchId, userRole, userId }: RequestsListProps) 
                       <Badge variant="outline">{quoteRequest.recurringType === 'MONTHLY' ? tr.monthly : tr.quarterly}</Badge>
                     )}
                     {quoteRequest.needsCertificate && (
-                      <Badge variant="outline" className="text-green-600">{tr.certificate}</Badge>
+                      <Badge variant="outline" className="text-green-600 dark:text-green-400">{tr.certificate}</Badge>
                     )}
                   </div>
                 </div>
@@ -1876,18 +1877,18 @@ export function RequestsList({ branchId, userRole, userId }: RequestsListProps) 
 
                 {/* Client Preferences */}
                 {(quoteRequest.preferredDate || quoteRequest.preferredTimeSlot) && (
-                  <div className="p-4 bg-blue-50 border border-blue-200 rounded-lg">
-                    <p className="text-sm font-medium text-blue-800 mb-2">{tr.clientPreferences}</p>
+                  <div className="p-4 bg-blue-50 dark:bg-blue-950/40 border border-blue-200 dark:border-blue-900 rounded-lg">
+                    <p className="text-sm font-medium text-blue-800 dark:text-blue-400 mb-2">{tr.clientPreferences}</p>
                     <div className="flex gap-4 text-sm">
                       {quoteRequest.preferredDate && (
                         <div className="flex items-center gap-1">
-                          <Calendar className="h-4 w-4 text-blue-600" />
-                          <span>{new Date(quoteRequest.preferredDate).toLocaleDateString('ar-SA-u-nu-latn')}</span>
+                          <Calendar className="h-4 w-4 text-blue-600 dark:text-blue-400" />
+                          <span>{formatDate(quoteRequest.preferredDate, locale)}</span>
                         </div>
                       )}
                       {quoteRequest.preferredTimeSlot && (
                         <div className="flex items-center gap-1">
-                          <Clock className="h-4 w-4 text-blue-600" />
+                          <Clock className="h-4 w-4 text-blue-600 dark:text-blue-400" />
                           <span className="capitalize">{quoteRequest.preferredTimeSlot.toLowerCase().replace('_', ' ')}</span>
                         </div>
                       )}
@@ -1925,7 +1926,7 @@ export function RequestsList({ branchId, userRole, userId }: RequestsListProps) 
                 <div className="grid grid-cols-2 gap-4 text-sm">
                   <div>
                     <p className="text-muted-foreground">{tr.submitted}</p>
-                    <p className="font-medium">{new Date(quoteRequest.createdAt).toLocaleDateString('ar-SA-u-nu-latn')}</p>
+                    <p className="font-medium">{formatDate(quoteRequest.createdAt, locale)}</p>
                   </div>
                   <div>
                     <p className="text-muted-foreground">{tr.createdBy}</p>
@@ -1994,8 +1995,8 @@ export function RequestsList({ branchId, userRole, userId }: RequestsListProps) 
 
                   {/* Recurring Work Orders Preview */}
                   {quoteRequest.recurringType && quoteRequest.recurringType !== 'ONCE' && quoteData.quotedDate && quoteData.quotedPrice && (
-                    <div className="p-4 bg-blue-50 border border-blue-200 rounded-lg">
-                      <h5 className="font-medium text-blue-800 mb-3">
+                    <div className="p-4 bg-blue-50 dark:bg-blue-950/40 border border-blue-200 dark:border-blue-900 rounded-lg">
+                      <h5 className="font-medium text-blue-800 dark:text-blue-400 mb-3">
                         {tr.workOrdersPreview} ({quoteRequest.recurringType === 'MONTHLY' ? tr.monthly : tr.quarterly})
                       </h5>
                       <div className="space-y-2 text-sm">
@@ -2013,19 +2014,19 @@ export function RequestsList({ branchId, userRole, userId }: RequestsListProps) 
                           return (
                             <>
                               {dates.slice(0, 4).map((date, idx) => (
-                                <div key={idx} className="flex justify-between items-center py-1 border-b border-blue-100 last:border-0">
-                                  <span className="text-blue-700">
-                                    └ {quoteRequest.recurringType === 'MONTHLY' ? `${tr.month} ${idx + 1}` : `Q${idx + 1}`}: {date.toLocaleDateString('ar-SA-u-nu-latn')}
+                                <div key={idx} className="flex justify-between items-center py-1 border-b border-blue-100 dark:border-blue-900 last:border-0">
+                                  <span className="text-blue-700 dark:text-blue-400">
+                                    └ {quoteRequest.recurringType === 'MONTHLY' ? `${tr.month} ${idx + 1}` : `Q${idx + 1}`}: {formatDate(date, locale)}
                                   </span>
-                                  <span className="font-medium text-blue-800">{tr.sar} {price.toLocaleString()}</span>
+                                  <span className="font-medium text-blue-800 dark:text-blue-400">{tr.sar} {price.toLocaleString()}</span>
                                 </div>
                               ))}
                               {dates.length > 4 && (
-                                <p className="text-blue-600 text-xs mt-2">... {tr.moreOccurrences} {dates.length - 4}</p>
+                                <p className="text-blue-600 dark:text-blue-400 text-xs mt-2">... {tr.moreOccurrences} {dates.length - 4}</p>
                               )}
-                              <div className="flex justify-between items-center pt-3 mt-2 border-t border-blue-300 font-semibold">
-                                <span className="text-blue-800">{tr.total} ({dates.length} {tr.totalWorkOrders})</span>
-                                <span className="font-medium text-blue-900">{tr.sar} {(price * dates.length).toLocaleString()}</span>
+                              <div className="flex justify-between items-center pt-3 mt-2 border-t border-blue-300 dark:border-blue-800 font-semibold">
+                                <span className="text-blue-800 dark:text-blue-400">{tr.total} ({dates.length} {tr.totalWorkOrders})</span>
+                                <span className="font-medium text-blue-900 dark:text-blue-300">{tr.sar} {(price * dates.length).toLocaleString()}</span>
                               </div>
                             </>
                           )
@@ -2052,8 +2053,8 @@ export function RequestsList({ branchId, userRole, userId }: RequestsListProps) 
                 </div>
               </div>
 
-              <div className="p-4 bg-amber-50 border border-amber-200 rounded-lg">
-                <p className="text-sm text-amber-800">
+              <div className="p-4 bg-amber-50 dark:bg-amber-950/40 border border-amber-200 dark:border-amber-900 rounded-lg">
+                <p className="text-sm text-amber-800 dark:text-amber-400">
                   <strong>{tr.quoteNote}</strong>
                   {quoteRequest.recurringType && quoteRequest.recurringType !== 'ONCE'
                     ? ` ${tr.quoteNoteRecurring.replace('{count}', quoteRequest.recurringType === 'MONTHLY' ? '12' : '4')}`
@@ -2103,9 +2104,9 @@ export function RequestsList({ branchId, userRole, userId }: RequestsListProps) 
               </div>
 
               {/* Warning */}
-              <div className="p-4 bg-blue-50 border border-blue-200 rounded-lg">
-                <p className="text-sm text-blue-800 font-medium mb-2">⚡ {tr.thisWill}</p>
-                <ul className="text-sm text-blue-700 space-y-1 ms-4 list-disc">
+              <div className="p-4 bg-blue-50 dark:bg-blue-950/40 border border-blue-200 dark:border-blue-900 rounded-lg">
+                <p className="text-sm text-blue-800 dark:text-blue-400 font-medium mb-2">⚡ {tr.thisWill}</p>
+                <ul className="text-sm text-blue-700 dark:text-blue-400 space-y-1 ms-4 list-disc">
                   <li>{tr.createToday}</li>
                   <li>{tr.moveInProgress}</li>
                   <li>{tr.skipQuotation}</li>

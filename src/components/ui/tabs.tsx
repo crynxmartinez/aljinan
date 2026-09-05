@@ -4,14 +4,24 @@ import * as React from "react"
 import * as TabsPrimitive from "@radix-ui/react-tabs"
 
 import { cn } from "@/lib/utils"
+import { useTranslation } from "@/lib/i18n/use-translation"
+import { getDirection } from "@/lib/i18n/translations"
 
 function Tabs({
   className,
+  dir,
   ...props
 }: React.ComponentProps<typeof TabsPrimitive.Root>) {
+  // Radix's Tabs.Root defaults its own `dir` to "ltr" regardless of the page's actual
+  // direction, which silently pins both the tab list AND everything rendered inside
+  // TabsContent (it's all one Radix root) to LTR even on an RTL page. Passing the
+  // real locale direction here — unless a caller explicitly overrides it — is what
+  // makes tab order and any layout nested inside a tab mirror correctly in Arabic.
+  const { locale } = useTranslation()
   return (
     <TabsPrimitive.Root
       data-slot="tabs"
+      dir={dir ?? getDirection(locale)}
       className={cn("flex flex-col gap-2", className)}
       {...props}
     />

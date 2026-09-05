@@ -140,7 +140,7 @@ export function PendingBranchRequests() {
           {requests.map((request) => (
             <div
               key={request.id}
-              className="flex items-start justify-between p-4 bg-white border rounded-lg"
+              className="flex items-start justify-between p-4 bg-card border rounded-lg"
             >
               <div className="space-y-1">
                 <div className="flex items-center gap-2">
