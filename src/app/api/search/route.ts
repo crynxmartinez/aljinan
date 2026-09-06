@@ -452,6 +452,25 @@ export async function GET(request: Request) {
 
       const isContractor = role === 'CONTRACTOR' || role === 'TEAM_MEMBER'
 
+      // The contractor-scoped and client-scoped branch of each query above select
+      // slightly different shapes (a client only ever sees their own data, so the nested
+      // `client` relation and a couple of role-only fields are omitted for them) — these
+      // types describe the union of both branches so the formatting below stays fully
+      // typed instead of casting to `any`.
+      type WithBranch = { slug: string | null; client?: { id: string; slug: string | null; companyName: string } }
+      type BranchRow = { id: string; slug: string | null; name: string; displayName?: string | null; clientNickname?: string | null; address: string; client?: { id: string; slug: string | null; companyName?: string } }
+      type WorkOrderRow = { id: string; description: string; workOrderNumber: number | null; stage: string; checklist: { branchId: string; branch: WithBranch } }
+      type RequestRow = { id: string; title: string; status: string; requestNumber: number | null; branchId: string; branch: WithBranch }
+      type ContractRow = { id: string; title: string; status: string; branchId: string; branch: WithBranch }
+      type InvoiceRow = { id: string; title: string; invoiceNumber: string; status: string; branchId: string; branch: WithBranch }
+      type EquipmentRow = { id: string; equipmentNumber: string; equipmentType: string; location: string | null; branchId: string; branch: WithBranch }
+      type CertificateRow = { id: string; title: string; type: string; branchId: string; branch: WithBranch }
+      type TeamMemberRow = { id: string; jobTitle: string | null; teamRole: string; user: { name: string | null; email: string } }
+      type BranchRequestRow = { id: string; name: string; status: string; client?: { id: string; slug: string | null; companyName: string } }
+      type AppointmentRow = { id: string; title: string; status: string; branchId: string; branch: WithBranch }
+      type ContractorRow = { id: string; companyName: string | null; user: { name: string | null; email: string } }
+      type InquiryRow = { id: string; name: string; email: string; status: string }
+
       const formatted: SearchResult[] = [
         // Clients
         ...(clients as typeof clients).map(c => ({
@@ -463,7 +482,7 @@ export async function GET(request: Request) {
         })),
 
         // Branches
-        ...(branches as any[]).map(b => ({
+        ...(branches as BranchRow[]).map(b => ({
           id: b.id,
           type: 'branch' as const,
           title: b.displayName || b.clientNickname || b.name,
@@ -474,7 +493,7 @@ export async function GET(request: Request) {
         })),
 
         // Work Orders
-        ...(workOrders as any[]).map(wo => ({
+        ...(workOrders as WorkOrderRow[]).map(wo => ({
           id: wo.id,
           type: 'work_order' as const,
           title: wo.workOrderNumber ? `WO-${String(wo.workOrderNumber).padStart(4, '0')} ${wo.description}` : wo.description,
@@ -487,7 +506,7 @@ export async function GET(request: Request) {
         })),
 
         // Requests
-        ...(requests as any[]).map(r => ({
+        ...(requests as RequestRow[]).map(r => ({
           id: r.id,
           type: 'request' as const,
           title: r.requestNumber ? `REQ-${String(r.requestNumber).padStart(4, '0')} ${r.title}` : r.title,
@@ -500,7 +519,7 @@ export async function GET(request: Request) {
         })),
 
         // Contracts
-        ...(contracts as any[]).map(c => ({
+        ...(contracts as ContractRow[]).map(c => ({
           id: c.id,
           type: 'contract' as const,
           title: c.title,
@@ -513,7 +532,7 @@ export async function GET(request: Request) {
         })),
 
         // Invoices
-        ...(invoices as any[]).map(inv => ({
+        ...(invoices as InvoiceRow[]).map(inv => ({
           id: inv.id,
           type: 'invoice' as const,
           title: inv.invoiceNumber ? `${inv.invoiceNumber} — ${inv.title}` : inv.title,
@@ -526,7 +545,7 @@ export async function GET(request: Request) {
         })),
 
         // Equipment
-        ...(equipment as any[]).map(eq => ({
+        ...(equipment as EquipmentRow[]).map(eq => ({
           id: eq.id,
           type: 'equipment' as const,
           title: `${eq.equipmentNumber} — ${eq.equipmentType.replace(/_/g, ' ')}`,
@@ -539,7 +558,7 @@ export async function GET(request: Request) {
         })),
 
         // Certificates
-        ...(certificates as any[]).map(cert => ({
+        ...(certificates as CertificateRow[]).map(cert => ({
           id: cert.id,
           type: 'certificate' as const,
           title: cert.title,
@@ -552,7 +571,7 @@ export async function GET(request: Request) {
         })),
 
         // Team members (staff) — contractor-only roster, no per-member deep link
-        ...(teamMembers as any[]).map(m => ({
+        ...(teamMembers as TeamMemberRow[]).map(m => ({
           id: m.id,
           type: 'team_member' as const,
           title: m.user?.name || m.user?.email,
@@ -561,7 +580,7 @@ export async function GET(request: Request) {
         })),
 
         // Branch requests — pending/rejected asks for a new branch
-        ...(branchRequests as any[]).map(br => ({
+        ...(branchRequests as BranchRequestRow[]).map(br => ({
           id: br.id,
           type: 'branch_request' as const,
           title: br.name,
@@ -572,7 +591,7 @@ export async function GET(request: Request) {
         })),
 
         // Appointments
-        ...(appointments as any[]).map(a => ({
+        ...(appointments as AppointmentRow[]).map(a => ({
           id: a.id,
           type: 'appointment' as const,
           title: a.title,
@@ -585,7 +604,7 @@ export async function GET(request: Request) {
         })),
 
         // Contractors — ADMIN only
-        ...(contractors as any[]).map(c => ({
+        ...(contractors as ContractorRow[]).map(c => ({
           id: c.id,
           type: 'contractor' as const,
           title: c.companyName || c.user?.name || c.user?.email,
@@ -594,7 +613,7 @@ export async function GET(request: Request) {
         })),
 
         // Contact inquiries ("Messages") — ADMIN only
-        ...(inquiries as any[]).map(i => ({
+        ...(inquiries as InquiryRow[]).map(i => ({
           id: i.id,
           type: 'inquiry' as const,
           title: i.name,
