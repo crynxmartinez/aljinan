@@ -5,24 +5,24 @@
  */
 
 import { prisma } from './prisma'
-import { getCached, invalidateCache, CACHE_TAGS } from './cache'
+import type { Database } from './atomic-mutation'
+import { getCached, invalidateCache } from './cache'
 import { UserRole } from '@prisma/client'
 
-/** Seconds an access decision may be reused. Short, because it gates authorization. */
-const BRANCH_ACCESS_CACHE_TTL = 60
 
 /**
  * Check if a user may access a branch.
  *
  * Argument order differs from verifyBranchAccess for historical reasons; both resolve to
- * the same rules. Prefer verifyBranchAccess in route handlers — it is cached.
+ * the same rules. Prefer verifyBranchAccess in route handlers.
  */
 export async function canAccessBranch(
   userId: string,
   userRole: UserRole,
-  branchId: string
+  branchId: string,
+  db: Database = prisma
 ): Promise<boolean> {
-  return verifyBranchAccess(branchId, userId, userRole)
+  return verifyBranchAccess(branchId, userId, userRole, db)
 }
 
 /**
@@ -36,21 +36,20 @@ export async function canAccessBranch(
  *                  tenant data. Support access goes through impersonation, which is
  *                  permission-checked and audited.
  *
- * Cached briefly, so a revocation can take up to CACHE_TTL to be observed. Call
- * invalidateBranchAccessCache() from any path that changes assignments.
+ * Read current assignments on every check. Transactional callers pass their database
+ * client so authorization and writes share a snapshot and connection.
  */
 export async function verifyBranchAccess(
   branchId: string,
   userId: string,
-  role: string
+  role: string,
+  db: Database = prisma
 ): Promise<boolean> {
   if (!branchId || !userId) return false
 
-  const cacheKey = CACHE_TAGS.BRANCH_ACCESS(branchId, userId, role)
 
-  return getCached(cacheKey, async () => {
     if (role === 'CONTRACTOR') {
-      const contractor = await prisma.contractor.findUnique({
+      const contractor = await db.contractor.findUnique({
         where: { userId },
         select: {
           id: true,
@@ -68,7 +67,7 @@ export async function verifyBranchAccess(
     }
 
     if (role === 'CLIENT') {
-      const branch = await prisma.branch.findUnique({
+      const branch = await db.branch.findUnique({
         where: { id: branchId },
         select: {
           client: {
@@ -80,7 +79,7 @@ export async function verifyBranchAccess(
     }
 
     if (role === 'TEAM_MEMBER') {
-      const access = await prisma.teamMemberBranch.findFirst({
+      const access = await db.teamMemberBranch.findFirst({
         where: {
           teamMember: { userId },
           branchId
@@ -91,7 +90,7 @@ export async function verifyBranchAccess(
     }
 
     return false
-  }, BRANCH_ACCESS_CACHE_TTL)
+
 }
 
 /**

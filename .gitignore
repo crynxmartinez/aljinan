@@ -44,3 +44,7 @@ android/
 # Local development database (scripts/dev-db.mjs)
 .devdb/
 .env.backup
+
+# Browser verification artifacts
+/test-results/
+/playwright-report/

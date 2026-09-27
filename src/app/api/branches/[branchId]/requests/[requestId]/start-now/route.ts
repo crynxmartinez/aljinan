@@ -1,3 +1,4 @@
+import { atomicMutation } from '@/lib/atomic-mutation'
 import { getServerSession } from 'next-auth'
 import { NextResponse } from 'next/server'
 import { authOptions } from '@/lib/auth'
@@ -8,8 +9,10 @@ export async function POST(
   request: Request,
   { params }: { params: Promise<{ branchId: string; requestId: string }> }
 ) {
+  const session = await getServerSession(authOptions)
+  if (!session) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
+  return atomicMutation(async prisma => {
   try {
-    const session = await getServerSession(authOptions)
     if (!session) {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
     }
@@ -25,7 +28,7 @@ export async function POST(
       )
     }
 
-    const hasAccess = await verifyBranchAccess(branchId, session.user.id, session.user.role)
+    const hasAccess = await verifyBranchAccess(branchId, session.user.id, session.user.role, prisma)
     if (!hasAccess) {
       return NextResponse.json({ error: 'Access denied' }, { status: 403 })
     }
@@ -153,4 +156,6 @@ export async function POST(
     console.error('Error creating work order from request:', error)
     return NextResponse.json({ error: 'Failed to create work order' }, { status: 500 })
   }
+
+  })
 }

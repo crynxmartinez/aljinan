@@ -54,13 +54,17 @@ export async function POST(
       },
     })
 
-    await sendVerificationEmail(
+    const delivery = await sendVerificationEmail(
       client.user.email,
       client.user.name || 'there',
       verificationToken,
       'CLIENT',
       await getLocale()
     )
+
+    if (!delivery.success) {
+      return NextResponse.json({ code: 'EMAIL_DELIVERY_FAILED', error: 'Email delivery failed. Please retry sending the verification email.' }, { status: 502 })
+    }
 
     return NextResponse.json({
       success: true,

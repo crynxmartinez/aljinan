@@ -123,3 +123,22 @@ jobs:
 
       - name: Integration tests
         run: npm run test:integration
+
+      - name: Seed browser-only accounts
+        run: npx tsx scripts/seed-browser-fixtures.ts
+
+      - name: Install test browser
+        run: npx playwright install --with-deps chromium
+
+      - name: Browser language, theme and role matrix
+        run: npx playwright test
+
+      - name: Browser evidence
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: browser-evidence
+          path: |
+            playwright-report/
+            test-results/
+          retention-days: 7

@@ -288,8 +288,8 @@ export default function ContractorsPage() {
       const data = await response.json()
       if (!response.ok) throw new Error(data.error)
 
-      toast.success(tc.accountActivated, {
-        description: `Password: ${data.tempPassword} (sent to ${email})`
+      toast.success(tc.verificationResent, {
+        description: `${tc.sentTo} ${email}`
       })
       fetchContractors()
     } catch (err) {

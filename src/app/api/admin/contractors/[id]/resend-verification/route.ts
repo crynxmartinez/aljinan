@@ -47,13 +47,17 @@ export async function POST(
     })
 
     // Resend verification email
-    await sendVerificationEmail(
+    const delivery = await sendVerificationEmail(
       contractor.user.email,
       contractor.user.name || 'there',
       verificationToken,
       undefined,
       await getLocale()
     )
+
+    if (!delivery.success) {
+      return NextResponse.json({ code: 'EMAIL_DELIVERY_FAILED', error: 'Email delivery failed. Please retry sending the verification email.' }, { status: 502 })
+    }
 
     return NextResponse.json({
       success: true,

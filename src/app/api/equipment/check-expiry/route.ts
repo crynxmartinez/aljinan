@@ -40,7 +40,7 @@ async function runEquipmentExpiryCheck() {
     })
 
     let notificationsCreated = 0
-    const processedUsers = new Set<string>()
+
 
     for (const equipment of expiringEquipment) {
       const isExpired = equipment.expectedExpiry && equipment.expectedExpiry < now
@@ -54,23 +54,6 @@ async function runEquipmentExpiryCheck() {
       const branch = equipment.branch
       const client = branch.client
       const contractor = client.contractor
-
-      // Create notification key to avoid duplicates
-      const notificationKey = `${equipment.id}-${isExpired ? 'expired' : 'expiring'}`
-
-      // Check if notification already exists for this equipment today
-      const existingNotification = await prisma.notification.findFirst({
-        where: {
-          relatedId: equipment.id,
-          relatedType: 'equipment',
-          type: isExpired ? 'EQUIPMENT_EXPIRED' : 'EQUIPMENT_EXPIRING',
-          createdAt: {
-            gte: new Date(now.getFullYear(), now.getMonth(), now.getDate())
-          }
-        }
-      })
-
-      if (existingNotification) continue
 
       const notificationType = isExpired ? 'EQUIPMENT_EXPIRED' : 'EQUIPMENT_EXPIRING'
       const title = isExpired 
@@ -88,45 +71,29 @@ async function runEquipmentExpiryCheck() {
       const link = `/dashboard/clients/${client.id}/branches/${branch.id}?tab=equipment`
       const clientLink = `/portal/branches/${branch.id}?tab=equipment`
 
-      // Notify contractor
-      if (contractor?.user?.id) {
-        await prisma.notification.create({
-          data: {
-            userId: contractor.user.id,
-            type: notificationType,
-            title,
-            message,
-            link,
-            relatedId: equipment.id,
-            relatedType: 'equipment',
-          }
+      const dayKey = new Date(now.getTime() + 3 * 3600_000).toISOString().slice(0, 10)
+      const recipients = [
+        { userId: contractor?.user?.id, link },
+        { userId: client?.user?.id, link: clientLink },
+      ].filter((recipient): recipient is { userId: string; link: string } => Boolean(recipient.userId))
+      const created = await prisma.$transaction(async tx => {
+        // The expiry may have been renewed since the initial scan. Do not overwrite it.
+        const updated = await tx.equipment.updateMany({
+          where: { id: equipment.id, expectedExpiry: equipment.expectedExpiry },
+          data: { status: isExpired ? 'EXPIRED' : 'EXPIRING_SOON' },
         })
-        notificationsCreated++
-      }
-
-      // Notify client
-      if (client?.user?.id) {
-        await prisma.notification.create({
-          data: {
-            userId: client.user.id,
-            type: notificationType,
-            title,
-            message,
-            link: clientLink,
-            relatedId: equipment.id,
-            relatedType: 'equipment',
-          }
+        if (!updated.count) return 0
+        const result = await tx.notification.createMany({
+          data: recipients.map(recipient => ({
+            ...recipient, type: notificationType, title, message,
+            relatedId: equipment.id, relatedType: 'equipment',
+            dedupeKey: `${recipient.userId}:${notificationType}:${equipment.id}:${dayKey}`,
+          })),
+          skipDuplicates: true,
         })
-        notificationsCreated++
-      }
-
-      // Update equipment status
-      await prisma.equipment.update({
-        where: { id: equipment.id },
-        data: {
-          status: isExpired ? 'EXPIRED' : 'EXPIRING_SOON'
-        }
+        return result.count
       })
+      notificationsCreated += created
     }
 
   return {
@@ -138,9 +105,7 @@ async function runEquipmentExpiryCheck() {
 function isAuthorized(request: Request): boolean {
   const authHeader = request.headers.get('authorization')
   const cronSecret = process.env.CRON_SECRET
-  // Optional: if CRON_SECRET isn't configured, allow through (matches this route's
-  // original POST behavior so manual/local calls keep working without one).
-  return !cronSecret || authHeader === `Bearer ${cronSecret}`
+  return Boolean(cronSecret) && authHeader === `Bearer ${cronSecret}`
 }
 
 // GET - Invoked by Vercel Cron (cron jobs are always a GET request)

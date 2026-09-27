@@ -1,3 +1,4 @@
+import { atomicMutation } from '@/lib/atomic-mutation'
 import { getServerSession } from 'next-auth'
 import { NextResponse } from 'next/server'
 import { authOptions } from '@/lib/auth'
@@ -21,7 +22,7 @@ export async function GET(
 
     const { branchId, requestId } = await params
 
-    const hasAccess = await verifyBranchAccess(branchId, session.user.id, session.user.role)
+    const hasAccess = await verifyBranchAccess(branchId, session.user.id, session.user.role, prisma)
     if (!hasAccess) {
       return NextResponse.json({ error: 'Access denied' }, { status: 403 })
     }
@@ -52,8 +53,10 @@ export async function PATCH(
   request: Request,
   { params }: { params: Promise<{ branchId: string; requestId: string }> }
 ) {
+  const session = await getServerSession(authOptions)
+  if (!session) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
+  return atomicMutation(async prisma => {
   try {
-    const session = await getServerSession(authOptions)
 
     if (!session) {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
@@ -80,7 +83,7 @@ export async function PATCH(
       clientSignature, // Client signature when accepting quote
     } = body
 
-    const hasAccess = await verifyBranchAccess(branchId, session.user.id, session.user.role)
+    const hasAccess = await verifyBranchAccess(branchId, session.user.id, session.user.role, prisma)
     if (!hasAccess) {
       return NextResponse.json({ error: 'Access denied' }, { status: 403 })
     }
@@ -144,7 +147,7 @@ export async function PATCH(
           action: 'Quote revised before acceptance',
           details: { from: Number(currentRequest.quotedPrice), to: price },
           success: true,
-        })
+        }, prisma)
       }
       updateData.status = 'QUOTED'
       updateData.quotedPrice = roundMoney(price)
@@ -431,7 +434,7 @@ export async function PATCH(
       })
 
       if (action === 'quote' && branchWithParties?.client?.userId) {
-        await notifyRequestQuoted(branchWithParties.client.userId, updatedRequest.title, requestId, branchId)
+        await notifyRequestQuoted(branchWithParties.client.userId, updatedRequest.title, requestId, branchId, prisma)
       } else if (branchWithParties?.client?.contractor?.userId) {
         if (action === 'accept') {
           await notifyRequestApproved(
@@ -439,7 +442,7 @@ export async function PATCH(
             branchWithParties.client.id,
             updatedRequest.title,
             requestId,
-            branchId
+            branchId, prisma
           )
         } else if (action === 'reject') {
           await notifyRequestRejected(
@@ -448,7 +451,7 @@ export async function PATCH(
             updatedRequest.title,
             requestId,
             branchId,
-            rejectionNote
+            rejectionNote, prisma
           )
         }
       }
@@ -470,6 +473,8 @@ export async function PATCH(
       { status: 500 }
     )
   }
+
+  })
 }
 
 // DELETE - Delete a request (contractor only)
@@ -477,8 +482,10 @@ export async function DELETE(
   request: Request,
   { params }: { params: Promise<{ branchId: string; requestId: string }> }
 ) {
+  const session = await getServerSession(authOptions)
+  if (!session) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
+  return atomicMutation(async prisma => {
   try {
-    const session = await getServerSession(authOptions)
 
     if (!session) {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
@@ -491,7 +498,7 @@ export async function DELETE(
 
     const { branchId, requestId } = await params
 
-    const hasAccess = await verifyBranchAccess(branchId, session.user.id, session.user.role)
+    const hasAccess = await verifyBranchAccess(branchId, session.user.id, session.user.role, prisma)
     if (!hasAccess) {
       return NextResponse.json({ error: 'Access denied' }, { status: 403 })
     }
@@ -508,4 +515,6 @@ export async function DELETE(
       { status: 500 }
     )
   }
+
+  })
 }

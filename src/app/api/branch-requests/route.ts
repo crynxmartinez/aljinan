@@ -1,3 +1,4 @@
+import { atomicMutation } from '@/lib/atomic-mutation'
 import { getServerSession } from 'next-auth'
 import { NextResponse } from 'next/server'
 import { authOptions } from '@/lib/auth'
@@ -72,8 +73,10 @@ export async function GET() {
 
 // POST - Create a new branch request (client only)
 export async function POST(request: Request) {
+  const session = await getServerSession(authOptions)
+  if (!session) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
+  return atomicMutation(async prisma => {
   try {
-    const session = await getServerSession(authOptions)
 
     if (!session) {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
@@ -120,7 +123,7 @@ export async function POST(request: Request) {
       select: { userId: true }
     })
     if (contractor) {
-      await notifyBranchRequestCreated(contractor.userId, name, branchRequest.id)
+      await notifyBranchRequestCreated(contractor.userId, name, branchRequest.id, prisma)
     }
 
     return NextResponse.json(branchRequest, { status: 201 })
@@ -131,4 +134,6 @@ export async function POST(request: Request) {
       { status: 500 }
     )
   }
+
+  })
 }

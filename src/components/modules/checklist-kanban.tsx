@@ -497,14 +497,14 @@ function DroppableColumn({
 // `options` is optional (not defaulted) so a call site that wants the browser's plain
 // numeric date (year/month/day, no options) can omit it — passing a default here would
 // force every call site into the same short month/day shape.
-function formatDate(dateString: string | null, locale: 'en' | 'ar' = 'ar', options?: Intl.DateTimeFormatOptions) {
+function formatDate(dateString: string | null, locale: 'en' | 'ar', options?: Intl.DateTimeFormatOptions) {
   if (!dateString) return null
-  return new Date(dateString).toLocaleDateString(locale === 'ar' ? 'ar-SA-u-nu-latn' : 'en-US', options)
+  return new Date(dateString).toLocaleDateString(locale === 'ar' ? 'ar-SA-u-ca-gregory-nu-latn' : 'en-US', { timeZone: 'Asia/Riyadh', ...options })
 }
 
-function formatTime(dateString: string | null, locale: 'en' | 'ar' = 'ar') {
+function formatTime(dateString: string | null, locale: 'en' | 'ar') {
   if (!dateString) return null
-  return new Date(dateString).toLocaleTimeString(locale === 'ar' ? 'ar-SA-u-nu-latn' : 'en-US')
+  return new Date(dateString).toLocaleTimeString(locale === 'ar' ? 'ar-SA-u-ca-gregory-nu-latn' : 'en-US', { timeZone: 'Asia/Riyadh' })
 }
 
 // Date priority types for visual indicators
@@ -2230,10 +2230,10 @@ export function ChecklistKanban({ branchId, readOnly = false, userRole }: Checkl
                       <p className="font-medium">{formatDate(selectedItem.scheduledDate, locale)}</p>
                     </div>
                   )}
-                  {selectedItem.price && (
+                  {selectedItem.price != null && (
                     <div>
                       <p className="text-muted-foreground">{tk.price}</p>
-                      <p className="font-semibold text-green-700">{formatCurrency(selectedItem.price)}</p>
+                      <p className="font-semibold text-green-700">{formatCurrency(selectedItem.price, locale)}</p>
                     </div>
                   )}
                 </div>

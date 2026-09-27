@@ -1,3 +1,4 @@
+import { atomicMutation } from '@/lib/atomic-mutation'
 import { publishedFor } from '@/lib/publication'
 import { getServerSession } from 'next-auth'
 import { NextResponse } from 'next/server'
@@ -20,7 +21,7 @@ export async function GET(
 
     const { branchId, invoiceId } = await params
 
-    const hasAccess = await verifyBranchAccess(branchId, session.user.id, session.user.role)
+    const hasAccess = await verifyBranchAccess(branchId, session.user.id, session.user.role, prisma)
     if (!hasAccess) {
       return NextResponse.json({ error: 'Access denied' }, { status: 403 })
     }
@@ -49,8 +50,10 @@ export async function PATCH(
   request: Request,
   { params }: { params: Promise<{ branchId: string; invoiceId: string }> }
 ) {
+  const session = await getServerSession(authOptions)
+  if (!session) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
+  return atomicMutation(async prisma => {
   try {
-    const session = await getServerSession(authOptions)
 
     if (!session) {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
@@ -59,7 +62,7 @@ export async function PATCH(
     const { branchId, invoiceId } = await params
     const body = await request.json()
 
-    const hasAccess = await verifyBranchAccess(branchId, session.user.id, session.user.role)
+    const hasAccess = await verifyBranchAccess(branchId, session.user.id, session.user.role, prisma)
     if (!hasAccess) {
       return NextResponse.json({ error: 'Access denied' }, { status: 403 })
     }
@@ -253,6 +256,8 @@ export async function PATCH(
       { status: 500 }
     )
   }
+
+  })
 }
 
 // DELETE - Delete an invoice (contractor only, draft only)
@@ -260,8 +265,10 @@ export async function DELETE(
   request: Request,
   { params }: { params: Promise<{ branchId: string; invoiceId: string }> }
 ) {
+  const session = await getServerSession(authOptions)
+  if (!session) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
+  return atomicMutation(async prisma => {
   try {
-    const session = await getServerSession(authOptions)
 
     if (!session) {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
@@ -273,7 +280,7 @@ export async function DELETE(
 
     const { branchId, invoiceId } = await params
 
-    const hasAccess = await verifyBranchAccess(branchId, session.user.id, session.user.role)
+    const hasAccess = await verifyBranchAccess(branchId, session.user.id, session.user.role, prisma)
     if (!hasAccess) {
       return NextResponse.json({ error: 'Access denied' }, { status: 403 })
     }
@@ -302,4 +309,6 @@ export async function DELETE(
       { status: 500 }
     )
   }
+
+  })
 }

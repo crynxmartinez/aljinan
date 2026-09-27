@@ -1,3 +1,4 @@
+import { atomicMutation } from '@/lib/atomic-mutation'
 import { getServerSession } from 'next-auth'
 import { NextResponse } from 'next/server'
 import { authOptions } from '@/lib/auth'
@@ -24,7 +25,7 @@ export async function GET(
 
     const { branchId, appointmentId } = await params
 
-    const hasAccess = await verifyBranchAccess(branchId, session.user.id, session.user.role)
+    const hasAccess = await verifyBranchAccess(branchId, session.user.id, session.user.role, prisma)
     if (!hasAccess) {
       return NextResponse.json({ error: 'Access denied' }, { status: 403 })
     }
@@ -55,8 +56,10 @@ export async function PATCH(
   request: Request,
   { params }: { params: Promise<{ branchId: string; appointmentId: string }> }
 ) {
+  const session = await getServerSession(authOptions)
+  if (!session) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
+  return atomicMutation(async prisma => {
   try {
-    const session = await getServerSession(authOptions)
 
     if (!session) {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
@@ -65,7 +68,7 @@ export async function PATCH(
     const { branchId, appointmentId } = await params
     const body = await request.json()
 
-    const hasAccess = await verifyBranchAccess(branchId, session.user.id, session.user.role)
+    const hasAccess = await verifyBranchAccess(branchId, session.user.id, session.user.role, prisma)
     if (!hasAccess) {
       return NextResponse.json({ error: 'Access denied' }, { status: 403 })
     }
@@ -101,7 +104,7 @@ export async function PATCH(
           include: { client: { select: { id: true, contractor: { select: { userId: true } } } } }
         })
         if (branch?.client?.contractor?.userId) {
-          await notifyAppointmentConfirmed(branch.client.contractor.userId, branch.client.id, updated.title, appointmentId, branchId)
+          await notifyAppointmentConfirmed(branch.client.contractor.userId, branch.client.id, updated.title, appointmentId, branchId, prisma)
         }
 
         return NextResponse.json(updated)
@@ -125,7 +128,7 @@ export async function PATCH(
           include: { client: { select: { id: true, contractor: { select: { userId: true } } } } }
         })
         if (branch?.client?.contractor?.userId) {
-          await notifyAppointmentCancelled(branch.client.contractor.userId, branch.client.id, updated.title, appointmentId, branchId)
+          await notifyAppointmentCancelled(branch.client.contractor.userId, branch.client.id, updated.title, appointmentId, branchId, prisma)
         }
 
         return NextResponse.json(updated)
@@ -147,7 +150,7 @@ export async function PATCH(
           include: { client: { select: { id: true, contractor: { select: { userId: true } } } } }
         })
         if (branch?.client?.contractor?.userId) {
-          await notifyAppointmentRescheduleRequested(branch.client.contractor.userId, branch.client.id, updated.title, appointmentId, branchId)
+          await notifyAppointmentRescheduleRequested(branch.client.contractor.userId, branch.client.id, updated.title, appointmentId, branchId, prisma)
         }
 
         return NextResponse.json(updated)
@@ -193,7 +196,7 @@ export async function PATCH(
           include: { client: { select: { userId: true } } }
         })
         if (branch?.client?.userId) {
-          await notifyAppointmentTimeChanged(branch.client.userId, updated.title, appointmentId, branchId)
+          await notifyAppointmentTimeChanged(branch.client.userId, updated.title, appointmentId, branchId, prisma)
         }
       }
 
@@ -211,6 +214,8 @@ export async function PATCH(
       { status: 500 }
     )
   }
+
+  })
 }
 
 // DELETE - Delete an appointment (contractor only)
@@ -218,8 +223,10 @@ export async function DELETE(
   request: Request,
   { params }: { params: Promise<{ branchId: string; appointmentId: string }> }
 ) {
+  const session = await getServerSession(authOptions)
+  if (!session) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
+  return atomicMutation(async prisma => {
   try {
-    const session = await getServerSession(authOptions)
 
     if (!session) {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
@@ -231,7 +238,7 @@ export async function DELETE(
 
     const { branchId, appointmentId } = await params
 
-    const hasAccess = await verifyBranchAccess(branchId, session.user.id, session.user.role)
+    const hasAccess = await verifyBranchAccess(branchId, session.user.id, session.user.role, prisma)
     if (!hasAccess) {
       return NextResponse.json({ error: 'Access denied' }, { status: 403 })
     }
@@ -251,4 +258,6 @@ export async function DELETE(
       { status: 500 }
     )
   }
+
+  })
 }

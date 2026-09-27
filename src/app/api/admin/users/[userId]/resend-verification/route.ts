@@ -47,13 +47,17 @@ export async function POST(
     })
 
     const userType = user.role === 'CONTRACTOR' ? 'CONTRACTOR' : 'CLIENT'
-    await sendVerificationEmail(
+    const delivery = await sendVerificationEmail(
       user.email,
       user.name || 'there',
       verificationToken,
       userType,
       await getLocale()
     )
+
+    if (!delivery.success) {
+      return NextResponse.json({ code: 'EMAIL_DELIVERY_FAILED', error: 'Email delivery failed. Please retry sending the verification email.' }, { status: 502 })
+    }
 
     return NextResponse.json({
       success: true,

@@ -18,7 +18,7 @@ export async function GET(
 
     const { branchId, requestId } = await params
 
-    const hasAccess = await verifyBranchAccess(branchId, session.user.id, session.user.role)
+    const hasAccess = await verifyBranchAccess(branchId, session.user.id, session.user.role, prisma)
     if (!hasAccess) {
       return NextResponse.json({ error: 'Access denied' }, { status: 403 })
     }
@@ -67,10 +67,10 @@ export async function POST(
   request: NextRequest,
   { params }: { params: Promise<{ branchId: string; requestId: string }> }
 ) {
+  const session = await getServerSession(authOptions)
+  if (!session) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
   return atomicMutation(async prisma => {
-
   try {
-    const session = await getServerSession(authOptions)
     if (!session?.user) {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
     }
@@ -83,7 +83,7 @@ export async function POST(
       return NextResponse.json({ error: 'Comment content is required' }, { status: 400 })
     }
 
-    const hasAccess = await verifyBranchAccess(branchId, session.user.id, session.user.role)
+    const hasAccess = await verifyBranchAccess(branchId, session.user.id, session.user.role, prisma)
     if (!hasAccess) {
       return NextResponse.json({ error: 'Access denied' }, { status: 403 })
     }

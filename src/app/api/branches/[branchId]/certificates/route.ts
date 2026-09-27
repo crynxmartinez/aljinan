@@ -1,3 +1,4 @@
+import { atomicMutation, joinTransaction } from '@/lib/atomic-mutation'
 import { getServerSession } from 'next-auth'
 import { NextResponse } from 'next/server'
 import { authOptions } from '@/lib/auth'
@@ -19,7 +20,7 @@ export async function GET(
 
     const { branchId } = await params
 
-    const hasAccess = await verifyBranchAccess(branchId, session.user.id, session.user.role)
+    const hasAccess = await verifyBranchAccess(branchId, session.user.id, session.user.role, prisma)
     if (!hasAccess) {
       return NextResponse.json({ error: 'Access denied' }, { status: 403 })
     }
@@ -48,8 +49,10 @@ export async function POST(
   request: Request,
   { params }: { params: Promise<{ branchId: string }> }
 ) {
+  const session = await getServerSession(authOptions)
+  if (!session) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
+  return atomicMutation(async prisma => {
   try {
-    const session = await getServerSession(authOptions)
 
     if (!session) {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
@@ -78,7 +81,7 @@ export async function POST(
       )
     }
 
-    const hasAccess = await verifyBranchAccess(branchId, session.user.id, session.user.role)
+    const hasAccess = await verifyBranchAccess(branchId, session.user.id, session.user.role, prisma)
     if (!hasAccess) {
       return NextResponse.json({ error: 'Access denied' }, { status: 403 })
     }
@@ -97,7 +100,7 @@ export async function POST(
     }
 
     // Use transaction to create certificate and update equipment if needed
-    const certificate = await prisma.$transaction(async (tx) => {
+    const certificate = await joinTransaction(prisma, async (tx) => {
       // If linking to equipment, first unlink any existing certificate
       if (equipmentId) {
         // Check if equipment exists and belongs to this branch
@@ -154,7 +157,7 @@ export async function POST(
       include: { client: { select: { userId: true } } }
     })
     if (branch?.client?.userId) {
-      await notifyCertificateGenerated(branch.client.userId, certificate.title, certificate.id, branchId)
+      await notifyCertificateGenerated(branch.client.userId, certificate.title, certificate.id, branchId, prisma)
     }
 
     return NextResponse.json(certificate, { status: 201 })
@@ -165,4 +168,6 @@ export async function POST(
       { status: 500 }
     )
   }
+
+  })
 }

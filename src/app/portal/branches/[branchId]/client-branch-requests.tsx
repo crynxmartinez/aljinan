@@ -1367,7 +1367,7 @@ export function ClientBranchRequests({ branchId, onDataChange, userId }: ClientB
                                   {occ.visitDate ? formatDateUtil(occ.visitDate, locale) : '-'}
                                 </td>
                                 <td className="px-3 py-2 text-end font-medium">
-                                  {occ.price ? occ.price.toLocaleString(dateLocale) : '-'}
+                                  {occ.price != null ? occ.price.toLocaleString(dateLocale) : '-'}
                                 </td>
                               </tr>
                             ))}
@@ -1682,7 +1682,7 @@ export function ClientBranchRequests({ branchId, onDataChange, userId }: ClientB
                                   └ #{occ.order}: {occ.visitDate ? formatDateUtil(occ.visitDate, locale) : tc.pendingSchedule}
                                 </span>
                                 <span className="font-medium text-blue-800 dark:text-blue-400">
-                                  {occ.price ? `${t.dashboard.requestsList.sar} ${occ.price.toLocaleString(dateLocale)}` : '-'}
+                                  {occ.price != null ? `${t.dashboard.requestsList.sar} ${occ.price.toLocaleString(dateLocale)}` : '-'}
                                 </span>
                               </div>
                             ))}
