@@ -1,3 +1,4 @@
+import { notificationData } from '@/lib/i18n/notification-messages'
 import { NextRequest, NextResponse } from 'next/server'
 import { prisma } from '@/lib/prisma'
 
@@ -96,7 +97,7 @@ export async function GET(request: NextRequest) {
             : 'previous year'
 
           await prisma.notification.create({
-            data: {
+            data: notificationData({
               userId: clientUserId,
               type: 'WORK_ORDER_COMPLETED',
               title: 'Work Order Auto-Archived',
@@ -104,7 +105,7 @@ export async function GET(request: NextRequest) {
               link: `/portal/branches/${workOrder.checklist.branchId}?tab=checklist`,
               relatedId: workOrder.id,
               relatedType: 'ChecklistItem'
-            }
+            })
           })
 
           notices++
@@ -118,7 +119,7 @@ export async function GET(request: NextRequest) {
             : 'previous year'
 
           await prisma.notification.create({
-            data: {
+            data: notificationData({
               userId: contractorUserId,
               type: 'WORK_ORDER_COMPLETED',
               title: 'Work Order Auto-Archived',
@@ -126,7 +127,7 @@ export async function GET(request: NextRequest) {
               link: `/dashboard/clients/${workOrder.checklist.branch.client.slug}/branches/${workOrder.checklist.branch.slug}?tab=checklist`,
               relatedId: workOrder.id,
               relatedType: 'ChecklistItem'
-            }
+            })
           })
 
           notices++

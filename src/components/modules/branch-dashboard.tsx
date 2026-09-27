@@ -1,4 +1,6 @@
 'use client'
+import { generatedField } from '@/lib/i18n/generated-content'
+import { enumLabel } from '@/lib/i18n/enum-labels'
 import { formatCurrency as localizedCurrency } from '@/lib/i18n/format-date'
 
 import { useState, useEffect } from 'react'
@@ -233,14 +235,14 @@ export function BranchDashboard({ branchId }: BranchDashboardProps) {
             <div className="flex items-center gap-2 mb-1">
               <span className="text-muted-foreground">{typeIcon}</span>
               <Badge variant="outline" className="text-xs">
-                {wo.workOrderType || 'OTHER'}
+                {enumLabel(wo.workOrderType || 'OTHER', locale)}
               </Badge>
               {wo.workOrderNumber && (
                 <span className="text-xs text-muted-foreground">WO-{String(wo.workOrderNumber).padStart(3, '0')}
                 </span>
               )}
             </div>
-            <p className="font-medium truncate">{wo.description}</p>
+            <p className="font-medium truncate">{generatedField(wo, 'description', locale)}</p>
             <div className="flex items-center gap-4 mt-2 text-sm text-muted-foreground">
               <span className="flex items-center gap-1">
                 <Calendar className="h-3 w-3" />

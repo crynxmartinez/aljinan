@@ -7,7 +7,7 @@ vi.mock('@/lib/email', () => ({ sendVerificationEmail: mocks.send }))
 import { POST } from '@/app/api/admin/users/[userId]/activate/route'
 beforeEach(() => {
   vi.clearAllMocks()
-  mocks.findUnique.mockResolvedValue({ id: 'pending-user', status: 'PENDING', email: 'recipient@example.com', name: 'Recipient', role: 'CONTRACTOR' })
+  mocks.findUnique.mockResolvedValue({ id: 'pending-user', status: 'PENDING', email: 'recipient@example.com', name: 'Recipient', role: 'CONTRACTOR', preferredLocale: 'ar' })
   mocks.update.mockResolvedValue({})
 })
 describe('admin setup invitation', () => {
@@ -24,6 +24,7 @@ describe('admin setup invitation', () => {
     mocks.send.mockResolvedValue({ success: true })
     const response = await POST(new Request('http://localhost'), { params: Promise.resolve({ userId: 'pending-user' }) })
     expect(response.status).toBe(200)
+    expect(mocks.send.mock.calls[0][4]).toBe('ar')
     expect(await response.json()).not.toHaveProperty('tempPassword')
   })
 })

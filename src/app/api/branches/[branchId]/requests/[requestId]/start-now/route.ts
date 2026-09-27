@@ -1,3 +1,4 @@
+import { notificationData } from '@/lib/i18n/notification-messages'
 import { atomicMutation } from '@/lib/atomic-mutation'
 import { getServerSession } from 'next-auth'
 import { NextResponse } from 'next/server'
@@ -134,14 +135,14 @@ export async function POST(
 
     if (branch?.client?.contractor?.userId) {
       await prisma.notification.create({
-        data: {
+        data: notificationData({
           userId: branch.client.contractor.userId,
           type: 'WORK_ORDER_STARTED',
           title: '🚨 Work Started Immediately',
           message: `Client started work immediately: "${currentRequest.title}" - Now in IN PROGRESS`,
           link: `/dashboard/clients/${branch.clientId}/branches/${branchId}`,
           isRead: false
-        }
+        })
       })
     }
 

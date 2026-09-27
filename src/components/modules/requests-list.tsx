@@ -653,7 +653,7 @@ export function RequestsList({ branchId, userRole, userId }: RequestsListProps) 
       fetchRequests()
       router.refresh()
     } catch (err) {
-      setError(err instanceof Error ? err.message : 'An error occurred')
+      setError(err instanceof Error ? err.message : t.system.serverError)
     } finally {
       setCreating(false)
     }
@@ -749,7 +749,7 @@ export function RequestsList({ branchId, userRole, userId }: RequestsListProps) 
       fetchRequests()
       router.refresh()
     } catch (err) {
-      setError(err instanceof Error ? err.message : 'An error occurred')
+      setError(err instanceof Error ? err.message : t.system.serverError)
     } finally {
       setContractorCreating(false)
     }
@@ -928,7 +928,7 @@ export function RequestsList({ branchId, userRole, userId }: RequestsListProps) 
       fetchRequests()
       router.refresh()
     } catch (err) {
-      setError(err instanceof Error ? err.message : 'An error occurred')
+      setError(err instanceof Error ? err.message : t.system.serverError)
     } finally {
       setSubmittingQuote(false)
     }
@@ -1630,7 +1630,7 @@ export function RequestsList({ branchId, userRole, userId }: RequestsListProps) 
                       <img
                         key={idx}
                         src={photo.url}
-                        alt={`Request photo ${idx + 1}`}
+                        alt={`${t.system.requestPhoto} ${idx + 1}`}
                         className="w-full h-24 object-cover rounded-lg cursor-pointer hover:opacity-80"
                         onClick={() => window.open(photo.url, '_blank')}
                       />
@@ -1924,7 +1924,7 @@ export function RequestsList({ branchId, userRole, userId }: RequestsListProps) 
                         >
                           <img
                             src={photo.url}
-                            alt={photo.caption || 'Request photo'}
+                            alt={photo.caption || t.system.requestPhoto}
                             className="h-20 w-20 object-cover rounded-lg border hover:opacity-80 transition-opacity"
                           />
                         </a>

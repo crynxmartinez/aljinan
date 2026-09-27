@@ -56,7 +56,7 @@ interface NominatimResult {
 }
 
 export function AddressPicker({ value, onChange, showManualFields = true }: AddressPickerProps) {
-  const { t } = useTranslation()
+  const { t, locale } = useTranslation()
   const tap = t.uiComponents.addressPicker
   const [searchQuery, setSearchQuery] = useState('')
   const [suggestions, setSuggestions] = useState<NominatimResult[]>([])
@@ -344,7 +344,7 @@ export function AddressPicker({ value, onChange, showManualFields = true }: Addr
   }
 
   return (
-    <APIProvider apiKey={apiKey} libraries={['places']}>
+    <APIProvider apiKey={apiKey} libraries={['places']} language={locale} region="SA">
       <div className="space-y-4">
         {/* Search Box */}
         <div ref={containerRef} className="relative">

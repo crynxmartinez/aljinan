@@ -8,6 +8,13 @@ describe('localization regression detector', () => {
     const result = scan(`const x = <button aria-label="Close">Save</button>; toast.error('Failed'); date.toLocaleDateString('en-US')`)
     expect(result.map(item => item.kind)).toEqual(expect.arrayContaining(['attribute', 'text', 'message', 'format']))
   })
+  it('detects conditional text, template attributes and unformatted enums', () => {
+    const result = scan('const x = <p>{ready ? "Done" : "Waiting"}{order.status}</p>; const y = <img alt={`Request photo ${i}`}/>')
+    expect(result.map(item => item.kind)).toEqual(expect.arrayContaining(['text', 'attribute', 'raw-enum']))
+  })
+  it('ignores CSS syntax and translated status keys', () => {
+    expect(scan('const x = <><style>{`body {color: red}`}</style><p>{t.status}</p></>')).toEqual([])
+  })
   it('does not classify user data, dictionary access or internal IDs as wording', () => {
     expect(scan(`const route = '/dashboard'; const x = <input id="client-name" placeholder={t.name}/>; const y = <p>{client.name}</p>`)).toEqual([])
   })

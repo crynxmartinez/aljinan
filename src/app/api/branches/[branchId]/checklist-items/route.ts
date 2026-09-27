@@ -1,3 +1,5 @@
+import { generatedRecord } from '@/lib/i18n/generated-content'
+import { notificationData } from '@/lib/i18n/notification-messages'
 import { atomicMutation, joinTransaction } from '@/lib/atomic-mutation'
 import { getServerSession } from 'next-auth'
 import { NextResponse } from 'next/server'
@@ -133,7 +135,7 @@ async function generateCertificatesForWorkOrder(
 
       const expiryDate = calcExpiry(workOrder.recurringType)
       const cert = await tx.certificate.create({
-        data: {
+        data: generatedRecord({
           branchId,
           contractId: workOrder.checklist.contractId,
           workOrderId,
@@ -145,7 +147,7 @@ async function generateCertificatesForWorkOrder(
           expiryDate,
           issuedBy: 'System (Auto-generated)',
           issuedById: sessionUserId,
-        }
+        }, 'equipmentCertificate', { type: eq.equipmentType, number: eq.equipmentNumber })
       })
 
       await tx.equipment.update({
@@ -163,7 +165,7 @@ async function generateCertificatesForWorkOrder(
   } else {
     const expiryDate = calcExpiry(workOrder.recurringType)
     await tx.certificate.create({
-      data: {
+      data: generatedRecord({
         branchId,
         contractId: workOrder.checklist.contractId,
         workOrderId,
@@ -174,7 +176,7 @@ async function generateCertificatesForWorkOrder(
         expiryDate,
         issuedBy: 'System (Auto-generated)',
         issuedById: sessionUserId,
-      }
+      }, 'workOrderCertificate', { type: certType, work: workOrder.description, defaultDescription: String(!workOrder.findings && !workOrder.recommendations) })
     })
   }
 
@@ -282,6 +284,7 @@ export async function GET(
         return {
           id: item.id,
           description: item.description,
+          generatedContent: item.generatedContent,
           notes: item.notes,
           stage: item.stage,
           type: item.type,
@@ -292,6 +295,8 @@ export async function GET(
           isCompleted: item.isCompleted,
           checklistId: item.checklistId,
           checklistTitle: item.checklist.title,
+          checklistLabelKind: !item.checklist.contractId && item.checklist.title === 'Adhoc Work Orders' ? 'adhoc' : item.checklist.contract && item.checklist.title === `${item.checklist.contract.title} - Maintenance Schedule` ? 'maintenance' : null,
+          checklistContractTitle: item.checklist.contract?.title,
           contractTitle: item.checklist.contract?.title || null,
           contractSystemId: item.contractSystem?.id || null,
           linkedRequestId: item.linkedRequestId,
@@ -1075,13 +1080,13 @@ export async function PATCH(
 
         if (branch?.client?.contractor?.userId) {
           await prisma.notification.create({
-            data: {
+            data: notificationData({
               userId: branch.client.contractor.userId,
               type: 'PAYMENT_SUBMITTED',
               title: 'Payment Proof Submitted',
               message: `Payment proof submitted for ${workOrderIds.length} work order${workOrderIds.length > 1 ? 's' : ''} in ${contract.title}`,
               link: `/dashboard/clients/${branch.client.id}/branches/${branchId}?tab=billing`,
-            }
+            })
           })
         }
       }
@@ -1126,13 +1131,13 @@ export async function PATCH(
 
         if (branch?.client?.userId) {
           await prisma.notification.create({
-            data: {
+            data: notificationData({
               userId: branch.client.userId,
               type: 'PAYMENT_VERIFIED',
               title: 'Payment Verified',
               message: `Payment verified for ${workOrderIds.length} work order${workOrderIds.length > 1 ? 's' : ''} in ${verifyContract.title}`,
               link: `/portal/branches/${branchId}?tab=billing`,
-            }
+            })
           })
         }
 
@@ -1171,13 +1176,13 @@ export async function PATCH(
             // Notify client
             if (branch?.client?.userId) {
               await prisma.notification.create({
-                data: {
+                data: notificationData({
                   userId: branch.client.userId,
                   type: 'CONTRACT_SIGNED',
                   title: 'Contract Completed',
                   message: `Contract "${verifyContract.title}" has been completed. All work orders are paid.`,
                   link: `/portal/branches/${branchId}?tab=contracts`,
-                }
+                })
               })
             }
           }

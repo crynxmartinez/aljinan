@@ -151,7 +151,7 @@ export function ClientSidebar({ client }: ClientSidebarProps) {
             <div className="flex-1 min-w-0">
               <p className="font-medium text-sm truncate">{client.companyName}</p>
               <p className="text-xs text-sidebar-foreground/50 truncate">
-                {t.dashboard.portal.via} {client.contractor.companyName || 'Contractor'}
+                {t.dashboard.portal.via} {client.contractor.companyName || t.system.contractor}
               </p>
             </div>
             <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-primary/10">

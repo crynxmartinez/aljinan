@@ -57,7 +57,7 @@ export default [
 
   {
     // The Electron main process and the image-download utilities are CommonJS by necessity.
-    files: ['electron/**/*.js', 'scripts/**/*.cjs', 'scripts/**/*.js'],
+    files: ['electron/**/*.cjs', 'scripts/**/*.cjs', 'scripts/**/*.js'],
     rules: {
       '@typescript-eslint/no-require-imports': 'off',
     },

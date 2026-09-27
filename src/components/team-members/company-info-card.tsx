@@ -1,4 +1,5 @@
 'use client'
+import { enumLabel } from '@/lib/i18n/enum-labels'
 
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import {
@@ -29,7 +30,7 @@ interface CompanyInfoCardProps {
 }
 
 export function CompanyInfoCard({ contractor }: CompanyInfoCardProps) {
-  const { t } = useTranslation()
+  const { t, locale } = useTranslation()
   const tc = t.dashboard.companyInfoCard
   return (
     <Card>
@@ -47,7 +48,7 @@ export function CompanyInfoCard({ contractor }: CompanyInfoCardProps) {
         <div>
           <h3 className="text-2xl font-bold">{contractor.companyName || tc.companyNameNotSet}</h3>
           {contractor.businessType && (
-            <p className="text-sm text-muted-foreground mt-1">{contractor.businessType}</p>
+            <p className="text-sm text-muted-foreground mt-1">{enumLabel(contractor.businessType, locale)}</p>
           )}
         </div>
 

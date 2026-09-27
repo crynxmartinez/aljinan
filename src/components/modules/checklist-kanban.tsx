@@ -1,4 +1,5 @@
 'use client'
+import { generatedField } from '@/lib/i18n/generated-content'
 import { showErrorToast } from '@/lib/i18n/error-toast'
 import { enumLabel } from '@/lib/i18n/enum-labels'
 
@@ -325,7 +326,7 @@ function DraggableCard({
             </span>
           )}
           <p className="font-medium text-sm line-clamp-2 mb-2">
-            {item.description}
+            {generatedField(item, 'description', locale)}
           </p>
 
           {/* Priority badges */}
@@ -1357,7 +1358,7 @@ export function ChecklistKanban({ branchId, readOnly = false, userRole }: Checkl
             <div className="space-y-4">
               {/* Basic Info */}
               <div className="p-4 bg-muted/50 rounded-lg">
-                <h4 className="font-medium mb-2">{selectedItem.description}</h4>
+                <h4 className="font-medium mb-2">{generatedField(selectedItem, 'description', locale)}</h4>
                 <div className="flex items-center gap-2 flex-wrap">
                   <Badge className={cn(
                     stages.find(s => s.id === selectedItem.stage)?.bgColor,
@@ -1890,7 +1891,7 @@ export function ChecklistKanban({ branchId, readOnly = false, userRole }: Checkl
                                     )}
                                     {eq.inspectionResult && (
                                       <Badge variant={eq.inspectionResult === 'PASS' ? 'default' : 'destructive'} className="text-xs">
-                                        {eq.inspectionResult}
+                                        {enumLabel(eq.inspectionResult, locale)}
                                       </Badge>
                                     )}
                                   </div>
@@ -2154,7 +2155,7 @@ export function ChecklistKanban({ branchId, readOnly = false, userRole }: Checkl
               {selectedItem.notes && (
                 <div className="border-t pt-4">
                   <p className="text-sm text-muted-foreground">{tk.notes}</p>
-                  <p className="text-sm">{selectedItem.notes}</p>
+                  <p className="text-sm">{generatedField(selectedItem, 'notes', locale)}</p>
                 </div>
               )}
 
@@ -2222,7 +2223,7 @@ export function ChecklistKanban({ branchId, readOnly = false, userRole }: Checkl
             <div className="space-y-4">
               {/* Work Order Summary */}
               <div className="p-4 bg-muted/50 rounded-lg">
-                <h4 className="font-medium mb-2">{selectedItem.description}</h4>
+                <h4 className="font-medium mb-2">{generatedField(selectedItem, 'description', locale)}</h4>
                 <div className="grid grid-cols-2 gap-2 text-sm">
                   {selectedItem.scheduledDate && (
                     <div>

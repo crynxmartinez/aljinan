@@ -1,4 +1,5 @@
 'use client'
+import { InvitationLanguage } from '@/components/invitation-language'
 import { showErrorToast } from '@/lib/i18n/error-toast'
 import { LocalizedError } from '@/components/localized-error'
 
@@ -95,7 +96,7 @@ export function ClientsList({ clients }: ClientsListProps) {
 
   const [newClient, setNewClient] = useState({
     companyName: '',
-    companyEmail: '',
+    companyEmail: '', invitationLocale: 'ar',
     companyPhone: '',
   })
 
@@ -128,18 +129,19 @@ export function ClientsList({ clients }: ClientsListProps) {
         throw new Error(data.error || 'Failed to create client')
       }
 
-      toast.success(tc.clientCreated, {
+      if (data.emailSent === false) toast.warning(t.system.invitationDeliveryFailed)
+      else toast.success(tc.clientCreated, {
         description: `${tc.verificationEmailSent} ${data.user.email}`
       })
       setCreateDialogOpen(false)
       setNewClient({
         companyName: '',
-        companyEmail: '',
+        companyEmail: '', invitationLocale: 'ar',
         companyPhone: '',
       })
       router.refresh()
     } catch (err) {
-      setError(err instanceof Error ? err.message : 'An error occurred')
+      setError(err instanceof Error ? err.message : t.system.serverError)
     } finally {
       setLoading(false)
     }
@@ -557,6 +559,7 @@ export function ClientsList({ clients }: ClientsListProps) {
             </DialogDescription>
           </DialogHeader>
           <form onSubmit={handleCreateClient}>
+            <InvitationLanguage value={newClient.invitationLocale} onChange={invitationLocale => setNewClient({ ...newClient, invitationLocale })} />
             {error && (
               <div className="bg-destructive/10 text-destructive p-3 rounded-lg text-sm mb-4">
                 <LocalizedError message={error} />

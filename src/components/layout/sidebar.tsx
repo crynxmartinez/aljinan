@@ -1,4 +1,5 @@
 'use client'
+import { enumLabel } from '@/lib/i18n/enum-labels'
 
 import Link from 'next/link'
 import { usePathname, useRouter } from 'next/navigation'
@@ -112,7 +113,7 @@ export function Sidebar({ clients = [], userRole, teamMemberRole }: SidebarProps
   const pathname = usePathname()
   const router = useRouter()
   const { data: session } = useSession()
-  const { t } = useTranslation()
+  const { t, locale } = useTranslation()
   const [expandedClients, setExpandedClients] = useState<string[]>([])
   const [loadingHref, setLoadingHref] = useState<string | null>(null)
   const [unreadNotifications, setUnreadNotifications] = useState(0)
@@ -382,7 +383,7 @@ export function Sidebar({ clients = [], userRole, teamMemberRole }: SidebarProps
               {session?.user?.name || session?.user?.email}
             </p>
             <p className="text-xs text-sidebar-foreground/50 truncate">
-              {session?.user?.role}
+              {enumLabel(session?.user?.role, locale)}
             </p>
           </div>
           <Button

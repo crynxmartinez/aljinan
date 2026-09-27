@@ -1,3 +1,4 @@
+import { enumLabel } from '@/lib/i18n/enum-labels'
 import { getServerSession } from 'next-auth'
 import { redirect } from 'next/navigation'
 import { authOptions } from '@/lib/auth'
@@ -198,38 +199,38 @@ function getActivityIcon(type: string) {
   }
 }
 
-function getStatusBadge(status: string, tn?: { statusOpen: string; statusInProgress: string; statusCompleted: string; statusDraft: string; statusSent: string; statusApproved: string; statusScheduled: string }) {
+function getStatusBadge(status: string, tn: { statusOpen: string; statusInProgress: string; statusCompleted: string; statusDraft: string; statusSent: string; statusApproved: string; statusScheduled: string }, locale: Locale) {
   switch (status) {
     case 'OPEN':
-      return <Badge className="bg-blue-100 dark:bg-blue-950/40 text-blue-700 dark:text-blue-400 hover:bg-blue-100 dark:hover:bg-blue-950/40">{tn?.statusOpen ?? 'Open'}</Badge>
+      return <Badge className="bg-blue-100 dark:bg-blue-950/40 text-blue-700 dark:text-blue-400 hover:bg-blue-100 dark:hover:bg-blue-950/40">{tn.statusOpen}</Badge>
     case 'IN_PROGRESS':
-      return <Badge className="bg-yellow-100 dark:bg-yellow-950/40 text-yellow-700 dark:text-yellow-400 hover:bg-yellow-100 dark:hover:bg-yellow-950/40">{tn?.statusInProgress ?? 'In Progress'}</Badge>
+      return <Badge className="bg-yellow-100 dark:bg-yellow-950/40 text-yellow-700 dark:text-yellow-400 hover:bg-yellow-100 dark:hover:bg-yellow-950/40">{tn.statusInProgress}</Badge>
     case 'COMPLETED':
-      return <Badge className="bg-green-100 dark:bg-green-950/40 text-green-700 dark:text-green-400 hover:bg-green-100 dark:hover:bg-green-950/40">{tn?.statusCompleted ?? 'Completed'}</Badge>
+      return <Badge className="bg-green-100 dark:bg-green-950/40 text-green-700 dark:text-green-400 hover:bg-green-100 dark:hover:bg-green-950/40">{tn.statusCompleted}</Badge>
     case 'DRAFT':
-      return <Badge className="bg-gray-100 dark:bg-gray-800 text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-800">{tn?.statusDraft ?? 'Draft'}</Badge>
+      return <Badge className="bg-gray-100 dark:bg-gray-800 text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-800">{tn.statusDraft}</Badge>
     case 'SENT':
-      return <Badge className="bg-blue-100 dark:bg-blue-950/40 text-blue-700 dark:text-blue-400 hover:bg-blue-100 dark:hover:bg-blue-950/40">{tn?.statusSent ?? 'Sent'}</Badge>
+      return <Badge className="bg-blue-100 dark:bg-blue-950/40 text-blue-700 dark:text-blue-400 hover:bg-blue-100 dark:hover:bg-blue-950/40">{tn.statusSent}</Badge>
     case 'APPROVED':
-      return <Badge className="bg-green-100 dark:bg-green-950/40 text-green-700 dark:text-green-400 hover:bg-green-100 dark:hover:bg-green-950/40">{tn?.statusApproved ?? 'Approved'}</Badge>
+      return <Badge className="bg-green-100 dark:bg-green-950/40 text-green-700 dark:text-green-400 hover:bg-green-100 dark:hover:bg-green-950/40">{tn.statusApproved}</Badge>
     case 'SCHEDULED':
-      return <Badge className="bg-purple-100 dark:bg-purple-950/40 text-purple-700 dark:text-purple-400 hover:bg-purple-100 dark:hover:bg-purple-950/40">{tn?.statusScheduled ?? 'Scheduled'}</Badge>
+      return <Badge className="bg-purple-100 dark:bg-purple-950/40 text-purple-700 dark:text-purple-400 hover:bg-purple-100 dark:hover:bg-purple-950/40">{tn.statusScheduled}</Badge>
     default:
-      return <Badge variant="secondary">{status}</Badge>
+      return <Badge variant="secondary">{enumLabel(status, locale)}</Badge>
   }
 }
 
-function formatTimeAgo(date: Date, locale: Locale, tn?: { justNow: string; mAgo: string; hAgo: string; dAgo: string }) {
+function formatTimeAgo(date: Date, locale: Locale, tn: { justNow: string; mAgo: string; hAgo: string; dAgo: string }) {
   const now = new Date()
   const diffMs = now.getTime() - date.getTime()
   const diffMins = Math.floor(diffMs / 60000)
   const diffHours = Math.floor(diffMs / 3600000)
   const diffDays = Math.floor(diffMs / 86400000)
 
-  if (diffMins < 1) return tn?.justNow ?? 'Just now'
-  if (diffMins < 60) return `${diffMins}${tn?.mAgo ?? 'm ago'}`
-  if (diffHours < 24) return `${diffHours}${tn?.hAgo ?? 'h ago'}`
-  if (diffDays < 7) return `${diffDays}${tn?.dAgo ?? 'd ago'}`
+  if (diffMins < 1) return tn.justNow
+  if (diffMins < 60) return `${diffMins}${tn.mAgo}`
+  if (diffHours < 24) return `${diffHours}${tn.hAgo}`
+  if (diffDays < 7) return `${diffDays}${tn.dAgo}`
   return formatDate(date, locale, {})
 }
 
@@ -347,7 +348,7 @@ export default async function NotificationsPage() {
                         <div className="flex-1 min-w-0">
                           <div className="flex items-center gap-2 mb-1">
                             <p className="font-medium truncate">{activity.title}</p>
-                            {activity.status && getStatusBadge(activity.status, tn)}
+                            {activity.status && getStatusBadge(activity.status, tn, locale)}
                           </div>
                           <p className="text-sm text-muted-foreground">{activity.type === 'request' ? `${tn.newRequestFrom} ${activity.clientName}` : activity.type === 'quotation' ? `${tn.quotationFor} ${activity.clientName}` : `${tn.appointmentAt} ${activity.branchAddress}`}</p>
                           {activity.branchAddress && (

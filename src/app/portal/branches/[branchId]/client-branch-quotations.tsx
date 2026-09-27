@@ -1,4 +1,5 @@
 'use client'
+import { generatedField } from '@/lib/i18n/generated-content'
 
 import { useState, useEffect } from 'react'
 import { useRouter } from 'next/navigation'
@@ -205,7 +206,7 @@ export function ClientBranchQuotations({ branchId }: ClientBranchQuotationsProps
                       <tbody>
                         {quotation.items.map((item) => (
                           <tr key={item.id} className="border-t">
-                            <td className="p-2">{item.description}</td>
+                            <td className="p-2">{generatedField(item, 'description', locale)}</td>
                             <td className="text-end p-2">{item.quantity}</td>
                             <td className="text-end p-2">{formatCurrency(item.unitPrice)}</td>
                             <td className="text-end p-2">{formatCurrency(item.total)}</td>

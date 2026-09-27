@@ -1,4 +1,6 @@
 'use client'
+import { enumLabel } from '@/lib/i18n/enum-labels'
+import { InvitationLanguage } from '@/components/invitation-language'
 import { showErrorToast } from '@/lib/i18n/error-toast'
 import { TranslatedText } from '@/components/translated-text'
 
@@ -94,7 +96,7 @@ interface ContractorData {
 }
 
 export default function ContractorsPage() {
-  const { t } = useTranslation()
+  const { t, locale } = useTranslation()
   const tc = t.dashboard.adminContractorsPage
   const router = useRouter()
   const searchParams = useSearchParams()
@@ -112,7 +114,7 @@ export default function ContractorsPage() {
   // Create contractor dialog
   const [createDialogOpen, setCreateDialogOpen] = useState(false)
   const [creating, setCreating] = useState(false)
-  const [newContractor, setNewContractor] = useState({ name: '', email: '', phone: '', companyName: '' })
+  const [newContractor, setNewContractor] = useState({ name: '', email: '', phone: '', companyName: '', invitationLocale: 'ar' })
   const [inquiryId, setInquiryId] = useState<string | null>(null)
 
   useEffect(() => {
@@ -139,7 +141,7 @@ export default function ContractorsPage() {
       const fromInquiryId = searchParams.get('inquiryId') || null
 
       // Pre-fill form with data from message
-      setNewContractor({ name, email, phone, companyName: company })
+      setNewContractor({ name, email, phone, companyName: company, invitationLocale: 'ar' })
       setInquiryId(fromInquiryId)
 
       // Open dialog
@@ -229,7 +231,8 @@ export default function ContractorsPage() {
       const data = await response.json()
       if (!response.ok) throw new Error(data.error)
 
-      toast.success(tc.contractorCreated, {
+      if (data.emailSent === false) toast.warning(t.system.invitationDeliveryFailed)
+      else toast.success(tc.contractorCreated, {
         description: inquiryId
           ? tc.inquiryConverted
           : `${tc.verificationSent} ${data.user.email}`,
@@ -301,7 +304,7 @@ export default function ContractorsPage() {
 
   const resetCreateDialog = () => {
     setCreateDialogOpen(false)
-    setNewContractor({ name: '', email: '', phone: '', companyName: '' })
+    setNewContractor({ name: '', email: '', phone: '', companyName: '', invitationLocale: 'ar' })
     setInquiryId(null)
   }
 
@@ -665,7 +668,7 @@ export default function ContractorsPage() {
               <span className="font-semibold text-foreground">
                 {impersonateTarget?.name}
               </span>{' '}
-              ({impersonateTarget?.role}). {tc.loginAsUserDesc2}
+              ({enumLabel(impersonateTarget?.role, locale)}). {tc.loginAsUserDesc2}
             </AlertDialogDescription>
           </AlertDialogHeader>
           <AlertDialogFooter>
@@ -698,13 +701,14 @@ export default function ContractorsPage() {
           </DialogHeader>
 
           <form onSubmit={handleCreateContractor} className="space-y-4 py-2">
+            <InvitationLanguage value={newContractor.invitationLocale} onChange={invitationLocale => setNewContractor({ ...newContractor, invitationLocale })} />
             <div className="space-y-2">
               <Label htmlFor="create-name">{tc.contactName}</Label>
               <Input
                 id="create-name"
                 value={newContractor.name}
                 onChange={(e) => setNewContractor({ ...newContractor, name: e.target.value })}
-                placeholder="John Smith"
+                placeholder={tc.contactName}
                 required
               />
             </div>
@@ -734,7 +738,7 @@ export default function ContractorsPage() {
                 id="create-company"
                 value={newContractor.companyName}
                 onChange={(e) => setNewContractor({ ...newContractor, companyName: e.target.value })}
-                placeholder="Safety Solutions LLC"
+                placeholder={tc.companyName}
               />
             </div>
             <DialogFooter>

@@ -1,4 +1,6 @@
 'use client'
+
+import { enumLabel } from '@/lib/i18n/enum-labels'
 import { showErrorToast } from '@/lib/i18n/error-toast'
 import { LocalizedError } from '@/components/localized-error'
 
@@ -576,7 +578,7 @@ export function ClientBranchRequests({ branchId, onDataChange, userId }: ClientB
       FIRE_HOSE_REEL: el.fireHoseReel,
       OTHER: el.other,
     }
-    return map[type] ?? type.replace(/_/g, ' ').toLowerCase().replace(/\b\w/g, l => l.toUpperCase())
+    return map[type] ?? enumLabel(type, locale)
   }
 
   // Count + frequency label for a recurring type, used to fill "{count} {freq}" templates.
@@ -1295,7 +1297,7 @@ export function ClientBranchRequests({ branchId, onDataChange, userId }: ClientB
                       <img
                         key={idx}
                         src={photo.url}
-                        alt={`Request photo ${idx + 1}`}
+                        alt={`${t.system.requestPhoto} ${idx + 1}`}
                         className="w-full h-24 object-cover rounded-lg cursor-pointer hover:opacity-80"
                         onClick={() => window.open(photo.url, '_blank')}
                       />

@@ -1,4 +1,5 @@
 'use client'
+import { generatedField } from '@/lib/i18n/generated-content'
 
 import { useState, useEffect } from 'react'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
@@ -187,10 +188,10 @@ export function ClientBranchReports({ branchId }: ClientBranchReportsProps) {
                       )}
                       <div className="flex-1">
                         <span className={item.isCompleted ? 'text-green-800 dark:text-green-400' : 'text-red-800 dark:text-red-400'}>
-                          {item.description}
+                          {generatedField(item, 'description', locale)}
                         </span>
                         {item.notes && (
-                          <p className="text-xs text-muted-foreground mt-1">{item.notes}</p>
+                          <p className="text-xs text-muted-foreground mt-1">{generatedField(item, 'notes', locale)}</p>
                         )}
                       </div>
                     </div>

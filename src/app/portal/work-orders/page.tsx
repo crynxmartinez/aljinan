@@ -1,4 +1,6 @@
 'use client'
+import { generatedField } from '@/lib/i18n/generated-content'
+import { enumLabel } from '@/lib/i18n/enum-labels'
 
 import { useState, useEffect, useMemo } from 'react'
 import { businessDayStart, businessDayEndExclusive } from '@/lib/i18n/date-boundaries'
@@ -400,7 +402,7 @@ export default function ClientWorkOrdersPage() {
                     />
                   </div>
                   <div className="col-span-4">
-                    <p className="font-medium">{wo.description}</p>
+                    <p className="font-medium">{generatedField(wo, 'description', locale)}</p>
                   </div>
                   <div className="col-span-2 flex items-center">
                     <p className="text-sm">{wo.branchName}</p>
@@ -412,7 +414,7 @@ export default function ClientWorkOrdersPage() {
                   </div>
                   <div className="col-span-1 flex items-center">
                     <Badge className={getTypeColor(wo.workOrderType)} variant="outline">
-                      {wo.workOrderType}
+                      {enumLabel(wo.workOrderType, locale)}
                     </Badge>
                   </div>
                   <div className="col-span-1 flex items-center">

@@ -1,3 +1,4 @@
+import { notificationData } from '@/lib/i18n/notification-messages'
 import { atomicMutation } from '@/lib/atomic-mutation'
 import { publishedFor } from '@/lib/publication'
 import { getServerSession } from 'next-auth'
@@ -116,7 +117,7 @@ export async function PATCH(
 
       if (branch?.client?.contractor?.user) {
         await prisma.notification.create({
-          data: {
+          data: notificationData({
             userId: branch.client.contractor.user.id,
             type: 'GENERAL',
             title: 'Payment Proof Submitted',
@@ -124,7 +125,7 @@ export async function PATCH(
             link: `/dashboard/clients/${branch.client.id}/branches/${branchId}?tab=billing`,
             relatedId: invoiceId,
             relatedType: 'Invoice'
-          }
+          })
         })
       }
 
@@ -163,7 +164,7 @@ export async function PATCH(
 
       if (branch?.client?.user) {
         await prisma.notification.create({
-          data: {
+          data: notificationData({
             userId: branch.client.user.id,
             type: 'GENERAL',
             title: 'Payment Confirmed',
@@ -171,7 +172,7 @@ export async function PATCH(
             link: `/portal/branches/${branchId}?tab=billing`,
             relatedId: invoiceId,
             relatedType: 'Invoice'
-          }
+          })
         })
       }
 

@@ -1,4 +1,5 @@
 'use client'
+import { generatedField } from '@/lib/i18n/generated-content'
 import { LocalizedError } from '@/components/localized-error'
 
 import { useState, useEffect } from 'react'
@@ -184,7 +185,7 @@ export function QuotationsList({ branchId }: QuotationsListProps) {
       fetchQuotations()
       router.refresh()
     } catch (err) {
-      setError(err instanceof Error ? err.message : 'An error occurred')
+      setError(err instanceof Error ? err.message : t.system.serverError)
     } finally {
       setCreating(false)
     }
@@ -536,7 +537,7 @@ export function QuotationsList({ branchId }: QuotationsListProps) {
                     <tbody>
                       {selectedQuotation.items.map((item, idx) => (
                         <tr key={idx} className="border-t">
-                          <td className="p-2">{item.description}</td>
+                          <td className="p-2">{generatedField(item, 'description', locale)}</td>
                           <td className="text-end p-2">{item.quantity}</td>
                           <td className="text-end p-2">{formatCurrency(item.unitPrice, locale)}</td>
                           <td className="text-end p-2">{formatCurrency(item.total, locale)}</td>

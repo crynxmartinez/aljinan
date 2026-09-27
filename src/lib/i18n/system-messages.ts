@@ -1,6 +1,10 @@
 /** Shared messages for failures and infrastructure UI; never render raw server errors. */
 export const systemMessages = {
   en: {
+    adhocWorkOrders: 'Ad-hoc work orders', maintenanceSchedule: 'Maintenance schedule',
+    addCertificatesHint: 'Add certificates to track compliance and maintenance records for this branch.', noCertificatesHint: 'No certificates have been uploaded for this branch yet.',
+    invitationDeliveryFailed: 'Account created, but the email could not be sent. Use Resend Email to try again.',
+    invitationLanguage: 'Invitation email language', arabicLanguage: 'Arabic', englishLanguage: 'English',
     olderComments: 'Load older comments', navigation: 'Navigation', close: 'Close', showPassword: 'Show password', hidePassword: 'Hide password',
     loadFailed: 'This could not be loaded.', loadFailedDetail: 'The data is unavailable right now. Please try again.', retry: 'Try again',
     unauthorized: 'Your session has expired. Please sign in again.', forbidden: 'You do not have permission to do that.',
@@ -19,6 +23,10 @@ export const systemMessages = {
     password: 'Password', activate: 'Activate account', setupComplete: 'Your account is ready. You can now sign in.',
   },
   ar: {
+    adhocWorkOrders: 'أوامر عمل مؤقتة', maintenanceSchedule: 'جدول الصيانة',
+    addCertificatesHint: 'أضف شهادات لتتبع الامتثال وسجلات الصيانة لهذا الفرع.', noCertificatesHint: 'لم يتم رفع أي شهادات لهذا الفرع بعد.',
+    invitationDeliveryFailed: 'تم إنشاء الحساب، لكن تعذر إرسال البريد. استخدم إعادة إرسال البريد للمحاولة مجددًا.',
+    invitationLanguage: 'لغة رسالة الدعوة', arabicLanguage: 'العربية', englishLanguage: 'الإنجليزية',
     olderComments: 'تحميل التعليقات الأقدم', navigation: 'التنقل', close: 'إغلاق', showPassword: 'إظهار كلمة المرور', hidePassword: 'إخفاء كلمة المرور',
     loadFailed: 'تعذر تحميل البيانات.', loadFailedDetail: 'البيانات غير متاحة الآن. يرجى المحاولة مرة أخرى.', retry: 'إعادة المحاولة',
     unauthorized: 'انتهت جلستك. يرجى تسجيل الدخول مجددًا.', forbidden: 'ليس لديك صلاحية لتنفيذ هذا الإجراء.',

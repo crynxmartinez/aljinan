@@ -1,3 +1,4 @@
+import { notificationData } from '@/lib/i18n/notification-messages'
 import type { Database } from '@/lib/atomic-mutation'
 import { prisma } from '@/lib/prisma'
 import { resolveNotificationLink } from '@/lib/notification-links'
@@ -63,7 +64,7 @@ export async function createNotification(params: CreateNotificationParams, db: D
     } = params
 
     const notification = await db.notification.create({
-      data: {
+      data: notificationData({
         userId,
         type,
         title,
@@ -74,7 +75,7 @@ export async function createNotification(params: CreateNotificationParams, db: D
         priority,
         showPopup,
         isRead: false
-      }
+      })
     })
 
     return notification

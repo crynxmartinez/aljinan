@@ -1,3 +1,4 @@
+import { generatedRecord } from '@/lib/i18n/generated-content'
 import { atomicMutation, joinTransaction } from '@/lib/atomic-mutation'
 import { publishedFor } from '@/lib/publication'
 import { getServerSession } from 'next-auth'
@@ -222,7 +223,7 @@ export async function PATCH(
                 // Get price from payment amounts if set, otherwise null (contractor sets manually)
                 const price = paymentAmounts[i] ?? null
 
-                workOrdersToCreate.push({
+                workOrdersToCreate.push(generatedRecord({
                   checklistId: checklist.id,
                   description: `${system.name} - ${frequencyLabel} Visit ${i + 1}`,
                   notes: system.description || `Scheduled maintenance for ${system.name}`,
@@ -236,7 +237,7 @@ export async function PATCH(
                   price,
                   visitIndex: i,
                   paymentDueDate
-                })
+                }, 'maintenanceVisit', { system: system.name, frequency: system.frequency, visit: String(i + 1), defaultNotes: String(!system.description) }))
               }
             }
           }

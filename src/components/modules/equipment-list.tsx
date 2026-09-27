@@ -174,7 +174,7 @@ export function EquipmentList({ branchId, userRole = 'CONTRACTOR' }: EquipmentLi
         setError('')
       } else {
         const errorData = await response.json()
-        setError(errorData.error || 'Failed to load equipment')
+        setError(errorData.error || t.system.loadFailed)
       }
     } catch {
       setError('Failed to fetch equipment')
@@ -214,10 +214,10 @@ export function EquipmentList({ branchId, userRole = 'CONTRACTOR' }: EquipmentLi
         fetchEquipment()
       } else {
         const errorData = await response.json()
-        setError(errorData.error || 'Failed to add equipment')
+        setError(errorData.error || t.system.serverError)
       }
     } catch {
-      setError('Failed to add equipment')
+      setError(t.system.serverError)
     } finally {
       setSaving(false)
     }
@@ -297,10 +297,10 @@ export function EquipmentList({ branchId, userRole = 'CONTRACTOR' }: EquipmentLi
         fetchEquipment()
       } else {
         const errorData = await response.json()
-        setError(errorData.error || 'Failed to update equipment')
+        setError(errorData.error || t.system.serverError)
       }
     } catch {
-      setError('Failed to update equipment')
+      setError(t.system.serverError)
     } finally {
       setSaving(false)
       setUploadingCertificate(false)
@@ -332,10 +332,10 @@ export function EquipmentList({ branchId, userRole = 'CONTRACTOR' }: EquipmentLi
         fetchEquipment()
       } else {
         const errorData = await response.json()
-        setError(errorData.error || 'Failed to delete equipment')
+        setError(errorData.error || t.system.serverError)
       }
     } catch {
-      setError('Failed to delete equipment')
+      setError(t.system.serverError)
     }
   }
 
@@ -1116,7 +1116,7 @@ export function EquipmentList({ branchId, userRole = 'CONTRACTOR' }: EquipmentLi
                 </div>
                 {selectedEquipment?.request && (
                   <p className="text-xs text-blue-600 dark:text-blue-400 mt-1">
-                    {selectedEquipment.request.title} - {selectedEquipment.request.status}
+                    {selectedEquipment.request.title} - {enumLabel(selectedEquipment.request.status, locale)}
                   </p>
                 )}
                 <p className="text-xs text-blue-600 dark:text-blue-400 mt-1">

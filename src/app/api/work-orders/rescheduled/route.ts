@@ -47,6 +47,7 @@ export async function GET() {
       select: {
         id: true,
         description: true,
+        generatedContent: true,
         previousScheduledDate: true,
         scheduledDate: true,
         rescheduledAt: true,
@@ -66,6 +67,7 @@ export async function GET() {
     const result = rescheduledWorkOrders.map(wo => ({
       id: wo.id,
       description: wo.description,
+      generatedContent: wo.generatedContent,
       previousScheduledDate: wo.previousScheduledDate?.toISOString() || '',
       scheduledDate: wo.scheduledDate?.toISOString() || '',
       rescheduledAt: wo.rescheduledAt?.toISOString() || '',

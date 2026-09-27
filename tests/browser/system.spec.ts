@@ -38,16 +38,28 @@ for (const role of roles) test(`${role.name}: language, theme, navigation and br
       expect(locale === 'ar' ? first!.x > second!.x : first!.x < second!.x).toBe(true)
       for (let i = 0; i < count; i++) { await tabs.nth(i).click(); await expect(tabs.nth(i)).toHaveAttribute('aria-selected', 'true') }
     }
+    if (role.name === 'owner' || role.name === 'client') {
+      const response = await context.request.get('/api/work-orders')
+      expect(response.ok()).toBe(true)
+      const orders = await response.json()
+      expect(orders.length).toBeGreaterThan(0)
+      const printPage = await context.newPage()
+      await printPage.goto(`/print/work-orders/${orders[0].id}`)
+      await expect(printPage.locator('.print-container')).toBeVisible()
+      await printPage.pdf({ path: testInfo.outputPath(`${locale}-work-order.pdf`), format: 'A4', printBackground: true })
+      await printPage.close()
+      await page.goto(branch ?? role.root)
+    }
     for (const theme of ['dark', 'light'] as const) {
       const button = page.getByRole('button', { name: theme === 'dark' ? translations[locale].common.switchToDarkMode : translations[locale].common.switchToLightMode })
       await button.click()
       await expect(page.locator('html')).toHaveClass(theme === 'dark' ? /dark/ : /light/)
-      await page.screenshot({ path: testInfo.outputPath(`${locale}-${theme}-desktop.png`), fullPage: true })
+      await page.screenshot({ path: testInfo.outputPath(`${locale}-${theme}-desktop.png`), fullPage: true, animations: 'disabled' })
       await page.setViewportSize({ width: 390, height: 844 })
       const trigger = page.locator('[data-sidebar-trigger]')
       await trigger.click()
       await expect(page.getByRole('dialog')).toBeVisible()
-      await page.screenshot({ path: testInfo.outputPath(`${locale}-${theme}-mobile.png`) })
+      await page.screenshot({ path: testInfo.outputPath(`${locale}-${theme}-mobile.png`), animations: 'disabled' })
       await page.keyboard.press('Escape')
       await expect(page.getByRole('dialog')).not.toBeVisible()
       await expect(trigger).toBeFocused()
@@ -55,4 +67,21 @@ for (const role of roles) test(`${role.name}: language, theme, navigation and br
     }
   }
   expect(errors).toEqual([])
+})
+
+test('public pages and install manifest follow the selected language', async ({ page, context }, testInfo) => {
+  for (const locale of ['en', 'ar'] as const) {
+    await context.addCookies([{ name: 'tasheel_locale', value: locale, domain: 'localhost', path: '/' }])
+    for (const route of ['/', '/features', '/about', '/contact', '/faq', '/privacy', '/terms', '/download', '/install', '/login', '/forgot-password', '/reset-password', '/verify-email']) {
+      const response = await page.goto(route)
+      expect(response?.status(), route).toBeLessThan(400)
+      await expect(page.locator('html')).toHaveAttribute('dir', locale === 'ar' ? 'rtl' : 'ltr')
+      await expect(page.locator('body')).not.toContainText('Application error')
+    }
+    const manifest = await context.request.get(`/manifest.webmanifest?lang=${locale}`)
+    expect(await manifest.json()).toMatchObject({ lang: locale, dir: locale === 'ar' ? 'rtl' : 'ltr', id: '/' })
+    await page.goto('/login')
+    await page.setViewportSize({ width: 390, height: 844 })
+    await page.screenshot({ path: testInfo.outputPath(`${locale}-login-mobile.png`), animations: 'disabled' })
+  }
 })

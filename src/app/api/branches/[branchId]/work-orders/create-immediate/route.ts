@@ -1,3 +1,4 @@
+import { notificationData } from '@/lib/i18n/notification-messages'
 import { atomicMutation } from '@/lib/atomic-mutation'
 import { getServerSession } from 'next-auth'
 import { NextResponse } from 'next/server'
@@ -164,14 +165,14 @@ export async function POST(
         : `Work order started: "${title}"`
 
       await prisma.notification.create({
-        data: {
+        data: notificationData({
           userId: branch.client.userId,
           type: 'WORK_ORDER_STARTED',
           title: '🔧 Work Order Started',
           message: notificationMessage,
           link: `/portal/branches/${branchId}?tab=work-orders`,
           isRead: false
-        }
+        })
       })
     }
 

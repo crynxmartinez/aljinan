@@ -2,7 +2,6 @@ import { NextResponse } from 'next/server'
 import { prisma } from '@/lib/prisma'
 import { sendPasswordResetEmail } from '@/lib/email'
 import { enforceRateLimit } from '@/lib/rate-limit'
-import { getLocale } from '@/lib/i18n/server'
 import crypto from 'crypto'
 
 export async function POST(request: Request) {
@@ -56,7 +55,7 @@ export async function POST(request: Request) {
     })
 
     // Send email
-    await sendPasswordResetEmail(user.email, resetToken, await getLocale())
+    await sendPasswordResetEmail(user.email, resetToken, user.preferredLocale === 'en' ? 'en' : 'ar')
 
     return NextResponse.json({ 
       success: true,

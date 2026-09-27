@@ -1,3 +1,4 @@
+import { notificationData } from '@/lib/i18n/notification-messages'
 import { atomicMutation } from '@/lib/atomic-mutation'
 import { NextResponse } from 'next/server'
 
@@ -293,7 +294,7 @@ export async function GET(request: Request) {
     let notificationsCreated = 0
     if (notifications.length > 0) {
       const result = await prisma.notification.createMany({
-        data: notifications,
+        data: notifications.map(notificationData),
         skipDuplicates: true,
       })
       notificationsCreated = result.count

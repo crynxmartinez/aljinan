@@ -1,3 +1,4 @@
+import { generatedField } from '@/lib/i18n/generated-content'
 import * as XLSX from 'xlsx'
 import { saveAs } from 'file-saver'
 import jsPDF from 'jspdf'
@@ -53,7 +54,7 @@ export function workOrderRows(data: ExportableWorkOrder[], options: ExportOption
  const t = exportLabels[locale]
  return data.map(wo => ({
   [t.number]: wo.workOrderNumber == null ? '-' : `WO-${String(wo.workOrderNumber).padStart(4, '0')}`,
-  [t.description]: wo.description,
+  [t.description]: generatedField(wo, 'description', locale),
   ...(options.includeClient ? { [t.client]: wo.clientName, [t.branch]: wo.branchName } : {}),
   [t.status]: enumLabel(wo.stage, locale), [t.type]: enumLabel(wo.workOrderType, locale),
   ...(options.includeDates ? { [t.date]: formatDate(wo.scheduledDate, locale) } : {}),

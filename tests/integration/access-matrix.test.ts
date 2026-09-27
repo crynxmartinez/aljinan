@@ -202,6 +202,7 @@ function discoverRoutes(dir: string, prefix = '/api'): string[] {
  * a new endpoint cannot be added without someone deciding who may reach it.
  */
 const CLASSIFIED_ELSEWHERE: Array<[RegExp, string]> = [
+  [/^\/api\/preferences$/, 'authenticated user may update only their own language preference'],
   [/^\/api\/auth\//, 'authentication; covered by the bypass and enumeration tests'],
   [/^\/api\/admin\//, 'platform admin; covered by the impersonation and permission tests'],
   [/^\/api\/cron\//, 'scheduled jobs; covered by the secret tests'],

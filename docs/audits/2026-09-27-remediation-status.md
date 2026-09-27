@@ -45,3 +45,13 @@ The preview browser reached Vercel deployment protection, requiring a Vercel log
 7. Dependencies: latest audit after compatible fixes reports six high findings (Prisma/transitive tooling, Electron and legacy SheetJS). Do not force-downgrade Prisma to resolve an npm suggestion. SheetJS is used for writing exports, not parsing uploaded workbooks; that limits but does not erase the dependency finding. Desktop Electron requires a separate major-version compatibility check.
 
 Remote commit/check URLs and production synchronization are recorded in the task's final response. Passing CI must not be described as completion of these remaining items.
+
+## Closure work in progress (supersedes remaining-work items 2–4 and 7 above)
+
+The closure branch now includes atomic domain/notification persistence, fail-closed and retry-safe expiry jobs, durable notification template IDs/parameters, recipient locale preferences and invitation-language selection, provenance for generated defaults, and reviewed localization exceptions. Search now includes quotations with the same draft/branch restrictions; client search statuses translate too. Dependency audit reports zero known vulnerabilities after compatible fixes; desktop startup remains a separate smoke-test limitation.
+
+CI run 36293643839 passed both jobs for commit 4fbb9c8, including authenticated owner/client/admin/technician/supervisor browser checks in EN/AR and light/dark, desktop/mobile. Downloaded screenshots were inspected: the Arabic owner sidebar/tabs were right-to-left; the inspection exposed one raw role label now corrected. Expanded public/print checks and the subsequent schema changes require a fresh CI run and are not covered by that earlier result.
+
+The additive migration introduces recipient locale and JSON metadata. Exact historical generator matches receive provenance metadata only; customer text is unchanged. Production builds apply tracked migrations before compiling; previews only check migration status and cannot mutate a shared production database. An unmigrated preview is intentionally blocked. No production database migration has been run from this workstation.
+
+Remaining verification is explicit: current-head integration/migration/browser results, screenshot/PDF review, historical-data migration fixtures, external map/mail/storage behavior, and reconciliation of the original candidate/route inventory. Existing lint warnings remain tracked debt under the unchanged 205 ceiling.

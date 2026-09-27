@@ -1,3 +1,4 @@
+import { notificationData } from '@/lib/i18n/notification-messages'
 import { atomicMutation } from '@/lib/atomic-mutation'
 import { NextRequest, NextResponse } from 'next/server'
 import { getServerSession } from 'next-auth'
@@ -134,7 +135,7 @@ export async function POST(
       const clientUserId = serviceRequest.branch.client?.userId
       if (clientUserId) {
         await prisma.notification.create({
-          data: {
+          data: notificationData({
             userId: clientUserId,
             type: 'REQUEST_COMMENT',
             title: 'New Comment on Request',
@@ -142,7 +143,7 @@ export async function POST(
             relatedId: requestId,
             relatedType: 'REQUEST',
             link: `/portal/branches/${branchId}?tab=requests`,
-          },
+          }),
         })
       }
     } else {
@@ -166,7 +167,7 @@ export async function POST(
       const contractorUserId = branch?.client?.contractor?.userId
       if (contractorUserId) {
         await prisma.notification.create({
-          data: {
+          data: notificationData({
             userId: contractorUserId,
             type: 'REQUEST_COMMENT',
             title: 'New Comment on Request',
@@ -174,7 +175,7 @@ export async function POST(
             relatedId: requestId,
             relatedType: 'REQUEST',
             link: `/dashboard/clients/${serviceRequest.branch.clientId}/branches/${branchId}?tab=requests`,
-          },
+          }),
         })
       }
     }

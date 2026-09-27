@@ -1,3 +1,4 @@
+import { knownLegacyError } from './public-errors'
 import { translations, type Locale } from './translations'
 
 let messages: Map<string, { en: string; ar: string }> | undefined
@@ -26,5 +27,5 @@ function dictionary() {
  */
 export function localizeError(message: string, locale: Locale): string {
   if (!message) return ''
-  return dictionary().get(message)?.[locale] ?? translations[locale].system.serverError
+  return knownLegacyError(message, locale) ?? dictionary().get(message)?.[locale] ?? translations[locale].system.serverError
 }

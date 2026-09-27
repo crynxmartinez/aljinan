@@ -25,6 +25,7 @@ const MAX_ROWS = 1000
 const WORK_ORDER_SELECT = {
   id: true,
   description: true,
+  generatedContent: true,
   stage: true,
   workOrderType: true,
   workOrderNumber: true,
@@ -134,6 +135,7 @@ export async function GET() {
     const transformedWorkOrders = page.map(wo => ({
       id: wo.id,
       description: wo.description,
+      generatedContent: wo.generatedContent,
       stage: wo.stage,
       workOrderType: wo.workOrderType,
       workOrderNumber: wo.workOrderNumber,

@@ -61,14 +61,14 @@ export function ProductMockup({ className }: { className?: string }) {
               <Clock className="h-3.5 w-3.5 text-stone-400" />
             </div>
             {[
-              { name: m.rowFireAlarm, status: m.statusScheduled, color: 'bg-sky-100 text-sky-700' },
-              { name: m.rowHvac, status: m.statusInProgress, color: 'bg-amber-100 text-amber-700' },
-              { name: m.rowElectrical, status: m.statusCompleted, color: 'bg-emerald-100 text-emerald-700' },
+              { name: m.rowFireAlarm, statusLabel: m.statusScheduled, color: 'bg-sky-100 text-sky-700' },
+              { name: m.rowHvac, statusLabel: m.statusInProgress, color: 'bg-amber-100 text-amber-700' },
+              { name: m.rowElectrical, statusLabel: m.statusCompleted, color: 'bg-emerald-100 text-emerald-700' },
             ].map((row, i) => (
               <div key={i} className="flex items-center justify-between px-3 py-2.5 border-b border-stone-50 last:border-0">
                 <span className="text-sm text-stone-700">{row.name}</span>
                 <span className={`text-[11px] font-medium px-2 py-0.5 rounded-full ${row.color}`}>
-                  {row.status}
+                  {row.statusLabel}
                 </span>
               </div>
             ))}

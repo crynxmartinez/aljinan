@@ -1,4 +1,6 @@
 'use client'
+import { generatedField } from '@/lib/i18n/generated-content'
+import { enumLabel } from '@/lib/i18n/enum-labels'
 import { LocalizedError } from '@/components/localized-error'
 import { TranslatedText } from '@/components/translated-text'
 
@@ -692,7 +694,7 @@ export function ContractsList({ branchId }: ContractsListProps) {
         setTimeout(() => setSuccessMessage(''), 5000)
       }
     } catch (err) {
-      setError(err instanceof Error ? err.message : 'An error occurred')
+      setError(err instanceof Error ? err.message : t.system.serverError)
     } finally {
       setEditing(false)
     }
@@ -812,7 +814,7 @@ export function ContractsList({ branchId }: ContractsListProps) {
       fetchContracts()
       router.refresh()
     } catch (err) {
-      setError(err instanceof Error ? err.message : 'An error occurred')
+      setError(err instanceof Error ? err.message : t.system.serverError)
     } finally {
       setCreating(false)
     }
@@ -875,7 +877,7 @@ export function ContractsList({ branchId }: ContractsListProps) {
       fetchContracts()
       router.refresh()
     } catch (err) {
-      setError(err instanceof Error ? err.message : 'An error occurred')
+      setError(err instanceof Error ? err.message : t.system.serverError)
     } finally {
       setAttaching(false)
     }
@@ -916,7 +918,7 @@ export function ContractsList({ branchId }: ContractsListProps) {
       fetchContracts()
       router.refresh()
     } catch (err) {
-      setError(err instanceof Error ? err.message : 'An error occurred')
+      setError(err instanceof Error ? err.message : t.system.serverError)
     } finally {
       setAttaching(false)
     }
@@ -1161,7 +1163,7 @@ export function ContractsList({ branchId }: ContractsListProps) {
                       className="flex items-center justify-between p-3 bg-white dark:bg-card rounded-lg border border-blue-200 dark:border-blue-900"
                     >
                       <div className="space-y-1">
-                        <span className="font-medium">{wo.description}</span>
+                        <span className="font-medium">{generatedField(wo, 'description', locale)}</span>
                         <div className="flex items-center gap-3 text-sm text-muted-foreground">
                           {wo.scheduledDate && (
                             <span className="flex items-center gap-1">
@@ -1170,7 +1172,7 @@ export function ContractsList({ branchId }: ContractsListProps) {
                             </span>
                           )}
                           <Badge variant="outline" className="text-xs">
-                            {wo.stage}
+                            {enumLabel(wo.stage, locale)}
                           </Badge>
                         </div>
                       </div>
@@ -1231,7 +1233,7 @@ export function ContractsList({ branchId }: ContractsListProps) {
                       className="flex items-center justify-between p-3 bg-white dark:bg-card rounded-lg border border-amber-200 dark:border-amber-900"
                     >
                       <div className="space-y-1">
-                        <span className="font-medium">{wo.description}</span>
+                        <span className="font-medium">{generatedField(wo, 'description', locale)}</span>
                         <div className="flex items-center gap-3 text-sm text-muted-foreground">
                           {wo.scheduledDate && (
                             <span className="flex items-center gap-1">
@@ -1240,7 +1242,7 @@ export function ContractsList({ branchId }: ContractsListProps) {
                             </span>
                           )}
                           <Badge variant="outline" className="text-xs">
-                            {wo.stage}
+                            {enumLabel(wo.stage, locale)}
                           </Badge>
                         </div>
                       </div>
@@ -1969,7 +1971,7 @@ export function ContractsList({ branchId }: ContractsListProps) {
                           </TableCell>
                           <TableCell>
                             <Badge variant={payment.status === 'PAID' ? 'default' : payment.status === 'OVERDUE' ? 'destructive' : 'secondary'}>
-                              {payment.status}
+                              {enumLabel(payment.status, locale)}
                             </Badge>
                           </TableCell>
                         </TableRow>

@@ -87,7 +87,7 @@ export function RequestComments({ branchId, requestId, currentUserId }: RequestC
       setNewComment('')
       fetchComments()
     } catch (err) {
-      setError(err instanceof Error ? err.message : 'An error occurred')
+      setError(err instanceof Error ? err.message : t.system.serverError)
     } finally {
       setSubmitting(false)
     }
@@ -124,7 +124,7 @@ export function RequestComments({ branchId, requestId, currentUserId }: RequestC
       setEditContent('')
       fetchComments()
     } catch (err) {
-      setError(err instanceof Error ? err.message : 'An error occurred')
+      setError(err instanceof Error ? err.message : t.system.serverError)
     } finally {
       setSaving(false)
     }

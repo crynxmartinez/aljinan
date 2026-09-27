@@ -1,3 +1,4 @@
+import { notificationData } from '@/lib/i18n/notification-messages'
 import { NextResponse } from 'next/server'
 import { prisma } from '@/lib/prisma'
 
@@ -65,8 +66,8 @@ async function runEquipmentExpiryCheck() {
         : 0
 
       const message = isExpired
-        ? `Equipment ${equipment.equipmentNumber} (${equipment.equipmentType.replace(/_/g, ' ')}) at ${branch.name} is overdue for inspection.`
-        : `Equipment ${equipment.equipmentNumber} (${equipment.equipmentType.replace(/_/g, ' ')}) at ${branch.name} expires in ${daysUntilExpiry} days.`
+        ? `Equipment ${equipment.equipmentNumber} (${equipment.equipmentType}) at ${branch.name} is overdue for inspection.`
+        : `Equipment ${equipment.equipmentNumber} (${equipment.equipmentType}) at ${branch.name} expires in ${daysUntilExpiry} days.`
 
       const link = `/dashboard/clients/${client.id}/branches/${branch.id}?tab=equipment`
       const clientLink = `/portal/branches/${branch.id}?tab=equipment`
@@ -84,7 +85,7 @@ async function runEquipmentExpiryCheck() {
         })
         if (!updated.count) return 0
         const result = await tx.notification.createMany({
-          data: recipients.map(recipient => ({
+          data: recipients.map(recipient => notificationData({
             ...recipient, type: notificationType, title, message,
             relatedId: equipment.id, relatedType: 'equipment',
             dedupeKey: `${recipient.userId}:${notificationType}:${equipment.id}:${dayKey}`,

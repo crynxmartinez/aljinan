@@ -3,14 +3,13 @@ import { prisma } from '@/lib/prisma'
 import { sendVerificationEmail } from '@/lib/email'
 import crypto from 'crypto'
 import { requireAdmin } from '@/lib/admin-auth'
-import { getLocale } from '@/lib/i18n/server'
 
 export async function POST(request: Request) {
   try {
     const auth = await requireAdmin('canManageContractors')
     if (!auth.ok) return auth.response
 
-    const { name, email, phone, companyName, inquiryId } = await request.json()
+    const { name, email, phone, companyName, inquiryId, invitationLocale } = await request.json()
 
     if (!name || !email) {
       return NextResponse.json(
@@ -42,7 +41,8 @@ export async function POST(request: Request) {
           password: '', // Will be set after email verification
           name,
           role: 'CONTRACTOR',
-          status: 'PENDING', // Changed from ACTIVE
+          status: 'PENDING',
+          preferredLocale: invitationLocale === 'en' ? 'en' : 'ar', // Changed from ACTIVE
           emailVerificationToken: verificationToken,
           emailVerificationExpiry: verificationExpiry,
           contractor: {
@@ -61,7 +61,7 @@ export async function POST(request: Request) {
     })
 
     // Send verification email
-    await sendVerificationEmail(user.email, user.name || 'there', verificationToken, undefined, await getLocale())
+    const delivery = await sendVerificationEmail(user.email, user.name || 'there', verificationToken, undefined, invitationLocale === 'en' ? 'en' : 'ar')
 
     // If this was created from a contact inquiry, mark it as converted
     if (inquiryId) {
@@ -79,13 +79,14 @@ export async function POST(request: Request) {
 
     return NextResponse.json({
       success: true,
+      emailSent: delivery.success,
       user: {
         id: user.id,
         email: user.email,
         name: user.name,
         contractorId: user.contractor?.id,
       },
-      message: `Verification email sent to ${user.email}`,
+      message: delivery.success ? `Verification email sent to ${user.email}` : 'Account created; verification email delivery failed',
     })
   } catch (error) {
     console.error('Error creating contractor:', error)

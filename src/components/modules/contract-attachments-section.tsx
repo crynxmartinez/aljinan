@@ -74,7 +74,7 @@ export function ContractAttachmentsSection({
       setPdfDialogOpen(false)
       onUpdate?.()
     } catch (err) {
-      setError(err instanceof Error ? err.message : 'An error occurred')
+      setError(err instanceof Error ? err.message : t.system.serverError)
     } finally {
       setSaving(false)
     }

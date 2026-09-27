@@ -135,7 +135,7 @@ export function PaymentSubmitDialog({
       onOpenChange(false)
       onSuccess()
     } catch (err) {
-      setError(err instanceof Error ? err.message : 'An error occurred')
+      setError(err instanceof Error ? err.message : t.system.serverError)
     } finally {
       setSubmitting(false)
     }

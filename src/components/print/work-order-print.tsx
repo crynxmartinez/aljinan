@@ -1,4 +1,5 @@
 'use client'
+import { generatedField } from '@/lib/i18n/generated-content'
 import { formatDate as localizedDate, formatDateTime, formatCurrency as localizedCurrency } from '@/lib/i18n/format-date'
 import { enumLabel } from '@/lib/i18n/enum-labels'
 
@@ -393,11 +394,11 @@ export function WorkOrderPrint({ workOrderId }: WorkOrderPrintProps) {
         {/* Description */}
         <div className="mb-6 print-section">
           <h3 className="text-lg font-bold mb-3 text-primary border-b pb-2">{tp.description}</h3>
-          <p className="whitespace-pre-wrap">{data.description}</p>
+          <p className="whitespace-pre-wrap">{generatedField(data, 'description', locale)}</p>
           {data.notes && (
             <div className="mt-3 p-3 bg-gray-50 rounded">
               <p className="text-sm font-semibold mb-1">{tp.notes}</p>
-              <p className="text-sm whitespace-pre-wrap">{data.notes}</p>
+              <p className="text-sm whitespace-pre-wrap">{generatedField(data, 'notes', locale)}</p>
             </div>
           )}
         </div>

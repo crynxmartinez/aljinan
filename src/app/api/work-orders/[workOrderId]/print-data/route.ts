@@ -108,6 +108,7 @@ export async function GET(
       id: workOrder.id,
       workOrderNumber: workOrder.workOrderNumber || 0,
       description: workOrder.description,
+      generatedContent: workOrder.generatedContent,
       notes: workOrder.notes,
       stage: workOrder.stage,
       workOrderType: workOrder.workOrderType || 'SERVICE',

@@ -148,6 +148,7 @@ enum TestResult {
 }
 
 model User {
+  preferredLocale String @default("ar")
   id            String     @id @default(cuid())
   email         String     @unique
   password      String
@@ -895,6 +896,7 @@ model Checklist {
 
 // Checklist items (Work Orders)
 model ChecklistItem {
+  generatedContent Json? // Provenance of system-created display defaults
   id              String             @id @default(cuid())
   checklistId     String
   checklist       Checklist          @relation(fields: [checklistId], references: [id], onDelete: Cascade)
@@ -1038,6 +1040,7 @@ model InspectionPhoto {
 
 // Certificates - auto-generated or uploaded
 model Certificate {
+  generatedContent Json? // Provenance of system-created display defaults
   id          String          @id @default(cuid())
   branchId    String
   branch      Branch          @relation(fields: [branchId], references: [id], onDelete: Cascade)
@@ -1170,6 +1173,7 @@ enum NotificationType {
 
 // Notification model for scheduled and triggered notifications
 model Notification {
+  content Json? // Versioned title/message templates and customer parameters
   id          String           @id @default(cuid())
   userId      String // User to notify
   type        NotificationType

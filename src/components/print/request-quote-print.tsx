@@ -1,4 +1,5 @@
 'use client'
+import { generatedField } from '@/lib/i18n/generated-content'
 import { formatDate as localizedDate, formatDateTime, formatCurrency as localizedCurrency } from '@/lib/i18n/format-date'
 import { enumLabel } from '@/lib/i18n/enum-labels'
 
@@ -249,7 +250,7 @@ export function RequestQuotePrint({ requestId, branchId }: RequestQuotePrintProp
         <div className="mb-6">
           <h3 className="text-lg font-bold mb-3 text-primary border-b pb-2">{tp.requestDetails}</h3>
           <div className="mb-3">
-            <p className="text-lg font-bold">{data.title}</p>
+            <p className="text-lg font-bold">{generatedField(data, 'title', locale)}</p>
           </div>
           <div className="grid grid-cols-2 gap-4">
             <div>
@@ -287,7 +288,7 @@ export function RequestQuotePrint({ requestId, branchId }: RequestQuotePrintProp
         {data.description && (
           <div className="mb-6">
             <h3 className="text-lg font-bold mb-3 text-primary border-b pb-2">{tp.description}</h3>
-            <p className="whitespace-pre-wrap">{data.description}</p>
+            <p className="whitespace-pre-wrap">{generatedField(data, 'description', locale)}</p>
           </div>
         )}
 
