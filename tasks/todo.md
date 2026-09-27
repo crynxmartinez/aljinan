@@ -1,6 +1,6 @@
 # Implementation checklist — system reliability and EN/AR completion
 
-Status: code remediation and automated verification completed in slices; final release checks in progress; push to production authorized by the user. Existing source edits were preserved. Current scope and verification boundaries: [closure report](../docs/audits/2026-09-27-system-closure.md). See [release evidence and remaining work](../docs/audits/2026-09-27-remediation-status.md). Unchecked tasks include work implemented but not yet verified against their full acceptance criteria.
+Status: code remediation and automated verification completed in slices; production source released and Vercel READY; extended manual acceptance items remain explicitly tracked; push to production authorized by the user. Existing source edits were preserved. Current scope and verification boundaries: [closure report](../docs/audits/2026-09-27-system-closure.md). See [release evidence and remaining work](../docs/audits/2026-09-27-remediation-status.md). Unchecked tasks include work implemented but not yet verified against their full acceptance criteria.
 
 ## How to execute
 

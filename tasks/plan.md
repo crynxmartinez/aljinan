@@ -1,6 +1,6 @@
 # System reliability and complete English/Arabic remediation plan
 
-Date: 27 September 2026. Status: implementation in progress. The user explicitly authorized fixing and pushing on 27 September; target production. See ../docs/audits/2026-09-27-remediation-status.md for completed repairs, evidence and remaining work.
+Date: 27 September 2026. Status: audited fixes released to production; see the closure report for verified behavior and remaining external/manual acceptance limits. The user explicitly authorized fixing and pushing on 27 September; target production. See ../docs/audits/2026-09-27-system-closure.md for completed repairs, evidence and remaining work.
 
 ## Outcome
 

@@ -1,5 +1,14 @@
 # Full-system audit closure — 27 September 2026
 
+## Released and verified
+
+- Source release: `09eb2d2c1bb390d73cd259b8abab84883758100b` on `production`, through PR #2. `main` remains `80befb3b68aa0ce35767cf0fc96cbbdc7e8f520b`.
+- Vercel deployment `dpl_GJMFaJuVrKH8ZjgvTUD8nzsN5ncv` reached **READY** with target **production** and aliases `www.tasheel.live` / `tasheel.live`.
+- Logs confirm all three pending migrations applied successfully before the production build. No title/description/signature data was rewritten by the provenance migration.
+- Found and corrected Vercel's production branch tracking: it still pointed to `main`; it now points to `production`, verified by reading the project setting back.
+- Exact source-head CI run [36296642807](https://github.com/crynxmartinez/aljinan/actions/runs/36296642807) passed: **144 unit/component tests**, **52 real-database integration tests**, **6 browser matrix tests**, builds, types, localization guard, and dependency audit (**0 known vulnerabilities**). Lint has **0 errors / 198 existing warnings**, under the unchanged ceiling.
+- Live smoke checks: homepage, features, about, contact, login and manifest return 200 with EN/LTR and AR/RTL as selected. Unauthenticated search, notifications and work-order APIs return 401.
+
 This report supersedes the earlier batch-status report. Target branch: **production**. Main is not part of this release. The user authorized fixes and release; earlier local-review-only wording in the original plan is historical.
 
 ## Audit scope and traceability
@@ -40,19 +49,19 @@ Browser suite has six tests with many route/locale/theme assertions, not six ind
 
 Visual review found and corrected an orphaned print-footer page and a dark-mode print canvas. A short work-order PDF must now be one page, and print media must report a light color scheme. Arabic shaping, RTL header/field order, mobile right-hand navigation and dark surfaces were inspected. Customer-provided English fixture names intentionally remain English in Arabic views.
 
-Latest source review considered transaction rollback, authorization scope, draft visibility, additive migration safety, preserved user text, dependency compatibility and query limits. There are still pre-existing lint warnings; passing the unchanged ceiling is not a zero-warning claim.
+Final source review considered transaction rollback, authorization scope, draft visibility, additive migration safety, preserved user text, dependency compatibility and query limits. There are still pre-existing lint warnings; passing the unchanged ceiling is not a zero-warning claim.
 
 ## Deployment and recovery
 
 The migration only adds locale/JSON metadata columns and fills metadata for exact historical generator matches. It does not rewrite titles, descriptions, notes, signatures or file bytes. Existing application versions tolerate these extra columns. To roll back application behavior, redeploy the previous application revision; do not drop these columns or delete migration history.
 
-Production Vercel builds apply tracked migrations before building. Preview builds check migration status and never alter a shared production database. A missing/failed migration blocks the new deployment rather than publishing incompatible code. Actual production migration/deployment status must be checked separately from a successful GitHub push.
+Production Vercel builds apply tracked migrations before building. Preview builds check migration status and never alter a shared production database. A missing/failed migration blocks the new deployment rather than publishing incompatible code. Production migration/deployment status was checked separately from GitHub and is recorded above.
 
 ## Explicit verification boundaries
 
 - No production customer records, emails or storage objects were used as test fixtures. Provider email/storage failures were mocked; real delivery and signed-object retrieval depend on deployed credentials and provider availability.
 - Windows Device Guard prevented local Postgres execution. An earlier automatic approval review blocked local app startup with test settings; it was not bypassed. Real database and browser verification ran in isolated GitHub CI instead.
-- Vercel preview protection requires an authorized login, unavailable in this session. Deployment health is not inferred from CI.
+- Vercel preview page protection was not bypassed. Authenticated CLI access later became available: build logs confirmed the migration gate, production tracking was corrected, and the production deployment was verified READY. Historical preview failures remain historical; production health is independently verified.
 - Google Maps only chooses its UI language when the SDK first loads. Per-request place/geocoder language now follows the selection; already-loaded vendor controls may require a full reload. Installed PWA metadata refresh timing is browser/OS-controlled. No forced reload that discards unsaved form input was added.
 - Historical customer text without reliable generator provenance is preserved. This is intentional, not a request to translate signed/customer-authored content automatically.
 - The Electron entrypoint/module mode and dependency security were repaired; an installed desktop package was not launched on this workstation.
