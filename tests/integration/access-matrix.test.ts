@@ -280,3 +280,28 @@ describe('owned branch cannot authorize a different tenant record', () => {
     }
   })
 })
+
+describe('notification persistence failure', () => {
+  it('rolls back a request comment if its recipient notification cannot be saved', async () => {
+    const serviceRequest = await prisma.request.create({ data: {
+      branchId, title: 'ATOMIC_TEST_COMMENT', createdById: clientUserId, createdByRole: 'CLIENT',
+    } })
+    try {
+      await prisma.$executeRawUnsafe(`CREATE OR REPLACE FUNCTION test_reject_notification() RETURNS trigger AS $$
+        BEGIN IF NEW.message LIKE '%ATOMIC_TEST_COMMENT%' THEN RAISE EXCEPTION 'simulated notification failure'; END IF; RETURN NEW; END;
+        $$ LANGUAGE plpgsql`)
+      await prisma.$executeRawUnsafe(`CREATE TRIGGER test_reject_notification BEFORE INSERT ON "Notification" FOR EACH ROW EXECUTE FUNCTION test_reject_notification()`)
+      const response = await apiFetch(`/api/branches/${branchId}/requests/${serviceRequest.id}/comments`, {
+        cookies: contractor, method: 'POST', json: { content: 'Must not be saved without notification' },
+      })
+      expect(response.status).toBe(500)
+      expect(await prisma.requestComment.count({ where: { requestId: serviceRequest.id } })).toBe(0)
+      expect(await prisma.notification.count({ where: { relatedId: serviceRequest.id } })).toBe(0)
+    } finally {
+      await prisma.$executeRawUnsafe('DROP TRIGGER IF EXISTS test_reject_notification ON "Notification"')
+      await prisma.$executeRawUnsafe('DROP FUNCTION IF EXISTS test_reject_notification()')
+      await prisma.notification.deleteMany({ where: { relatedId: serviceRequest.id } })
+      await prisma.request.delete({ where: { id: serviceRequest.id } })
+    }
+  })
+})

@@ -1,3 +1,4 @@
+import { atomicMutation } from '@/lib/atomic-mutation'
 import { NextRequest, NextResponse } from 'next/server'
 import { getServerSession } from 'next-auth'
 import { authOptions } from '@/lib/auth'
@@ -66,6 +67,8 @@ export async function POST(
   request: NextRequest,
   { params }: { params: Promise<{ branchId: string; requestId: string }> }
 ) {
+  return atomicMutation(async prisma => {
+
   try {
     const session = await getServerSession(authOptions)
     if (!session?.user) {
@@ -124,7 +127,7 @@ export async function POST(
     })
 
     // Create notification for the other party
-    const isContractor = session.user.role === 'CONTRACTOR' || session.user.role === 'SUPERVISOR'
+    const isContractor = session.user.role === 'CONTRACTOR' || session.user.role === 'TEAM_MEMBER'
     
     if (isContractor) {
       // Notify the client
@@ -181,6 +184,8 @@ export async function POST(
     console.error('Error creating comment:', error)
     return NextResponse.json({ error: 'Failed to create comment' }, { status: 500 })
   }
+
+  })
 }
 
 // PATCH /api/branches/[branchId]/requests/[requestId]/comments - Update a comment
