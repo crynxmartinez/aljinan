@@ -8,6 +8,7 @@ async function seed() {
   const branch = await prisma.branch.create({ data: { clientId: client.client!.id, name: 'Browser fixture branch', slug: 'browser-branch', address: 'Test address', city: 'Riyadh', country: 'Saudi Arabia' } })
   await prisma.user.create({ data: { email: 'browser-admin@tasheel.local', password, name: 'Browser admin', role: 'ADMIN', status: 'ACTIVE', admin: { create: { adminRole: 'SUPER_ADMIN' } } } })
   for (const teamRole of ['TECHNICIAN', 'SUPERVISOR'] as const) await prisma.user.create({ data: { email: `browser-${teamRole.toLowerCase()}@tasheel.local`, password, name: teamRole, role: 'TEAM_MEMBER', status: 'ACTIVE', teamMember: { create: { contractorId: owner.contractor!.id, teamRole, branchAccess: { create: { branchId: branch.id } } } } } })
+  await prisma.request.create({ data: { branchId: branch.id, title: 'Browser quote fixture', description: 'Customer supplied description', createdById: client.id, createdByRole: 'CLIENT', status: 'QUOTED', quotedPrice: 0, workOrderType: 'SERVICE' } })
   const checklist = await prisma.checklist.create({ data: { branchId: branch.id, title: 'Browser fixture', status: 'IN_PROGRESS', createdById: owner.id } })
   for (const stage of ['SCHEDULED', 'IN_PROGRESS', 'FOR_REVIEW', 'COMPLETED'] as const) await prisma.checklistItem.create({ data: { checklistId: checklist.id, description: `Browser fixture ${stage}`, stage, price: 0 } })
 }

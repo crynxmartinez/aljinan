@@ -1,7 +1,7 @@
 import { test, expect } from '@playwright/test'
 import { translations } from '../../src/lib/i18n/translations'
 const roles = [
-  { name: 'owner', root: '/dashboard', pages: ['/dashboard/clients', '/dashboard/work-orders', '/dashboard/analytics', '/dashboard/company', '/dashboard/team', '/dashboard/settings', '/dashboard/templates', '/dashboard/notifications'], branch: '/dashboard/clients/browser-client/branches/browser-branch' },
+  { name: 'owner', root: '/dashboard', pages: ['/dashboard/clients', '/dashboard/clients/browser-client', '/dashboard/clients/browser-client/branches/new', '/dashboard/work-orders', '/dashboard/analytics', '/dashboard/company', '/dashboard/team', '/dashboard/settings', '/dashboard/templates', '/dashboard/notifications'], branch: '/dashboard/clients/browser-client/branches/browser-branch' },
   { name: 'admin', root: '/admin', pages: ['/admin/contractors', '/admin/messages', '/admin/analytics', '/admin/settings', '/admin/settings/admins', '/admin/backfill-work-order-numbers', '/admin/generate-slugs'] },
   { name: 'client', root: '/portal', pages: ['/portal/work-orders', '/portal/settings', '/portal/notifications', '/portal/archived'] },
   { name: 'technician', root: '/dashboard', pages: ['/dashboard/work-orders', '/dashboard/profile'], branch: '/dashboard/clients/browser-client/branches/browser-branch' },
@@ -50,6 +50,13 @@ for (const role of roles) test(`${role.name}: language, theme, navigation and br
       const pdf = await printPage.pdf({ path: testInfo.outputPath(`${locale}-work-order.pdf`), format: 'A4', printBackground: true })
       expect(pdf.toString('latin1').match(/\/Type\s*\/Page\b/g)).toHaveLength(1)
       await printPage.close()
+      const requests = await (await context.request.get(`/api/branches/${orders[0].branchId}/requests`)).json()
+      expect(requests.length).toBeGreaterThan(0)
+      const quotePage = await context.newPage()
+      await quotePage.goto(`/print/branches/${orders[0].branchId}/requests/${requests[0].id}`)
+      await expect(quotePage.locator('.print-container')).toBeVisible()
+      await quotePage.pdf({ path: testInfo.outputPath(`${locale}-request-quote.pdf`), format: 'A4', printBackground: true })
+      await quotePage.close()
       await page.getByRole('button', { name: translations[locale].common.switchToLightMode }).click()
       await page.goto(branch ?? role.root)
     }
@@ -75,7 +82,7 @@ for (const role of roles) test(`${role.name}: language, theme, navigation and br
 test('public pages and install manifest follow the selected language', async ({ page, context }, testInfo) => {
   for (const locale of ['en', 'ar'] as const) {
     await context.addCookies([{ name: 'tasheel_locale', value: locale, domain: 'localhost', path: '/' }])
-    for (const route of ['/', '/features', '/about', '/contact', '/faq', '/privacy', '/terms', '/download', '/install', '/login', '/forgot-password', '/reset-password', '/verify-email']) {
+    for (const route of ['/', '/features', '/about', '/contact', '/faq', '/privacy', '/terms', '/download', '/install', '/login', '/forgot-password', '/reset-password', '/verify-email', '/register', '/change-password']) {
       const response = await page.goto(route)
       expect(response?.status(), route).toBeLessThan(400)
       await expect(page.locator('html')).toHaveAttribute('dir', locale === 'ar' ? 'rtl' : 'ltr')
