@@ -47,6 +47,8 @@ for (const role of roles) test(`${role.name}: language, theme, navigation and br
       const printPage = await context.newPage()
       await printPage.goto(`/print/work-orders/${orders[0].id}`)
       await expect(printPage.locator('.print-container')).toBeVisible()
+      await printPage.emulateMedia({ media: 'print' })
+      expect(await printPage.locator('html').evaluate(el => getComputedStyle(el).colorScheme)).toBe('light')
       const pdf = await printPage.pdf({ path: testInfo.outputPath(`${locale}-work-order.pdf`), format: 'A4', printBackground: true })
       expect(pdf.toString('latin1').match(/\/Type\s*\/Page\b/g)).toHaveLength(1)
       await printPage.close()

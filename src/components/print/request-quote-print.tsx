@@ -138,6 +138,7 @@ export function RequestQuotePrint({ requestId, branchId }: RequestQuotePrintProp
           /* Ensure proper height calculation for pagination */
           html, body {
             background: white !important;
+            color-scheme: light !important;
             min-height: 0 !important;
             height: auto !important;
             overflow: visible !important;
@@ -166,6 +167,7 @@ export function RequestQuotePrint({ requestId, branchId }: RequestQuotePrintProp
           
           /* A4 page setup */
           @page {
+            background: white;
             size: A4;
             margin: 20mm;
           }
