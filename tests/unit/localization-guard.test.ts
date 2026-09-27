@@ -16,6 +16,10 @@ describe('localization regression detector', () => {
     const result = scan("const x = <p>{priority}{status.replace('_', ' ')}{member.teamRole.toLowerCase()}</p>")
     expect(result.map(item => item.text)).toEqual(['priority', 'status', 'member.teamRole'])
   })
+  it('rejects translated filter labels frozen in initial state', () => {
+    expect(scan('const [filters] = useState([{label: tw.status, value: "SCHEDULED"}])').map(item => item.kind)).toContain('translated-state')
+    expect(scan('const [filters] = useState([{label: "", value: "SCHEDULED"}])')).toEqual([])
+  })
   it('ignores CSS syntax and translated status keys', () => {
     expect(scan('const x = <><style>{`body {color: red}`}</style><p>{t.status}</p></>')).toEqual([])
   })

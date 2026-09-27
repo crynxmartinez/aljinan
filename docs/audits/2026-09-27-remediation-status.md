@@ -1,3 +1,5 @@
+> Superseded by [the full-system closure report](2026-09-27-system-closure.md). This file preserves the earlier batch evidence.
+
 # Remediation release status — 27 September 2026
 
 The user authorized fixing and pushing on 27 September. Target: `production`; `main` must remain unchanged. This is a verified repair batch, **not completion of every acceptance item in the 50-task plan**.

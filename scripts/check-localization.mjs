@@ -38,6 +38,10 @@ export function scan(source, file = 'fixture.tsx') {
     if (ts.isPropertyAssignment(node) && /^(label|placeholder|title)$/.test(node.name.getText(ast)) && ts.isStringLiteral(node.initializer)) add('label', node, node.initializer.text)
     if (ts.isCallExpression(node)) {
       const callee = node.expression.getText(ast)
+      if (callee === 'useState' && node.arguments[0]) {
+        const initial = node.arguments[0].getText(ast)
+        if (/\blabel\s*:\s*t\w{0,2}\./.test(initial)) add('translated-state', node, initial)
+      }
       if (/^(toast\.(error|success|warning|info)|showErrorToast|alert|confirm|setError)$/.test(callee)) {
         const arg = node.arguments[0]
         visibleExpression(arg, 'message')
