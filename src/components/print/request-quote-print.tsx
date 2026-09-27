@@ -217,7 +217,7 @@ export function RequestQuotePrint({ requestId, branchId }: RequestQuotePrintProp
                 {isQuoted ? tp.serviceQuotation : tp.serviceRequest}
               </h2>
               {data.requestNumber && (
-                <p className="text-lg font-semibold">REQ #{data.requestNumber}</p>
+                <p className="text-lg font-semibold"><bdi dir="ltr">REQ #{data.requestNumber}</bdi></p>
               )}
               <p className="text-sm text-muted-foreground mt-1">
                 {tp.generated} {formatDateTime(new Date(), locale)}

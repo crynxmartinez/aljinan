@@ -118,7 +118,7 @@ export function localizeNotificationText(value: string, locale: Locale): string 
 }
 
 // Stable registry IDs above are persisted. Never renumber or repurpose them.
-export type NotificationText = { key: keyof typeof notificationRegistry; args: string[] }
+export type NotificationText = { key: keyof typeof notificationRegistry; args: string[]; localizedArgs?: Record<number, { en: string; ar: string }> }
 export type NotificationContent = { version: 1; title: NotificationText; message: NotificationText }
 export function describeNotificationText(value: string): NotificationText | null {
   for (const entry of compiled) for (const source of [0, 1]) {
@@ -140,7 +140,12 @@ export function renderNotificationText(fallback: string, content: unknown, field
     const descriptor = (content as Record<string, unknown>)[field]
     if (descriptor && typeof descriptor === 'object' && 'key' in descriptor && 'args' in descriptor && typeof descriptor.key === 'string' && Object.hasOwn(notificationRegistry, descriptor.key) && Array.isArray(descriptor.args) && descriptor.args.every(value => typeof value === 'string')) {
       const template = notificationRegistry[descriptor.key as NotificationText['key']][locale === 'ar' ? 0 : 1]
-      return template.replace(/\{(\d+)\}/g, (_, index: string) => renderParameter((descriptor.args as string[])[Number(index)] ?? '', descriptor.key as string, Number(index), locale))
+      return template.replace(/\{(\d+)\}/g, (_, index: string) => {
+        const localized = 'localizedArgs' in descriptor && descriptor.localizedArgs && typeof descriptor.localizedArgs === 'object'
+          ? (descriptor.localizedArgs as Record<string, unknown>)[index] : null
+        if (localized && typeof localized === 'object' && locale in localized && typeof (localized as Record<string, unknown>)[locale] === 'string') return (localized as Record<string, string>)[locale]
+        return renderParameter((descriptor.args as string[])[Number(index)] ?? '', descriptor.key as string, Number(index), locale)
+      })
     }
   }
   return localizeNotificationText(fallback, locale)

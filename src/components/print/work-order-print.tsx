@@ -332,7 +332,7 @@ export function WorkOrderPrint({ workOrderId }: WorkOrderPrintProps) {
             </div>
             <div className="text-end">
               <h2 className="text-2xl font-bold mb-1">{tp.workOrderReport}</h2>
-              <p className="text-lg font-semibold">WO #{data.workOrderNumber ?? '—'}</p>
+              <p className="text-lg font-semibold"><bdi dir="ltr">WO #{data.workOrderNumber ?? '—'}</bdi></p>
               <p className="text-sm text-muted-foreground mt-1">
                 {tp.generated} {formatDateTime(new Date(), locale)}
               </p>

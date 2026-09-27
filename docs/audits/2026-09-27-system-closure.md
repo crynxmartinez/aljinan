@@ -17,7 +17,7 @@ This report supersedes the earlier batch-status report. Target branch: **product
 | S4, D13 | Publication checks on draft invoices/contracts/quotations and associated documents; certificate/appointment writes bind both branch and record. Unit access regressions and hostile cross-tenant integration requests. |
 | S5, D09 | Email rejection is reported truthfully; recipient-selected password setup; recipient language persisted; explicit invitation language; safe HTML interpolation. `activation`, `email-delivery`, `admin-invitation`, `preferences`. |
 | S3, F12 | Compatible dependency updates; npm audit clean at verification; blocking security audit added to CI. Official GitHub actions pinned to Node-24 releases. Lint ceiling unchanged at 205. |
-| L1, D08, F6/F7/F8 | Durable bilingual notification descriptors, shared rendering, correct links/read counts, transactional notification persistence, cron authentication/deduplication, contractor cancellation delivery. Notification unit suites plus rollback/cancellation integration tests. |
+| L1, D08, F6/F7/F8 | Durable bilingual notification descriptors, shared rendering including proven generated-title parameters, correct links/read counts, transactional notification persistence, cron authentication/deduplication, contractor cancellation delivery. Notification unit suites plus rollback/cancellation integration tests. |
 | L2/L3, D04/D05, F4/F14 | Locale-required date/currency helpers, Gregorian/Riyadh conventions, numeric zero preserved; actual XLSX/CSV verification; Arabic-font PDF export and active print routes; inactive renderers removed. `export-locale`, `locale-formatting`, `format-boundaries`, browser PDFs. |
 | L4/L7/L8/L9, D02/D06 | Dictionary-backed labels, placeholders, accessibility names, statuses, time slots, document defaults and translated search categories/results. Quotation search now obeys branch/publication rules. `i18n`, `localization-components`, `localization-guard`, `search-results`, browser matrix. |
 | L5/L6, D01/D15 | Explicit locale and enum contracts; key/interpolation parity tests; filter labels derived from stable values; approved error-code rendering with safe unknown-error fallback. |
@@ -32,8 +32,9 @@ This report supersedes the earlier batch-status report. Target branch: **product
 
 Successful CI evidence before the final workflow/guard changes:
 - `36295447644`: migration repeatability/customer-edit preservation and cancellation delivery passed.
-- `36295677743`: both jobs passed; 44-page route suite includes public/auth routes, client details/new branch, all three shells, five roles, branch tabs, both locales/themes, mobile navigation, work-order and request-quotation prints.
+- `36295677743`: both jobs passed; 44-page inventory; route suite includes public/auth routes, client details/new branch, all three shells, five roles, branch tabs, both locales/themes, mobile navigation, work-order and request-quotation prints.
 - `36295970925`: both jobs passed after repairing transformed enums and remaining dark-surface cases.
+- `36296342276`: both jobs passed with pinned Node-24 actions and the blocking dependency audit. Vercel preview failed separately; its cause is not inferred from the GitHub checks.
 
 Browser suite has six tests with many route/locale/theme assertions, not six individual screenshots. Actual screenshots/PDFs are uploaded as `browser-evidence` (7-day retention). The local review copies are in the workstation temporary directory and are not shipped as application files.
 
