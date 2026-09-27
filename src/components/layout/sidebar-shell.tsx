@@ -1,41 +1,33 @@
 'use client'
 
-import { ReactNode, useEffect } from 'react'
+import { ReactNode, useEffect, useState } from 'react'
 import { usePathname } from 'next/navigation'
-import { cn } from '@/lib/utils'
 import { useMobileSidebar } from './mobile-sidebar-context'
+import { Sheet, SheetContent, SheetHeader, SheetTitle, SheetDescription } from '@/components/ui/sheet'
+import { useTranslation } from '@/lib/i18n/use-translation'
 
-/**
- * Wraps a sidebar's markup so it renders once but behaves as a static column on
- * desktop and an off-canvas drawer on mobile. A single instance (rather than
- * separate desktop/mobile copies) matters here because sidebars run their own
- * polling effects (unread counts) that shouldn't run twice.
- */
 export function SidebarShell({ children }: { children: ReactNode }) {
   const { open, setOpen } = useMobileSidebar()
+  const { t, locale } = useTranslation()
   const pathname = usePathname()
-
+  const [mobile, setMobile] = useState(false)
   useEffect(() => {
-    setOpen(false)
-  }, [pathname, setOpen])
+    const query = window.matchMedia('(max-width: 767px)')
+    const update = () => { setMobile(query.matches); if (!query.matches) setOpen(false) }
+    update()
+    query.addEventListener('change', update)
+    return () => query.removeEventListener('change', update)
+  }, [setOpen])
+  useEffect(() => { setOpen(false) }, [pathname, setOpen])
 
-  return (
-    <>
-      {open && (
-        <div
-          className="fixed inset-0 z-40 bg-black/50 md:hidden animate-in fade-in-0"
-          onClick={() => setOpen(false)}
-          aria-hidden="true"
-        />
-      )}
-      <div
-        className={cn(
-          'fixed inset-y-0 start-0 z-50 w-72 transition-transform duration-300 ease-out md:static md:z-auto md:w-64 md:translate-x-0!',
-          open ? 'translate-x-0' : '-translate-x-full rtl:translate-x-full'
-        )}
-      >
-        {children}
-      </div>
-    </>
-  )
+  if (!mobile) return <div className="hidden w-64 shrink-0 md:block">{children}</div>
+  return <Sheet open={open} onOpenChange={setOpen}>
+    <SheetContent side={locale === 'ar' ? 'right' : 'left'} className="w-64 p-0 gap-0" onCloseAutoFocus={event => {
+      const trigger = document.querySelector<HTMLButtonElement>('[data-sidebar-trigger]')
+      if (trigger) { event.preventDefault(); trigger.focus() }
+    }}>
+      <SheetHeader className="sr-only"><SheetTitle>{t.system.navigation}</SheetTitle><SheetDescription>{t.system.navigation}</SheetDescription></SheetHeader>
+      {children}
+    </SheetContent>
+  </Sheet>
 }

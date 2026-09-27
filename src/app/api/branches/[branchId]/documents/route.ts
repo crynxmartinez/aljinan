@@ -1,3 +1,7 @@
+import { getLocale } from '@/lib/i18n/server'
+import { systemMessages } from '@/lib/i18n/system-messages'
+import { enumLabel } from '@/lib/i18n/enum-labels'
+import { publishedFor } from '@/lib/publication'
 import { getServerSession } from 'next-auth'
 import { NextResponse } from 'next/server'
 import { authOptions } from '@/lib/auth'
@@ -31,12 +35,12 @@ function getFileType(url: string): 'image' | 'pdf' | 'document' {
 
 // Helper to get user name by ID
 async function getUserName(userId: string | null): Promise<string> {
-  if (!userId) return 'Unknown'
+  if (!userId) return ''
   const user = await prisma.user.findUnique({
     where: { id: userId },
     select: { name: true }
   })
-  return user?.name || 'Unknown'
+  return user?.name || ''
 }
 
 // GET - Fetch all documents for a branch from all sources
@@ -58,6 +62,8 @@ export async function GET(
       return NextResponse.json({ error: 'Access denied' }, { status: 403 })
     }
 
+    const locale = await getLocale()
+    const t = systemMessages[locale]
     const documents: UnifiedDocument[] = []
 
     // 1. Fetch quotation files from requests
@@ -70,13 +76,13 @@ export async function GET(
 
     for (const req of requestsWithQuotes) {
       if (req.quotationUrl) {
-        const uploaderName = await getUserName(req.quotedById)
+        const uploaderName = await getUserName(req.quotedById) || t.unknown
         documents.push({
           id: `quote-${req.id}`,
-          fileName: req.quotationFileName || 'Quotation',
+          fileName: req.quotationFileName || t.quotation,
           fileUrl: req.quotationUrl,
           source: 'quote',
-          sourceLabel: 'Quotation',
+          sourceLabel: t.quotation,
           relatedTo: req.requestNumber
             ? `REQ-${String(req.requestNumber).padStart(4, '0')} ${req.title}`
             : req.title,
@@ -102,14 +108,14 @@ export async function GET(
     })
 
     for (const req of requestsWithPhotos) {
-      const uploaderName = await getUserName(req.createdById)
+      const uploaderName = await getUserName(req.createdById) || t.unknown
       for (const photo of req.photos) {
         documents.push({
           id: `request-photo-${photo.id}`,
-          fileName: photo.caption || 'Request Photo',
+          fileName: photo.caption || t.requestPhoto,
           fileUrl: photo.url,
           source: 'request',
-          sourceLabel: 'Request Photo',
+          sourceLabel: t.requestPhoto,
           relatedTo: req.requestNumber
             ? `REQ-${String(req.requestNumber).padStart(4, '0')} ${req.title}`
             : req.title,
@@ -136,19 +142,19 @@ export async function GET(
     })
 
     for (const checklist of checklistsWithPhotos) {
-      const uploaderName = await getUserName(checklist.createdById)
+      const uploaderName = await getUserName(checklist.createdById) || t.unknown
       for (const item of checklist.items) {
         for (const photo of item.photos) {
           const photoTypeLabel = photo.photoType
-            ? `${photo.photoType.charAt(0).toUpperCase() + photo.photoType.slice(1)} Photo`
-            : 'Report Photo'
+            ? t.reportPhoto
+            : t.reportPhoto
 
           documents.push({
             id: `report-photo-${photo.id}`,
             fileName: photo.caption || photoTypeLabel,
             fileUrl: photo.url,
             source: 'report',
-            sourceLabel: 'Report Photo',
+            sourceLabel: t.reportPhoto,
             relatedTo: item.description,
             relatedToId: item.id,
             uploadedBy: uploaderName,
@@ -163,12 +169,12 @@ export async function GET(
 
     // 4. Fetch contract documents
     const contracts = await prisma.contract.findMany({
-      where: { branchId }
+      where: { branchId, ...publishedFor(session.user.role) }
     })
 
     for (const contract of contracts) {
       // Get uploader name
-      let uploaderName = 'Contractor'
+      let uploaderName: string = t.contractor
       if (contract.createdById) {
         const user = await prisma.user.findUnique({
           where: { id: contract.createdById },
@@ -181,10 +187,10 @@ export async function GET(
       if (contract.fileUrl) {
         documents.push({
           id: `contract-${contract.id}`,
-          fileName: contract.fileName || 'Contract Document',
+          fileName: contract.fileName || t.contractDocument,
           fileUrl: contract.fileUrl,
           source: 'contract',
-          sourceLabel: 'Contract',
+          sourceLabel: t.contractDocument,
           relatedTo: contract.title,
           relatedToId: contract.id,
           uploadedBy: uploaderName,
@@ -199,10 +205,10 @@ export async function GET(
       if (contract.certificateUrl) {
         documents.push({
           id: `contract-cert-${contract.id}`,
-          fileName: contract.certificateFileName || 'Contract Certificate',
+          fileName: contract.certificateFileName || t.contractCertificate,
           fileUrl: contract.certificateUrl,
           source: 'contract',
-          sourceLabel: 'Contract Certificate',
+          sourceLabel: t.contractCertificate,
           relatedTo: contract.title,
           relatedToId: contract.id,
           uploadedBy: uploaderName,
@@ -216,7 +222,7 @@ export async function GET(
 
     // 5. Fetch certificates (manually uploaded and generated)
     const certificates = await prisma.certificate.findMany({
-      where: { branchId },
+      where: { branchId, ...(session.user.role === 'CLIENT' ? { OR: [{ contractId: null }, { contract: { status: { not: 'DRAFT' } } }] } : {}) },
       include: {
         contract: { select: { title: true } },
         workOrder: { select: { description: true } },
@@ -226,7 +232,7 @@ export async function GET(
 
     for (const cert of certificates) {
       // Get uploader name
-      let uploaderName = cert.issuedBy || 'System'
+      let uploaderName = cert.issuedBy || t.system
       if (cert.issuedById) {
         const user = await prisma.user.findUnique({
           where: { id: cert.issuedById },
@@ -242,7 +248,7 @@ export async function GET(
       } else if (cert.contract) {
         relatedTo = cert.contract.title
       } else if (cert.equipment) {
-        relatedTo = `${cert.equipment.equipmentType} - ${cert.equipment.equipmentNumber}`
+        relatedTo = `${enumLabel(cert.equipment.equipmentType, locale)} - ${cert.equipment.equipmentNumber}`
       }
 
       // Determine if it's auto-generated or uploaded
@@ -253,7 +259,7 @@ export async function GET(
         fileName: cert.title,
         fileUrl: cert.fileUrl || '',
         source: isGenerated ? 'generated' : 'certificate',
-        sourceLabel: isGenerated ? 'Generated Certificate' : 'Certificate',
+        sourceLabel: isGenerated ? t.certificate : t.certificate,
         relatedTo: relatedTo,
         relatedToId: cert.id,
         uploadedBy: uploaderName,
@@ -278,13 +284,13 @@ export async function GET(
 
     for (const wo of workOrdersWithReports) {
       if (wo.reportUrl) {
-        const uploaderName = await getUserName(wo.checklist.createdById)
+        const uploaderName = await getUserName(wo.checklist.createdById) || t.unknown
         documents.push({
           id: `report-pdf-${wo.id}`,
-          fileName: `Report - ${wo.description}`,
+          fileName: `${t.report} - ${wo.description}`,
           fileUrl: wo.reportUrl,
           source: 'generated',
-          sourceLabel: 'Generated Report',
+          sourceLabel: t.report,
           relatedTo: wo.description,
           relatedToId: wo.id,
           uploadedBy: uploaderName,
@@ -312,16 +318,16 @@ export async function GET(
 
     for (const wo of workOrdersWithPayment) {
       if (wo.paymentProofUrl) {
-        const uploaderName = await getUserName(wo.paymentSubmittedById)
+        const uploaderName = await getUserName(wo.paymentSubmittedById) || t.unknown
         const label = wo.workOrderNumber
           ? `WO-${String(wo.workOrderNumber).padStart(4, '0')} ${wo.description}`
           : wo.description
         documents.push({
           id: `payment-proof-wo-${wo.id}`,
-          fileName: wo.paymentProofFileName || 'Payment Proof',
+          fileName: wo.paymentProofFileName || t.paymentProof,
           fileUrl: wo.paymentProofUrl,
           source: 'payment_proof',
-          sourceLabel: 'Proof of Payment',
+          sourceLabel: t.paymentProof,
           relatedTo: label,
           relatedToId: wo.id,
           uploadedBy: uploaderName,
@@ -336,7 +342,7 @@ export async function GET(
     // 8. Fetch payment proofs from contract payments
     const contractPaymentsWithProof = await prisma.contractPayment.findMany({
       where: {
-        contract: { branchId },
+        contract: { branchId, ...publishedFor(session.user.role) },
         paymentProofUrl: { not: null },
       },
       include: {
@@ -348,13 +354,13 @@ export async function GET(
       if (cp.paymentProofUrl) {
         documents.push({
           id: `payment-proof-cp-${cp.id}`,
-          fileName: cp.paymentProofFileName || `Payment ${cp.paymentNo}`,
+          fileName: cp.paymentProofFileName || t.payment.replace('{number}', String(cp.paymentNo)),
           fileUrl: cp.paymentProofUrl,
           source: 'payment_proof',
-          sourceLabel: 'Proof of Payment',
-          relatedTo: `${cp.contract.title} — Payment #${cp.paymentNo}`,
+          sourceLabel: t.paymentProof,
+          relatedTo: `${cp.contract.title} — ${t.payment.replace('{number}', String(cp.paymentNo))}`,
           relatedToId: cp.id,
-          uploadedBy: 'Client',
+          uploadedBy: t.client,
           uploadedById: '',
           uploadedAt: cp.paymentSubmittedAt?.toISOString() || cp.updatedAt.toISOString(),
           expiryDate: null,

@@ -1,9 +1,13 @@
 'use client'
+import { LocalizedError } from '@/components/localized-error'
+import { TranslatedText } from '@/components/translated-text'
+
 
 import { useState, useEffect } from 'react'
 import { useRouter } from 'next/navigation'
 import { useTranslation } from '@/lib/i18n/use-translation'
-import { formatDate } from '@/lib/i18n/format-date'
+import { enumLabel } from '@/lib/i18n/enum-labels'
+import { formatDate, formatCurrency as currency } from '@/lib/i18n/format-date'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
@@ -221,24 +225,24 @@ export function InvoicesList({ branchId }: InvoicesListProps) {
 
   const getStatusBadge = (status: Invoice['status']) => {
     const config = {
-      DRAFT: { style: 'bg-gray-100 dark:bg-gray-800 text-gray-700 dark:text-gray-300', icon: FileEdit, label: 'Draft' },
-      SENT: { style: 'bg-blue-100 dark:bg-blue-950/40 text-blue-700 dark:text-blue-400', icon: Clock, label: 'Sent' },
-      PAID: { style: 'bg-green-100 dark:bg-green-950/40 text-green-700 dark:text-green-400', icon: CheckCircle, label: 'Paid' },
-      PARTIAL: { style: 'bg-yellow-100 dark:bg-yellow-950/40 text-yellow-700 dark:text-yellow-400', icon: AlertTriangle, label: 'Partial' },
-      OVERDUE: { style: 'bg-red-100 dark:bg-red-950/40 text-red-700 dark:text-red-400', icon: AlertTriangle, label: 'Overdue' },
-      CANCELLED: { style: 'bg-gray-100 dark:bg-gray-800 text-gray-700 dark:text-gray-300', icon: XCircle, label: 'Cancelled' },
+      DRAFT: { style: 'bg-gray-100 dark:bg-gray-800 text-gray-700 dark:text-gray-300', icon: FileEdit },
+      SENT: { style: 'bg-blue-100 dark:bg-blue-950/40 text-blue-700 dark:text-blue-400', icon: Clock },
+      PAID: { style: 'bg-green-100 dark:bg-green-950/40 text-green-700 dark:text-green-400', icon: CheckCircle },
+      PARTIAL: { style: 'bg-yellow-100 dark:bg-yellow-950/40 text-yellow-700 dark:text-yellow-400', icon: AlertTriangle },
+      OVERDUE: { style: 'bg-red-100 dark:bg-red-950/40 text-red-700 dark:text-red-400', icon: AlertTriangle },
+      CANCELLED: { style: 'bg-gray-100 dark:bg-gray-800 text-gray-700 dark:text-gray-300', icon: XCircle },
     }
-    const { style, icon: Icon, label } = config[status]
+    const { style, icon: Icon } = config[status]
     return (
       <Badge className={`${style} flex items-center gap-1`}>
         <Icon className="h-3 w-3" />
-        {label}
+        {enumLabel(status, locale)}
       </Badge>
     )
   }
 
   const formatCurrency = (amount: number) => {
-    return new Intl.NumberFormat('en-SA', { style: 'currency', currency: 'SAR' }).format(amount)
+    return currency(amount, locale)
   }
 
   const totals = calculateTotals(newInvoice.items, newInvoice.taxRate)
@@ -258,26 +262,20 @@ export function InvoicesList({ branchId }: InvoicesListProps) {
       <Card>
         <CardHeader className="flex flex-row items-center justify-between">
           <div>
-            <CardTitle>الفواتير</CardTitle>
-            <CardDescription>إنشاء وإدارة الفواتير لهذا الفرع</CardDescription>
+            <CardTitle><TranslatedText path="dashboard.globalSearch.categoryInvoices" /></CardTitle>
+            <CardDescription><TranslatedText path="copy.Create_and_manage_invoices_for_this_branch" /></CardDescription>
           </div>
           <Button onClick={() => setCreateDialogOpen(true)}>
-            <Plus className="me-2 h-4 w-4" />
-            Create Invoice
-          </Button>
+            <Plus className="me-2 h-4 w-4" /><TranslatedText path="copy.Create_Invoice" /></Button>
         </CardHeader>
         <CardContent>
           {invoices.length === 0 ? (
             <div className="flex flex-col items-center justify-center py-12 text-center">
               <Banknote className="h-12 w-12 text-muted-foreground/30 mb-4" />
-              <h3 className="text-lg font-semibold mb-2">لا توجد فواتير بعد</h3>
-              <p className="text-muted-foreground max-w-md mb-4">
-                أنشئ أول فاتورة لهذا الفرع.
-              </p>
+              <h3 className="text-lg font-semibold mb-2"><TranslatedText path="dashboard.clientBranchInvoicesPage.noInvoicesYet" /></h3>
+              <p className="text-muted-foreground max-w-md mb-4"><TranslatedText path="copy.Create_the_first_invoice_for_this_branch" /></p>
               <Button onClick={() => setCreateDialogOpen(true)}>
-                <Plus className="me-2 h-4 w-4" />
-                Create Invoice
-              </Button>
+                <Plus className="me-2 h-4 w-4" /><TranslatedText path="copy.Create_Invoice" /></Button>
             </div>
           ) : (
             <div className="space-y-4">
@@ -299,13 +297,11 @@ export function InvoicesList({ branchId }: InvoicesListProps) {
                     <div className="flex items-center gap-4 text-sm">
                       <span className="font-semibold">{formatCurrency(invoice.total)}</span>
                       {invoice.status === 'PARTIAL' && (
-                        <span className="text-muted-foreground">
-                          Paid: {formatCurrency(invoice.amountPaid)}
+                        <span className="text-muted-foreground"><TranslatedText path="dashboard.clientBranchInvoicesPage.paidLabel" />{' '}{formatCurrency(invoice.amountPaid)}
                         </span>
                       )}
                       {invoice.dueDate && (
-                        <span className="text-muted-foreground">
-                          Due: {formatDate(invoice.dueDate, locale, {})}
+                        <span className="text-muted-foreground"><TranslatedText path="dashboard.clientBranchInvoicesPage.dueLabel" />{' '}{formatDate(invoice.dueDate, locale, {})}
                         </span>
                       )}
                     </div>
@@ -320,23 +316,17 @@ export function InvoicesList({ branchId }: InvoicesListProps) {
                       {invoice.status === 'DRAFT' && (
                         <>
                           <DropdownMenuItem onClick={() => handleSendInvoice(invoice.id)}>
-                            <Send className="me-2 h-4 w-4" />
-                            Send to Client
-                          </DropdownMenuItem>
+                            <Send className="me-2 h-4 w-4" /><TranslatedText path="dashboard.requestsList.sendToClient" /></DropdownMenuItem>
                           <DropdownMenuItem
                             onClick={() => handleDeleteInvoice(invoice.id)}
                             className="text-destructive"
                           >
-                            <Trash2 className="me-2 h-4 w-4" />
-                            Delete
-                          </DropdownMenuItem>
+                            <Trash2 className="me-2 h-4 w-4" /><TranslatedText path="dashboard.teamListPage.delete" /></DropdownMenuItem>
                         </>
                       )}
                       {(invoice.status === 'SENT' || invoice.status === 'PARTIAL') && (
                         <DropdownMenuItem onClick={() => handleMarkPaid(invoice.id)}>
-                          <CheckCircle className="me-2 h-4 w-4" />
-                          Mark as Paid
-                        </DropdownMenuItem>
+                          <CheckCircle className="me-2 h-4 w-4" /><TranslatedText path="copy.Mark_as_Paid" /></DropdownMenuItem>
                       )}
                     </DropdownMenuContent>
                   </DropdownMenu>
@@ -351,48 +341,46 @@ export function InvoicesList({ branchId }: InvoicesListProps) {
       <Dialog open={createDialogOpen} onOpenChange={setCreateDialogOpen}>
         <DialogContent className="max-w-2xl max-h-[90vh] overflow-y-auto">
           <DialogHeader>
-            <DialogTitle>إنشاء فاتورة</DialogTitle>
-            <DialogDescription>
-              إنشاء فاتورة جديدة مع بنود.
-            </DialogDescription>
+            <DialogTitle><TranslatedText path="copy.Create_Invoice" /></DialogTitle>
+            <DialogDescription><TranslatedText path="copy.Create_a_new_invoice_with_line_items" /></DialogDescription>
           </DialogHeader>
           <form onSubmit={handleCreateInvoice}>
             {error && (
               <div className="bg-destructive/10 text-destructive p-3 rounded-lg text-sm mb-4">
-                {error}
+                <LocalizedError message={error} />
               </div>
             )}
             <div className="space-y-4">
               <div className="space-y-2">
-                <Label htmlFor="title">العنوان *</Label>
+                <Label htmlFor="title"><TranslatedText path="dashboard.requestsList.titleLabel" /></Label>
                 <Input
                   id="title"
                   value={newInvoice.title}
                   onChange={(e) => setNewInvoice({ ...newInvoice, title: e.target.value })}
-                  placeholder="e.g., Monthly Service - January 2026"
+                  placeholder={t.copy.invoiceTitleExample}
                   required
                 />
               </div>
               <div className="space-y-2">
-                <Label htmlFor="description">الوصف</Label>
+                <Label htmlFor="description"><TranslatedText path="dashboard.workOrdersPage.description" /></Label>
                 <Textarea
                   id="description"
                   value={newInvoice.description}
                   onChange={(e) => setNewInvoice({ ...newInvoice, description: e.target.value })}
-                  placeholder="Additional details"
+                  placeholder={t.copy.additionalDetails}
                   rows={2}
                 />
               </div>
 
               {/* Line Items */}
               <div className="space-y-2">
-                <Label>البنود</Label>
+                <Label><TranslatedText path="dashboard.quotationsList.lineItemsLabel" /></Label>
                 <div className="space-y-2">
                   {newInvoice.items.map((item, index) => (
                     <div key={index} className="grid grid-cols-12 gap-2 items-end">
                       <div className="col-span-5">
                         <Input
-                          placeholder="Description"
+                          placeholder={t.dashboard.workOrdersPage.description}
                           value={item.description}
                           onChange={(e) => handleItemChange(index, 'description', e.target.value)}
                         />
@@ -400,7 +388,7 @@ export function InvoicesList({ branchId }: InvoicesListProps) {
                       <div className="col-span-2">
                         <Input
                           type="number"
-                          placeholder="Qty"
+                          placeholder={t.dashboard.clientBranchInvoicesPage.quantityCol}
                           min="1"
                           value={item.quantity}
                           onChange={(e) => handleItemChange(index, 'quantity', parseFloat(e.target.value) || 0)}
@@ -409,7 +397,7 @@ export function InvoicesList({ branchId }: InvoicesListProps) {
                       <div className="col-span-2">
                         <Input
                           type="number"
-                          placeholder="Price"
+                          placeholder={t.dashboard.workOrdersPage.price}
                           min="0"
                           step="0.01"
                           value={item.unitPrice}
@@ -434,20 +422,18 @@ export function InvoicesList({ branchId }: InvoicesListProps) {
                   ))}
                 </div>
                 <Button type="button" variant="outline" size="sm" onClick={addItem}>
-                  <Plus className="me-2 h-4 w-4" />
-                  Add Item
-                </Button>
+                  <Plus className="me-2 h-4 w-4" /><TranslatedText path="dashboard.quotationsList.addItem" /></Button>
               </div>
 
               {/* Totals */}
               <div className="border-t pt-4 space-y-2">
                 <div className="flex justify-between text-sm">
-                  <span>المجموع الفرعي</span>
+                  <span><TranslatedText path="dashboard.clientBranchInvoicesPage.subtotalLabel" /></span>
                   <span>{formatCurrency(totals.subtotal)}</span>
                 </div>
                 <div className="flex justify-between items-center text-sm">
                   <div className="flex items-center gap-2">
-                    <span>الضريبة</span>
+                    <span><TranslatedText path="dashboard.quotationsList.tax" /></span>
                     <Input
                       type="number"
                       className="w-20 h-8"
@@ -461,13 +447,13 @@ export function InvoicesList({ branchId }: InvoicesListProps) {
                   <span>{formatCurrency(totals.taxAmount)}</span>
                 </div>
                 <div className="flex justify-between font-semibold text-lg border-t pt-2">
-                  <span>الإجمالي</span>
+                  <span><TranslatedText path="dashboard.requestsList.total" /></span>
                   <span>{formatCurrency(totals.total)}</span>
                 </div>
               </div>
 
               <div className="space-y-2">
-                <Label htmlFor="dueDate">تاريخ الاستحقاق</Label>
+                <Label htmlFor="dueDate"><TranslatedText path="dashboard.requestsList.dueDate" /></Label>
                 <Input
                   id="dueDate"
                   type="date"
@@ -477,18 +463,14 @@ export function InvoicesList({ branchId }: InvoicesListProps) {
               </div>
             </div>
             <DialogFooter className="mt-6">
-              <Button type="button" variant="outline" onClick={() => setCreateDialogOpen(false)}>
-                Cancel
-              </Button>
+              <Button type="button" variant="outline" onClick={() => setCreateDialogOpen(false)}><TranslatedText path="dashboard.portal.cancel" /></Button>
               <Button
                 type="button"
                 variant="outline"
                 disabled={creating}
                 onClick={(e) => handleCreateInvoice(e, false)}
               >
-                {creating && <Loader2 className="me-2 h-4 w-4 animate-spin" />}
-                Save as Draft
-              </Button>
+                {creating && <Loader2 className="me-2 h-4 w-4 animate-spin" />}<TranslatedText path="dashboard.quotationsList.saveDraft" /></Button>
               <Button
                 type="submit"
                 disabled={creating}
@@ -498,9 +480,7 @@ export function InvoicesList({ branchId }: InvoicesListProps) {
                 }}
               >
                 {creating && <Loader2 className="me-2 h-4 w-4 animate-spin" />}
-                <Send className="me-2 h-4 w-4" />
-                Create & Send
-              </Button>
+                <Send className="me-2 h-4 w-4" /><TranslatedText path="dashboard.quotationsList.createAndSend" /></Button>
             </DialogFooter>
           </form>
         </DialogContent>
@@ -514,7 +494,7 @@ export function InvoicesList({ branchId }: InvoicesListProps) {
               <span className="font-mono text-muted-foreground">{selectedInvoice?.invoiceNumber}</span>
               {selectedInvoice?.title}
             </DialogTitle>
-            <DialogDescription>تفاصيل الفاتورة</DialogDescription>
+            <DialogDescription><TranslatedText path="copy.Invoice_Details" /></DialogDescription>
           </DialogHeader>
           {selectedInvoice && (
             <div className="space-y-4">
@@ -524,15 +504,15 @@ export function InvoicesList({ branchId }: InvoicesListProps) {
               </div>
 
               <div>
-                <p className="text-sm font-medium text-muted-foreground mb-2">البنود</p>
+                <p className="text-sm font-medium text-muted-foreground mb-2"><TranslatedText path="dashboard.quotationsList.lineItemsLabel" /></p>
                 <div className="border rounded-lg overflow-hidden">
                   <table className="w-full text-sm">
                     <thead className="bg-muted">
                       <tr>
-                        <th className="text-start p-2">الوصف</th>
-                        <th className="text-end p-2">الكمية</th>
-                        <th className="text-end p-2">سعر الوحدة</th>
-                        <th className="text-end p-2">الإجمالي</th>
+                        <th className="text-start p-2"><TranslatedText path="dashboard.workOrdersPage.description" /></th>
+                        <th className="text-end p-2"><TranslatedText path="dashboard.clientBranchInvoicesPage.quantityCol" /></th>
+                        <th className="text-end p-2"><TranslatedText path="dashboard.quotationsList.tableUnitPrice" /></th>
+                        <th className="text-end p-2"><TranslatedText path="dashboard.requestsList.total" /></th>
                       </tr>
                     </thead>
                     <tbody>
@@ -547,20 +527,20 @@ export function InvoicesList({ branchId }: InvoicesListProps) {
                     </tbody>
                     <tfoot className="bg-muted/50">
                       <tr className="border-t">
-                        <td colSpan={3} className="text-end p-2 font-medium">المجموع الفرعي</td>
+                        <td colSpan={3} className="text-end p-2 font-medium"><TranslatedText path="dashboard.clientBranchInvoicesPage.subtotalLabel" /></td>
                         <td className="text-end p-2">{formatCurrency(selectedInvoice.subtotal)}</td>
                       </tr>
                       <tr>
-                        <td colSpan={3} className="text-end p-2 font-medium">Tax ({selectedInvoice.taxRate}%)</td>
+                        <td colSpan={3} className="text-end p-2 font-medium"><TranslatedText path="copy.Tax" />{selectedInvoice.taxRate}%)</td>
                         <td className="text-end p-2">{formatCurrency(selectedInvoice.taxAmount)}</td>
                       </tr>
                       <tr className="font-bold">
-                        <td colSpan={3} className="text-end p-2">الإجمالي</td>
+                        <td colSpan={3} className="text-end p-2"><TranslatedText path="dashboard.requestsList.total" /></td>
                         <td className="text-end p-2">{formatCurrency(selectedInvoice.total)}</td>
                       </tr>
                       {selectedInvoice.amountPaid > 0 && (
                         <tr>
-                          <td colSpan={3} className="text-end p-2 font-medium text-green-600">المبلغ المدفوع</td>
+                          <td colSpan={3} className="text-end p-2 font-medium text-green-600"><TranslatedText path="dashboard.clientBranchInvoicesPage.amountPaidLabel" /></td>
                           <td className="text-end p-2 text-green-600">{formatCurrency(selectedInvoice.amountPaid)}</td>
                         </tr>
                       )}
@@ -571,24 +551,24 @@ export function InvoicesList({ branchId }: InvoicesListProps) {
 
               <div className="grid grid-cols-2 gap-4 text-sm">
                 <div>
-                  <p className="font-medium text-muted-foreground">تم الإنشاء</p>
+                  <p className="font-medium text-muted-foreground"><TranslatedText path="dashboard.quotationsList.createdLabel" /></p>
                   <p>{formatDate(selectedInvoice.createdAt, locale, {})}</p>
                 </div>
                 {selectedInvoice.dueDate && (
                   <div>
-                    <p className="font-medium text-muted-foreground">تاريخ الاستحقاق</p>
+                    <p className="font-medium text-muted-foreground"><TranslatedText path="dashboard.requestsList.dueDate" /></p>
                     <p>{formatDate(selectedInvoice.dueDate, locale, {})}</p>
                   </div>
                 )}
                 {selectedInvoice.sentAt && (
                   <div>
-                    <p className="font-medium text-muted-foreground">تم الإرسال</p>
+                    <p className="font-medium text-muted-foreground"><TranslatedText path="dashboard.quotationsList.statusSent" /></p>
                     <p>{formatDate(selectedInvoice.sentAt, locale, {})}</p>
                   </div>
                 )}
                 {selectedInvoice.paidAt && (
                   <div>
-                    <p className="font-medium text-muted-foreground">مدفوع</p>
+                    <p className="font-medium text-muted-foreground"><TranslatedText path="dashboard.billingView.paid" /></p>
                     <p>{formatDate(selectedInvoice.paidAt, locale, {})}</p>
                   </div>
                 )}
@@ -603,9 +583,7 @@ export function InvoicesList({ branchId }: InvoicesListProps) {
                     }}
                     className="flex-1"
                   >
-                    <Send className="me-2 h-4 w-4" />
-                    Send to Client
-                  </Button>
+                    <Send className="me-2 h-4 w-4" /><TranslatedText path="dashboard.requestsList.sendToClient" /></Button>
                 )}
                 {(selectedInvoice.status === 'SENT' || selectedInvoice.status === 'PARTIAL') && (
                   <Button
@@ -615,9 +593,7 @@ export function InvoicesList({ branchId }: InvoicesListProps) {
                     }}
                     className="flex-1"
                   >
-                    <CheckCircle className="me-2 h-4 w-4" />
-                    Mark as Paid
-                  </Button>
+                    <CheckCircle className="me-2 h-4 w-4" /><TranslatedText path="copy.Mark_as_Paid" /></Button>
                 )}
               </div>
             </div>

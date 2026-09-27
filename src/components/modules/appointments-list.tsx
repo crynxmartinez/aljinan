@@ -1,4 +1,5 @@
 'use client'
+import { LocalizedError } from '@/components/localized-error'
 
 import { useState, useEffect } from 'react'
 import { useRouter } from 'next/navigation'
@@ -230,6 +231,16 @@ export function AppointmentsList({ branchId }: AppointmentsListProps) {
           </div>
         </div>
 
+        <Button onClick={() => setCreateDialogOpen(true)}>{ta.scheduleAppointment}</Button>
+        <div className="grid gap-3 md:grid-cols-2">
+          {appointments.map(appointment => (
+            <button key={appointment.id} type="button" onClick={() => setSelectedAppointment(appointment)}
+              className="rounded-xl border bg-card p-4 text-start transition-colors hover:bg-accent focus-visible:outline-2 focus-visible:outline-ring">
+              <span className="block font-medium">{appointment.title}</span>
+              <span className="block text-sm text-muted-foreground">{formatDateUtil(appointment.date, locale)} · {appointment.startTime}</span>
+            </button>
+          ))}
+        </div>
         <CalendarView branchId={branchId} />
       </div>
 
@@ -245,7 +256,7 @@ export function AppointmentsList({ branchId }: AppointmentsListProps) {
           <form onSubmit={handleCreateAppointment}>
             {error && (
               <div className="bg-destructive/10 text-destructive p-3 rounded-lg text-sm mb-4">
-                {error}
+                <LocalizedError message={error} />
               </div>
             )}
             <div className="space-y-4">

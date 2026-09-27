@@ -1,4 +1,5 @@
 'use client'
+import { LocalizedError } from '@/components/localized-error'
 
 import { useState, useEffect } from 'react'
 import { useRouter } from 'next/navigation'
@@ -63,6 +64,7 @@ import { ExportDialog } from '@/components/export/export-dialog'
 import { api } from '@/lib/api-client'
 import {
   exportRequestsToExcel,
+  exportRequestsToPdf,
   exportRequestsToCsv,
   type ExportOptions,
   type ExportableRequest,
@@ -301,15 +303,11 @@ export function ClientBranchRequests({ branchId, onDataChange, userId }: ClientB
   const router = useRouter()
   const [requests, setRequests] = useState<Request[]>([])
   const [allRequests, setAllRequests] = useState<Request[]>([])
-  const [projects, setProjects] = useState<Project[]>([])
   const [loading, setLoading] = useState(true)
   const [createDialogOpen, setCreateDialogOpen] = useState(false)
   const [creating, setCreating] = useState(false)
   const [approving, setApproving] = useState(false)
   const [error, setError] = useState('')
-  const [addWorkOrderOpen, setAddWorkOrderOpen] = useState(false)
-  const [newWorkOrder, setNewWorkOrder] = useState({ name: '', description: '', recurringType: 'ONCE' as 'ONCE' | 'MONTHLY' | 'QUARTERLY' | 'SEMI_ANNUALLY' | 'ANNUALLY' })
-  const [addingWorkOrder, setAddingWorkOrder] = useState(false)
 
   const [newRequest, setNewRequest] = useState<{
     title: string
@@ -353,7 +351,6 @@ export function ClientBranchRequests({ branchId, onDataChange, userId }: ClientB
   const [uploadedPhotos, setUploadedPhotos] = useState<{ url: string; name: string }[]>([])
   const [uploading, setUploading] = useState(false)
   const [selectedRequest, setSelectedRequest] = useState<Request | null>(null)
-  const [selectedProject, setSelectedProject] = useState<Project | null>(null)
 
   // Quote response state
   const [quoteResponseDialogOpen, setQuoteResponseDialogOpen] = useState(false)
@@ -393,93 +390,9 @@ export function ClientBranchRequests({ branchId, onDataChange, userId }: ClientB
     }
   }
 
-  const fetchProjects = async () => {
-    try {
-      const response = await fetch(`/api/branches/${branchId}/projects`)
-      if (response.ok) {
-        const data = await response.json()
-        // Only show PENDING projects in Requests tab (for approval)
-        // ACTIVE projects should be viewed in Calendar/Quotations/Contracts
-        const pendingProjects = data.filter((p: Project) => p.status === 'PENDING')
-        setProjects(pendingProjects)
-      }
-    } catch (err) {
-      console.error('Failed to fetch projects:', err)
-    }
-  }
-
   useEffect(() => {
     fetchRequests()
-    fetchProjects()
   }, [branchId])
-
-  // Handle project approval
-  const handleApproveProject = async (projectId: string) => {
-    setApproving(true)
-    setError('')
-    try {
-      const response = await fetch(`/api/projects/${projectId}/approve`, {
-        method: 'POST',
-      })
-      if (!response.ok) {
-        const data = await response.json()
-        throw new Error(data.error || 'Failed to approve project')
-      }
-      setSelectedProject(null)
-      setSelectedRequest(null)
-      fetchRequests()
-      fetchProjects()
-      onDataChange?.()
-      router.refresh()
-    } catch (err) {
-      setError(err instanceof Error ? err.message : tc.genericError)
-    } finally {
-      setApproving(false)
-    }
-  }
-
-  // Handle adding a work order (client can add without price)
-  const handleAddWorkOrder = async () => {
-    if (!selectedProject || !newWorkOrder.name.trim()) return
-    setAddingWorkOrder(true)
-    setError('')
-    try {
-      const response = await fetch(`/api/projects/${selectedProject.id}/work-orders`, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          name: newWorkOrder.name,
-          description: newWorkOrder.description || null,
-          price: null, // Client cannot set price
-          type: 'ADHOC',
-          recurringType: newWorkOrder.recurringType,
-        }),
-      })
-      if (!response.ok) {
-        const data = await response.json()
-        throw new Error(data.error || 'Failed to add work order')
-      }
-      setNewWorkOrder({ name: '', description: '', recurringType: 'ONCE' })
-      setAddWorkOrderOpen(false)
-      fetchProjects()
-      // Refresh selected project
-      const updatedProjects = await api.get<never[]>(`/api/branches/${branchId}/projects`)
-      const updated = updatedProjects.find((p: Project) => p.id === selectedProject.id)
-      if (updated) setSelectedProject(updated)
-    } catch (err) {
-      setError(err instanceof Error ? err.message : tc.genericError)
-    } finally {
-      setAddingWorkOrder(false)
-    }
-  }
-
-  // Get project for a request
-  const getProjectForRequest = (request: Request): Project | undefined => {
-    if (request.projectId) {
-      return projects.find(p => p.id === request.projectId)
-    }
-    return undefined
-  }
 
   const handlePhotoUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const files = e.target.files
@@ -492,6 +405,7 @@ export function ClientBranchRequests({ branchId, onDataChange, userId }: ClientB
         formData.append('file', file)
         formData.append('type', 'photo')
         formData.append('folder', 'request-photos')
+      formData.append('branchId', branchId)
 
         const response = await fetch('/api/upload', {
           method: 'POST',
@@ -709,10 +623,12 @@ export function ClientBranchRequests({ branchId, onDataChange, userId }: ClientB
       includePhotos: options.includePhotos ?? false,
     }
 
-    if (format === 'excel' || format === 'pdf') {
-      exportRequestsToExcel(dataToExport, exportOpts)
+    if (format === 'excel') {
+      exportRequestsToExcel(dataToExport, exportOpts, locale)
+    } else if (format === 'pdf') {
+      return exportRequestsToPdf(dataToExport, exportOpts, locale)
     } else if (format === 'csv') {
-      exportRequestsToCsv(dataToExport, exportOpts)
+      exportRequestsToCsv(dataToExport, exportOpts, locale)
     }
   }
 
@@ -827,7 +743,7 @@ export function ClientBranchRequests({ branchId, onDataChange, userId }: ClientB
         <CardContent>
           {error && (
             <div className="bg-destructive/10 text-destructive p-3 rounded-lg text-sm mb-4">
-              {error}
+              <LocalizedError message={error} />
             </div>
           )}
           {requests.length === 0 ? (
@@ -857,10 +773,6 @@ export function ClientBranchRequests({ branchId, onDataChange, userId }: ClientB
                   <div
                     className="space-y-2 cursor-pointer"
                     onClick={() => {
-                      const project = getProjectForRequest(request)
-                      if (project && request.createdByRole === 'CONTRACTOR') {
-                        setSelectedProject(project)
-                      }
                       setSelectedRequest(request)
                     }}
                   >
@@ -946,7 +858,7 @@ export function ClientBranchRequests({ branchId, onDataChange, userId }: ClientB
           <form onSubmit={handleCreateRequest}>
             {error && (
               <div className="bg-destructive/10 text-destructive p-3 rounded-lg text-sm mb-4">
-                {error}
+                <LocalizedError message={error} />
               </div>
             )}
             <div className="space-y-4">
@@ -1323,7 +1235,7 @@ export function ClientBranchRequests({ branchId, onDataChange, userId }: ClientB
       </Dialog>
 
       {/* View Request Dialog - Enhanced for Client */}
-      <Dialog open={!!selectedRequest && !selectedProject} onOpenChange={(open) => !open && setSelectedRequest(null)}>
+      <Dialog open={!!selectedRequest} onOpenChange={(open) => !open && setSelectedRequest(null)}>
         <DialogContent className="sm:max-w-[700px] max-h-[90vh] overflow-y-auto">
           <DialogHeader>
             <DialogTitle>{selectedRequest?.title}</DialogTitle>
@@ -1660,212 +1572,6 @@ export function ClientBranchRequests({ branchId, onDataChange, userId }: ClientB
         </AlertDialogContent>
       </AlertDialog>
 
-      {/* Project Proposal Dialog - With work orders */}
-      <Dialog open={!!selectedProject} onOpenChange={(open) => { if (!open) { setSelectedProject(null); setSelectedRequest(null); } }}>
-        <DialogContent className="sm:max-w-[800px] max-h-[90vh] overflow-y-auto">
-          <DialogHeader>
-            <DialogTitle className="text-xl">{selectedProject?.title}</DialogTitle>
-            <DialogDescription>
-              {tc.projectProposalDesc}
-            </DialogDescription>
-          </DialogHeader>
-
-          {error && (
-            <div className="bg-destructive/10 text-destructive p-3 rounded-lg text-sm">
-              {error}
-            </div>
-          )}
-
-          {selectedProject && (() => {
-            // Calculate total from work orders directly
-            const calculatedTotal = selectedProject.workOrders?.reduce((sum, wo) => sum + (wo.price || 0), 0) || 0
-            return (
-              <div className="space-y-6">
-                {/* Project Info */}
-                <div className="grid grid-cols-2 md:grid-cols-4 gap-4 p-4 bg-muted/30 rounded-lg">
-                  <div>
-                    <p className="text-xs text-muted-foreground">{tc.statusLabel}</p>
-                    <Badge className={selectedProject.status === 'PENDING' ? 'bg-amber-100 dark:bg-amber-950/40 text-amber-700 dark:text-amber-400' : 'bg-green-100 dark:bg-green-950/40 text-green-700 dark:text-green-400'}>
-                      {selectedProject.status === 'PENDING' ? tc.pendingReviewBadge : selectedProject.status}
-                    </Badge>
-                  </div>
-                  {selectedProject.startDate && (
-                    <div>
-                      <p className="text-xs text-muted-foreground">{tc.startDateLabel}</p>
-                      <p className="font-medium text-sm">{formatDateUtil(selectedProject.startDate, locale)}</p>
-                    </div>
-                  )}
-                  {selectedProject.endDate && (
-                    <div>
-                      <p className="text-xs text-muted-foreground">{tc.endDateLabel}</p>
-                      <p className="font-medium text-sm">{formatDateUtil(selectedProject.endDate, locale)}</p>
-                    </div>
-                  )}
-                  <div>
-                    <p className="text-xs text-muted-foreground">{tc.totalValueLabel}</p>
-                    <p className="font-bold text-lg text-primary">
-                      {t.dashboard.requestsList.sar} {calculatedTotal.toLocaleString(dateLocale, { minimumFractionDigits: 2 })}
-                    </p>
-                  </div>
-                </div>
-
-                {/* Work Orders - Grouped Collapsible View */}
-                <div>
-                  <div className="flex items-center justify-between mb-3">
-                    <h3 className="font-semibold">{tc.workOrdersHeading}</h3>
-                    {selectedProject.status === 'PENDING' && (
-                      <Button variant="outline" size="sm" onClick={() => setAddWorkOrderOpen(true)}>
-                        <Plus className="h-4 w-4 me-1" />
-                        {tc.requestAdditionalWork}
-                      </Button>
-                    )}
-                  </div>
-
-                  {selectedProject.workOrders && selectedProject.workOrders.length > 0 ? (
-                    <div className="border rounded-lg overflow-hidden">
-                      <WorkOrdersGroupedView workOrders={selectedProject.workOrders} />
-
-                      {/* Total Row */}
-                      <div className="flex items-center justify-between p-4 bg-primary/5 border-t">
-                        <span className="font-semibold">{tc.totalRow}</span>
-                        <span className="text-xl font-bold">
-                          {t.dashboard.requestsList.sar} {calculatedTotal.toLocaleString(dateLocale, { minimumFractionDigits: 2 })}
-                        </span>
-                      </div>
-                    </div>
-                  ) : (
-                    <div className="text-center py-8 text-muted-foreground border rounded-lg">
-                      {tc.noWorkOrdersYet}
-                    </div>
-                  )}
-                </div>
-
-                {/* Action Buttons for Pending Projects */}
-                {selectedProject.status === 'PENDING' && (() => {
-                  const hasPendingPrices = selectedProject.workOrders?.some(wo => wo.price === null) || false
-                  return (
-                    <div className="space-y-4 pt-4 border-t">
-                      {hasPendingPrices ? (
-                        <div className="p-4 bg-orange-50 dark:bg-orange-950/40 border border-orange-200 dark:border-orange-900 rounded-lg">
-                          <p className="text-sm text-orange-800 dark:text-orange-400">
-                            <strong>{tc.awaitingPricingTitle}</strong> {tc.awaitingPricingDesc}
-                          </p>
-                        </div>
-                      ) : (
-                        <div className="p-4 bg-amber-50 dark:bg-amber-950/40 border border-amber-200 dark:border-amber-900 rounded-lg">
-                          <p className="text-sm text-amber-800 dark:text-amber-400">
-                            <strong>{tc.readyTitle}</strong> {tc.readyDesc}
-                          </p>
-                        </div>
-                      )}
-
-                      <div className="flex gap-3 justify-end">
-                        <Button variant="outline" onClick={() => { setSelectedProject(null); setSelectedRequest(null); }}>
-                          {tc.reviewLaterBtn}
-                        </Button>
-                        <Button
-                          onClick={() => handleApproveProject(selectedProject.id)}
-                          disabled={approving || hasPendingPrices}
-                          className={hasPendingPrices ? "bg-gray-400 cursor-not-allowed" : "bg-green-600 hover:bg-green-700"}
-                        >
-                          {approving ? (
-                            <>
-                              <Loader2 className="me-2 h-4 w-4 animate-spin" />
-                              {tc.approvingText}
-                            </>
-                          ) : (
-                            <>
-                              <CheckCircle className="me-2 h-4 w-4" />
-                              {tc.approveProjectBtn}
-                            </>
-                          )}
-                        </Button>
-                      </div>
-                    </div>
-                  )
-                })()}
-
-                {/* Info for Active Projects */}
-                {selectedProject.status === 'ACTIVE' && (
-                  <div className="p-4 bg-green-50 dark:bg-green-950/40 border border-green-200 dark:border-green-900 rounded-lg">
-                    <p className="text-sm text-green-800 dark:text-green-400">
-                      <strong>{tc.projectActiveTitle}</strong> {tc.projectActiveDesc}
-                    </p>
-                  </div>
-                )}
-              </div>
-            )
-          })()}
-        </DialogContent>
-      </Dialog>
-
-      {/* Add Work Order Dialog */}
-      <Dialog open={addWorkOrderOpen} onOpenChange={setAddWorkOrderOpen}>
-        <DialogContent>
-          <DialogHeader>
-            <DialogTitle>{tc.requestAdditionalWork}</DialogTitle>
-            <DialogDescription>
-              {tc.requestAdditionalWorkDesc}
-            </DialogDescription>
-          </DialogHeader>
-          <div className="space-y-4">
-            <div className="space-y-2">
-              <Label htmlFor="wo-name">{tc.workOrderNameLabel}</Label>
-              <Input
-                id="wo-name"
-                value={newWorkOrder.name}
-                onChange={(e) => setNewWorkOrder({ ...newWorkOrder, name: e.target.value })}
-                placeholder={tc.workOrderNamePlaceholder}
-              />
-            </div>
-            <div className="space-y-2">
-              <Label htmlFor="wo-desc">{tc.descriptionLabel}</Label>
-              <Textarea
-                id="wo-desc"
-                value={newWorkOrder.description}
-                onChange={(e) => setNewWorkOrder({ ...newWorkOrder, description: e.target.value })}
-                placeholder={tc.workOrderDescPlaceholder}
-                rows={3}
-              />
-            </div>
-            <div className="space-y-2">
-              <Label htmlFor="wo-recurring">{tc.recurringLabel}</Label>
-              <Select
-                value={newWorkOrder.recurringType}
-                onValueChange={(value) => setNewWorkOrder({ ...newWorkOrder, recurringType: value as 'ONCE' | 'MONTHLY' | 'QUARTERLY' })}
-              >
-                <SelectTrigger>
-                  <SelectValue placeholder={tc.selectFrequencyPlaceholder} />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="ONCE">{tc.once}</SelectItem>
-                  <SelectItem value="MONTHLY">{tc.monthly}</SelectItem>
-                  <SelectItem value="QUARTERLY">{tc.quarterly}</SelectItem>
-                </SelectContent>
-              </Select>
-            </div>
-          </div>
-          <DialogFooter>
-            <Button variant="outline" onClick={() => setAddWorkOrderOpen(false)}>
-              {tc.cancelBtn}
-            </Button>
-            <Button onClick={handleAddWorkOrder} disabled={addingWorkOrder || !newWorkOrder.name.trim()}>
-              {addingWorkOrder ? (
-                <>
-                  <Loader2 className="me-2 h-4 w-4 animate-spin" />
-                  {tc.addingText}
-                </>
-              ) : (
-                <>
-                  <Send className="me-2 h-4 w-4" />
-                  {tc.sendRequestBtn}
-                </>
-              )}
-            </Button>
-          </DialogFooter>
-        </DialogContent>
-      </Dialog>
-
       {/* Quote Response Dialog - For clients to accept or reject quotes */}
       <Dialog open={quoteResponseDialogOpen} onOpenChange={(open) => { if (!open) { setQuoteResponseDialogOpen(false); setQuoteResponseRequest(null); setShowRejectionForm(false); setRejectionReason(''); setError(''); } }}>
         <DialogContent className="sm:max-w-[500px] max-h-[90vh] overflow-y-auto">
@@ -1878,7 +1584,7 @@ export function ClientBranchRequests({ branchId, onDataChange, userId }: ClientB
 
           {error && (
             <div className="bg-destructive/10 text-destructive p-3 rounded-lg text-sm">
-              {error}
+              <LocalizedError message={error} />
             </div>
           )}
 
@@ -2153,7 +1859,7 @@ export function ClientBranchRequests({ branchId, onDataChange, userId }: ClientB
             <div className="space-y-4 py-4">
               {error && (
                 <div className="bg-destructive/10 text-destructive p-3 rounded-lg text-sm">
-                  {error}
+                  <LocalizedError message={error} />
                 </div>
               )}
 

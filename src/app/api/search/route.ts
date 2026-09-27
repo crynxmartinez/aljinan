@@ -1,3 +1,6 @@
+import { enumLabel } from '@/lib/i18n/enum-labels'
+import { getLocale } from '@/lib/i18n/server'
+import { publishedFor } from '@/lib/publication'
 import { NextResponse } from 'next/server'
 import { getServerSession } from 'next-auth'
 import { authOptions } from '@/lib/auth'
@@ -20,9 +23,10 @@ export async function GET(request: Request) {
       return NextResponse.json({ results: [] })
     }
 
+    const locale = await getLocale()
     const cacheKey = CACHE_TAGS.SEARCH(session.user.id, query.toLowerCase())
 
-    const results = await getCached(cacheKey, async () => {
+    const loadResults = async () => {
       const role = session.user.role
       const userId = session.user.id
 
@@ -71,6 +75,11 @@ export async function GET(request: Request) {
         adminPerms = admin ?? { canManageContractors: false, canManageMessages: false }
       }
 
+      // Staff scope is evaluated in the database, never from stale JWT assignments.
+      const staffScope = role === 'TEAM_MEMBER'
+        ? { teamMemberAccess: { some: { teamMember: { userId } } } }
+        : {}
+
       // --- Build parallel queries ---
       const [
         clients,
@@ -93,6 +102,7 @@ export async function GET(request: Request) {
           ? prisma.client.findMany({
             where: {
               contractorId,
+              ...(role === 'TEAM_MEMBER' ? { branches: { some: staffScope } } : {}),
               OR: [
                 { companyName: { contains: query, mode: 'insensitive' } },
                 { displayName: { contains: query, mode: 'insensitive' } },
@@ -113,6 +123,7 @@ export async function GET(request: Request) {
           ? prisma.branch.findMany({
             where: {
               client: { contractorId },
+              ...staffScope,
               OR: [
                 { name: { contains: query, mode: 'insensitive' } },
                 { displayName: { contains: query, mode: 'insensitive' } },
@@ -149,7 +160,7 @@ export async function GET(request: Request) {
         contractorId && role !== 'CLIENT'
           ? prisma.checklistItem.findMany({
             where: {
-              checklist: { branch: { client: { contractorId } } },
+              checklist: { branch: { client: { contractorId }, ...staffScope } },
               deletedAt: null,
               stage: { not: 'ARCHIVED' },
               OR: [
@@ -180,7 +191,7 @@ export async function GET(request: Request) {
         contractorId && role !== 'CLIENT'
           ? prisma.request.findMany({
             where: {
-              branch: { client: { contractorId } },
+              branch: { client: { contractorId }, ...staffScope },
               OR: [
                 { title: { contains: query, mode: 'insensitive' } },
                 { description: { contains: query, mode: 'insensitive' } },
@@ -209,7 +220,7 @@ export async function GET(request: Request) {
         contractorId && role !== 'CLIENT'
           ? prisma.contract.findMany({
             where: {
-              branch: { client: { contractorId } },
+              branch: { client: { contractorId }, ...staffScope },
               OR: [
                 { title: { contains: query, mode: 'insensitive' } },
                 { description: { contains: query, mode: 'insensitive' } },
@@ -222,6 +233,7 @@ export async function GET(request: Request) {
             ? prisma.contract.findMany({
               where: {
                 branchId: { in: clientBranchIds },
+                ...publishedFor(role),
                 OR: [
                   { title: { contains: query, mode: 'insensitive' } },
                   { description: { contains: query, mode: 'insensitive' } },
@@ -236,7 +248,7 @@ export async function GET(request: Request) {
         contractorId && role !== 'CLIENT'
           ? prisma.invoice.findMany({
             where: {
-              branch: { client: { contractorId } },
+              branch: { client: { contractorId }, ...staffScope },
               OR: [
                 { title: { contains: query, mode: 'insensitive' } },
                 { invoiceNumber: { contains: query, mode: 'insensitive' } },
@@ -249,6 +261,7 @@ export async function GET(request: Request) {
             ? prisma.invoice.findMany({
               where: {
                 branchId: { in: clientBranchIds },
+                ...publishedFor(role),
                 OR: [
                   { title: { contains: query, mode: 'insensitive' } },
                   { invoiceNumber: { contains: query, mode: 'insensitive' } },
@@ -263,7 +276,7 @@ export async function GET(request: Request) {
         contractorId && role !== 'CLIENT'
           ? prisma.equipment.findMany({
             where: {
-              branch: { client: { contractorId } },
+              branch: { client: { contractorId }, ...staffScope },
               OR: [
                 { equipmentNumber: { contains: query, mode: 'insensitive' } },
                 { location: { contains: query, mode: 'insensitive' } },
@@ -296,7 +309,7 @@ export async function GET(request: Request) {
         contractorId && role !== 'CLIENT'
           ? prisma.certificate.findMany({
             where: {
-              branch: { client: { contractorId } },
+              branch: { client: { contractorId }, ...staffScope },
               OR: [
                 { title: { contains: query, mode: 'insensitive' } },
                 { description: { contains: query, mode: 'insensitive' } },
@@ -309,6 +322,7 @@ export async function GET(request: Request) {
             ? prisma.certificate.findMany({
               where: {
                 branchId: { in: clientBranchIds },
+                AND: [{ OR: [{ contractId: null }, { contract: { status: { not: 'DRAFT' } } }] }],
                 OR: [
                   { title: { contains: query, mode: 'insensitive' } },
                   { description: { contains: query, mode: 'insensitive' } },
@@ -340,7 +354,7 @@ export async function GET(request: Request) {
 
         // 10. Branch requests — a client's pending/rejected ask for a new branch. Approved
         // ones are excluded since they already exist as a searchable Branch by then.
-        contractorId && role !== 'CLIENT'
+        contractorId && role === 'CONTRACTOR'
           ? prisma.branchRequest.findMany({
             where: {
               client: { contractorId },
@@ -375,7 +389,7 @@ export async function GET(request: Request) {
         contractorId && role !== 'CLIENT'
           ? prisma.appointment.findMany({
             where: {
-              branch: { client: { contractorId } },
+              branch: { client: { contractorId }, ...staffScope },
               OR: [
                 { title: { contains: query, mode: 'insensitive' } },
                 { description: { contains: query, mode: 'insensitive' } },
@@ -498,7 +512,7 @@ export async function GET(request: Request) {
           type: 'work_order' as const,
           title: wo.workOrderNumber ? `WO-${String(wo.workOrderNumber).padStart(4, '0')} ${wo.description}` : wo.description,
           subtitle: isContractor
-            ? `${wo.checklist?.branch?.client?.companyName} · ${wo.stage}`
+            ? `${wo.checklist?.branch?.client?.companyName} · ${enumLabel(wo.stage, locale)}`
             : wo.stage,
           link: isContractor
             ? `/dashboard/clients/${wo.checklist?.branch?.client?.slug || wo.checklist?.branch?.client?.id}/branches/${wo.checklist?.branch?.slug || wo.checklist?.branchId}?tab=checklists`
@@ -511,7 +525,7 @@ export async function GET(request: Request) {
           type: 'request' as const,
           title: r.requestNumber ? `REQ-${String(r.requestNumber).padStart(4, '0')} ${r.title}` : r.title,
           subtitle: isContractor
-            ? `${r.branch?.client?.companyName} · ${r.status}`
+            ? `${r.branch?.client?.companyName} · ${enumLabel(r.status, locale)}`
             : r.status,
           link: isContractor
             ? `/dashboard/clients/${r.branch?.client?.slug || r.branch?.client?.id}/branches/${r.branch?.slug || r.branchId}?tab=requests`
@@ -524,7 +538,7 @@ export async function GET(request: Request) {
           type: 'contract' as const,
           title: c.title,
           subtitle: isContractor
-            ? `${c.branch?.client?.companyName} · ${c.status}`
+            ? `${c.branch?.client?.companyName} · ${enumLabel(c.status, locale)}`
             : c.status,
           link: isContractor
             ? `/dashboard/clients/${c.branch?.client?.slug || c.branch?.client?.id}/branches/${c.branch?.slug || c.branchId}?tab=contracts`
@@ -537,7 +551,7 @@ export async function GET(request: Request) {
           type: 'invoice' as const,
           title: inv.invoiceNumber ? `${inv.invoiceNumber} — ${inv.title}` : inv.title,
           subtitle: isContractor
-            ? `${inv.branch?.client?.companyName} · ${inv.status}`
+            ? `${inv.branch?.client?.companyName} · ${enumLabel(inv.status, locale)}`
             : inv.status,
           link: isContractor
             ? `/dashboard/clients/${inv.branch?.client?.slug || inv.branch?.client?.id}/branches/${inv.branch?.slug || inv.branchId}?tab=billing`
@@ -548,10 +562,10 @@ export async function GET(request: Request) {
         ...(equipment as EquipmentRow[]).map(eq => ({
           id: eq.id,
           type: 'equipment' as const,
-          title: `${eq.equipmentNumber} — ${eq.equipmentType.replace(/_/g, ' ')}`,
+          title: `${eq.equipmentNumber} — ${enumLabel(eq.equipmentType, locale)}`,
           subtitle: isContractor
             ? `${eq.branch?.client?.companyName}${eq.location ? ' · ' + eq.location : ''}`
-            : eq.location || eq.equipmentType.replace(/_/g, ' '),
+            : eq.location || enumLabel(eq.equipmentType, locale),
           link: isContractor
             ? `/dashboard/clients/${eq.branch?.client?.slug || eq.branch?.client?.id}/branches/${eq.branch?.slug || eq.branchId}?tab=equipment`
             : `/portal/branches/${eq.branch?.slug || eq.branchId}?tab=equipment`,
@@ -585,7 +599,7 @@ export async function GET(request: Request) {
           type: 'branch_request' as const,
           title: br.name,
           subtitle: isContractor
-            ? `${br.client?.companyName} · ${br.status}`
+            ? `${br.client?.companyName} · ${enumLabel(br.status, locale)}`
             : br.status,
           link: isContractor ? `/dashboard` : `/portal`,
         })),
@@ -596,7 +610,7 @@ export async function GET(request: Request) {
           type: 'appointment' as const,
           title: a.title,
           subtitle: isContractor
-            ? `${a.branch?.client?.companyName} · ${a.status}`
+            ? `${a.branch?.client?.companyName} · ${enumLabel(a.status, locale)}`
             : a.status,
           link: isContractor
             ? `/dashboard/clients/${a.branch?.client?.slug || a.branch?.client?.id}/branches/${a.branch?.slug || a.branchId}?tab=calendar`
@@ -617,13 +631,17 @@ export async function GET(request: Request) {
           id: i.id,
           type: 'inquiry' as const,
           title: i.name,
-          subtitle: `${i.email} · ${i.status}`,
+          subtitle: `${i.email} · ${enumLabel(i.status, locale)}`,
           link: `/admin/messages?id=${i.id}`,
         })),
       ]
 
       return formatted
-    }, 30) // Cache search results for 30 seconds
+    }
+    // Permission and publication changes must not leave stale sensitive search results.
+    const results = session.user.role === 'TEAM_MEMBER' || session.user.role === 'CLIENT' || session.user.role === 'ADMIN'
+      ? await loadResults()
+      : await getCached(`v3:${cacheKey}:${locale}`, loadResults, 30)
 
     return NextResponse.json({ results })
   } catch (error) {

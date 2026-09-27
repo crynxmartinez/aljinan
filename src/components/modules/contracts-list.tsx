@@ -1,4 +1,7 @@
 'use client'
+import { LocalizedError } from '@/components/localized-error'
+import { TranslatedText } from '@/components/translated-text'
+
 
 import { useState, useEffect } from 'react'
 import { useRouter } from 'next/navigation'
@@ -413,6 +416,7 @@ export function ContractsList({ branchId }: ContractsListProps) {
       formData.append('file', files[0])
       formData.append('type', 'document')
       formData.append('folder', 'contracts')
+      formData.append('branchId', branchId)
       const response = await fetch('/api/upload', { method: 'POST', body: formData })
       if (!response.ok) throw new Error('Upload failed')
       const data = await response.json()
@@ -435,6 +439,7 @@ export function ContractsList({ branchId }: ContractsListProps) {
       formData.append('file', files[0])
       formData.append('type', 'document')
       formData.append('folder', 'contracts')
+      formData.append('branchId', branchId)
       const response = await fetch('/api/upload', { method: 'POST', body: formData })
       if (!response.ok) throw new Error('Upload failed')
       const data = await response.json()
@@ -1278,7 +1283,7 @@ export function ContractsList({ branchId }: ContractsListProps) {
           <form onSubmit={handleCreateContract}>
             {error && (
               <div className="bg-destructive/10 text-destructive p-3 rounded-lg text-sm mb-4">
-                {error}
+                <LocalizedError message={error} />
               </div>
             )}
             <div className="space-y-6">
@@ -1333,17 +1338,13 @@ export function ContractsList({ branchId }: ContractsListProps) {
                 <div className="flex items-center justify-between">
                   <h3 className="text-sm font-semibold uppercase tracking-wide">{tcl.scopeOfWorkTitle}</h3>
                   <Button type="button" variant="outline" size="sm" onClick={addSystem}>
-                    <Plus className="h-4 w-4 me-1" />
-                    Add System
-                  </Button>
+                    <Plus className="h-4 w-4 me-1" /><TranslatedText path="dashboard.contractsList.addSystem" /></Button>
                 </div>
 
                 {newContract.systems.length === 0 ? (
                   <div className="text-center py-8 border-2 border-dashed rounded-lg">
                     <p className="text-muted-foreground text-sm">{tcl.noSystemsAdded}</p>
-                    <Button type="button" variant="link" size="sm" onClick={addSystem}>
-                      Add your first system
-                    </Button>
+                    <Button type="button" variant="link" size="sm" onClick={addSystem}><TranslatedText path="dashboard.contractsList.addFirstSystem" /></Button>
                   </div>
                 ) : (
                   <div className="space-y-6">
@@ -1412,9 +1413,7 @@ export function ContractsList({ branchId }: ContractsListProps) {
                                 ? 'bg-primary text-primary-foreground'
                                 : 'bg-muted text-muted-foreground hover:bg-muted/80'
                                 }`}
-                            >
-                              Manual
-                            </button>
+                            ><TranslatedText path="dashboard.contractsList.manual" /></button>
                             <button
                               type="button"
                               onClick={() => updateSystem(sysIndex, 'dateMode', 'AUTOMATIC')}
@@ -1422,9 +1421,7 @@ export function ContractsList({ branchId }: ContractsListProps) {
                                 ? 'bg-primary text-primary-foreground'
                                 : 'bg-muted text-muted-foreground hover:bg-muted/80'
                                 }`}
-                            >
-                              Auto-Calculate
-                            </button>
+                            ><TranslatedText path="dashboard.contractsList.autoCalculate" /></button>
                           </div>
                         </div>
 
@@ -1463,9 +1460,7 @@ export function ContractsList({ branchId }: ContractsListProps) {
                                   ? 'bg-primary text-primary-foreground'
                                   : 'bg-muted text-muted-foreground hover:bg-muted/80'
                                   }`}
-                              >
-                                Manual
-                              </button>
+                              ><TranslatedText path="dashboard.contractsList.manual" /></button>
                               <button
                                 type="button"
                                 onClick={() => updateSystem(sysIndex, 'paymentDateMode', 'AUTOMATIC')}
@@ -1473,9 +1468,7 @@ export function ContractsList({ branchId }: ContractsListProps) {
                                   ? 'bg-primary text-primary-foreground'
                                   : 'bg-muted text-muted-foreground hover:bg-muted/80'
                                   }`}
-                              >
-                                Auto (+10 days)
-                              </button>
+                              ><TranslatedText path="dashboard.contractsList.autoPlusDays" /></button>
                             </div>
                           </div>
                           <div className="space-y-2">
@@ -1529,9 +1522,7 @@ export function ContractsList({ branchId }: ContractsListProps) {
             </div>
 
             <DialogFooter className="mt-6">
-              <Button type="button" variant="outline" onClick={() => setCreateDialogOpen(false)}>
-                Cancel
-              </Button>
+              <Button type="button" variant="outline" onClick={() => setCreateDialogOpen(false)}><TranslatedText path="dashboard.contractsList.cancel" /></Button>
               <Button
                 type="submit"
                 disabled={creating || !newContract.title}
@@ -1540,9 +1531,7 @@ export function ContractsList({ branchId }: ContractsListProps) {
                   handleCreateContract(e, true)
                 }}
               >
-                {creating && <Loader2 className="me-2 h-4 w-4 animate-spin" />}
-                Create Contract
-              </Button>
+                {creating && <Loader2 className="me-2 h-4 w-4 animate-spin" />}<TranslatedText path="dashboard.contractsList.createContract" /></Button>
             </DialogFooter>
           </form>
         </DialogContent>
@@ -1564,7 +1553,7 @@ export function ContractsList({ branchId }: ContractsListProps) {
             <form onSubmit={handleEditContract}>
               {error && (
                 <div className="bg-destructive/10 text-destructive p-3 rounded-lg text-sm mb-4">
-                  {error}
+                  <LocalizedError message={error} />
                 </div>
               )}
               <div className="space-y-6">
@@ -1619,17 +1608,13 @@ export function ContractsList({ branchId }: ContractsListProps) {
                   <div className="flex items-center justify-between">
                     <h3 className="text-sm font-semibold uppercase tracking-wide">{tcl.scopeOfWorkTitle}</h3>
                     <Button type="button" variant="outline" size="sm" onClick={addEditSystem}>
-                      <Plus className="h-4 w-4 me-1" />
-                      Add System
-                    </Button>
+                      <Plus className="h-4 w-4 me-1" /><TranslatedText path="dashboard.contractsList.addSystem" /></Button>
                   </div>
 
                   {editContract.systems.length === 0 ? (
                     <div className="text-center py-8 border-2 border-dashed rounded-lg">
                       <p className="text-muted-foreground text-sm">{tcl.noSystemsAdded}</p>
-                      <Button type="button" variant="link" size="sm" onClick={addEditSystem}>
-                        Add your first system
-                      </Button>
+                      <Button type="button" variant="link" size="sm" onClick={addEditSystem}><TranslatedText path="dashboard.contractsList.addFirstSystem" /></Button>
                     </div>
                   ) : (
                     <div className="space-y-6">
@@ -1698,9 +1683,7 @@ export function ContractsList({ branchId }: ContractsListProps) {
                                   ? 'bg-primary text-primary-foreground'
                                   : 'bg-muted text-muted-foreground hover:bg-muted/80'
                                   }`}
-                              >
-                                Manual
-                              </button>
+                              ><TranslatedText path="dashboard.contractsList.manual" /></button>
                               <button
                                 type="button"
                                 onClick={() => updateEditSystem(sysIndex, 'dateMode', 'AUTOMATIC')}
@@ -1708,9 +1691,7 @@ export function ContractsList({ branchId }: ContractsListProps) {
                                   ? 'bg-primary text-primary-foreground'
                                   : 'bg-muted text-muted-foreground hover:bg-muted/80'
                                   }`}
-                              >
-                                Auto-Calculate
-                              </button>
+                              ><TranslatedText path="dashboard.contractsList.autoCalculate" /></button>
                             </div>
                           </div>
 
@@ -1749,9 +1730,7 @@ export function ContractsList({ branchId }: ContractsListProps) {
                                     ? 'bg-primary text-primary-foreground'
                                     : 'bg-muted text-muted-foreground hover:bg-muted/80'
                                     }`}
-                                >
-                                  Manual
-                                </button>
+                                ><TranslatedText path="dashboard.contractsList.manual" /></button>
                                 <button
                                   type="button"
                                   onClick={() => updateEditSystem(sysIndex, 'paymentDateMode', 'AUTOMATIC')}
@@ -1759,9 +1738,7 @@ export function ContractsList({ branchId }: ContractsListProps) {
                                     ? 'bg-primary text-primary-foreground'
                                     : 'bg-muted text-muted-foreground hover:bg-muted/80'
                                     }`}
-                                >
-                                  Auto (+10 days)
-                                </button>
+                                ><TranslatedText path="dashboard.contractsList.autoPlusDays" /></button>
                               </div>
                             </div>
                             <div className="space-y-2">
@@ -1818,16 +1795,12 @@ export function ContractsList({ branchId }: ContractsListProps) {
                 <Button type="button" variant="outline" onClick={() => {
                   setEditDialogOpen(false)
                   setEditContract(null)
-                }}>
-                  Cancel
-                </Button>
+                }}><TranslatedText path="dashboard.contractsList.cancel" /></Button>
                 <Button
                   type="submit"
                   disabled={editing || !editContract.title}
                 >
-                  {editing && <Loader2 className="me-2 h-4 w-4 animate-spin" />}
-                  Save Changes
-                </Button>
+                  {editing && <Loader2 className="me-2 h-4 w-4 animate-spin" />}<TranslatedText path="dashboard.contractsList.saveChanges" /></Button>
               </DialogFooter>
             </form>
           )}
@@ -1921,9 +1894,7 @@ export function ContractsList({ branchId }: ContractsListProps) {
                 <div className="space-y-3">
                   <div className="flex items-center justify-between">
                     <h3 className="font-semibold text-sm flex items-center gap-2">
-                      <Building className="h-4 w-4" />
-                      Scope of Work
-                    </h3>
+                      <Building className="h-4 w-4" /><TranslatedText path="dashboard.contractsList.scopeOfWork" /></h3>
                     <Button
                       variant="outline"
                       size="sm"
@@ -1932,9 +1903,7 @@ export function ContractsList({ branchId }: ContractsListProps) {
                         openEditDialog(selectedContract)
                       }}
                     >
-                      <Edit className="h-3 w-3 me-1" />
-                      Edit
-                    </Button>
+                      <Edit className="h-3 w-3 me-1" /><TranslatedText path="dashboard.contractsList.edit" /></Button>
                   </div>
                   <div className="space-y-3">
                     {selectedContract.systems.map((system, index) => {
@@ -2021,9 +1990,7 @@ export function ContractsList({ branchId }: ContractsListProps) {
               {selectedContract.checklist && selectedContract.checklist.items.length > 0 && (
                 <div className="space-y-3">
                   <h3 className="font-semibold text-sm flex items-center gap-2">
-                    <ClipboardList className="h-4 w-4" />
-                    Work Orders
-                  </h3>
+                    <ClipboardList className="h-4 w-4" /><TranslatedText path="dashboard.contractsList.workOrders" /></h3>
                   <ContractWorkOrdersDisplay
                     workOrders={selectedContract.checklist.items}
                     showStatus={true}
@@ -2034,9 +2001,7 @@ export function ContractsList({ branchId }: ContractsListProps) {
               {/* Attachments Section */}
               <div className="space-y-3">
                 <h3 className="font-semibold text-sm flex items-center gap-2">
-                  <Award className="h-4 w-4" />
-                  Documents & Attachments
-                </h3>
+                  <Award className="h-4 w-4" /><TranslatedText path="dashboard.contractsList.documentsAttachments" /></h3>
                 <ContractAttachmentsSection
                   contractId={selectedContract.id}
                   branchId={branchId}
@@ -2065,7 +2030,7 @@ export function ContractsList({ branchId }: ContractsListProps) {
           </DialogHeader>
           {error && (
             <div className="bg-destructive/10 text-destructive p-3 rounded-lg text-sm">
-              {error}
+              <LocalizedError message={error} />
             </div>
           )}
           <div className="space-y-4">
@@ -2075,7 +2040,7 @@ export function ContractsList({ branchId }: ContractsListProps) {
                 id="pdfFileName"
                 value={pdfFileName}
                 onChange={(e) => setPdfFileName(e.target.value)}
-                placeholder="e.g., Service Agreement 2026.pdf"
+                placeholder={t.dashboard.contractAttachments.fileNamePlaceholder}
               />
             </div>
             <div className="space-y-2">
@@ -2093,17 +2058,13 @@ export function ContractsList({ branchId }: ContractsListProps) {
             </div>
           </div>
           <DialogFooter>
-            <Button variant="outline" onClick={() => setAttachPdfDialogOpen(false)}>
-              Cancel
-            </Button>
+            <Button variant="outline" onClick={() => setAttachPdfDialogOpen(false)}><TranslatedText path="dashboard.contractsList.cancel" /></Button>
             <Button onClick={handleAttachPdf} disabled={attaching || !pdfUrl}>
               {attaching ? (
                 <Loader2 className="me-2 h-4 w-4 animate-spin" />
               ) : (
                 <Upload className="me-2 h-4 w-4" />
-              )}
-              Attach PDF
-            </Button>
+              )}<TranslatedText path="dashboard.contractsList.attachPdf" /></Button>
           </DialogFooter>
         </DialogContent>
       </Dialog>
@@ -2119,7 +2080,7 @@ export function ContractsList({ branchId }: ContractsListProps) {
           </DialogHeader>
           {error && (
             <div className="bg-destructive/10 text-destructive p-3 rounded-lg text-sm">
-              {error}
+              <LocalizedError message={error} />
             </div>
           )}
           <div className="space-y-4">
@@ -2129,7 +2090,7 @@ export function ContractsList({ branchId }: ContractsListProps) {
                 id="certFileName"
                 value={certFileName}
                 onChange={(e) => setCertFileName(e.target.value)}
-                placeholder="e.g., Service Certificate 2026.pdf"
+                placeholder={t.copy.certificateFileExample}
               />
             </div>
             <div className="space-y-2">
@@ -2147,17 +2108,13 @@ export function ContractsList({ branchId }: ContractsListProps) {
             </div>
           </div>
           <DialogFooter>
-            <Button variant="outline" onClick={() => setAttachCertDialogOpen(false)}>
-              Cancel
-            </Button>
+            <Button variant="outline" onClick={() => setAttachCertDialogOpen(false)}><TranslatedText path="dashboard.contractsList.cancel" /></Button>
             <Button onClick={handleAttachCert} disabled={attaching || !certUrl}>
               {attaching ? (
                 <Loader2 className="me-2 h-4 w-4 animate-spin" />
               ) : (
                 <FileCheck className="me-2 h-4 w-4" />
-              )}
-              Attach Certificate
-            </Button>
+              )}<TranslatedText path="dashboard.contractsList.attachCertificate" /></Button>
           </DialogFooter>
         </DialogContent>
       </Dialog>

@@ -1,5 +1,7 @@
 'use client'
 
+import { formatCurrency as localizedCurrency } from '@/lib/i18n/format-date'
+
 import { useState, useMemo } from 'react'
 import { useTranslation } from '@/lib/i18n/use-translation'
 import { formatDate as formatDateUtil } from '@/lib/i18n/format-date'
@@ -229,10 +231,7 @@ export function ColumnDetailModal({
   }
 
   const formatCurrency = (amount: number) => {
-    return new Intl.NumberFormat('en-US', {
-      style: 'currency',
-      currency: 'SAR',
-    }).format(amount)
+    return localizedCurrency(amount, locale)
   }
 
   const formatDate = (dateString: string | null) => {
@@ -362,7 +361,7 @@ export function ColumnDetailModal({
 
             <Select value={filterType} onValueChange={(value) => setFilterType(value as any)}>
               <SelectTrigger className="w-[140px]">
-                <SelectValue placeholder="Type" />
+                <SelectValue placeholder={t.dashboard.workOrdersPage.type} />
               </SelectTrigger>
               <SelectContent>
                 <SelectItem value="all">{tcd.allTypes}</SelectItem>
@@ -373,7 +372,7 @@ export function ColumnDetailModal({
 
             <Select value={filterWorkOrderType} onValueChange={setFilterWorkOrderType}>
               <SelectTrigger className="w-[160px]">
-                <SelectValue placeholder="Work Order Type" />
+                <SelectValue placeholder={t.copy.workOrderType} />
               </SelectTrigger>
               <SelectContent>
                 <SelectItem value="all">{tcd.allWOTypes}</SelectItem>

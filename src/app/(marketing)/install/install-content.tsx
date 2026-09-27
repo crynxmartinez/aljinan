@@ -1,4 +1,6 @@
 'use client'
+import { TranslatedText } from '@/components/translated-text'
+
 
 import Link from 'next/link'
 import { Download, Monitor, Smartphone, Package } from 'lucide-react'
@@ -23,7 +25,7 @@ export function InstallContent() {
 
         {/* Desktop Apps - Available */}
         <div className="max-w-4xl mx-auto mb-16">
-          <h2 className="text-2xl font-bold mb-8 text-center">Desktop Apps</h2>
+          <h2 className="text-2xl font-bold mb-8 text-center"><TranslatedText path="pages.install.desktopApps" /></h2>
           
           <div className="grid md:grid-cols-2 gap-8">
             {/* Windows */}
@@ -79,7 +81,7 @@ export function InstallContent() {
 
         {/* Mobile Apps - Coming Soon */}
         <div className="max-w-4xl mx-auto mb-16">
-          <h2 className="text-2xl font-bold mb-8 text-center">Mobile Apps</h2>
+          <h2 className="text-2xl font-bold mb-8 text-center"><TranslatedText path="pages.install.mobileApps" /></h2>
           
           <div className="bg-gradient-to-r from-slate-100 to-slate-50 rounded-lg border border-slate-200 p-12 text-center">
             <div className="flex justify-center mb-4">

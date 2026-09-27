@@ -1,4 +1,5 @@
 'use client'
+import { enumLabel } from '@/lib/i18n/enum-labels'
 
 import { useState, useEffect } from 'react'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
@@ -324,7 +325,7 @@ export function ActionCenterTable({ userRole }: ActionCenterTableProps) {
                         </TableCell>
                         <TableCell>
                           <Badge variant="outline">
-                            {eq.equipmentType.replace(/_/g, ' ')}
+                            {enumLabel(eq.equipmentType, locale)}
                           </Badge>
                         </TableCell>
                         {userRole === 'CLIENT' && (

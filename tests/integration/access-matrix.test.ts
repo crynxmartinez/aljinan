@@ -1,7 +1,7 @@
 import { describe, it, expect, beforeAll, afterAll } from 'vitest'
 import fs from 'node:fs'
 import path from 'node:path'
-import { closeDb, signIn, apiFetch, tenants, DENIED, login, ACCOUNTS } from './helpers'
+import { prisma, closeDb, signIn, apiFetch, tenants, DENIED, login, ACCOUNTS } from './helpers'
 
 /**
  * The tenancy boundary, asserted rather than assumed.
@@ -36,7 +36,7 @@ afterAll(closeDb)
 
 const BRANCH_SCOPED_READS = [
   'requests', 'equipment', 'invoices', 'contracts', 'quotations', 'certificates',
-  'checklists', 'checklist-items', 'documents', 'appointments', 'contract-payments',
+  'checklists', 'checklist-items', 'documents', 'appointments', 'contract-payments', 'activities',
 ]
 
 describe('a rival contractor cannot read another tenant', () => {
@@ -64,6 +64,7 @@ describe('a rival contractor cannot write into another tenant', () => {
     ['start a request immediately', 'POST', '/requests/nonexistent/start-now', {}],
     ['read a request comment thread', 'GET', '/requests/nonexistent/comments', undefined],
     ['post a request comment', 'POST', '/requests/nonexistent/comments', { content: 'injected' }],
+    ['post a branch comment', 'POST', '/activities', { content: 'injected' }],
     ['rename the branch', 'PATCH', '/display-name', { displayName: 'hijacked' }],
     ['add equipment', 'POST', '/equipment',
       { equipmentNumber: 'INJECTED-1', equipmentType: 'FIRE_EXTINGUISHER', location: 'x' }],
@@ -255,5 +256,27 @@ describe('coverage guard', () => {
     walk(path.resolve('src/app/api'))
 
     expect(offenders).toEqual([])
+  })
+})
+
+
+describe('owned branch cannot authorize a different tenant record', () => {
+  it('keeps certificate updates/deletes and appointment deletion scoped to record ownership', async () => {
+    const rivalBranch = await prisma.branch.findFirstOrThrow({ where: { client: { contractor: { user: { email: ACCOUNTS.rival.email } } } } })
+    const certificate = await prisma.certificate.create({ data: { branchId, title: 'Protected certificate', type: 'INSPECTION', issueDate: new Date() } })
+    const appointment = await prisma.appointment.create({ data: { branchId, title: 'Protected appointment', date: new Date(), startTime: '09:00', createdById: clientUserId } })
+    try {
+      for (const method of ['PATCH', 'DELETE']) {
+        const response = await apiFetch(`/api/branches/${rivalBranch.id}/certificates/${certificate.id}`, { cookies: rival, method, ...(method === 'PATCH' ? { json: { title: 'injected' } } : {}) })
+        expect(response.status).toBe(404)
+      }
+      const response = await apiFetch(`/api/branches/${rivalBranch.id}/appointments/${appointment.id}`, { cookies: rival, method: 'DELETE' })
+      expect(response.status).toBe(404)
+      expect((await prisma.certificate.findUniqueOrThrow({ where: { id: certificate.id } })).title).toBe('Protected certificate')
+      expect(await prisma.appointment.findUnique({ where: { id: appointment.id } })).not.toBeNull()
+    } finally {
+      await prisma.certificate.deleteMany({ where: { id: certificate.id } })
+      await prisma.appointment.deleteMany({ where: { id: appointment.id } })
+    }
   })
 })

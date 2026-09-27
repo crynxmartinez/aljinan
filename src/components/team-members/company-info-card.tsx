@@ -10,6 +10,7 @@ import {
   Globe,
   User,
 } from 'lucide-react'
+import { useTranslation } from '@/lib/i18n/use-translation'
 
 interface CompanyInfoCardProps {
   contractor: {
@@ -28,21 +29,23 @@ interface CompanyInfoCardProps {
 }
 
 export function CompanyInfoCard({ contractor }: CompanyInfoCardProps) {
+  const { t } = useTranslation()
+  const tc = t.dashboard.companyInfoCard
   return (
     <Card>
       <CardHeader>
         <CardTitle className="flex items-center gap-2">
           <Building2 className="h-5 w-5" />
-          Company Information
+          {tc.title}
         </CardTitle>
         <p className="text-sm text-muted-foreground">
-          View your company's profile details
+          {tc.subtitle}
         </p>
       </CardHeader>
       <CardContent className="space-y-6">
         {/* Company Name */}
         <div>
-          <h3 className="text-2xl font-bold">{contractor.companyName || 'Company Name Not Set'}</h3>
+          <h3 className="text-2xl font-bold">{contractor.companyName || tc.companyNameNotSet}</h3>
           {contractor.businessType && (
             <p className="text-sm text-muted-foreground mt-1">{contractor.businessType}</p>
           )}
@@ -53,9 +56,9 @@ export function CompanyInfoCard({ contractor }: CompanyInfoCardProps) {
           <div className="flex items-start gap-3">
             <Mail className="h-4 w-4 text-muted-foreground mt-0.5" />
             <div>
-              <p className="text-xs text-muted-foreground">البريد الإلكتروني</p>
+              <p className="text-xs text-muted-foreground">{tc.emailLabel}</p>
               <p className={`text-sm ${contractor.companyEmail ? 'font-medium' : 'text-muted-foreground italic'}`}>
-                {contractor.companyEmail || 'Not set'}
+                {contractor.companyEmail || tc.notSet}
               </p>
             </div>
           </div>
@@ -63,9 +66,9 @@ export function CompanyInfoCard({ contractor }: CompanyInfoCardProps) {
           <div className="flex items-start gap-3">
             <Phone className="h-4 w-4 text-muted-foreground mt-0.5" />
             <div>
-              <p className="text-xs text-muted-foreground">الهاتف</p>
+              <p className="text-xs text-muted-foreground">{tc.phoneLabel}</p>
               <p className={`text-sm ${contractor.companyPhone ? 'font-medium' : 'text-muted-foreground italic'}`}>
-                {contractor.companyPhone || 'Not set'}
+                {contractor.companyPhone || tc.notSet}
               </p>
             </div>
           </div>
@@ -73,9 +76,9 @@ export function CompanyInfoCard({ contractor }: CompanyInfoCardProps) {
           <div className="flex items-start gap-3">
             <FileText className="h-4 w-4 text-muted-foreground mt-0.5" />
             <div>
-              <p className="text-xs text-muted-foreground">CR Number</p>
+              <p className="text-xs text-muted-foreground">{tc.crNumberLabel}</p>
               <p className={`text-sm ${contractor.crNumber ? 'font-medium' : 'text-muted-foreground italic'}`}>
-                {contractor.crNumber || 'Not set'}
+                {contractor.crNumber || tc.notSet}
               </p>
             </div>
           </div>
@@ -83,9 +86,9 @@ export function CompanyInfoCard({ contractor }: CompanyInfoCardProps) {
           <div className="flex items-start gap-3">
             <FileText className="h-4 w-4 text-muted-foreground mt-0.5" />
             <div>
-              <p className="text-xs text-muted-foreground">VAT Number</p>
+              <p className="text-xs text-muted-foreground">{tc.vatNumberLabel}</p>
               <p className={`text-sm ${contractor.vatNumber ? 'font-medium' : 'text-muted-foreground italic'}`}>
-                {contractor.vatNumber || 'Not set'}
+                {contractor.vatNumber || tc.notSet}
               </p>
             </div>
           </div>
@@ -95,9 +98,9 @@ export function CompanyInfoCard({ contractor }: CompanyInfoCardProps) {
         <div className="flex items-start gap-3">
           <MapPin className="h-4 w-4 text-muted-foreground mt-0.5" />
           <div className="flex-1">
-            <p className="text-xs text-muted-foreground">العنوان</p>
+            <p className="text-xs text-muted-foreground">{tc.addressLabel}</p>
             <p className={`text-sm ${contractor.companyAddress ? 'font-medium whitespace-pre-line' : 'text-muted-foreground italic'}`}>
-              {contractor.companyAddress || 'Not set'}
+              {contractor.companyAddress || tc.notSet}
             </p>
           </div>
         </div>
@@ -107,7 +110,7 @@ export function CompanyInfoCard({ contractor }: CompanyInfoCardProps) {
           <div className="flex items-start gap-3">
             <Globe className="h-4 w-4 text-muted-foreground mt-0.5" />
             <div className="flex-1">
-              <p className="text-xs text-muted-foreground">Website</p>
+              <p className="text-xs text-muted-foreground">{tc.websiteLabel}</p>
               <a
                 href={contractor.website}
                 target="_blank"
@@ -124,14 +127,14 @@ export function CompanyInfoCard({ contractor }: CompanyInfoCardProps) {
         {(contractor.contactPersonName || contractor.contactPersonPhone || contractor.contactPersonEmail) && (
           <div className="pt-4 border-t space-y-4">
             <h4 className="text-sm font-semibold text-muted-foreground uppercase tracking-wide">
-              Contact Person
+              {tc.contactPersonTitle}
             </h4>
             <div className="grid gap-4 sm:grid-cols-2">
               {contractor.contactPersonName && (
                 <div className="flex items-start gap-3">
                   <User className="h-4 w-4 text-muted-foreground mt-0.5" />
                   <div>
-                    <p className="text-xs text-muted-foreground">الاسم</p>
+                    <p className="text-xs text-muted-foreground">{tc.nameLabel}</p>
                     <p className="text-sm font-medium">{contractor.contactPersonName}</p>
                   </div>
                 </div>
@@ -141,7 +144,7 @@ export function CompanyInfoCard({ contractor }: CompanyInfoCardProps) {
                 <div className="flex items-start gap-3">
                   <Phone className="h-4 w-4 text-muted-foreground mt-0.5" />
                   <div>
-                    <p className="text-xs text-muted-foreground">الهاتف</p>
+                    <p className="text-xs text-muted-foreground">{tc.phoneLabel}</p>
                     <p className="text-sm font-medium">{contractor.contactPersonPhone}</p>
                   </div>
                 </div>
@@ -151,7 +154,7 @@ export function CompanyInfoCard({ contractor }: CompanyInfoCardProps) {
                 <div className="flex items-start gap-3 sm:col-span-2">
                   <Mail className="h-4 w-4 text-muted-foreground mt-0.5" />
                   <div>
-                    <p className="text-xs text-muted-foreground">البريد الإلكتروني</p>
+                    <p className="text-xs text-muted-foreground">{tc.emailLabel}</p>
                     <p className="text-sm font-medium">{contractor.contactPersonEmail}</p>
                   </div>
                 </div>

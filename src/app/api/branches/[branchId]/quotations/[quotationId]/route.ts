@@ -1,3 +1,4 @@
+import { publishedFor } from '@/lib/publication'
 import { getServerSession } from 'next-auth'
 import { NextResponse } from 'next/server'
 import { authOptions } from '@/lib/auth'
@@ -26,7 +27,7 @@ export async function GET(
     }
 
     const quotation = await prisma.quotation.findFirst({
-      where: { id: quotationId, branchId },
+      where: { id: quotationId, branchId, ...publishedFor(session.user.role) },
       include: { items: true }
     })
 

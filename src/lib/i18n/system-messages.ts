@@ -1,0 +1,41 @@
+/** Shared messages for failures and infrastructure UI; never render raw server errors. */
+export const systemMessages = {
+  en: {
+    olderComments: 'Load older comments', navigation: 'Navigation', close: 'Close', showPassword: 'Show password', hidePassword: 'Hide password',
+    loadFailed: 'This could not be loaded.', loadFailedDetail: 'The data is unavailable right now. Please try again.', retry: 'Try again',
+    unauthorized: 'Your session has expired. Please sign in again.', forbidden: 'You do not have permission to do that.',
+    notFound: 'That item could not be found.', conflict: 'This item has changed. Refresh and try again.',
+    rateLimit: 'Too many requests. Please wait and try again.', invalid: 'Please check the information and try again.',
+    serverError: 'The request could not be completed. Refresh to check its current status before trying again.',
+    networkError: 'Could not reach the server. Check your connection and try again.',
+    invalidResponse: 'The server returned an unexpected response. Refresh to check the result.',
+    unknown: 'Unknown', system: 'System', contractor: 'Contractor', client: 'Client', admin: 'Admin',
+    adminName: 'Administrator name', logo: 'Company logo', location: 'Tasheel location — Al Olaya, Riyadh',
+    optional: 'optional', perHour: '/hour', days: '{count} days', occurrences: '{count} occurrences',
+    requestPhoto: 'Request photo', reportPhoto: 'Report photo', quotation: 'Quotation', contractDocument: 'Contract document',
+    contractCertificate: 'Contract certificate', certificate: 'Certificate', report: 'Report', paymentProof: 'Payment proof', payment: 'Payment {number}',
+    setupPassword: 'Set your password', setupDescription: 'Your email link is valid. Choose a password to activate your account.',
+    passwordRequirements: 'Use 8–128 characters with uppercase and lowercase Latin letters and a number.',
+    password: 'Password', activate: 'Activate account', setupComplete: 'Your account is ready. You can now sign in.',
+  },
+  ar: {
+    olderComments: 'تحميل التعليقات الأقدم', navigation: 'التنقل', close: 'إغلاق', showPassword: 'إظهار كلمة المرور', hidePassword: 'إخفاء كلمة المرور',
+    loadFailed: 'تعذر تحميل البيانات.', loadFailedDetail: 'البيانات غير متاحة الآن. يرجى المحاولة مرة أخرى.', retry: 'إعادة المحاولة',
+    unauthorized: 'انتهت جلستك. يرجى تسجيل الدخول مجددًا.', forbidden: 'ليس لديك صلاحية لتنفيذ هذا الإجراء.',
+    notFound: 'تعذر العثور على هذا العنصر.', conflict: 'تم تغيير هذا العنصر. حدّث الصفحة وحاول مجددًا.',
+    rateLimit: 'طلبات كثيرة جدًا. يرجى الانتظار والمحاولة مجددًا.', invalid: 'يرجى التحقق من البيانات والمحاولة مجددًا.',
+    serverError: 'تعذر إكمال الطلب. حدّث الصفحة للتحقق من حالته قبل إعادة المحاولة.',
+    networkError: 'تعذر الاتصال بالخادم. تحقق من اتصالك وحاول مجددًا.',
+    invalidResponse: 'أعاد الخادم استجابة غير متوقعة. حدّث الصفحة للتحقق من النتيجة.',
+    unknown: 'غير معروف', system: 'النظام', contractor: 'المقاول', client: 'العميل', admin: 'المسؤول',
+    adminName: 'اسم المسؤول', logo: 'شعار الشركة', location: 'موقع تسهيل — العليا، الرياض',
+    optional: 'اختياري', perHour: '/ساعة', days: '{count} يوم', occurrences: 'عدد المرات: {count}',
+    requestPhoto: 'صورة الطلب', reportPhoto: 'صورة التقرير', quotation: 'عرض سعر', contractDocument: 'مستند العقد',
+    contractCertificate: 'شهادة العقد', certificate: 'شهادة', report: 'تقرير', paymentProof: 'إثبات الدفع', payment: 'الدفعة {number}',
+    setupPassword: 'تعيين كلمة المرور', setupDescription: 'رابط بريدك الإلكتروني صالح. اختر كلمة مرور لتفعيل حسابك.',
+    passwordRequirements: 'استخدم من 8 إلى 128 حرفًا، بما يشمل حروفًا لاتينية كبيرة وصغيرة ورقمًا.',
+    password: 'كلمة المرور', activate: 'تفعيل الحساب', setupComplete: 'حسابك جاهز. يمكنك تسجيل الدخول الآن.',
+  },
+} as const
+
+export type SystemMessageKey = keyof typeof systemMessages.en

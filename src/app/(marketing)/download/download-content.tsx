@@ -1,4 +1,6 @@
 'use client'
+import { TranslatedText } from '@/components/translated-text'
+
 
 import Link from 'next/link'
 import { Download, Smartphone, Monitor, Package } from 'lucide-react'
@@ -38,9 +40,7 @@ export function DownloadContent() {
                 {t.pages.download.downloadApk}
               </a>
             </Button>
-            <p className="text-xs text-muted-foreground mt-4">
-              Version 1.0.0 • ~10 MB
-            </p>
+            <p className="text-xs text-muted-foreground mt-4"><TranslatedText path="copy.Version_1_0_0_10_MB" /></p>
           </div>
 
           {/* Windows */}
@@ -58,9 +58,7 @@ export function DownloadContent() {
                 {t.pages.download.downloadExe}
               </a>
             </Button>
-            <p className="text-xs text-muted-foreground mt-4">
-              Version 1.0.0 • ~80 MB
-            </p>
+            <p className="text-xs text-muted-foreground mt-4"><TranslatedText path="copy.Version_1_0_0_80_MB" /></p>
           </div>
 
           {/* Linux */}
@@ -81,14 +79,10 @@ export function DownloadContent() {
               </Button>
               <Button size="lg" variant="outline" className="w-full gap-2" asChild>
                 <a href="https://your-aws-bucket.s3.amazonaws.com/downloads/tasheel-linux.deb" download>
-                  <Download className="h-5 w-5" />
-                  DEB Package
-                </a>
+                  <Download className="h-5 w-5" /><TranslatedText path="pages.install.debPackage" /></a>
               </Button>
             </div>
-            <p className="text-xs text-muted-foreground mt-4">
-              Version 1.0.0 • ~80 MB
-            </p>
+            <p className="text-xs text-muted-foreground mt-4"><TranslatedText path="copy.Version_1_0_0_80_MB" /></p>
           </div>
         </div>
 

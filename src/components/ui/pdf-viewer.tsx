@@ -1,4 +1,6 @@
 'use client'
+import { TranslatedText } from '@/components/translated-text'
+
 
 import {
   Dialog,
@@ -40,17 +42,13 @@ export function PDFViewer({ url, name, open, onOpenChange }: PDFViewerProps) {
                 size="sm"
                 onClick={handleOpenNewTab}
               >
-                <ExternalLink className="h-4 w-4 me-2" />
-                Open in New Tab
-              </Button>
+                <ExternalLink className="h-4 w-4 me-2" /><TranslatedText path="copy.Open_in_New_Tab" /></Button>
               <Button
                 variant="outline"
                 size="sm"
                 onClick={handleDownload}
               >
-                <Download className="h-4 w-4 me-2" />
-                Download
-              </Button>
+                <Download className="h-4 w-4 me-2" /><TranslatedText path="dashboard.documentsList.download" /></Button>
             </div>
           </DialogTitle>
         </DialogHeader>

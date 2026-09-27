@@ -1,4 +1,5 @@
 'use client'
+import { LocalizedError } from '@/components/localized-error'
 
 import { useState } from 'react'
 import { useRouter } from 'next/navigation'
@@ -8,6 +9,7 @@ import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
 import { Badge } from '@/components/ui/badge'
 import { CheckCircle, Loader2 } from 'lucide-react'
+import { useTranslation } from '@/lib/i18n/use-translation'
 
 interface ContractorProfile {
   id: string
@@ -30,6 +32,8 @@ interface CompanyProfileFormProps {
 }
 
 export function CompanyProfileForm({ contractor }: CompanyProfileFormProps) {
+  const { t } = useTranslation()
+  const tf = t.dashboard.companyProfileForm
   const router = useRouter()
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState('')
@@ -69,23 +73,23 @@ export function CompanyProfileForm({ contractor }: CompanyProfileFormProps) {
 
       if (!response.ok) {
         const data = await response.json()
-        throw new Error(data.error || 'Failed to update profile')
+        throw new Error(data.error || tf.errorUpdateFailed)
       }
 
       setSuccess(true)
       router.refresh()
     } catch (err) {
-      setError(err instanceof Error ? err.message : 'An error occurred')
+      setError(err instanceof Error ? err.message : tf.errorGeneric)
     } finally {
       setLoading(false)
     }
   }
 
   const completionItems = [
-    { label: 'Company Name', completed: !!formData.companyName },
-    { label: 'Company Phone', completed: !!formData.companyPhone },
-    { label: 'Company Email', completed: !!formData.companyEmail },
-    { label: 'Company Address', completed: !!formData.companyAddress },
+    { label: tf.companyNameLabel, completed: !!formData.companyName },
+    { label: tf.companyPhoneLabel, completed: !!formData.companyPhone },
+    { label: tf.companyEmailLabel, completed: !!formData.companyEmail },
+    { label: tf.companyAddressLabel, completed: !!formData.companyAddress },
   ]
 
   const completedCount = completionItems.filter((item) => item.completed).length
@@ -96,106 +100,106 @@ export function CompanyProfileForm({ contractor }: CompanyProfileFormProps) {
       <div className="lg:col-span-2">
         <Card>
           <CardHeader>
-            <CardTitle>Company Information</CardTitle>
+            <CardTitle>{tf.cardTitle}</CardTitle>
             <CardDescription>
-              Update your company details. This information will be visible to your clients.
+              {tf.cardDescription}
             </CardDescription>
           </CardHeader>
           <CardContent>
             <form onSubmit={handleSubmit} className="space-y-4">
               {error && (
                 <div className="bg-destructive/10 text-destructive p-3 rounded-lg text-sm">
-                  {error}
+                  <LocalizedError message={error} />
                 </div>
               )}
 
               {success && (
                 <div className="bg-green-100 dark:bg-green-950/40 text-green-700 dark:text-green-400 p-3 rounded-lg text-sm flex items-center gap-2">
                   <CheckCircle className="h-4 w-4" />
-                  Profile updated successfully
+                  {tf.updateSuccess}
                 </div>
               )}
 
               <div className="space-y-2">
-                <Label htmlFor="companyName">Company Name</Label>
+                <Label htmlFor="companyName">{tf.companyNameLabel}</Label>
                 <Input
                   id="companyName"
                   name="companyName"
                   value={formData.companyName}
                   onChange={handleChange}
-                  placeholder="Enter your company name"
+                  placeholder={tf.companyNamePlaceholder}
                 />
               </div>
 
               <div className="space-y-2">
-                <Label htmlFor="companyPhone">Company Phone</Label>
+                <Label htmlFor="companyPhone">{tf.companyPhoneLabel}</Label>
                 <Input
                   id="companyPhone"
                   name="companyPhone"
                   value={formData.companyPhone}
                   onChange={handleChange}
-                  placeholder="Enter your company phone"
+                  placeholder={tf.companyPhonePlaceholder}
                 />
               </div>
 
               <div className="space-y-2">
-                <Label htmlFor="companyEmail">Company Email</Label>
+                <Label htmlFor="companyEmail">{tf.companyEmailLabel}</Label>
                 <Input
                   id="companyEmail"
                   name="companyEmail"
                   type="email"
                   value={formData.companyEmail}
                   onChange={handleChange}
-                  placeholder="Enter your company email"
+                  placeholder={tf.companyEmailPlaceholder}
                 />
               </div>
 
               <div className="space-y-2">
-                <Label htmlFor="companyAddress">Company Address</Label>
+                <Label htmlFor="companyAddress">{tf.companyAddressLabel}</Label>
                 <Input
                   id="companyAddress"
                   name="companyAddress"
                   value={formData.companyAddress}
                   onChange={handleChange}
-                  placeholder="Enter your company address"
+                  placeholder={tf.companyAddressPlaceholder}
                 />
               </div>
 
               <div className="border-t pt-4 mt-6">
-                <h3 className="text-sm font-semibold mb-4">Contact Person</h3>
+                <h3 className="text-sm font-semibold mb-4">{tf.contactPersonSectionTitle}</h3>
 
                 <div className="space-y-4">
                   <div className="space-y-2">
-                    <Label htmlFor="contactPersonName">Contact Person Name</Label>
+                    <Label htmlFor="contactPersonName">{tf.contactPersonNameLabel}</Label>
                     <Input
                       id="contactPersonName"
                       name="contactPersonName"
                       value={formData.contactPersonName}
                       onChange={handleChange}
-                      placeholder="Enter contact person name"
+                      placeholder={tf.contactPersonNamePlaceholder}
                     />
                   </div>
 
                   <div className="space-y-2">
-                    <Label htmlFor="contactPersonPhone">Contact Person Phone</Label>
+                    <Label htmlFor="contactPersonPhone">{tf.contactPersonPhoneLabel}</Label>
                     <Input
                       id="contactPersonPhone"
                       name="contactPersonPhone"
                       value={formData.contactPersonPhone}
                       onChange={handleChange}
-                      placeholder="Enter contact person phone"
+                      placeholder={tf.contactPersonPhonePlaceholder}
                     />
                   </div>
 
                   <div className="space-y-2">
-                    <Label htmlFor="contactPersonEmail">Contact Person Email</Label>
+                    <Label htmlFor="contactPersonEmail">{tf.contactPersonEmailLabel}</Label>
                     <Input
                       id="contactPersonEmail"
                       name="contactPersonEmail"
                       type="email"
                       value={formData.contactPersonEmail}
                       onChange={handleChange}
-                      placeholder="Enter contact person email"
+                      placeholder={tf.contactPersonEmailPlaceholder}
                     />
                   </div>
                 </div>
@@ -203,7 +207,7 @@ export function CompanyProfileForm({ contractor }: CompanyProfileFormProps) {
 
               <Button type="submit" disabled={loading} className="mt-6">
                 {loading && <Loader2 className="me-2 h-4 w-4 animate-spin" />}
-                Save Changes
+                {tf.saveChanges}
               </Button>
             </form>
           </CardContent>
@@ -213,7 +217,7 @@ export function CompanyProfileForm({ contractor }: CompanyProfileFormProps) {
       <div className="space-y-6">
         <Card>
           <CardHeader>
-            <CardTitle className="text-lg">Profile Completion</CardTitle>
+            <CardTitle className="text-lg">{tf.profileCompletionTitle}</CardTitle>
           </CardHeader>
           <CardContent>
             <div className="space-y-4">
@@ -222,7 +226,7 @@ export function CompanyProfileForm({ contractor }: CompanyProfileFormProps) {
                 {contractor.isVerified && (
                   <Badge variant="default" className="bg-green-600">
                     <CheckCircle className="me-1 h-3 w-3" />
-                    Verified
+                    {tf.verified}
                   </Badge>
                 )}
               </div>
@@ -251,16 +255,16 @@ export function CompanyProfileForm({ contractor }: CompanyProfileFormProps) {
 
         <Card>
           <CardHeader>
-            <CardTitle className="text-lg">Account Info</CardTitle>
+            <CardTitle className="text-lg">{tf.accountInfoTitle}</CardTitle>
           </CardHeader>
           <CardContent className="space-y-2">
             <div>
-              <p className="text-sm text-muted-foreground">Account Email</p>
+              <p className="text-sm text-muted-foreground">{tf.accountEmailLabel}</p>
               <p className="font-medium">{contractor.user.email}</p>
             </div>
             {contractor.user.name && (
               <div>
-                <p className="text-sm text-muted-foreground">Account Name</p>
+                <p className="text-sm text-muted-foreground">{tf.accountNameLabel}</p>
                 <p className="font-medium">{contractor.user.name}</p>
               </div>
             )}

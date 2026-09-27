@@ -1,4 +1,5 @@
 'use client'
+import { LocalizedError } from '@/components/localized-error'
 
 import { useState } from 'react'
 import { useRouter } from 'next/navigation'
@@ -80,7 +81,7 @@ export default function ChangePasswordPage() {
           <form onSubmit={handleSubmit} className="space-y-6">
             {error && (
               <div className="bg-destructive/10 text-destructive p-3 rounded-lg text-sm">
-                {error}
+                <LocalizedError message={error} />
               </div>
             )}
 

@@ -1,4 +1,5 @@
 'use client'
+import { LocalizedError } from '@/components/localized-error'
 
 import { useState, useEffect } from 'react'
 import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle } from '@/components/ui/dialog'
@@ -95,7 +96,7 @@ export function PriceDialog({ open, onOpenChange, onConfirm, currentPrice }: Pri
               />
             </div>
             {error && (
-              <p className="text-sm text-red-600">{error}</p>
+              <p className="text-sm text-red-600"><LocalizedError message={error} /></p>
             )}
           </div>
         </div>

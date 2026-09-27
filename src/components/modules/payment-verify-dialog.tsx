@@ -1,4 +1,7 @@
 'use client'
+import { LocalizedError } from '@/components/localized-error'
+
+import { formatCurrency as localizedCurrency, formatDateTime as localizedTimestamp } from '@/lib/i18n/format-date'
 
 import { useState } from 'react'
 import { useTranslation } from '@/lib/i18n/use-translation'
@@ -49,7 +52,7 @@ export function PaymentVerifyDialog({
   branchId,
   onSuccess,
 }: PaymentVerifyDialogProps) {
-  const { t } = useTranslation()
+  const { t, locale } = useTranslation()
   const tv = t.dashboard.paymentVerify
   const [verifying, setVerifying] = useState(false)
   const [error, setError] = useState('')
@@ -57,11 +60,7 @@ export function PaymentVerifyDialog({
 
   const formatCurrency = (amount: number | null) => {
     if (amount === null) return '-'
-    return new Intl.NumberFormat('en-SA', {
-      style: 'currency',
-      currency: 'SAR',
-      minimumFractionDigits: 2,
-    }).format(amount)
+    return localizedCurrency(amount, locale)
   }
 
   const totalAmount = workOrders.reduce((sum, wo) => sum + (wo.price || 0), 0)
@@ -149,14 +148,14 @@ export function PaymentVerifyDialog({
           </div>
           {proofWorkOrder?.paymentSubmittedAt && (
             <div className="text-xs text-muted-foreground">
-              {tv.paymentSubmitted} {new Date(proofWorkOrder.paymentSubmittedAt).toLocaleString()}
+              {tv.paymentSubmitted} {localizedTimestamp(proofWorkOrder.paymentSubmittedAt, locale)}
             </div>
           )}
         </div>
 
         {error && (
           <div className="bg-destructive/10 text-destructive p-3 rounded-lg text-sm">
-            {error}
+            <LocalizedError message={error} />
           </div>
         )}
 
@@ -197,7 +196,7 @@ export function PaymentVerifyDialog({
                 <div className="border rounded-lg overflow-hidden">
                   <img
                     src={proofWorkOrder.paymentProofUrl}
-                    alt="Payment proof"
+                    alt={t.system.paymentProof}
                     className="max-w-full max-h-[200px] object-contain mx-auto"
                   />
                 </div>

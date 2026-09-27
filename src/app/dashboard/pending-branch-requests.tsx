@@ -15,6 +15,7 @@ import {
   DialogTitle,
 } from '@/components/ui/dialog'
 import { MapPin, Loader2, Check, X, Building2 } from 'lucide-react'
+import { useTranslation } from '@/lib/i18n/use-translation'
 
 interface BranchRequest {
   id: string
@@ -40,6 +41,8 @@ interface BranchRequest {
 }
 
 export function PendingBranchRequests() {
+  const { t } = useTranslation()
+  const tp = t.dashboard.pendingBranchRequests
   const router = useRouter()
   const [requests, setRequests] = useState<BranchRequest[]>([])
   const [loading, setLoading] = useState(true)
@@ -130,10 +133,10 @@ export function PendingBranchRequests() {
         <CardHeader>
           <CardTitle className="flex items-center gap-2 text-amber-800">
             <Building2 className="h-5 w-5" />
-            Pending Branch Requests ({requests.length})
+            {tp.title.replace('{count}', String(requests.length))}
           </CardTitle>
           <CardDescription>
-            Clients have requested new branch locations that need your approval
+            {tp.description}
           </CardDescription>
         </CardHeader>
         <CardContent className="space-y-4">
@@ -154,11 +157,11 @@ export function PendingBranchRequests() {
                   </p>
                 )}
                 <p className="text-xs text-amber-600 mt-2">
-                  Requested by {request.client.companyName}
+                  {tp.requestedBy.replace('{name}', request.client.companyName)}
                 </p>
                 {request.notes && (
                   <p className="text-xs text-muted-foreground mt-1">
-                    Note: {request.notes}
+                    {tp.noteLabel.replace('{note}', request.notes)}
                   </p>
                 )}
               </div>
@@ -173,7 +176,7 @@ export function PendingBranchRequests() {
                   ) : (
                     <Check className="me-1 h-4 w-4" />
                   )}
-                  Approve
+                  {tp.approve}
                 </Button>
                 <Button
                   size="sm"
@@ -185,7 +188,7 @@ export function PendingBranchRequests() {
                   disabled={processing}
                 >
                   <X className="me-1 h-4 w-4" />
-                  Reject
+                  {tp.reject}
                 </Button>
               </div>
             </div>
@@ -197,9 +200,9 @@ export function PendingBranchRequests() {
       <Dialog open={rejectDialogOpen} onOpenChange={setRejectDialogOpen}>
         <DialogContent>
           <DialogHeader>
-            <DialogTitle>Reject Branch Request</DialogTitle>
+            <DialogTitle>{tp.rejectDialogTitle}</DialogTitle>
             <DialogDescription>
-              Are you sure you want to reject this branch request from {selectedRequest?.client.companyName}?
+              {tp.rejectDialogDescription.replace('{name}', selectedRequest?.client.companyName || '')}
             </DialogDescription>
           </DialogHeader>
           <div className="space-y-4">
@@ -208,22 +211,22 @@ export function PendingBranchRequests() {
               <p className="text-sm text-muted-foreground">{selectedRequest?.address}</p>
             </div>
             <div className="space-y-2">
-              <Label htmlFor="rejectionNote">Reason (optional)</Label>
+              <Label htmlFor="rejectionNote">{tp.reasonLabel}</Label>
               <Input
                 id="rejectionNote"
                 value={rejectionNote}
                 onChange={(e) => setRejectionNote(e.target.value)}
-                placeholder="Provide a reason for rejection..."
+                placeholder={tp.reasonPlaceholder}
               />
             </div>
           </div>
           <DialogFooter>
             <Button variant="outline" onClick={() => setRejectDialogOpen(false)}>
-              Cancel
+              {tp.cancel}
             </Button>
             <Button variant="destructive" onClick={handleReject} disabled={processing}>
               {processing && <Loader2 className="me-2 h-4 w-4 animate-spin" />}
-              Reject Request
+              {tp.rejectRequest}
             </Button>
           </DialogFooter>
         </DialogContent>

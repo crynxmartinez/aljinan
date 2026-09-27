@@ -1,4 +1,5 @@
 'use client'
+import { LocalizedError } from '@/components/localized-error'
 
 import { useState } from 'react'
 import { useTranslation } from '@/lib/i18n/use-translation'
@@ -192,7 +193,7 @@ export function ContractAttachmentsSection({
 
           {error && (
             <div className="bg-destructive/10 text-destructive p-3 rounded-lg text-sm">
-              {error}
+              <LocalizedError message={error} />
             </div>
           )}
 

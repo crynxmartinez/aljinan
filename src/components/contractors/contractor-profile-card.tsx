@@ -104,7 +104,7 @@ export function ContractorProfileCard({ contractor }: ContractorProfileCardProps
             <div className="flex items-center gap-4">
               <div className="h-20 w-20 rounded-xl bg-white shadow-sm border flex items-center justify-center">
                 {contractor.logoUrl ? (
-                  <img src={contractor.logoUrl} alt="Logo" className="h-16 w-16 object-contain rounded-lg" />
+                  <img src={contractor.logoUrl} alt={t.system.logo} className="h-16 w-16 object-contain rounded-lg" />
                 ) : (
                   <Building2 className="h-10 w-10 text-muted-foreground" />
                 )}
@@ -165,41 +165,6 @@ export function ContractorProfileCard({ contractor }: ContractorProfileCardProps
             </Button>
           </div>
         </div>
-      </Card>
-
-      {/* Subscription Card */}
-      <Card className="mb-6 border-2 border-primary/20">
-        <CardContent className="p-6">
-          <div className="flex items-center justify-between">
-            <div className="flex items-center gap-4">
-              <div className="p-3 rounded-full bg-primary/10">
-                <CreditCard className="h-6 w-6 text-primary" />
-              </div>
-              <div>
-                <div className="flex items-center gap-2">
-                  <h3 className="font-semibold text-lg">{tc.subscription}</h3>
-                  <Badge className="bg-green-100 dark:bg-green-950/40 text-green-700 dark:text-green-400 hover:bg-green-100 dark:hover:bg-green-950/40">
-                    <CheckCircle className="h-3 w-3 me-1" />
-                    {tc.active}
-                  </Badge>
-                </div>
-                <p className="text-sm text-muted-foreground mt-1">
-                  {tc.professionalPlan} • {tc.nextBilling}: Jul 15, 2026
-                </p>
-              </div>
-            </div>
-            <div className="flex items-center gap-3">
-              <Button variant="outline" size="sm">
-                <Clock className="h-4 w-4 me-1" />
-                {tc.viewHistory}
-              </Button>
-              <Button size="sm">
-                <CreditCard className="h-4 w-4 me-1" />
-                {tc.paySubscription}
-              </Button>
-            </div>
-          </div>
-        </CardContent>
       </Card>
 
       {/* Main Content Grid */}

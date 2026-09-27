@@ -1,4 +1,5 @@
 'use client'
+import { LocalizedError } from '@/components/localized-error'
 
 import { useState } from 'react'
 import Link from 'next/link'
@@ -557,7 +558,7 @@ export function ClientsList({ clients }: ClientsListProps) {
           <form onSubmit={handleCreateClient}>
             {error && (
               <div className="bg-destructive/10 text-destructive p-3 rounded-lg text-sm mb-4">
-                {error}
+                <LocalizedError message={error} />
               </div>
             )}
             <div className="space-y-4">

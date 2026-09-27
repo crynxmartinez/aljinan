@@ -215,7 +215,7 @@ export default function ContactPage() {
 
             <Reveal delay={0.15} className="rounded-2xl overflow-hidden border border-stone-100 shadow-sm h-56">
               <iframe
-                title="Tasheel location — Al Olaya, Riyadh"
+                title={t.system.location}
                 src="https://www.google.com/maps?q=King+Fahd+Road+Al+Olaya+Riyadh+Saudi+Arabia&output=embed"
                 className="w-full h-full border-0"
                 loading="lazy"

@@ -5,6 +5,7 @@ import { prisma } from '@/lib/prisma'
 import Link from 'next/link'
 import { ArrowLeft } from 'lucide-react'
 import { AddBranchForm } from './add-branch-form'
+import { getTranslations } from '@/lib/i18n/server'
 
 async function getClient(clientSlugOrId: string, userId: string) {
   const contractor = await prisma.contractor.findUnique({
@@ -45,6 +46,9 @@ export default async function AddBranchPage({
     notFound()
   }
 
+  const t = await getTranslations()
+  const tc = t.dashboard.clientsPage
+
   return (
     <div className="p-8">
       <div className="mb-6">
@@ -53,14 +57,14 @@ export default async function AddBranchPage({
           className="inline-flex items-center text-sm text-muted-foreground hover:text-foreground mb-4"
         >
           <ArrowLeft className="me-2 h-4 w-4" />
-          Back to {client.companyName}
+          {tc.backToClient.replace('{name}', client.companyName)}
         </Link>
       </div>
 
       <div className="mb-8">
-        <h1 className="text-3xl font-bold">Add New Branch</h1>
+        <h1 className="text-3xl font-bold">{tc.addNewBranchTitle}</h1>
         <p className="text-muted-foreground mt-1">
-          Add a new location for {client.companyName}
+          {tc.addNewBranchDesc.replace('{name}', client.companyName)}
         </p>
       </div>
 

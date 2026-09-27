@@ -201,7 +201,7 @@ export function ClientProfileForm({ client, open, onOpenChange }: ClientProfileF
                   id="contactPersonName"
                   value={formData.contactPersonName}
                   onChange={(e) => setFormData({ ...formData, contactPersonName: e.target.value })}
-                  placeholder="John Doe"
+                  placeholder={t.auth.register.fullNamePlaceholder}
                 />
               </div>
               <div className="space-y-2">

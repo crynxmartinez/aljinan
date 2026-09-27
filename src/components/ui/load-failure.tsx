@@ -1,4 +1,5 @@
 'use client'
+import { useTranslation } from '@/lib/i18n/use-translation'
 
 import { AlertTriangle, RefreshCw } from 'lucide-react'
 import { Card, CardContent } from '@/components/ui/card'
@@ -15,25 +16,26 @@ import { Button } from '@/components/ui/button'
  */
 export function LoadFailure({
   onRetry,
-  message = 'This could not be loaded.',
+  message,
 }: {
   onRetry?: () => void
   message?: string
 }) {
+  const { t } = useTranslation()
   return (
     <Card>
       <CardContent className="flex flex-col items-center justify-center gap-3 py-12 text-center">
         <div className="flex h-10 w-10 items-center justify-center rounded-full bg-destructive/10">
           <AlertTriangle className="h-5 w-5 text-destructive" />
         </div>
-        <p className="text-sm text-muted-foreground">{message}</p>
+        <p className="text-sm text-muted-foreground">{message ?? t.system.loadFailed}</p>
         <p className="max-w-sm text-xs text-muted-foreground">
-          This is not the same as there being nothing here — we could not reach the server.
+          {t.system.loadFailedDetail}
         </p>
         {onRetry && (
           <Button variant="outline" size="sm" onClick={onRetry} className="mt-1">
             <RefreshCw className="me-2 h-4 w-4" />
-            Try again
+            {t.system.retry}
           </Button>
         )}
       </CardContent>

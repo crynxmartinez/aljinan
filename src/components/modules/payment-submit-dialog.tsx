@@ -1,4 +1,7 @@
 'use client'
+import { LocalizedError } from '@/components/localized-error'
+
+import { formatCurrency as localizedCurrency } from '@/lib/i18n/format-date'
 
 import { useState, useRef } from 'react'
 import { useTranslation } from '@/lib/i18n/use-translation'
@@ -41,7 +44,7 @@ export function PaymentSubmitDialog({
   branchId,
   onSuccess,
 }: PaymentSubmitDialogProps) {
-  const { t } = useTranslation()
+  const { t, locale } = useTranslation()
   const tp = t.dashboard.paymentSubmit
   const [paymentProofType, setPaymentProofType] = useState<'file' | 'link'>('file')
   const [paymentLink, setPaymentLink] = useState('')
@@ -51,11 +54,7 @@ export function PaymentSubmitDialog({
   const fileInputRef = useRef<HTMLInputElement>(null)
 
   const formatCurrency = (amount: number) => {
-    return new Intl.NumberFormat('en-SA', {
-      style: 'currency',
-      currency: 'SAR',
-      minimumFractionDigits: 2,
-    }).format(amount)
+    return localizedCurrency(amount, locale)
   }
 
   const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -99,6 +98,8 @@ export function PaymentSubmitDialog({
         const uploadForm = new FormData()
         uploadForm.append('file', paymentFile)
         uploadForm.append('folder', 'payment-proofs')
+      uploadForm.append('branchId', branchId)
+      uploadForm.append('type', 'document')
         const uploadResponse = await fetch('/api/upload', {
           method: 'POST',
           body: uploadForm,
@@ -184,7 +185,7 @@ export function PaymentSubmitDialog({
 
         {error && (
           <div className="bg-destructive/10 text-destructive p-3 rounded-lg text-sm">
-            {error}
+            <LocalizedError message={error} />
           </div>
         )}
 

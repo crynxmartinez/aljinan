@@ -1,3 +1,4 @@
+import { publishedFor } from '@/lib/publication'
 import { getServerSession } from 'next-auth'
 import { NextResponse } from 'next/server'
 import { authOptions } from '@/lib/auth'
@@ -24,7 +25,7 @@ export async function GET(
 
     // Fetch all contracts with their payments for this branch
     const contracts = await prisma.contract.findMany({
-      where: { branchId },
+      where: { branchId, ...publishedFor(session.user.role) },
       include: {
         payments: {
           orderBy: { paymentNo: 'asc' }

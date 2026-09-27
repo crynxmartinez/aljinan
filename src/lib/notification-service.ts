@@ -1,4 +1,5 @@
 import { prisma } from '@/lib/prisma'
+import { resolveNotificationLink } from '@/lib/notification-links'
 
 export type NotificationType =
   | 'NEW_REQUEST'
@@ -67,7 +68,7 @@ export async function createNotification(params: CreateNotificationParams) {
         type,
         title,
         message,
-        link,
+        link: await resolveNotificationLink(link),
         relatedId,
         relatedType,
         priority,

@@ -37,11 +37,11 @@ export async function sendVerificationEmail(
   locale: Locale = 'ar'
 ) {
   const t = translations[locale].email.verification
-  const verificationUrl = `${process.env.NEXT_PUBLIC_APP_URL || 'https://www.tasheel.live'}/verify-email?token=${verificationToken}`
+  const verificationUrl = `${process.env.NEXT_PUBLIC_APP_URL || 'https://www.tasheel.live'}/verify-email?token=${encodeURIComponent(verificationToken)}&locale=${locale}`
   const accountType = userType === 'CONTRACTOR' ? t.accountTypeContractor : t.accountTypeClient
 
   try {
-    await resend.emails.send({
+    const result = await resend.emails.send({
       from: 'Tasheel <info@tasheel.live>',
       to: email,
       subject: t.subject,
@@ -75,6 +75,7 @@ export async function sendVerificationEmail(
         </div>
       `),
     })
+    if (result.error) throw new Error(result.error.message)
     return { success: true }
   } catch (error) {
     console.error('Failed to send verification email:', error)
@@ -86,7 +87,7 @@ export async function sendTempPasswordEmail(email: string, name: string, tempPas
   const t = translations[locale].email.tempPassword
 
   try {
-    await resend.emails.send({
+    const result = await resend.emails.send({
       from: 'Tasheel <info@tasheel.live>',
       to: email,
       subject: t.subject,
@@ -126,6 +127,7 @@ export async function sendTempPasswordEmail(email: string, name: string, tempPas
         </div>
       `),
     })
+    if (result.error) throw new Error(result.error.message)
     return { success: true }
   } catch (error) {
     console.error('Failed to send temp password email:', error)
@@ -135,10 +137,10 @@ export async function sendTempPasswordEmail(email: string, name: string, tempPas
 
 export async function sendPasswordResetEmail(email: string, resetToken: string, locale: Locale = 'ar') {
   const t = translations[locale].email.passwordReset
-  const resetUrl = `${process.env.NEXT_PUBLIC_APP_URL || 'https://www.tasheel.live'}/reset-password?token=${resetToken}`
+  const resetUrl = `${process.env.NEXT_PUBLIC_APP_URL || 'https://www.tasheel.live'}/reset-password?token=${encodeURIComponent(resetToken)}&locale=${locale}`
 
   try {
-    await resend.emails.send({
+    const result = await resend.emails.send({
       from: 'Tasheel <info@tasheel.live>',
       to: email,
       subject: t.subject,
@@ -172,6 +174,7 @@ export async function sendPasswordResetEmail(email: string, resetToken: string, 
         </div>
       `),
     })
+    if (result.error) throw new Error(result.error.message)
     return { success: true }
   } catch (error) {
     console.error('Failed to send password reset email:', error)

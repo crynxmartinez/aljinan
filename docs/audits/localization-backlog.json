@@ -1,0 +1,1652 @@
+[
+  {
+    "file": "src/app/(marketing)/download/download-content.tsx",
+    "kind": "text",
+    "text": "AppImage",
+    "line": 77
+  },
+  {
+    "file": "src/app/admin/backfill-work-order-numbers/page.tsx",
+    "kind": "text",
+    "text": "workOrderNumber = null",
+    "line": 52
+  },
+  {
+    "file": "src/app/admin/backfill-work-order-numbers/page.tsx",
+    "kind": "text",
+    "text": "WO #",
+    "line": 119
+  },
+  {
+    "file": "src/app/admin/contractors/page.tsx",
+    "kind": "attribute",
+    "text": "John Smith",
+    "line": 706
+  },
+  {
+    "file": "src/app/admin/contractors/page.tsx",
+    "kind": "attribute",
+    "text": "contractor@company.com",
+    "line": 717
+  },
+  {
+    "file": "src/app/admin/contractors/page.tsx",
+    "kind": "attribute",
+    "text": "+966 5XX XXX XXXX",
+    "line": 727
+  },
+  {
+    "file": "src/app/admin/contractors/page.tsx",
+    "kind": "attribute",
+    "text": "Safety Solutions LLC",
+    "line": 736
+  },
+  {
+    "file": "src/app/admin/settings/admins/page.tsx",
+    "kind": "attribute",
+    "text": "Admin name",
+    "line": 306
+  },
+  {
+    "file": "src/app/admin/settings/admins/page.tsx",
+    "kind": "attribute",
+    "text": "admin@tasheel.com",
+    "line": 316
+  },
+  {
+    "file": "src/app/api/branches/[branchId]/checklist-items/route.ts",
+    "kind": "label",
+    "text": "Payment Proof Submitted",
+    "line": 1079
+  },
+  {
+    "file": "src/app/api/branches/[branchId]/checklist-items/route.ts",
+    "kind": "label",
+    "text": "Payment Verified",
+    "line": 1130
+  },
+  {
+    "file": "src/app/api/branches/[branchId]/checklist-items/route.ts",
+    "kind": "label",
+    "text": "Contract Completed",
+    "line": 1175
+  },
+  {
+    "file": "src/app/api/branches/[branchId]/invoices/[invoiceId]/route.ts",
+    "kind": "label",
+    "text": "Payment Proof Submitted",
+    "line": 119
+  },
+  {
+    "file": "src/app/api/branches/[branchId]/invoices/[invoiceId]/route.ts",
+    "kind": "label",
+    "text": "Payment Confirmed",
+    "line": 166
+  },
+  {
+    "file": "src/app/api/branches/[branchId]/requests/[requestId]/comments/route.ts",
+    "kind": "label",
+    "text": "New Comment on Request",
+    "line": 137
+  },
+  {
+    "file": "src/app/api/branches/[branchId]/requests/[requestId]/comments/route.ts",
+    "kind": "label",
+    "text": "New Comment on Request",
+    "line": 169
+  },
+  {
+    "file": "src/app/api/branches/[branchId]/requests/[requestId]/route.ts",
+    "kind": "label",
+    "text": "Adhoc Work Orders",
+    "line": 190
+  },
+  {
+    "file": "src/app/api/branches/[branchId]/requests/[requestId]/route.ts",
+    "kind": "label",
+    "text": "Adhoc Work Orders",
+    "line": 300
+  },
+  {
+    "file": "src/app/api/branches/[branchId]/requests/[requestId]/start-now/route.ts",
+    "kind": "label",
+    "text": "Adhoc Work Orders",
+    "line": 64
+  },
+  {
+    "file": "src/app/api/branches/[branchId]/requests/[requestId]/start-now/route.ts",
+    "kind": "label",
+    "text": "🚨 Work Started Immediately",
+    "line": 137
+  },
+  {
+    "file": "src/app/api/branches/[branchId]/work-orders/create-immediate/route.ts",
+    "kind": "label",
+    "text": "Adhoc Work Orders",
+    "line": 80
+  },
+  {
+    "file": "src/app/api/branches/[branchId]/work-orders/create-immediate/route.ts",
+    "kind": "label",
+    "text": "🔧 Work Order Started",
+    "line": 167
+  },
+  {
+    "file": "src/app/api/cron/auto-archive/route.ts",
+    "kind": "label",
+    "text": "Work Order Auto-Archived",
+    "line": 99
+  },
+  {
+    "file": "src/app/api/cron/auto-archive/route.ts",
+    "kind": "label",
+    "text": "Work Order Auto-Archived",
+    "line": 121
+  },
+  {
+    "file": "src/app/api/cron/work-order-notifications/route.ts",
+    "kind": "label",
+    "text": "Work Order Starting Today",
+    "line": 144
+  },
+  {
+    "file": "src/app/api/cron/work-order-notifications/route.ts",
+    "kind": "label",
+    "text": "Contract Expiring Soon",
+    "line": 198
+  },
+  {
+    "file": "src/app/api/cron/work-order-notifications/route.ts",
+    "kind": "label",
+    "text": "Contract Expiring Tomorrow",
+    "line": 211
+  },
+  {
+    "file": "src/app/api/cron/work-order-notifications/route.ts",
+    "kind": "label",
+    "text": "Certificate Expiring Soon",
+    "line": 262
+  },
+  {
+    "file": "src/app/api/cron/work-order-notifications/route.ts",
+    "kind": "label",
+    "text": "Certificate Expiring Tomorrow",
+    "line": 275
+  },
+  {
+    "file": "src/app/forgot-password/page.tsx",
+    "kind": "attribute",
+    "text": "your.email@company.com",
+    "line": 101
+  },
+  {
+    "file": "src/app/layout.tsx",
+    "kind": "label",
+    "text": "Tasheel",
+    "line": 28
+  },
+  {
+    "file": "src/app/login/page.tsx",
+    "kind": "message",
+    "text": "An error occurred. Please try again.",
+    "line": 51
+  },
+  {
+    "file": "src/app/portal/branches/[branchId]/client-branch-requests.tsx",
+    "kind": "message",
+    "text": "Please sign to accept the quote",
+    "line": 445
+  },
+  {
+    "file": "src/app/portal/branches/[branchId]/client-branch-requests.tsx",
+    "kind": "text",
+    "text": "REQ-",
+    "line": 782
+  },
+  {
+    "file": "src/app/portal/branches/[branchId]/client-branch-requests.tsx",
+    "kind": "text",
+    "text": "&quot;",
+    "line": 1532
+  },
+  {
+    "file": "src/app/portal/branches/[branchId]/client-branch-requests.tsx",
+    "kind": "text",
+    "text": "&quot;",
+    "line": 1532
+  },
+  {
+    "file": "src/components/branches/branch-profile-card.tsx",
+    "kind": "format",
+    "text": "branch.areaSize.toLocaleString()",
+    "line": 172
+  },
+  {
+    "file": "src/components/branches/branch-profile-form.tsx",
+    "kind": "attribute",
+    "text": "+966 5X XXX XXXX",
+    "line": 318
+  },
+  {
+    "file": "src/components/branches/branch-profile-form.tsx",
+    "kind": "attribute",
+    "text": "contact@example.com",
+    "line": 330
+  },
+  {
+    "file": "src/components/clients/client-profile-form.tsx",
+    "kind": "attribute",
+    "text": "company@example.com",
+    "line": 141
+  },
+  {
+    "file": "src/components/clients/client-profile-form.tsx",
+    "kind": "attribute",
+    "text": "+966 xxx xxx xxxx",
+    "line": 213
+  },
+  {
+    "file": "src/components/clients/client-profile-form.tsx",
+    "kind": "attribute",
+    "text": "john.doe@company.com",
+    "line": 225
+  },
+  {
+    "file": "src/components/contractors/contractor-profile-card.tsx",
+    "kind": "attribute",
+    "text": "Logo",
+    "line": 107
+  },
+  {
+    "file": "src/components/contractors/contractor-profile-form.tsx",
+    "kind": "attribute",
+    "text": "contact@company.com",
+    "line": 186
+  },
+  {
+    "file": "src/components/contractors/contractor-profile-form.tsx",
+    "kind": "attribute",
+    "text": "+966 xxx xxx xxxx",
+    "line": 196
+  },
+  {
+    "file": "src/components/contractors/contractor-profile-form.tsx",
+    "kind": "attribute",
+    "text": "+966 xxx xxx xxxx",
+    "line": 235
+  },
+  {
+    "file": "src/components/contractors/contractor-profile-form.tsx",
+    "kind": "attribute",
+    "text": "john.doe@company.com",
+    "line": 246
+  },
+  {
+    "file": "src/components/contractors/contractor-profile-form.tsx",
+    "kind": "attribute",
+    "text": "www.company.com",
+    "line": 264
+  },
+  {
+    "file": "src/components/contractors/contractor-profile-form.tsx",
+    "kind": "attribute",
+    "text": "https://...",
+    "line": 287
+  },
+  {
+    "file": "src/components/contractors/contractor-profile-form.tsx",
+    "kind": "attribute",
+    "text": "https://...",
+    "line": 361
+  },
+  {
+    "file": "src/components/language-toggle.tsx",
+    "kind": "text",
+    "text": "English",
+    "line": 38
+  },
+  {
+    "file": "src/components/language-toggle.tsx",
+    "kind": "text",
+    "text": "العربية",
+    "line": 45
+  },
+  {
+    "file": "src/components/layout/admin-sidebar.tsx",
+    "kind": "text",
+    "text": "Tasheel",
+    "line": 129
+  },
+  {
+    "file": "src/components/layout/client-sidebar.tsx",
+    "kind": "text",
+    "text": "Aljinan",
+    "line": 139
+  },
+  {
+    "file": "src/components/layout/sidebar.tsx",
+    "kind": "text",
+    "text": "Aljinan",
+    "line": 175
+  },
+  {
+    "file": "src/components/marketing/logo.tsx",
+    "kind": "text",
+    "text": "TASHEEL",
+    "line": 22
+  },
+  {
+    "file": "src/components/marketing/product-mockup.tsx",
+    "kind": "text",
+    "text": "app.tasheel.sa/dashboard",
+    "line": 28
+  },
+  {
+    "file": "src/components/modules/branch-dashboard.tsx",
+    "kind": "label",
+    "text": "Scheduled",
+    "line": 87
+  },
+  {
+    "file": "src/components/modules/branch-dashboard.tsx",
+    "kind": "label",
+    "text": "In Progress",
+    "line": 88
+  },
+  {
+    "file": "src/components/modules/branch-dashboard.tsx",
+    "kind": "label",
+    "text": "For Review",
+    "line": 89
+  },
+  {
+    "file": "src/components/modules/branch-dashboard.tsx",
+    "kind": "label",
+    "text": "Completed",
+    "line": 90
+  },
+  {
+    "file": "src/components/modules/branch-dashboard.tsx",
+    "kind": "label",
+    "text": "Archived",
+    "line": 91
+  },
+  {
+    "file": "src/components/modules/branch-dashboard.tsx",
+    "kind": "text",
+    "text": "WO-",
+    "line": 247
+  },
+  {
+    "file": "src/components/modules/certificates-list.tsx",
+    "kind": "label",
+    "text": "Preventive Maintenance",
+    "line": 95
+  },
+  {
+    "file": "src/components/modules/certificates-list.tsx",
+    "kind": "label",
+    "text": "Completion Certificate",
+    "line": 96
+  },
+  {
+    "file": "src/components/modules/certificates-list.tsx",
+    "kind": "label",
+    "text": "Compliance Certificate",
+    "line": 97
+  },
+  {
+    "file": "src/components/modules/certificates-list.tsx",
+    "kind": "label",
+    "text": "Inspection Certificate",
+    "line": 98
+  },
+  {
+    "file": "src/components/modules/certificates-list.tsx",
+    "kind": "label",
+    "text": "Civil Defense",
+    "line": 99
+  },
+  {
+    "file": "src/components/modules/certificates-list.tsx",
+    "kind": "label",
+    "text": "Other",
+    "line": 100
+  },
+  {
+    "file": "src/components/modules/certificates-list.tsx",
+    "kind": "message",
+    "text": "Title is required",
+    "line": 199
+  },
+  {
+    "file": "src/components/modules/certificates-list.tsx",
+    "kind": "attribute",
+    "text": "e.g., Annual Fire Safety Inspection",
+    "line": 465
+  },
+  {
+    "file": "src/components/modules/certificates-list.tsx",
+    "kind": "attribute",
+    "text": "e.g., CERT-2024-001",
+    "line": 477
+  },
+  {
+    "file": "src/components/modules/certificates-list.tsx",
+    "kind": "attribute",
+    "text": "Additional details about this certificate...",
+    "line": 509
+  },
+  {
+    "file": "src/components/modules/column-detail-modal.tsx",
+    "kind": "attribute",
+    "text": "Work Order Type",
+    "line": 375
+  },
+  {
+    "file": "src/components/modules/contract-attachments-section.tsx",
+    "kind": "attribute",
+    "text": "https://...",
+    "line": 219
+  },
+  {
+    "file": "src/components/modules/contracts-list.tsx",
+    "kind": "message",
+    "text": "Failed to upload contract file",
+    "line": 427
+  },
+  {
+    "file": "src/components/modules/contracts-list.tsx",
+    "kind": "message",
+    "text": "Failed to upload contract file",
+    "line": 450
+  },
+  {
+    "file": "src/components/modules/contracts-list.tsx",
+    "kind": "attribute",
+    "text": "https://...",
+    "line": 2052
+  },
+  {
+    "file": "src/components/modules/contracts-list.tsx",
+    "kind": "attribute",
+    "text": "e.g., Service Certificate 2026.pdf",
+    "line": 2093
+  },
+  {
+    "file": "src/components/modules/contracts-list.tsx",
+    "kind": "attribute",
+    "text": "https://...",
+    "line": 2102
+  },
+  {
+    "file": "src/components/modules/equipment-list.tsx",
+    "kind": "message",
+    "text": "Failed to fetch equipment",
+    "line": 180
+  },
+  {
+    "file": "src/components/modules/equipment-list.tsx",
+    "kind": "message",
+    "text": "Failed to add equipment",
+    "line": 220
+  },
+  {
+    "file": "src/components/modules/equipment-list.tsx",
+    "kind": "message",
+    "text": "Failed to update equipment",
+    "line": 303
+  },
+  {
+    "file": "src/components/modules/equipment-list.tsx",
+    "kind": "message",
+    "text": "Failed to delete equipment",
+    "line": 338
+  },
+  {
+    "file": "src/components/modules/invoices-list.tsx",
+    "kind": "label",
+    "text": "Draft",
+    "line": 228
+  },
+  {
+    "file": "src/components/modules/invoices-list.tsx",
+    "kind": "label",
+    "text": "Sent",
+    "line": 229
+  },
+  {
+    "file": "src/components/modules/invoices-list.tsx",
+    "kind": "label",
+    "text": "Paid",
+    "line": 230
+  },
+  {
+    "file": "src/components/modules/invoices-list.tsx",
+    "kind": "label",
+    "text": "Partial",
+    "line": 231
+  },
+  {
+    "file": "src/components/modules/invoices-list.tsx",
+    "kind": "label",
+    "text": "Overdue",
+    "line": 232
+  },
+  {
+    "file": "src/components/modules/invoices-list.tsx",
+    "kind": "label",
+    "text": "Cancelled",
+    "line": 233
+  },
+  {
+    "file": "src/components/modules/invoices-list.tsx",
+    "kind": "attribute",
+    "text": "e.g., Monthly Service - January 2026",
+    "line": 360
+  },
+  {
+    "file": "src/components/modules/invoices-list.tsx",
+    "kind": "attribute",
+    "text": "Additional details",
+    "line": 370
+  },
+  {
+    "file": "src/components/modules/payment-submit-dialog.tsx",
+    "kind": "attribute",
+    "text": "https://...",
+    "line": 249
+  },
+  {
+    "file": "src/components/modules/requests-list.tsx",
+    "kind": "message",
+    "text": "Failed to upload quotation file",
+    "line": 491
+  },
+  {
+    "file": "src/components/modules/requests-list.tsx",
+    "kind": "message",
+    "text": "Failed to upload quotation file",
+    "line": 590
+  },
+  {
+    "file": "src/components/modules/requests-list.tsx",
+    "kind": "text",
+    "text": "REQ-",
+    "line": 1100
+  },
+  {
+    "file": "src/components/print/request-quote-print.tsx",
+    "kind": "text",
+    "text": "TASHEEL",
+    "line": 206
+  },
+  {
+    "file": "src/components/print/request-quote-print.tsx",
+    "kind": "text",
+    "text": "REQ #",
+    "line": 214
+  },
+  {
+    "file": "src/components/print/work-order-print.tsx",
+    "kind": "text",
+    "text": "TASHEEL",
+    "line": 324
+  },
+  {
+    "file": "src/components/print/work-order-print.tsx",
+    "kind": "text",
+    "text": "WO #",
+    "line": 329
+  },
+  {
+    "file": "src/components/reports/maintenance-report-form.tsx",
+    "kind": "attribute",
+    "text": "e.g., Pressure",
+    "line": 250
+  },
+  {
+    "file": "src/components/reports/maintenance-report-form.tsx",
+    "kind": "attribute",
+    "text": "PSI",
+    "line": 266
+  },
+  {
+    "file": "src/components/team-members/team-member-profile-form.tsx",
+    "kind": "attribute",
+    "text": "your.email@company.com",
+    "line": 121
+  },
+  {
+    "file": "src/components/team-members/team-member-profile-form.tsx",
+    "kind": "attribute",
+    "text": "e.g., Fire Safety Technician",
+    "line": 148
+  },
+  {
+    "file": "src/components/team-members/team-member-profile-form.tsx",
+    "kind": "attribute",
+    "text": "Your address",
+    "line": 160
+  },
+  {
+    "file": "src/components/work-order-print-view.tsx",
+    "kind": "format",
+    "text": "date.toLocaleDateString('en-US', options)",
+    "line": 15
+  },
+  {
+    "file": "src/components/work-order-print-view.tsx",
+    "kind": "text",
+    "text": "WO-",
+    "line": 134
+  },
+  {
+    "file": "src/components/work-order-print-view.tsx",
+    "kind": "text",
+    "text": "• www.tasheel.live",
+    "line": 396
+  },
+  {
+    "file": "src/lib/auth.ts",
+    "kind": "label",
+    "text": "Email",
+    "line": 19
+  },
+  {
+    "file": "src/lib/auth.ts",
+    "kind": "label",
+    "text": "Password",
+    "line": 20
+  },
+  {
+    "file": "src/lib/auth.ts",
+    "kind": "label",
+    "text": "Impersonation grant",
+    "line": 23
+  },
+  {
+    "file": "src/lib/export/export-utils.ts",
+    "kind": "label",
+    "text": "Title",
+    "line": 10
+  },
+  {
+    "file": "src/lib/export/export-utils.ts",
+    "kind": "label",
+    "text": "العنوان",
+    "line": 11
+  },
+  {
+    "file": "src/lib/notification-service.ts",
+    "kind": "label",
+    "text": "طلب خدمة جديد",
+    "line": 94
+  },
+  {
+    "file": "src/lib/notification-service.ts",
+    "kind": "label",
+    "text": "أمر عمل جاهز للمراجعة",
+    "line": 111
+  },
+  {
+    "file": "src/lib/notification-service.ts",
+    "kind": "label",
+    "text": "بدء أمر العمل",
+    "line": 128
+  },
+  {
+    "file": "src/lib/notification-service.ts",
+    "kind": "label",
+    "text": "إكمال أمر العمل",
+    "line": 145
+  },
+  {
+    "file": "src/lib/notification-service.ts",
+    "kind": "label",
+    "text": "رفض أمر العمل",
+    "line": 162
+  },
+  {
+    "file": "src/lib/notification-service.ts",
+    "kind": "label",
+    "text": "تعيين أمر عمل جديد",
+    "line": 179
+  },
+  {
+    "file": "src/lib/notification-service.ts",
+    "kind": "label",
+    "text": "تحديد سعر أمر العمل",
+    "line": 196
+  },
+  {
+    "file": "src/lib/notification-service.ts",
+    "kind": "label",
+    "text": "التوقيع مطلوب",
+    "line": 217
+  },
+  {
+    "file": "src/lib/notification-service.ts",
+    "kind": "label",
+    "text": "عرض سعر جديد",
+    "line": 234
+  },
+  {
+    "file": "src/lib/notification-service.ts",
+    "kind": "label",
+    "text": "قبول عرض السعر",
+    "line": 251
+  },
+  {
+    "file": "src/lib/notification-service.ts",
+    "kind": "label",
+    "text": "رفض عرض السعر",
+    "line": 268
+  },
+  {
+    "file": "src/lib/notification-service.ts",
+    "kind": "label",
+    "text": "عرض سعر جديد",
+    "line": 287
+  },
+  {
+    "file": "src/lib/notification-service.ts",
+    "kind": "label",
+    "text": "الموافقة على عرض السعر",
+    "line": 304
+  },
+  {
+    "file": "src/lib/notification-service.ts",
+    "kind": "label",
+    "text": "رفض عرض السعر",
+    "line": 321
+  },
+  {
+    "file": "src/lib/notification-service.ts",
+    "kind": "label",
+    "text": "موعد جديد",
+    "line": 340
+  },
+  {
+    "file": "src/lib/notification-service.ts",
+    "kind": "label",
+    "text": "تأكيد الموعد",
+    "line": 357
+  },
+  {
+    "file": "src/lib/notification-service.ts",
+    "kind": "label",
+    "text": "إلغاء الموعد",
+    "line": 374
+  },
+  {
+    "file": "src/lib/notification-service.ts",
+    "kind": "label",
+    "text": "طلب إعادة جدولة",
+    "line": 391
+  },
+  {
+    "file": "src/lib/notification-service.ts",
+    "kind": "label",
+    "text": "تغيير موعد",
+    "line": 408
+  },
+  {
+    "file": "src/lib/notification-service.ts",
+    "kind": "label",
+    "text": "طلب فرع جديد",
+    "line": 425
+  },
+  {
+    "file": "src/lib/notification-service.ts",
+    "kind": "label",
+    "text": "الموافقة على طلب الفرع",
+    "line": 442
+  },
+  {
+    "file": "src/lib/notification-service.ts",
+    "kind": "label",
+    "text": "رفض طلب الفرع",
+    "line": 459
+  },
+  {
+    "file": "src/lib/notification-service.ts",
+    "kind": "label",
+    "text": "توقيع العقد",
+    "line": 478
+  },
+  {
+    "file": "src/lib/notification-service.ts",
+    "kind": "label",
+    "text": "اكتمال العقد",
+    "line": 495
+  },
+  {
+    "file": "src/lib/notification-service.ts",
+    "kind": "label",
+    "text": "إصدار شهادة",
+    "line": 512
+  },
+  {
+    "file": "src/lib/pdf/inspection-report.tsx",
+    "kind": "format",
+    "text": "new Date(dateStr).toLocaleDateString('ar-SA-u-nu-latn', { year: 'numeric', month: 'long', day: 'numeric', })",
+    "line": 215
+  },
+  {
+    "file": "src/lib/pdf/inspection-report.tsx",
+    "kind": "text",
+    "text": "هاتف:",
+    "line": 234
+  },
+  {
+    "file": "src/lib/pdf/inspection-report.tsx",
+    "kind": "text",
+    "text": "بريد:",
+    "line": 235
+  },
+  {
+    "file": "src/lib/pdf/inspection-report.tsx",
+    "kind": "text",
+    "text": "رقم التقرير:",
+    "line": 238
+  },
+  {
+    "file": "src/lib/pdf/inspection-report.tsx",
+    "kind": "text",
+    "text": "تاريخ الإنشاء:",
+    "line": 240
+  },
+  {
+    "file": "src/lib/pdf/inspection-report.tsx",
+    "kind": "text",
+    "text": "تقرير التفتيش",
+    "line": 246
+  },
+  {
+    "file": "src/lib/pdf/inspection-report.tsx",
+    "kind": "text",
+    "text": "تقرير",
+    "line": 247
+  },
+  {
+    "file": "src/lib/pdf/inspection-report.tsx",
+    "kind": "text",
+    "text": "معلومات العميل",
+    "line": 251
+  },
+  {
+    "file": "src/lib/pdf/inspection-report.tsx",
+    "kind": "text",
+    "text": "الشركة:",
+    "line": 255
+  },
+  {
+    "file": "src/lib/pdf/inspection-report.tsx",
+    "kind": "text",
+    "text": "الفرع:",
+    "line": 261
+  },
+  {
+    "file": "src/lib/pdf/inspection-report.tsx",
+    "kind": "text",
+    "text": "العنوان:",
+    "line": 268
+  },
+  {
+    "file": "src/lib/pdf/inspection-report.tsx",
+    "kind": "text",
+    "text": "تفاصيل التفتيش",
+    "line": 278
+  },
+  {
+    "file": "src/lib/pdf/inspection-report.tsx",
+    "kind": "text",
+    "text": "أمر العمل:",
+    "line": 282
+  },
+  {
+    "file": "src/lib/pdf/inspection-report.tsx",
+    "kind": "text",
+    "text": "تاريخ التفتيش:",
+    "line": 288
+  },
+  {
+    "file": "src/lib/pdf/inspection-report.tsx",
+    "kind": "text",
+    "text": "الأنظمة المفحوصة:",
+    "line": 295
+  },
+  {
+    "file": "src/lib/pdf/inspection-report.tsx",
+    "kind": "text",
+    "text": "النتائج",
+    "line": 306
+  },
+  {
+    "file": "src/lib/pdf/inspection-report.tsx",
+    "kind": "text",
+    "text": "النواقص",
+    "line": 314
+  },
+  {
+    "file": "src/lib/pdf/inspection-report.tsx",
+    "kind": "text",
+    "text": "التوصيات",
+    "line": 322
+  },
+  {
+    "file": "src/lib/pdf/inspection-report.tsx",
+    "kind": "text",
+    "text": "الصور",
+    "line": 330
+  },
+  {
+    "file": "src/lib/pdf/inspection-report.tsx",
+    "kind": "text",
+    "text": "✓ موقّع",
+    "line": 347
+  },
+  {
+    "file": "src/lib/pdf/inspection-report.tsx",
+    "kind": "text",
+    "text": "توقيع الفني",
+    "line": 350
+  },
+  {
+    "file": "src/lib/pdf/inspection-report.tsx",
+    "kind": "text",
+    "text": "تم التوقيع:",
+    "line": 353
+  },
+  {
+    "file": "src/lib/pdf/inspection-report.tsx",
+    "kind": "text",
+    "text": "✓ موقّع",
+    "line": 360
+  },
+  {
+    "file": "src/lib/pdf/inspection-report.tsx",
+    "kind": "text",
+    "text": "توقيع المشرف",
+    "line": 363
+  },
+  {
+    "file": "src/lib/pdf/inspection-report.tsx",
+    "kind": "text",
+    "text": "تم التوقيع:",
+    "line": 366
+  },
+  {
+    "file": "src/lib/pdf/inspection-report.tsx",
+    "kind": "text",
+    "text": "تم إنشاء هذا التقرير بواسطة",
+    "line": 374
+  },
+  {
+    "file": "src/lib/pdf/inspection-report.tsx",
+    "kind": "text",
+    "text": "• تقرير #",
+    "line": 374
+  },
+  {
+    "file": "src/lib/pdf/installation-report.tsx",
+    "kind": "format",
+    "text": "new Date(dateStr).toLocaleDateString('ar-SA-u-nu-latn', { year: 'numeric', month: 'long', day: 'numeric', })",
+    "line": 180
+  },
+  {
+    "file": "src/lib/pdf/installation-report.tsx",
+    "kind": "text",
+    "text": "هاتف:",
+    "line": 197
+  },
+  {
+    "file": "src/lib/pdf/installation-report.tsx",
+    "kind": "text",
+    "text": "بريد:",
+    "line": 198
+  },
+  {
+    "file": "src/lib/pdf/installation-report.tsx",
+    "kind": "text",
+    "text": "رقم التقرير:",
+    "line": 201
+  },
+  {
+    "file": "src/lib/pdf/installation-report.tsx",
+    "kind": "text",
+    "text": "تاريخ الإنشاء:",
+    "line": 203
+  },
+  {
+    "file": "src/lib/pdf/installation-report.tsx",
+    "kind": "text",
+    "text": "تقرير التركيب",
+    "line": 209
+  },
+  {
+    "file": "src/lib/pdf/installation-report.tsx",
+    "kind": "text",
+    "text": "معلومات العميل",
+    "line": 213
+  },
+  {
+    "file": "src/lib/pdf/installation-report.tsx",
+    "kind": "text",
+    "text": "الشركة:",
+    "line": 215
+  },
+  {
+    "file": "src/lib/pdf/installation-report.tsx",
+    "kind": "text",
+    "text": "الفرع:",
+    "line": 219
+  },
+  {
+    "file": "src/lib/pdf/installation-report.tsx",
+    "kind": "text",
+    "text": "العنوان:",
+    "line": 224
+  },
+  {
+    "file": "src/lib/pdf/installation-report.tsx",
+    "kind": "text",
+    "text": "تفاصيل التركيب",
+    "line": 232
+  },
+  {
+    "file": "src/lib/pdf/installation-report.tsx",
+    "kind": "text",
+    "text": "أمر العمل:",
+    "line": 234
+  },
+  {
+    "file": "src/lib/pdf/installation-report.tsx",
+    "kind": "text",
+    "text": "تاريخ التركيب:",
+    "line": 238
+  },
+  {
+    "file": "src/lib/pdf/installation-report.tsx",
+    "kind": "text",
+    "text": "المعدات المركبة",
+    "line": 246
+  },
+  {
+    "file": "src/lib/pdf/installation-report.tsx",
+    "kind": "text",
+    "text": "المعدة",
+    "line": 249
+  },
+  {
+    "file": "src/lib/pdf/installation-report.tsx",
+    "kind": "text",
+    "text": "الموديل",
+    "line": 250
+  },
+  {
+    "file": "src/lib/pdf/installation-report.tsx",
+    "kind": "text",
+    "text": "الرقم التسلسلي",
+    "line": 251
+  },
+  {
+    "file": "src/lib/pdf/installation-report.tsx",
+    "kind": "text",
+    "text": "الموقع",
+    "line": 252
+  },
+  {
+    "file": "src/lib/pdf/installation-report.tsx",
+    "kind": "text",
+    "text": "تفاصيل التهيئة",
+    "line": 269
+  },
+  {
+    "file": "src/lib/pdf/installation-report.tsx",
+    "kind": "text",
+    "text": "قائمة التشغيل التجريبي",
+    "line": 277
+  },
+  {
+    "file": "src/lib/pdf/installation-report.tsx",
+    "kind": "text",
+    "text": "نتائج الاختبار",
+    "line": 299
+  },
+  {
+    "file": "src/lib/pdf/installation-report.tsx",
+    "kind": "text",
+    "text": "الاختبار",
+    "line": 302
+  },
+  {
+    "file": "src/lib/pdf/installation-report.tsx",
+    "kind": "text",
+    "text": "النتيجة",
+    "line": 303
+  },
+  {
+    "file": "src/lib/pdf/installation-report.tsx",
+    "kind": "text",
+    "text": "ملاحظات",
+    "line": 304
+  },
+  {
+    "file": "src/lib/pdf/installation-report.tsx",
+    "kind": "text",
+    "text": "التدريب",
+    "line": 323
+  },
+  {
+    "file": "src/lib/pdf/installation-report.tsx",
+    "kind": "text",
+    "text": "تم تقديم تدريب:",
+    "line": 325
+  },
+  {
+    "file": "src/lib/pdf/installation-report.tsx",
+    "kind": "text",
+    "text": "معلومات الضمان",
+    "line": 335
+  },
+  {
+    "file": "src/lib/pdf/installation-report.tsx",
+    "kind": "text",
+    "text": "تاريخ البداية:",
+    "line": 338
+  },
+  {
+    "file": "src/lib/pdf/installation-report.tsx",
+    "kind": "text",
+    "text": "تاريخ الانتهاء:",
+    "line": 342
+  },
+  {
+    "file": "src/lib/pdf/installation-report.tsx",
+    "kind": "text",
+    "text": "التسليم",
+    "line": 351
+  },
+  {
+    "file": "src/lib/pdf/installation-report.tsx",
+    "kind": "text",
+    "text": "استلمه:",
+    "line": 353
+  },
+  {
+    "file": "src/lib/pdf/installation-report.tsx",
+    "kind": "text",
+    "text": "تاريخ التسليم:",
+    "line": 357
+  },
+  {
+    "file": "src/lib/pdf/installation-report.tsx",
+    "kind": "text",
+    "text": "✓ موقّع",
+    "line": 368
+  },
+  {
+    "file": "src/lib/pdf/installation-report.tsx",
+    "kind": "text",
+    "text": "الفني",
+    "line": 371
+  },
+  {
+    "file": "src/lib/pdf/installation-report.tsx",
+    "kind": "text",
+    "text": "✓ موقّع",
+    "line": 381
+  },
+  {
+    "file": "src/lib/pdf/installation-report.tsx",
+    "kind": "text",
+    "text": "المشرف",
+    "line": 384
+  },
+  {
+    "file": "src/lib/pdf/installation-report.tsx",
+    "kind": "text",
+    "text": "✓ موقّع",
+    "line": 394
+  },
+  {
+    "file": "src/lib/pdf/installation-report.tsx",
+    "kind": "text",
+    "text": "العميل",
+    "line": 397
+  },
+  {
+    "file": "src/lib/pdf/installation-report.tsx",
+    "kind": "text",
+    "text": "تم إنشاء هذا التقرير بواسطة",
+    "line": 408
+  },
+  {
+    "file": "src/lib/pdf/installation-report.tsx",
+    "kind": "text",
+    "text": "• تقرير #",
+    "line": 408
+  },
+  {
+    "file": "src/lib/pdf/maintenance-report.tsx",
+    "kind": "format",
+    "text": "new Date(dateStr).toLocaleDateString('ar-SA-u-nu-latn', { year: 'numeric', month: 'long', day: 'numeric', })",
+    "line": 179
+  },
+  {
+    "file": "src/lib/pdf/maintenance-report.tsx",
+    "kind": "text",
+    "text": "هاتف:",
+    "line": 215
+  },
+  {
+    "file": "src/lib/pdf/maintenance-report.tsx",
+    "kind": "text",
+    "text": "بريد:",
+    "line": 216
+  },
+  {
+    "file": "src/lib/pdf/maintenance-report.tsx",
+    "kind": "text",
+    "text": "رقم التقرير:",
+    "line": 219
+  },
+  {
+    "file": "src/lib/pdf/maintenance-report.tsx",
+    "kind": "text",
+    "text": "تاريخ الإنشاء:",
+    "line": 221
+  },
+  {
+    "file": "src/lib/pdf/maintenance-report.tsx",
+    "kind": "text",
+    "text": "تقرير الصيانة",
+    "line": 227
+  },
+  {
+    "file": "src/lib/pdf/maintenance-report.tsx",
+    "kind": "text",
+    "text": "معلومات العميل",
+    "line": 231
+  },
+  {
+    "file": "src/lib/pdf/maintenance-report.tsx",
+    "kind": "text",
+    "text": "الشركة:",
+    "line": 233
+  },
+  {
+    "file": "src/lib/pdf/maintenance-report.tsx",
+    "kind": "text",
+    "text": "الفرع:",
+    "line": 237
+  },
+  {
+    "file": "src/lib/pdf/maintenance-report.tsx",
+    "kind": "text",
+    "text": "العنوان:",
+    "line": 242
+  },
+  {
+    "file": "src/lib/pdf/maintenance-report.tsx",
+    "kind": "text",
+    "text": "تفاصيل الصيانة",
+    "line": 250
+  },
+  {
+    "file": "src/lib/pdf/maintenance-report.tsx",
+    "kind": "text",
+    "text": "أمر العمل:",
+    "line": 252
+  },
+  {
+    "file": "src/lib/pdf/maintenance-report.tsx",
+    "kind": "text",
+    "text": "تاريخ الصيانة:",
+    "line": 256
+  },
+  {
+    "file": "src/lib/pdf/maintenance-report.tsx",
+    "kind": "text",
+    "text": "حالة المعدة:",
+    "line": 260
+  },
+  {
+    "file": "src/lib/pdf/maintenance-report.tsx",
+    "kind": "text",
+    "text": "المهام المنفذة",
+    "line": 270
+  },
+  {
+    "file": "src/lib/pdf/maintenance-report.tsx",
+    "kind": "text",
+    "text": "القياسات والقراءات",
+    "line": 292
+  },
+  {
+    "file": "src/lib/pdf/maintenance-report.tsx",
+    "kind": "text",
+    "text": "المعامل",
+    "line": 295
+  },
+  {
+    "file": "src/lib/pdf/maintenance-report.tsx",
+    "kind": "text",
+    "text": "القيمة",
+    "line": 296
+  },
+  {
+    "file": "src/lib/pdf/maintenance-report.tsx",
+    "kind": "text",
+    "text": "الوحدة",
+    "line": 297
+  },
+  {
+    "file": "src/lib/pdf/maintenance-report.tsx",
+    "kind": "text",
+    "text": "النطاق الطبيعي",
+    "line": 298
+  },
+  {
+    "file": "src/lib/pdf/maintenance-report.tsx",
+    "kind": "text",
+    "text": "الحالة",
+    "line": 299
+  },
+  {
+    "file": "src/lib/pdf/maintenance-report.tsx",
+    "kind": "text",
+    "text": "المواد المستهلكة",
+    "line": 319
+  },
+  {
+    "file": "src/lib/pdf/maintenance-report.tsx",
+    "kind": "text",
+    "text": "العنصر",
+    "line": 322
+  },
+  {
+    "file": "src/lib/pdf/maintenance-report.tsx",
+    "kind": "text",
+    "text": "الكمية",
+    "line": 323
+  },
+  {
+    "file": "src/lib/pdf/maintenance-report.tsx",
+    "kind": "text",
+    "text": "الصيانة القادمة:",
+    "line": 339
+  },
+  {
+    "file": "src/lib/pdf/maintenance-report.tsx",
+    "kind": "text",
+    "text": "✓ موقّع",
+    "line": 352
+  },
+  {
+    "file": "src/lib/pdf/maintenance-report.tsx",
+    "kind": "text",
+    "text": "توقيع الفني",
+    "line": 355
+  },
+  {
+    "file": "src/lib/pdf/maintenance-report.tsx",
+    "kind": "text",
+    "text": "تم التوقيع:",
+    "line": 358
+  },
+  {
+    "file": "src/lib/pdf/maintenance-report.tsx",
+    "kind": "text",
+    "text": "✓ موقّع",
+    "line": 365
+  },
+  {
+    "file": "src/lib/pdf/maintenance-report.tsx",
+    "kind": "text",
+    "text": "توقيع المشرف",
+    "line": 368
+  },
+  {
+    "file": "src/lib/pdf/maintenance-report.tsx",
+    "kind": "text",
+    "text": "تم التوقيع:",
+    "line": 371
+  },
+  {
+    "file": "src/lib/pdf/maintenance-report.tsx",
+    "kind": "text",
+    "text": "تم إنشاء هذا التقرير بواسطة",
+    "line": 379
+  },
+  {
+    "file": "src/lib/pdf/maintenance-report.tsx",
+    "kind": "text",
+    "text": "• تقرير #",
+    "line": 379
+  },
+  {
+    "file": "src/lib/pdf/service-report.tsx",
+    "kind": "format",
+    "text": "new Date(dateStr).toLocaleDateString('ar-SA-u-nu-latn', { year: 'numeric', month: 'long', day: 'numeric', })",
+    "line": 154
+  },
+  {
+    "file": "src/lib/pdf/service-report.tsx",
+    "kind": "text",
+    "text": "هاتف:",
+    "line": 171
+  },
+  {
+    "file": "src/lib/pdf/service-report.tsx",
+    "kind": "text",
+    "text": "بريد:",
+    "line": 172
+  },
+  {
+    "file": "src/lib/pdf/service-report.tsx",
+    "kind": "text",
+    "text": "رقم التقرير:",
+    "line": 175
+  },
+  {
+    "file": "src/lib/pdf/service-report.tsx",
+    "kind": "text",
+    "text": "تاريخ الإنشاء:",
+    "line": 177
+  },
+  {
+    "file": "src/lib/pdf/service-report.tsx",
+    "kind": "text",
+    "text": "تقرير الخدمة",
+    "line": 183
+  },
+  {
+    "file": "src/lib/pdf/service-report.tsx",
+    "kind": "text",
+    "text": "معلومات العميل",
+    "line": 187
+  },
+  {
+    "file": "src/lib/pdf/service-report.tsx",
+    "kind": "text",
+    "text": "الشركة:",
+    "line": 189
+  },
+  {
+    "file": "src/lib/pdf/service-report.tsx",
+    "kind": "text",
+    "text": "الفرع:",
+    "line": 193
+  },
+  {
+    "file": "src/lib/pdf/service-report.tsx",
+    "kind": "text",
+    "text": "العنوان:",
+    "line": 198
+  },
+  {
+    "file": "src/lib/pdf/service-report.tsx",
+    "kind": "text",
+    "text": "تفاصيل أمر العمل",
+    "line": 206
+  },
+  {
+    "file": "src/lib/pdf/service-report.tsx",
+    "kind": "text",
+    "text": "أمر العمل:",
+    "line": 208
+  },
+  {
+    "file": "src/lib/pdf/service-report.tsx",
+    "kind": "text",
+    "text": "تاريخ الخدمة:",
+    "line": 212
+  },
+  {
+    "file": "src/lib/pdf/service-report.tsx",
+    "kind": "text",
+    "text": "وصف المشكلة",
+    "line": 220
+  },
+  {
+    "file": "src/lib/pdf/service-report.tsx",
+    "kind": "text",
+    "text": "تحليل السبب الجذري",
+    "line": 228
+  },
+  {
+    "file": "src/lib/pdf/service-report.tsx",
+    "kind": "text",
+    "text": "العمل المنفذ",
+    "line": 236
+  },
+  {
+    "file": "src/lib/pdf/service-report.tsx",
+    "kind": "text",
+    "text": "القطع المستبدلة",
+    "line": 244
+  },
+  {
+    "file": "src/lib/pdf/service-report.tsx",
+    "kind": "text",
+    "text": "اسم القطعة",
+    "line": 247
+  },
+  {
+    "file": "src/lib/pdf/service-report.tsx",
+    "kind": "text",
+    "text": "الكمية",
+    "line": 248
+  },
+  {
+    "file": "src/lib/pdf/service-report.tsx",
+    "kind": "text",
+    "text": "تكلفة الوحدة",
+    "line": 249
+  },
+  {
+    "file": "src/lib/pdf/service-report.tsx",
+    "kind": "text",
+    "text": "الإجمالي",
+    "line": 250
+  },
+  {
+    "file": "src/lib/pdf/service-report.tsx",
+    "kind": "text",
+    "text": "إجمالي القطع",
+    "line": 261
+  },
+  {
+    "file": "src/lib/pdf/service-report.tsx",
+    "kind": "text",
+    "text": "العمالة",
+    "line": 272
+  },
+  {
+    "file": "src/lib/pdf/service-report.tsx",
+    "kind": "text",
+    "text": "الساعات:",
+    "line": 274
+  },
+  {
+    "file": "src/lib/pdf/service-report.tsx",
+    "kind": "text",
+    "text": "السعر:",
+    "line": 278
+  },
+  {
+    "file": "src/lib/pdf/service-report.tsx",
+    "kind": "text",
+    "text": "/ساعة",
+    "line": 279
+  },
+  {
+    "file": "src/lib/pdf/service-report.tsx",
+    "kind": "text",
+    "text": "تكلفة العمالة:",
+    "line": 282
+  },
+  {
+    "file": "src/lib/pdf/service-report.tsx",
+    "kind": "text",
+    "text": "التكلفة الإجمالية:",
+    "line": 290
+  },
+  {
+    "file": "src/lib/pdf/service-report.tsx",
+    "kind": "text",
+    "text": "معلومات الضمان",
+    "line": 298
+  },
+  {
+    "file": "src/lib/pdf/service-report.tsx",
+    "kind": "text",
+    "text": "✓ موقّع",
+    "line": 308
+  },
+  {
+    "file": "src/lib/pdf/service-report.tsx",
+    "kind": "text",
+    "text": "توقيع الفني",
+    "line": 311
+  },
+  {
+    "file": "src/lib/pdf/service-report.tsx",
+    "kind": "text",
+    "text": "تم التوقيع:",
+    "line": 314
+  },
+  {
+    "file": "src/lib/pdf/service-report.tsx",
+    "kind": "text",
+    "text": "✓ موقّع",
+    "line": 321
+  },
+  {
+    "file": "src/lib/pdf/service-report.tsx",
+    "kind": "text",
+    "text": "توقيع المشرف",
+    "line": 324
+  },
+  {
+    "file": "src/lib/pdf/service-report.tsx",
+    "kind": "text",
+    "text": "تم التوقيع:",
+    "line": 327
+  },
+  {
+    "file": "src/lib/pdf/service-report.tsx",
+    "kind": "text",
+    "text": "تم إنشاء هذا التقرير بواسطة",
+    "line": 335
+  },
+  {
+    "file": "src/lib/pdf/service-report.tsx",
+    "kind": "text",
+    "text": "• تقرير #",
+    "line": 335
+  }
+]

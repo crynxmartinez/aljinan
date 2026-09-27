@@ -1,3 +1,5 @@
+import { browserLocale, errorMessage } from '@/lib/i18n/errors'
+import { systemMessages } from '@/lib/i18n/system-messages'
 import { toast } from 'sonner'
 
 /**
@@ -8,7 +10,7 @@ import { toast } from 'sonner'
  * indistinguishable from success: the optimistic UI update stays on screen and the user
  * believes their work saved. Four modules had no error surface at all.
  *
- * This throws on any non-2xx, carries the server's message, and shows it. Callers that need
+ * This throws on any non-2xx and shows a localized recovery message. Callers that need
  * to react further can catch; callers that just need the happy path can await and trust it.
  */
 
@@ -21,28 +23,6 @@ export class ApiError extends Error {
     this.name = 'ApiError'
     this.status = status
     this.details = details
-  }
-}
-
-/** Messages worth saying plainly, rather than passing through whatever the server said. */
-function messageForStatus(status: number, serverMessage?: string): string {
-  if (serverMessage) return serverMessage
-
-  switch (status) {
-    case 401:
-      return 'Your session has expired. Please sign in again.'
-    case 403:
-      return 'You do not have permission to do that.'
-    case 404:
-      return 'That item could no longer be found.'
-    case 409:
-      return 'That conflicts with the current state. Refresh and try again.'
-    case 429:
-      return 'Too many requests. Please wait a moment and try again.'
-    default:
-      return status >= 500
-        ? 'Something went wrong on our side. Nothing was changed.'
-        : 'That request could not be completed.'
   }
 }
 
@@ -69,7 +49,7 @@ async function request<T>(method: string, url: string, options: RequestOptions =
     })
   } catch {
     // Network-level failure: no response at all.
-    const message = 'Could not reach the server. Check your connection and try again.'
+    const message = errorMessage(0)
     if (showToast) toast.error(message)
     throw new ApiError(message, 0)
   }
@@ -77,17 +57,15 @@ async function request<T>(method: string, url: string, options: RequestOptions =
   if (!response.ok) {
     // The server may answer with JSON, or with an HTML error page — which is what made an
     // earlier bug show visitors a raw JSON parse error instead of anything useful.
-    let serverMessage: string | undefined
     let details: unknown
     try {
       const payload = await response.json()
-      serverMessage = typeof payload?.error === 'string' ? payload.error : undefined
       details = payload?.details
     } catch {
       // not JSON; fall back to the status
     }
 
-    const message = messageForStatus(response.status, serverMessage)
+    const message = errorMessage(response.status)
     if (showToast) toast.error(message)
     throw new ApiError(message, response.status, details)
   }
@@ -97,7 +75,9 @@ async function request<T>(method: string, url: string, options: RequestOptions =
   try {
     return (await response.json()) as T
   } catch {
-    return undefined as T
+    const message = systemMessages[browserLocale()].invalidResponse
+    if (showToast) toast.error(message)
+    throw new ApiError(message, response.status)
   }
 }
 

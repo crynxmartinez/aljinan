@@ -39,6 +39,9 @@ export async function GET(
 
     return NextResponse.json(appointment)
   } catch (error) {
+    if (error && typeof error === 'object' && 'code' in error && error.code === 'P2025') {
+      return NextResponse.json({ error: 'Not found' }, { status: 404 })
+    }
     console.error('Error fetching appointment:', error)
     return NextResponse.json(
       { error: 'Failed to fetch appointment' },
@@ -85,7 +88,7 @@ export async function PATCH(
         }
 
         const updated = await prisma.appointment.update({
-          where: { id: appointmentId },
+          where: { id: appointmentId, branchId },
           data: {
             status: 'CONFIRMED',
             confirmedAt: new Date(),
@@ -108,7 +111,7 @@ export async function PATCH(
         }
 
         const updated = await prisma.appointment.update({
-          where: { id: appointmentId },
+          where: { id: appointmentId, branchId },
           data: {
             status: 'CANCELLED',
             cancelledAt: new Date(),
@@ -132,7 +135,7 @@ export async function PATCH(
         }
 
         const updated = await prisma.appointment.update({
-          where: { id: appointmentId },
+          where: { id: appointmentId, branchId },
           data: {
             status: 'RESCHEDULED',
             rescheduleNote: rescheduleNote || null,
@@ -175,7 +178,7 @@ export async function PATCH(
       }
 
       const updated = await prisma.appointment.update({
-        where: { id: appointmentId },
+        where: { id: appointmentId, branchId },
         data: updateData
       })
 
@@ -199,6 +202,9 @@ export async function PATCH(
 
     return NextResponse.json({ error: 'Invalid request' }, { status: 400 })
   } catch (error) {
+    if (error && typeof error === 'object' && 'code' in error && error.code === 'P2025') {
+      return NextResponse.json({ error: 'Not found' }, { status: 404 })
+    }
     console.error('Error updating appointment:', error)
     return NextResponse.json(
       { error: 'Failed to update appointment' },
@@ -231,11 +237,14 @@ export async function DELETE(
     }
 
     await prisma.appointment.delete({
-      where: { id: appointmentId }
+      where: { id: appointmentId, branchId }
     })
 
     return NextResponse.json({ success: true })
   } catch (error) {
+    if (error && typeof error === 'object' && 'code' in error && error.code === 'P2025') {
+      return NextResponse.json({ error: 'Not found' }, { status: 404 })
+    }
     console.error('Error deleting appointment:', error)
     return NextResponse.json(
       { error: 'Failed to delete appointment' },

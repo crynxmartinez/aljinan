@@ -1,4 +1,6 @@
 'use client'
+import { formatDate as localizedDate, formatDateTime, formatCurrency as localizedCurrency } from '@/lib/i18n/format-date'
+import { enumLabel } from '@/lib/i18n/enum-labels'
 
 import { useEffect, useState } from 'react'
 import { useTranslation } from '@/lib/i18n/use-translation'
@@ -41,7 +43,7 @@ interface RequestQuotePrintProps {
 }
 
 export function RequestQuotePrint({ requestId, branchId }: RequestQuotePrintProps) {
-  const { t } = useTranslation()
+  const { t, locale } = useTranslation()
   const tp = t.dashboard.requestQuotePrint
   const [data, setData] = useState<RequestPrintData | null>(null)
   const [loading, setLoading] = useState(true)
@@ -90,22 +92,8 @@ export function RequestQuotePrint({ requestId, branchId }: RequestQuotePrintProp
     )
   }
 
-  const formatDate = (dateString: string | null) => {
-    if (!dateString) return '-'
-    return new Date(dateString).toLocaleDateString('ar-SA-u-nu-latn', {
-      year: 'numeric',
-      month: 'long',
-      day: 'numeric'
-    })
-  }
-
-  const formatCurrency = (amount: number | null) => {
-    if (!amount) return '-'
-    return new Intl.NumberFormat('en-SA', {
-      style: 'currency',
-      currency: 'SAR'
-    }).format(amount)
-  }
+  const formatDate = (date: string | null) => localizedDate(date, locale)
+  const formatCurrency = (amount: number | null) => amount == null ? '-' : localizedCurrency(amount, locale)
 
   const getPriorityLabel = (priority: string) => {
     const labels: Record<string, string> = {
@@ -226,7 +214,7 @@ export function RequestQuotePrint({ requestId, branchId }: RequestQuotePrintProp
                 <p className="text-lg font-semibold">REQ #{data.requestNumber}</p>
               )}
               <p className="text-sm text-muted-foreground mt-1">
-                {tp.generated} {new Date().toLocaleDateString('ar-SA-u-nu-latn')} {new Date().toLocaleTimeString()}
+                {tp.generated} {formatDateTime(new Date(), locale)}
               </p>
             </div>
           </div>
@@ -323,7 +311,7 @@ export function RequestQuotePrint({ requestId, branchId }: RequestQuotePrintProp
                   <tr key={eq.id}>
                     <td className="border border-gray-300 px-3 py-2 text-sm font-medium">{eq.equipmentNumber}</td>
                     <td className="border border-gray-300 px-3 py-2 text-sm">
-                      {eq.equipmentType.replace(/_/g, ' ')}
+                      {enumLabel(eq.equipmentType, locale)}
                     </td>
                     <td className="border border-gray-300 px-3 py-2 text-sm">{eq.location || '-'}</td>
                     <td className="border border-gray-300 px-3 py-2 text-sm">{formatDate(eq.expectedExpiry)}</td>

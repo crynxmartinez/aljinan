@@ -1,4 +1,6 @@
 'use client'
+import { formatDate as localizedDate, formatDateTime, formatCurrency as localizedCurrency } from '@/lib/i18n/format-date'
+import { enumLabel } from '@/lib/i18n/enum-labels'
 
 import { useEffect, useState } from 'react'
 import { useTranslation } from '@/lib/i18n/use-translation'
@@ -172,7 +174,7 @@ interface WorkOrderPrintProps {
 }
 
 export function WorkOrderPrint({ workOrderId }: WorkOrderPrintProps) {
-  const { t } = useTranslation()
+  const { t, locale } = useTranslation()
   const tp = t.dashboard.workOrderPrint
   const [data, setData] = useState<WorkOrderPrintData | null>(null)
   const [loading, setLoading] = useState(true)
@@ -221,22 +223,8 @@ export function WorkOrderPrint({ workOrderId }: WorkOrderPrintProps) {
     )
   }
 
-  const formatDate = (dateString: string | null) => {
-    if (!dateString) return '-'
-    return new Date(dateString).toLocaleDateString('ar-SA-u-nu-latn', {
-      year: 'numeric',
-      month: 'long',
-      day: 'numeric'
-    })
-  }
-
-  const formatCurrency = (amount: number | null) => {
-    if (!amount) return '-'
-    return new Intl.NumberFormat('en-SA', {
-      style: 'currency',
-      currency: 'SAR'
-    }).format(amount)
-  }
+  const formatDate = (date: string | null) => localizedDate(date, locale)
+  const formatCurrency = (amount: number | null) => amount == null ? '-' : localizedCurrency(amount, locale)
 
   const getStageLabel = (stage: string) => {
     const labels: Record<string, string> = {
@@ -340,7 +328,7 @@ export function WorkOrderPrint({ workOrderId }: WorkOrderPrintProps) {
               <h2 className="text-2xl font-bold mb-1">{tp.workOrderReport}</h2>
               <p className="text-lg font-semibold">WO #{data.workOrderNumber}</p>
               <p className="text-sm text-muted-foreground mt-1">
-                {tp.generated} {new Date().toLocaleDateString('ar-SA-u-nu-latn')} {new Date().toLocaleTimeString()}
+                {tp.generated} {formatDateTime(new Date(), locale)}
               </p>
             </div>
           </div>
@@ -635,7 +623,7 @@ export function WorkOrderPrint({ workOrderId }: WorkOrderPrintProps) {
                   <tr key={eq.id}>
                     <td className="border border-gray-300 px-3 py-2 text-sm font-medium">{eq.equipmentNumber}</td>
                     <td className="border border-gray-300 px-3 py-2 text-sm">
-                      {eq.equipmentType.replace(/_/g, ' ')}
+                      {enumLabel(eq.equipmentType, locale)}
                     </td>
                     <td className="border border-gray-300 px-3 py-2 text-sm">{eq.location || '-'}</td>
                     <td className="border border-gray-300 px-3 py-2 text-sm">{formatDate(eq.expectedExpiry)}</td>
@@ -705,7 +693,7 @@ export function WorkOrderPrint({ workOrderId }: WorkOrderPrintProps) {
                           <td className="border border-gray-300 px-3 py-2 text-sm">{m.normalRange}</td>
                           <td className={`border border-gray-300 px-3 py-2 text-sm capitalize ${m.status === 'critical' ? 'text-red-600 font-semibold' :
                             m.status === 'warning' ? 'text-yellow-600' : 'text-green-600'
-                            }`}>{m.status}</td>
+                            }`}>{enumLabel(m.status, locale)}</td>
                         </tr>
                       ))}
                     </tbody>
@@ -813,7 +801,7 @@ export function WorkOrderPrint({ workOrderId }: WorkOrderPrintProps) {
                       {(data.reportData as ServiceReportData).laborRate > 0 && (
                         <tr>
                           <td className="border border-gray-300 px-3 py-2 text-sm">{tp.laborRate}</td>
-                          <td className="border border-gray-300 px-3 py-2 text-sm text-end">{formatCurrency((data.reportData as ServiceReportData).laborRate)}/hr</td>
+                          <td className="border border-gray-300 px-3 py-2 text-sm text-end">{formatCurrency((data.reportData as ServiceReportData).laborRate)}{t.system.perHour}</td>
                         </tr>
                       )}
                       {(data.reportData as ServiceReportData).laborCost > 0 && (
@@ -1031,7 +1019,7 @@ export function WorkOrderPrint({ workOrderId }: WorkOrderPrintProps) {
                   <p className={`font-semibold capitalize ${(data.reportData as InspectionReportData).overallStatus === 'pass' ? 'text-green-600' :
                     (data.reportData as InspectionReportData).overallStatus === 'fail' ? 'text-red-600' : 'text-yellow-600'
                     }`}>
-                    {(data.reportData as InspectionReportData).overallStatus || '-'}
+                    {enumLabel((data.reportData as InspectionReportData).overallStatus, locale)}
                   </p>
                 </div>
                 <div>
@@ -1040,7 +1028,7 @@ export function WorkOrderPrint({ workOrderId }: WorkOrderPrintProps) {
                     (data.reportData as InspectionReportData).riskLevel === 'high' ? 'text-orange-600' :
                       (data.reportData as InspectionReportData).riskLevel === 'medium' ? 'text-yellow-600' : 'text-green-600'
                     }`}>
-                    {(data.reportData as InspectionReportData).riskLevel || '-'}
+                    {enumLabel((data.reportData as InspectionReportData).riskLevel, locale)}
                   </p>
                 </div>
               </div>

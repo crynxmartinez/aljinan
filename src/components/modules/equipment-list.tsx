@@ -1,4 +1,6 @@
 'use client'
+import { LocalizedError } from '@/components/localized-error'
+import { enumLabel } from '@/lib/i18n/enum-labels'
 
 import { useState, useEffect } from 'react'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
@@ -238,6 +240,7 @@ export function EquipmentList({ branchId, userRole = 'CONTRACTOR' }: EquipmentLi
         uploadFormData.append('file', certificateFile)
         uploadFormData.append('type', 'document')
         uploadFormData.append('folder', 'certificates')
+      uploadFormData.append('branchId', branchId)
 
         const uploadResponse = await fetch('/api/upload', {
           method: 'POST',
@@ -256,7 +259,7 @@ export function EquipmentList({ branchId, userRole = 'CONTRACTOR' }: EquipmentLi
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({
-            title: te.certificateTitle.replace('{type}', EQUIPMENT_TYPES.find(et => et.value === formData.equipmentType)?.label || formData.equipmentType.replace(/_/g, ' ')),
+            title: te.certificateTitle.replace('{type}', EQUIPMENT_TYPES.find(et => et.value === formData.equipmentType)?.label || enumLabel(formData.equipmentType, locale)),
             type: 'EQUIPMENT_CERTIFICATE',
             issueDate: new Date().toISOString(),
             expiryDate: certificateExpiry ? new Date(certificateExpiry).toISOString() : null,
@@ -459,7 +462,7 @@ export function EquipmentList({ branchId, userRole = 'CONTRACTOR' }: EquipmentLi
         <CardContent>
           {error && (
             <div className="bg-destructive/10 text-destructive p-3 rounded-lg text-sm mb-4">
-              {error}
+              <LocalizedError message={error} />
             </div>
           )}
 
@@ -501,7 +504,7 @@ export function EquipmentList({ branchId, userRole = 'CONTRACTOR' }: EquipmentLi
             <Select value={statusFilter} onValueChange={setStatusFilter}>
               <SelectTrigger className="w-full md:w-[180px]">
                 <Filter className="h-4 w-4 me-2" />
-                <SelectValue placeholder="Status" />
+                <SelectValue placeholder={t.dashboard.workOrdersPage.status} />
               </SelectTrigger>
               <SelectContent>
                 <SelectItem value="all">{te.allStatus}</SelectItem>
@@ -513,7 +516,7 @@ export function EquipmentList({ branchId, userRole = 'CONTRACTOR' }: EquipmentLi
             </Select>
             <Select value={typeFilter} onValueChange={setTypeFilter}>
               <SelectTrigger className="w-full md:w-[200px]">
-                <SelectValue placeholder="Type" />
+                <SelectValue placeholder={t.dashboard.workOrdersPage.type} />
               </SelectTrigger>
               <SelectContent>
                 <SelectItem value="all">{te.allTypes}</SelectItem>
@@ -558,7 +561,7 @@ export function EquipmentList({ branchId, userRole = 'CONTRACTOR' }: EquipmentLi
                         <Badge variant="outline" className="text-xs">
                           {eq.equipmentType === 'OTHER' && eq.customEquipmentType
                             ? eq.customEquipmentType
-                            : EQUIPMENT_TYPES.find(et => et.value === eq.equipmentType)?.label || eq.equipmentType.replace(/_/g, ' ')}
+                            : EQUIPMENT_TYPES.find(et => et.value === eq.equipmentType)?.label || enumLabel(eq.equipmentType, locale)}
                         </Badge>
                       </TableCell>
                       <TableCell>

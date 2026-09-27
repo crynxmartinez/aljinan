@@ -1,4 +1,5 @@
 'use client'
+import { formatCurrency as localizedCurrency } from '@/lib/i18n/format-date'
 
 import { useState, useEffect } from 'react'
 import { api } from '@/lib/api-client'
@@ -82,14 +83,6 @@ const WORK_ORDER_TYPE_ICONS: Record<string, React.ReactNode> = {
   OTHER: <FileText className="h-4 w-4" />,
 }
 
-const STAGE_CONFIG_UNUSED: Record<string, { label: string; color: string; icon: React.ReactNode }> = {
-  SCHEDULED: { label: 'Scheduled', color: 'bg-blue-100 text-blue-700', icon: <Calendar className="h-3 w-3" /> },
-  IN_PROGRESS: { label: 'In Progress', color: 'bg-green-100 text-green-700', icon: <Clock className="h-3 w-3" /> },
-  FOR_REVIEW: { label: 'For Review', color: 'bg-yellow-100 text-yellow-700', icon: <AlertCircle className="h-3 w-3" /> },
-  COMPLETED: { label: 'Completed', color: 'bg-gray-100 text-gray-700', icon: <CheckCircle className="h-3 w-3" /> },
-  ARCHIVED: { label: 'Archived', color: 'bg-gray-100 text-gray-500', icon: <FileText className="h-3 w-3" /> },
-}
-
 export function BranchDashboard({ branchId }: BranchDashboardProps) {
   const { t, locale } = useTranslation()
   const td = t.dashboard.branchDashboard
@@ -153,7 +146,7 @@ export function BranchDashboard({ branchId }: BranchDashboardProps) {
 
   const formatCurrency = (amount: number | null) => {
     if (amount === null) return '-'
-    return new Intl.NumberFormat('en-SA', { style: 'currency', currency: 'SAR' }).format(amount)
+    return localizedCurrency(amount, locale)
   }
 
   const formatDateLocal = (date: string | null) => {
@@ -243,8 +236,7 @@ export function BranchDashboard({ branchId }: BranchDashboardProps) {
                 {wo.workOrderType || 'OTHER'}
               </Badge>
               {wo.workOrderNumber && (
-                <span className="text-xs text-muted-foreground">
-                  #أمر-{String(wo.workOrderNumber).padStart(3, '0')}
+                <span className="text-xs text-muted-foreground">WO-{String(wo.workOrderNumber).padStart(3, '0')}
                 </span>
               )}
             </div>

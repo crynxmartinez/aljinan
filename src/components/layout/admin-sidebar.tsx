@@ -1,4 +1,6 @@
 'use client'
+import { TranslatedText } from '@/components/translated-text'
+
 
 import Link from 'next/link'
 import { usePathname, useRouter } from 'next/navigation'
@@ -125,7 +127,7 @@ export function AdminSidebar({ adminRole }: AdminSidebarProps) {
         <Link href="/admin" className="flex items-center gap-2">
           <div>
             <span className="text-xl font-bold">Tasheel</span>
-            <span className="text-xs text-red-500 ms-1 font-medium">Admin</span>
+            <span className="text-xs text-red-500 ms-1 font-medium"><TranslatedText path="dashboard.admin.admin" /></span>
           </div>
           <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-red-600 text-white font-bold">
             <Shield className="h-4 w-4" />

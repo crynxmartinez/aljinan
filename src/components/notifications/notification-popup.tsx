@@ -1,11 +1,14 @@
 'use client'
+import { api } from '@/lib/api-client'
+import { localizeNotificationText } from '@/lib/i18n/notification-messages'
 
-import { useEffect, useState } from 'react'
+import { useEffect, useState, useRef } from 'react'
 import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle } from '@/components/ui/dialog'
 import { Button } from '@/components/ui/button'
 import { Badge } from '@/components/ui/badge'
 import { Bell, CheckCircle, Clock, AlertCircle, Eye, Wrench, XCircle } from 'lucide-react'
 import { cn } from '@/lib/utils'
+import { useTranslation } from '@/lib/i18n/use-translation'
 
 interface NotificationPopupProps {
   userRole: 'CONTRACTOR' | 'CLIENT'
@@ -22,21 +25,24 @@ interface PopupNotification {
 }
 
 export function NotificationPopup({ userRole }: NotificationPopupProps) {
+  const { t, locale } = useTranslation()
+  const tp = t.dashboard.notificationPopup
   const [notification, setNotification] = useState<PopupNotification | null>(null)
   const [open, setOpen] = useState(false)
-  const [shownNotifications, setShownNotifications] = useState<Set<string>>(new Set())
+  const shownNotifications = useRef(new Set<string>())
 
   useEffect(() => {
+    if (open) return
     // Check for popup notification once on mount (after login)
     const checkNotifications = async () => {
       try {
         const response = await fetch('/api/notifications/popup')
         if (response.ok) {
           const data = await response.json()
-          if (data.notification && !shownNotifications.has(data.notification.id)) {
+          if (data.notification && !shownNotifications.current.has(data.notification.id)) {
             setNotification(data.notification)
             setOpen(true)
-            setShownNotifications(prev => new Set(prev).add(data.notification.id))
+            shownNotifications.current.add(data.notification.id)
           }
         }
       } catch (error) {
@@ -46,21 +52,21 @@ export function NotificationPopup({ userRole }: NotificationPopupProps) {
 
     // Only check once on mount
     checkNotifications()
-  }, [])  // Only run once when component mounts
+    const timer = window.setInterval(() => { if (document.visibilityState === 'visible' && !open) checkNotifications() }, 30000)
+    return () => window.clearInterval(timer)
+  }, [open])
 
   const handleClose = async () => {
     if (notification) {
       // Mark as read
       try {
-        await fetch('/api/notifications', {
-          method: 'PATCH',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ notificationIds: [notification.id] })
-        })
+        await api.patch('/api/notifications', { notificationIds: [notification.id] })
       } catch (error) {
         console.error('Failed to mark notification as read:', error)
+        return
       }
     }
+    window.dispatchEvent(new Event('notifications-changed'))
     setOpen(false)
   }
 
@@ -86,11 +92,11 @@ export function NotificationPopup({ userRole }: NotificationPopupProps) {
   const getPriorityBadge = (priority: string) => {
     switch (priority) {
       case 'high':
-        return <Badge variant="destructive">High Priority</Badge>
+        return <Badge variant="destructive">{tp.highPriority}</Badge>
       case 'medium':
-        return <Badge className="bg-amber-500">Medium Priority</Badge>
+        return <Badge className="bg-amber-500">{tp.mediumPriority}</Badge>
       case 'low':
-        return <Badge variant="secondary">Low Priority</Badge>
+        return <Badge variant="secondary">{tp.lowPriority}</Badge>
       default:
         return null
     }
@@ -116,17 +122,17 @@ export function NotificationPopup({ userRole }: NotificationPopupProps) {
   if (!notification) return null
 
   return (
-    <Dialog open={open} onOpenChange={setOpen}>
+    <Dialog open={open} onOpenChange={value => { if (!value) void handleClose() }}>
       <DialogContent className="sm:max-w-[500px]">
         <DialogHeader>
           <div className={cn('flex items-center justify-center w-16 h-16 rounded-full mx-auto mb-4', getBackgroundColor(notification.type))}>
             {getIcon(notification.type)}
           </div>
           <DialogTitle className="text-center text-xl">
-            {notification.title}
+            {localizeNotificationText(notification.title, locale)}
           </DialogTitle>
           <DialogDescription className="text-center">
-            {notification.message}
+            {localizeNotificationText(notification.message, locale)}
           </DialogDescription>
         </DialogHeader>
 
@@ -136,7 +142,7 @@ export function NotificationPopup({ userRole }: NotificationPopupProps) {
 
         <DialogFooter>
           <Button onClick={handleClose} className="w-full">
-            OK
+            {tp.ok}
           </Button>
         </DialogFooter>
       </DialogContent>

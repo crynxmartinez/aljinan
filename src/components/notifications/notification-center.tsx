@@ -1,4 +1,5 @@
 'use client'
+import { localizeNotificationText } from '@/lib/i18n/notification-messages'
 
 import { useState, useEffect } from 'react'
 import { useRouter } from 'next/navigation'
@@ -16,6 +17,7 @@ import {
 import { Badge } from '@/components/ui/badge'
 import { ScrollArea } from '@/components/ui/scroll-area'
 import { cn } from '@/lib/utils'
+import { useTranslation } from '@/lib/i18n/use-translation'
 
 interface Notification {
   id: string
@@ -65,27 +67,36 @@ function iconKeyFor(type: unknown): Notification['type'] {
 export function NotificationCenter() {
   const router = useRouter()
   const { data: session } = useSession()
+  const { t, locale } = useTranslation()
+  const tn = t.dashboard.notificationCenter
   const [notifications, setNotifications] = useState<Notification[]>([])
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState(false)
+  const [unreadCount, setUnreadCount] = useState(0)
   const [open, setOpen] = useState(false)
 
   useEffect(() => {
     fetchNotifications()
-  }, [])
+    const refresh = () => { if (document.visibilityState === 'visible') fetchNotifications() }
+    const timer = window.setInterval(refresh, 30000)
+    window.addEventListener('focus', refresh)
+    window.addEventListener('notifications-changed', refresh)
+    return () => { window.clearInterval(timer); window.removeEventListener('focus', refresh); window.removeEventListener('notifications-changed', refresh) }
+  }, [locale])
 
   const fetchNotifications = async () => {
     try {
       const response = await fetch('/api/notifications')
       if (response.ok) {
         const data = await response.json()
+        setUnreadCount(data.unreadCount ?? 0)
         // Map API notifications to component format with validation
         const mappedNotifications = (data.notifications || [])
           .filter((n: any) => n && n.id && n.title && n.message) // Filter out invalid entries
           .map((n: any) => ({
             id: n.id,
             type: iconKeyFor(n.type),
-            title: n.title || 'Notification',
+            title: n.title || tn.defaultTitle,
             message: n.message || '',
             link: n.link || undefined,
             read: n.isRead ?? false,
@@ -121,6 +132,8 @@ export function NotificationCenter() {
         body: JSON.stringify({ notificationIds: [notificationId] }),
       })
       if (!response.ok) throw new Error(`HTTP ${response.status}`)
+      await fetchNotifications()
+      window.dispatchEvent(new Event('notifications-changed'))
     } catch (error) {
       console.error('Failed to mark notification as read:', error)
       setNotifications(previous)
@@ -139,13 +152,14 @@ export function NotificationCenter() {
         body: JSON.stringify({ markAllRead: true }),
       })
       if (!response.ok) throw new Error(`HTTP ${response.status}`)
+      await fetchNotifications()
+      window.dispatchEvent(new Event('notifications-changed'))
     } catch (error) {
       console.error('Failed to mark all as read:', error)
       setNotifications(previous)
     }
   }
 
-  const unreadCount = notifications.filter(n => !n.read).length
 
   const formatTime = (date: Date) => {
     const now = new Date()
@@ -154,14 +168,14 @@ export function NotificationCenter() {
     const hours = Math.floor(diff / 3600000)
     const days = Math.floor(diff / 86400000)
 
-    if (minutes < 1) return 'Just now'
-    if (minutes < 60) return `${minutes}m ago`
-    if (hours < 24) return `${hours}h ago`
-    return `${days}d ago`
+    if (minutes < 1) return tn.justNow
+    if (minutes < 60) return tn.minutesAgo.replace('{count}', String(minutes))
+    if (hours < 24) return tn.hoursAgo.replace('{count}', String(hours))
+    return tn.daysAgo.replace('{count}', String(days))
   }
 
   return (
-    <DropdownMenu open={open} onOpenChange={setOpen}>
+    <DropdownMenu open={open} onOpenChange={(value) => { setOpen(value); if (value) fetchNotifications() }}>
       <DropdownMenuTrigger asChild>
         <Button variant="ghost" size="icon" className="relative">
           <Bell className="h-5 w-5" />
@@ -177,7 +191,7 @@ export function NotificationCenter() {
       </DropdownMenuTrigger>
       <DropdownMenuContent align="end" className="w-80">
         <DropdownMenuLabel className="flex items-center justify-between">
-          <span>Notifications</span>
+          <span>{tn.title}</span>
           {unreadCount > 0 && (
             <Button
               variant="ghost"
@@ -185,7 +199,7 @@ export function NotificationCenter() {
               className="h-auto p-0 text-xs text-muted-foreground hover:text-foreground"
               onClick={markAllAsRead}
             >
-              Mark all as read
+              {tn.markAllAsRead}
             </Button>
           )}
         </DropdownMenuLabel>
@@ -198,7 +212,7 @@ export function NotificationCenter() {
           ) : error ? (
             <div className="flex flex-col items-center justify-center py-8 text-center">
               <AlertCircle className="h-12 w-12 text-red-500/30 mb-2" />
-              <p className="text-sm text-muted-foreground">Failed to load notifications</p>
+              <p className="text-sm text-muted-foreground">{tn.loadFailed}</p>
               <Button
                 variant="ghost"
                 size="sm"
@@ -209,13 +223,13 @@ export function NotificationCenter() {
                   fetchNotifications()
                 }}
               >
-                Try again
+                {tn.tryAgain}
               </Button>
             </div>
           ) : notifications.length === 0 ? (
             <div className="flex flex-col items-center justify-center py-8 text-center">
               <Bell className="h-12 w-12 text-muted-foreground/30 mb-2" />
-              <p className="text-sm text-muted-foreground">No notifications</p>
+              <p className="text-sm text-muted-foreground">{tn.noNotifications}</p>
             </div>
           ) : (
             notifications.map((notification) => {
@@ -248,14 +262,14 @@ export function NotificationCenter() {
                   <div className="flex-1 space-y-1">
                     <div className="flex items-start justify-between gap-2">
                       <p className="text-sm font-medium leading-none">
-                        {notification.title}
+                        {localizeNotificationText(notification.title, locale)}
                       </p>
                       {!notification.read && (
                         <div className="h-2 w-2 rounded-full bg-blue-600 mt-1" />
                       )}
                     </div>
                     <p className="text-xs text-muted-foreground line-clamp-2">
-                      {notification.message}
+                      {localizeNotificationText(notification.message, locale)}
                     </p>
                     <p className="text-xs text-muted-foreground">
                       {formatTime(notification.createdAt)}
@@ -279,7 +293,7 @@ export function NotificationCenter() {
                 setOpen(false)
               }}
             >
-              View all notifications
+              {tn.viewAll}
             </DropdownMenuItem>
           </>
         )}

@@ -1,9 +1,10 @@
 'use client'
+import { LocalizedError } from '@/components/localized-error'
 
 import { useState, useEffect } from 'react'
 import { useRouter } from 'next/navigation'
 import { useTranslation } from '@/lib/i18n/use-translation'
-import { formatDate } from '@/lib/i18n/format-date'
+import { formatDate, formatCurrency } from '@/lib/i18n/format-date'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
@@ -213,11 +214,11 @@ export function QuotationsList({ branchId }: QuotationsListProps) {
 
   const getStatusBadge = (status: Quotation['status']) => {
     const config = {
-      DRAFT: { style: 'bg-gray-100 dark:bg-gray-800 text-gray-700 dark:text-gray-300', icon: FileEdit, label: 'Draft' },
-      SENT: { style: 'bg-blue-100 dark:bg-blue-950/40 text-blue-700 dark:text-blue-400', icon: Clock, label: 'Sent' },
-      APPROVED: { style: 'bg-green-100 dark:bg-green-950/40 text-green-700 dark:text-green-400', icon: CheckCircle, label: 'Approved' },
-      REJECTED: { style: 'bg-red-100 dark:bg-red-950/40 text-red-700 dark:text-red-400', icon: XCircle, label: 'Rejected' },
-      EXPIRED: { style: 'bg-orange-100 dark:bg-orange-950/40 text-orange-700 dark:text-orange-400', icon: Clock, label: 'Expired' },
+      DRAFT: { style: 'bg-gray-100 dark:bg-gray-800 text-gray-700 dark:text-gray-300', icon: FileEdit, label: tql.statusDraft },
+      SENT: { style: 'bg-blue-100 dark:bg-blue-950/40 text-blue-700 dark:text-blue-400', icon: Clock, label: tql.statusSent },
+      APPROVED: { style: 'bg-green-100 dark:bg-green-950/40 text-green-700 dark:text-green-400', icon: CheckCircle, label: tql.statusApproved },
+      REJECTED: { style: 'bg-red-100 dark:bg-red-950/40 text-red-700 dark:text-red-400', icon: XCircle, label: tql.statusRejected },
+      EXPIRED: { style: 'bg-orange-100 dark:bg-orange-950/40 text-orange-700 dark:text-orange-400', icon: Clock, label: tql.statusExpired },
     }
     const { style, icon: Icon, label } = config[status]
     return (
@@ -226,10 +227,6 @@ export function QuotationsList({ branchId }: QuotationsListProps) {
         {label}
       </Badge>
     )
-  }
-
-  const formatCurrency = (amount: number) => {
-    return new Intl.NumberFormat('en-SA', { style: 'currency', currency: 'SAR' }).format(amount)
   }
 
   const totals = calculateTotals(newQuotation.items, newQuotation.taxRate)
@@ -249,27 +246,27 @@ export function QuotationsList({ branchId }: QuotationsListProps) {
       <Card>
         <CardHeader className="flex flex-row items-center justify-between">
           <div>
-            <CardTitle>التسعيرات</CardTitle>
+            <CardTitle>{tql.title}</CardTitle>
             <CardDescription>
-              Create and manage quotes for this branch
+              {tql.subtitle}
             </CardDescription>
           </div>
           <Button onClick={() => setCreateDialogOpen(true)}>
             <Plus className="me-2 h-4 w-4" />
-            New Quote
+            {tql.newQuote}
           </Button>
         </CardHeader>
         <CardContent>
           {quotations.length === 0 ? (
             <div className="flex flex-col items-center justify-center py-12 text-center">
               <Receipt className="h-12 w-12 text-muted-foreground/30 mb-4" />
-              <h3 className="text-lg font-semibold mb-2">لا توجد تسعيرات بعد</h3>
+              <h3 className="text-lg font-semibold mb-2">{tql.noQuotationsYet}</h3>
               <p className="text-muted-foreground max-w-md mb-4">
-                أنشئ أول تسعيرة لهذا الفرع. Once sent, the client can approve or reject it.
+                {tql.noQuotationsDesc}
               </p>
               <Button onClick={() => setCreateDialogOpen(true)}>
                 <Plus className="me-2 h-4 w-4" />
-                Create Quote
+                {tql.createQuote}
               </Button>
             </div>
           ) : (
@@ -294,17 +291,17 @@ export function QuotationsList({ branchId }: QuotationsListProps) {
                       </p>
                     )}
                     <div className="flex items-center gap-4 text-sm">
-                      <span className="font-semibold">{formatCurrency(quotation.total)}</span>
+                      <span className="font-semibold">{formatCurrency(quotation.total, locale)}</span>
                       <span className="text-muted-foreground">
-                        {quotation.items.length} item{quotation.items.length !== 1 ? 's' : ''}
+                        {(quotation.items.length === 1 ? tql.itemCountSingular : tql.itemCountPlural).replace('{count}', String(quotation.items.length))}
                       </span>
                       <span className="text-muted-foreground">
-                        Created {formatDate(quotation.createdAt, locale, {})}
+                        {tql.createdOn.replace('{date}', formatDate(quotation.createdAt, locale, {}))}
                       </span>
                     </div>
                     {quotation.rejectionNote && (
                       <p className="text-sm text-red-600 mt-2">
-                        Rejection note: {quotation.rejectionNote}
+                        {tql.rejectionNoteLabel.replace('{note}', quotation.rejectionNote)}
                       </p>
                     )}
                   </div>
@@ -319,20 +316,20 @@ export function QuotationsList({ branchId }: QuotationsListProps) {
                         <>
                           <DropdownMenuItem onClick={() => handleSendQuotation(quotation.id)}>
                             <Send className="me-2 h-4 w-4" />
-                            Send to Client
+                            {tql.sendToClient}
                           </DropdownMenuItem>
                           <DropdownMenuItem
                             onClick={() => handleDeleteQuotation(quotation.id)}
                             className="text-destructive"
                           >
                             <Trash2 className="me-2 h-4 w-4" />
-                            Delete
+                            {tql.delete}
                           </DropdownMenuItem>
                         </>
                       )}
                       {quotation.status !== 'DRAFT' && (
                         <DropdownMenuItem disabled>
-                          View Details
+                          {tql.viewDetails}
                         </DropdownMenuItem>
                       )}
                     </DropdownMenuContent>
@@ -348,48 +345,48 @@ export function QuotationsList({ branchId }: QuotationsListProps) {
       <Dialog open={createDialogOpen} onOpenChange={setCreateDialogOpen}>
         <DialogContent className="max-w-2xl max-h-[90vh] overflow-y-auto">
           <DialogHeader>
-            <DialogTitle>Create New Quotation</DialogTitle>
+            <DialogTitle>{tql.createDialogTitle}</DialogTitle>
             <DialogDescription>
-              Create a quotation with line items. You can save as draft or send directly to the client.
+              {tql.createDialogDesc}
             </DialogDescription>
           </DialogHeader>
           <form onSubmit={handleCreateQuotation}>
             {error && (
               <div className="bg-destructive/10 text-destructive p-3 rounded-lg text-sm mb-4">
-                {error}
+                <LocalizedError message={error} />
               </div>
             )}
             <div className="space-y-4">
               <div className="space-y-2">
-                <Label htmlFor="title">العنوان *</Label>
+                <Label htmlFor="title">{tql.titleLabel}</Label>
                 <Input
                   id="title"
                   value={newQuotation.title}
                   onChange={(e) => setNewQuotation({ ...newQuotation, title: e.target.value })}
-                  placeholder="e.g., Monthly Pest Control Service"
+                  placeholder={tql.titlePlaceholder}
                   required
                 />
               </div>
               <div className="space-y-2">
-                <Label htmlFor="description">الوصف</Label>
+                <Label htmlFor="description">{tql.descriptionLabel}</Label>
                 <Textarea
                   id="description"
                   value={newQuotation.description}
                   onChange={(e) => setNewQuotation({ ...newQuotation, description: e.target.value })}
-                  placeholder="Additional details about this quotation"
+                  placeholder={tql.descriptionPlaceholder}
                   rows={2}
                 />
               </div>
 
               {/* Line Items */}
               <div className="space-y-2">
-                <Label>البنود</Label>
+                <Label>{tql.lineItemsLabel}</Label>
                 <div className="space-y-2">
                   {newQuotation.items.map((item, index) => (
                     <div key={index} className="grid grid-cols-12 gap-2 items-end">
                       <div className="col-span-5">
                         <Input
-                          placeholder="Description"
+                          placeholder={tql.itemDescriptionPlaceholder}
                           value={item.description}
                           onChange={(e) => handleItemChange(index, 'description', e.target.value)}
                         />
@@ -397,7 +394,7 @@ export function QuotationsList({ branchId }: QuotationsListProps) {
                       <div className="col-span-2">
                         <Input
                           type="number"
-                          placeholder="Qty"
+                          placeholder={tql.qtyPlaceholder}
                           min="1"
                           value={item.quantity}
                           onChange={(e) => handleItemChange(index, 'quantity', parseFloat(e.target.value) || 0)}
@@ -406,7 +403,7 @@ export function QuotationsList({ branchId }: QuotationsListProps) {
                       <div className="col-span-2">
                         <Input
                           type="number"
-                          placeholder="Price"
+                          placeholder={tql.pricePlaceholder}
                           min="0"
                           step="0.01"
                           value={item.unitPrice}
@@ -414,7 +411,7 @@ export function QuotationsList({ branchId }: QuotationsListProps) {
                         />
                       </div>
                       <div className="col-span-2 text-end font-medium">
-                        {formatCurrency(item.quantity * item.unitPrice)}
+                        {formatCurrency(item.quantity * item.unitPrice, locale)}
                       </div>
                       <div className="col-span-1">
                         <Button
@@ -432,19 +429,19 @@ export function QuotationsList({ branchId }: QuotationsListProps) {
                 </div>
                 <Button type="button" variant="outline" size="sm" onClick={addItem}>
                   <Plus className="me-2 h-4 w-4" />
-                  Add Item
+                  {tql.addItem}
                 </Button>
               </div>
 
               {/* Totals */}
               <div className="border-t pt-4 space-y-2">
                 <div className="flex justify-between text-sm">
-                  <span>المجموع الفرعي</span>
-                  <span>{formatCurrency(totals.subtotal)}</span>
+                  <span>{tql.subtotal}</span>
+                  <span>{formatCurrency(totals.subtotal, locale)}</span>
                 </div>
                 <div className="flex justify-between items-center text-sm">
                   <div className="flex items-center gap-2">
-                    <span>الضريبة</span>
+                    <span>{tql.tax}</span>
                     <Input
                       type="number"
                       className="w-20 h-8"
@@ -455,16 +452,16 @@ export function QuotationsList({ branchId }: QuotationsListProps) {
                     />
                     <span>%</span>
                   </div>
-                  <span>{formatCurrency(totals.taxAmount)}</span>
+                  <span>{formatCurrency(totals.taxAmount, locale)}</span>
                 </div>
                 <div className="flex justify-between font-semibold text-lg border-t pt-2">
-                  <span>الإجمالي</span>
-                  <span>{formatCurrency(totals.total)}</span>
+                  <span>{tql.total}</span>
+                  <span>{formatCurrency(totals.total, locale)}</span>
                 </div>
               </div>
 
               <div className="space-y-2">
-                <Label htmlFor="validUntil">Valid Until</Label>
+                <Label htmlFor="validUntil">{tql.validUntil}</Label>
                 <Input
                   id="validUntil"
                   type="date"
@@ -475,7 +472,7 @@ export function QuotationsList({ branchId }: QuotationsListProps) {
             </div>
             <DialogFooter className="mt-6">
               <Button type="button" variant="outline" onClick={() => setCreateDialogOpen(false)}>
-                Cancel
+                {tql.cancel}
               </Button>
               <Button
                 type="button"
@@ -484,7 +481,7 @@ export function QuotationsList({ branchId }: QuotationsListProps) {
                 onClick={(e) => handleCreateQuotation(e, false)}
               >
                 {creating && <Loader2 className="me-2 h-4 w-4 animate-spin" />}
-                Save as Draft
+                {tql.saveDraft}
               </Button>
               <Button
                 type="submit"
@@ -496,7 +493,7 @@ export function QuotationsList({ branchId }: QuotationsListProps) {
               >
                 {creating && <Loader2 className="me-2 h-4 w-4 animate-spin" />}
                 <Send className="me-2 h-4 w-4" />
-                Create & Send
+                {tql.createAndSend}
               </Button>
             </DialogFooter>
           </form>
@@ -508,32 +505,32 @@ export function QuotationsList({ branchId }: QuotationsListProps) {
         <DialogContent className="max-w-2xl max-h-[80vh] overflow-y-auto">
           <DialogHeader>
             <DialogTitle>{selectedQuotation?.title}</DialogTitle>
-            <DialogDescription>تفاصيل التسعيرة</DialogDescription>
+            <DialogDescription>{tql.detailDialogDesc}</DialogDescription>
           </DialogHeader>
           {selectedQuotation && (
             <div className="space-y-4">
               <div className="flex items-center gap-2">
                 {getStatusBadge(selectedQuotation.status)}
-                <span className="text-lg font-semibold">{formatCurrency(selectedQuotation.total)}</span>
+                <span className="text-lg font-semibold">{formatCurrency(selectedQuotation.total, locale)}</span>
               </div>
 
               {selectedQuotation.description && (
                 <div>
-                  <p className="text-sm font-medium text-muted-foreground mb-1">الوصف</p>
+                  <p className="text-sm font-medium text-muted-foreground mb-1">{tql.descriptionLabel}</p>
                   <p className="text-sm">{selectedQuotation.description}</p>
                 </div>
               )}
 
               <div>
-                <p className="text-sm font-medium text-muted-foreground mb-2">البنود</p>
+                <p className="text-sm font-medium text-muted-foreground mb-2">{tql.lineItemsLabel}</p>
                 <div className="border rounded-lg overflow-hidden">
                   <table className="w-full text-sm">
                     <thead className="bg-muted">
                       <tr>
-                        <th className="text-start p-2">الوصف</th>
-                        <th className="text-end p-2">الكمية</th>
-                        <th className="text-end p-2">سعر الوحدة</th>
-                        <th className="text-end p-2">الإجمالي</th>
+                        <th className="text-start p-2">{tql.tableDescription}</th>
+                        <th className="text-end p-2">{tql.tableQuantity}</th>
+                        <th className="text-end p-2">{tql.tableUnitPrice}</th>
+                        <th className="text-end p-2">{tql.total}</th>
                       </tr>
                     </thead>
                     <tbody>
@@ -541,23 +538,23 @@ export function QuotationsList({ branchId }: QuotationsListProps) {
                         <tr key={idx} className="border-t">
                           <td className="p-2">{item.description}</td>
                           <td className="text-end p-2">{item.quantity}</td>
-                          <td className="text-end p-2">{formatCurrency(item.unitPrice)}</td>
-                          <td className="text-end p-2">{formatCurrency(item.total)}</td>
+                          <td className="text-end p-2">{formatCurrency(item.unitPrice, locale)}</td>
+                          <td className="text-end p-2">{formatCurrency(item.total, locale)}</td>
                         </tr>
                       ))}
                     </tbody>
                     <tfoot className="bg-muted/50">
                       <tr className="border-t">
-                        <td colSpan={3} className="text-end p-2 font-medium">المجموع الفرعي</td>
-                        <td className="text-end p-2">{formatCurrency(selectedQuotation.subtotal)}</td>
+                        <td colSpan={3} className="text-end p-2 font-medium">{tql.subtotal}</td>
+                        <td className="text-end p-2">{formatCurrency(selectedQuotation.subtotal, locale)}</td>
                       </tr>
                       <tr>
-                        <td colSpan={3} className="text-end p-2 font-medium">Tax ({selectedQuotation.taxRate}%)</td>
-                        <td className="text-end p-2">{formatCurrency(selectedQuotation.taxAmount)}</td>
+                        <td colSpan={3} className="text-end p-2 font-medium">{tql.taxWithRate.replace('{rate}', String(selectedQuotation.taxRate))}</td>
+                        <td className="text-end p-2">{formatCurrency(selectedQuotation.taxAmount, locale)}</td>
                       </tr>
                       <tr className="font-bold">
-                        <td colSpan={3} className="text-end p-2">الإجمالي</td>
-                        <td className="text-end p-2">{formatCurrency(selectedQuotation.total)}</td>
+                        <td colSpan={3} className="text-end p-2">{tql.total}</td>
+                        <td className="text-end p-2">{formatCurrency(selectedQuotation.total, locale)}</td>
                       </tr>
                     </tfoot>
                   </table>
@@ -566,24 +563,24 @@ export function QuotationsList({ branchId }: QuotationsListProps) {
 
               <div className="grid grid-cols-2 gap-4 text-sm">
                 <div>
-                  <p className="font-medium text-muted-foreground">تم الإنشاء</p>
+                  <p className="font-medium text-muted-foreground">{tql.createdLabel}</p>
                   <p>{formatDate(selectedQuotation.createdAt, locale, {})}</p>
                 </div>
                 {selectedQuotation.validUntil && (
                   <div>
-                    <p className="font-medium text-muted-foreground">Valid Until</p>
+                    <p className="font-medium text-muted-foreground">{tql.validUntil}</p>
                     <p>{formatDate(selectedQuotation.validUntil, locale, {})}</p>
                   </div>
                 )}
                 {selectedQuotation.sentAt && (
                   <div>
-                    <p className="font-medium text-muted-foreground">تم الإرسال</p>
+                    <p className="font-medium text-muted-foreground">{tql.sentLabel}</p>
                     <p>{formatDate(selectedQuotation.sentAt, locale, {})}</p>
                   </div>
                 )}
                 {selectedQuotation.approvedAt && (
                   <div>
-                    <p className="font-medium text-muted-foreground">موافق عليه</p>
+                    <p className="font-medium text-muted-foreground">{tql.approvedLabel}</p>
                     <p>{formatDate(selectedQuotation.approvedAt, locale, {})}</p>
                   </div>
                 )}
@@ -591,7 +588,7 @@ export function QuotationsList({ branchId }: QuotationsListProps) {
 
               {selectedQuotation.rejectionNote && (
                 <div className="p-3 bg-red-50 dark:bg-red-950/40 border border-red-200 dark:border-red-900 rounded-lg">
-                  <p className="text-sm font-medium text-red-700 dark:text-red-400">Rejection Note</p>
+                  <p className="text-sm font-medium text-red-700 dark:text-red-400">{tql.rejectionNoteTitle}</p>
                   <p className="text-sm text-red-600 dark:text-red-400">{selectedQuotation.rejectionNote}</p>
                 </div>
               )}
@@ -606,7 +603,7 @@ export function QuotationsList({ branchId }: QuotationsListProps) {
                     className="flex-1"
                   >
                     <Send className="me-2 h-4 w-4" />
-                    Send to Client
+                    {tql.sendToClient}
                   </Button>
                 </div>
               )}

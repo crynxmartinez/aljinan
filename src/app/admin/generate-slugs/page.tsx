@@ -1,4 +1,7 @@
 'use client'
+import { LocalizedError } from '@/components/localized-error'
+import { TranslatedText } from '@/components/translated-text'
+
 
 import { useState } from 'react'
 import { Button } from '@/components/ui/button'
@@ -38,10 +41,8 @@ export default function GenerateSlugsPage() {
     <div className="container max-w-4xl py-10">
       <Card>
         <CardHeader>
-          <CardTitle>Generate Slugs for Clients & Branches</CardTitle>
-          <CardDescription>
-            This will generate URL-friendly slugs for all clients and branches that don't have one yet.
-          </CardDescription>
+          <CardTitle><TranslatedText path="copy.Generate_Slugs_for_Clients_Branches" /></CardTitle>
+          <CardDescription><TranslatedText path="copy.This_will_generate_URL_friendly_slugs_for_all_clients_and_branche" /></CardDescription>
         </CardHeader>
         <CardContent className="space-y-4">
           <Button 
@@ -49,16 +50,14 @@ export default function GenerateSlugsPage() {
             disabled={loading}
             size="lg"
           >
-            {loading && <Loader2 className="me-2 h-4 w-4 animate-spin" />}
-            Generate Slugs
-          </Button>
+            {loading && <Loader2 className="me-2 h-4 w-4 animate-spin" />}<TranslatedText path="copy.Generate_Slugs" /></Button>
 
           {error && (
             <div className="flex items-start gap-3 p-4 bg-red-50 border border-red-200 rounded-lg">
               <AlertCircle className="h-5 w-5 text-red-600 mt-0.5" />
               <div>
-                <p className="font-semibold text-red-900">Error</p>
-                <p className="text-sm text-red-700">{error}</p>
+                <p className="font-semibold text-red-900"><TranslatedText path="copy.Error" /></p>
+                <p className="text-sm text-red-700"><LocalizedError message={error} /></p>
               </div>
             </div>
           )}
@@ -68,7 +67,7 @@ export default function GenerateSlugsPage() {
               <div className="flex items-start gap-3 p-4 bg-green-50 border border-green-200 rounded-lg">
                 <CheckCircle className="h-5 w-5 text-green-600 mt-0.5" />
                 <div>
-                  <p className="font-semibold text-green-900">Success!</p>
+                  <p className="font-semibold text-green-900"><TranslatedText path="copy.Success" /></p>
                   <p className="text-sm text-green-700">{result.message}</p>
                 </div>
               </div>
@@ -76,8 +75,8 @@ export default function GenerateSlugsPage() {
               <div className="grid gap-4 md:grid-cols-2">
                 <Card>
                   <CardHeader>
-                    <CardTitle className="text-lg">Clients Updated</CardTitle>
-                    <CardDescription>{result.clientsUpdated} clients</CardDescription>
+                    <CardTitle className="text-lg"><TranslatedText path="copy.Clients_Updated" /></CardTitle>
+                    <CardDescription>{result.clientsUpdated}{' '}<TranslatedText path="copy.clients" /></CardDescription>
                   </CardHeader>
                   <CardContent>
                     {result.clients.length > 0 ? (
@@ -91,15 +90,15 @@ export default function GenerateSlugsPage() {
                         ))}
                       </ul>
                     ) : (
-                      <p className="text-sm text-muted-foreground">No clients needed slugs</p>
+                      <p className="text-sm text-muted-foreground"><TranslatedText path="copy.No_clients_needed_slugs" /></p>
                     )}
                   </CardContent>
                 </Card>
 
                 <Card>
                   <CardHeader>
-                    <CardTitle className="text-lg">Branches Updated</CardTitle>
-                    <CardDescription>{result.branchesUpdated} branches</CardDescription>
+                    <CardTitle className="text-lg"><TranslatedText path="copy.Branches_Updated" /></CardTitle>
+                    <CardDescription>{result.branchesUpdated}{' '}<TranslatedText path="copy.branches" /></CardDescription>
                   </CardHeader>
                   <CardContent>
                     {result.branches.length > 0 ? (
@@ -113,7 +112,7 @@ export default function GenerateSlugsPage() {
                         ))}
                       </ul>
                     ) : (
-                      <p className="text-sm text-muted-foreground">No branches needed slugs</p>
+                      <p className="text-sm text-muted-foreground"><TranslatedText path="copy.No_branches_needed_slugs" /></p>
                     )}
                   </CardContent>
                 </Card>
@@ -121,8 +120,7 @@ export default function GenerateSlugsPage() {
 
               <div className="p-4 bg-blue-50 border border-blue-200 rounded-lg">
                 <p className="text-sm text-blue-900">
-                  <strong>Next step:</strong> Refresh any open pages to see the new clean URLs!
-                </p>
+                  <strong><TranslatedText path="copy.Next_step30" /></strong>{' '}<TranslatedText path="copy.Refresh_any_open_pages_to_see_the_new_clean_URLs" /></p>
               </div>
             </div>
           )}

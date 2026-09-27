@@ -1,4 +1,5 @@
 'use client'
+import { LocalizedError } from '@/components/localized-error'
 
 import { useState } from 'react'
 import { useRouter } from 'next/navigation'
@@ -8,12 +9,15 @@ import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
 import { Loader2 } from 'lucide-react'
 import { AddressPicker, AddressData } from '@/components/ui/address-picker'
+import { useTranslation } from '@/lib/i18n/use-translation'
 
 interface AddBranchFormProps {
   clientId: string
 }
 
 export function AddBranchForm({ clientId }: AddBranchFormProps) {
+  const { t } = useTranslation()
+  const ta = t.dashboard.addBranchForm
   const router = useRouter()
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState('')
@@ -36,12 +40,12 @@ export function AddBranchForm({ clientId }: AddBranchFormProps) {
     e.preventDefault()
     
     if (!name) {
-      setError('Please enter a branch name')
+      setError(ta.errorNameRequired)
       return
     }
 
     if (!addressData.address) {
-      setError('Please enter or select an address')
+      setError(ta.errorAddressRequired)
       return
     }
 
@@ -68,13 +72,13 @@ export function AddBranchForm({ clientId }: AddBranchFormProps) {
 
       if (!response.ok) {
         const data = await response.json()
-        throw new Error(data.error || 'Failed to create branch')
+        throw new Error(data.error || ta.errorCreateFailed)
       }
 
       router.push(`/dashboard/clients/${clientId}`)
       router.refresh()
     } catch (err) {
-      setError(err instanceof Error ? err.message : 'An error occurred')
+      setError(err instanceof Error ? err.message : ta.errorGeneric)
     } finally {
       setLoading(false)
     }
@@ -83,26 +87,26 @@ export function AddBranchForm({ clientId }: AddBranchFormProps) {
   return (
     <Card className="max-w-3xl">
       <CardHeader>
-        <CardTitle>Branch Location</CardTitle>
+        <CardTitle>{ta.cardTitle}</CardTitle>
         <CardDescription>
-          Search for an address or click on the map to select the branch location
+          {ta.cardDescription}
         </CardDescription>
       </CardHeader>
       <CardContent>
         <form onSubmit={handleSubmit} className="space-y-6">
           {error && (
             <div className="bg-destructive/10 text-destructive p-3 rounded-lg text-sm">
-              {error}
+              <LocalizedError message={error} />
             </div>
           )}
 
           <div className="space-y-2">
-            <Label htmlFor="name">Branch Name *</Label>
+            <Label htmlFor="name">{ta.branchNameLabel}</Label>
             <Input
               id="name"
               value={name}
               onChange={(e) => setName(e.target.value)}
-              placeholder="e.g., Main Office, Warehouse A, Downtown Location"
+              placeholder={ta.branchNamePlaceholder}
               required
             />
           </div>
@@ -115,21 +119,21 @@ export function AddBranchForm({ clientId }: AddBranchFormProps) {
 
           <div className="grid grid-cols-2 gap-4">
             <div className="space-y-2">
-              <Label htmlFor="phone">Branch Phone</Label>
+              <Label htmlFor="phone">{ta.branchPhoneLabel}</Label>
               <Input
                 id="phone"
                 value={phone}
                 onChange={(e) => setPhone(e.target.value)}
-                placeholder="(555) 123-4567"
+                placeholder={ta.branchPhonePlaceholder}
               />
             </div>
             <div className="space-y-2">
-              <Label htmlFor="notes">ملاحظات</Label>
+              <Label htmlFor="notes">{ta.notesLabel}</Label>
               <Input
                 id="notes"
                 value={notes}
                 onChange={(e) => setNotes(e.target.value)}
-                placeholder="Any additional notes"
+                placeholder={ta.notesPlaceholder}
               />
             </div>
           </div>
@@ -137,14 +141,14 @@ export function AddBranchForm({ clientId }: AddBranchFormProps) {
           <div className="flex gap-3 pt-4">
             <Button type="submit" disabled={loading || !addressData.address || !name}>
               {loading && <Loader2 className="me-2 h-4 w-4 animate-spin" />}
-              Add Branch
+              {ta.addBranch}
             </Button>
             <Button
               type="button"
               variant="outline"
               onClick={() => router.back()}
             >
-              Cancel
+              {ta.cancel}
             </Button>
           </div>
         </form>

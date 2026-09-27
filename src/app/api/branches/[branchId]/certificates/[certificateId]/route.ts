@@ -24,7 +24,7 @@ export async function GET(
     }
 
     const certificate = await prisma.certificate.findFirst({
-      where: { id: certificateId, branchId },
+      where: { id: certificateId, branchId, ...(session.user.role === 'CLIENT' ? { OR: [{ contractId: null }, { contract: { status: { not: 'DRAFT' as const } } }] } : {}) },
       include: {
         contract: { select: { id: true, title: true } }
       }
@@ -36,6 +36,9 @@ export async function GET(
 
     return NextResponse.json(certificate)
   } catch (error) {
+    if (error && typeof error === 'object' && 'code' in error && error.code === 'P2025') {
+      return NextResponse.json({ error: 'Not found' }, { status: 404 })
+    }
     console.error('Error fetching certificate:', error)
     return NextResponse.json(
       { error: 'Failed to fetch certificate' },
@@ -78,7 +81,7 @@ export async function PATCH(
     if (notes !== undefined) updateData.notes = notes
 
     const certificate = await prisma.certificate.update({
-      where: { id: certificateId },
+      where: { id: certificateId, branchId },
       data: updateData,
       include: {
         contract: { select: { id: true, title: true } }
@@ -87,6 +90,9 @@ export async function PATCH(
 
     return NextResponse.json(certificate)
   } catch (error) {
+    if (error && typeof error === 'object' && 'code' in error && error.code === 'P2025') {
+      return NextResponse.json({ error: 'Not found' }, { status: 404 })
+    }
     console.error('Error updating certificate:', error)
     return NextResponse.json(
       { error: 'Failed to update certificate' },
@@ -120,11 +126,14 @@ export async function DELETE(
     }
 
     await prisma.certificate.delete({
-      where: { id: certificateId }
+      where: { id: certificateId, branchId }
     })
 
     return NextResponse.json({ success: true })
   } catch (error) {
+    if (error && typeof error === 'object' && 'code' in error && error.code === 'P2025') {
+      return NextResponse.json({ error: 'Not found' }, { status: 404 })
+    }
     console.error('Error deleting certificate:', error)
     return NextResponse.json(
       { error: 'Failed to delete certificate' },

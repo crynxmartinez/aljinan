@@ -2,7 +2,16 @@ import * as XLSX from 'xlsx'
 import { saveAs } from 'file-saver'
 import jsPDF from 'jspdf'
 import autoTable from 'jspdf-autotable'
+import { formatDate, formatCurrency } from '@/lib/i18n/format-date'
+import { enumLabel } from '@/lib/i18n/enum-labels'
+import type { Locale } from '@/lib/i18n/translations'
 
+export const exportLabels = {
+ en: { number: 'Number', description: 'Description', title: 'Title', client: 'Client', branch: 'Branch', status: 'Status', type: 'Type', date: 'Scheduled date', price: 'Price (SAR)', priority: 'Priority', assigned: 'Assigned to', created: 'Created', due: 'Due date', completed: 'Completed', quoted: 'Quotation date', recurrence: 'Recurrence', workOrders: 'Work orders', requests: 'Requests', generated: 'Generated', total: 'Total' },
+ ar: { number: 'الرقم', description: 'الوصف', title: 'العنوان', client: 'العميل', branch: 'الفرع', status: 'الحالة', type: 'النوع', date: 'تاريخ الجدولة', price: 'السعر (ر.س)', priority: 'الأولوية', assigned: 'مسند إلى', created: 'تاريخ الإنشاء', due: 'تاريخ الاستحقاق', completed: 'تاريخ الإكمال', quoted: 'تاريخ عرض السعر', recurrence: 'التكرار', workOrders: 'أوامر العمل', requests: 'الطلبات', generated: 'تاريخ الإنشاء', total: 'المجموع' },
+} as const
+
+type Row = Record<string, string | number>
 export interface ExportableWorkOrder {
   id: string
   description: string
@@ -40,245 +49,83 @@ export interface ExportOptions {
   includePhotos: boolean
 }
 
-function formatDate(dateStr: string | null | undefined): string {
-  if (!dateStr) return ''
-  return new Date(dateStr).toLocaleDateString('ar-SA-u-nu-latn', {
-    year: 'numeric',
-    month: 'short',
-    day: 'numeric',
-  })
+export function workOrderRows(data: ExportableWorkOrder[], options: ExportOptions, locale: Locale): Row[] {
+ const t = exportLabels[locale]
+ return data.map(wo => ({
+  [t.number]: wo.workOrderNumber == null ? '-' : `WO-${String(wo.workOrderNumber).padStart(4, '0')}`,
+  [t.description]: wo.description,
+  ...(options.includeClient ? { [t.client]: wo.clientName, [t.branch]: wo.branchName } : {}),
+  [t.status]: enumLabel(wo.stage, locale), [t.type]: enumLabel(wo.workOrderType, locale),
+  ...(options.includeDates ? { [t.date]: formatDate(wo.scheduledDate, locale) } : {}),
+  ...(options.includePricing ? { [t.price]: wo.price ?? '' } : {}),
+ }))
 }
 
-function formatStatus(status: string | null | undefined): string {
-  if (!status) return ''
-  return status.replace(/_/g, ' ').replace(/\b\w/g, c => c.toUpperCase())
+export function requestRows(data: ExportableRequest[], options: ExportOptions, locale: Locale): Row[] {
+ const t = exportLabels[locale]
+ return data.map(req => ({
+  [t.number]: req.requestNumber == null ? '-' : `REQ-${String(req.requestNumber).padStart(4, '0')}`,
+  [t.title]: req.title,
+  ...(options.includeDetails ? { [t.description]: req.description ?? '', [t.type]: enumLabel(req.workOrderType, locale), [t.priority]: enumLabel(req.priority, locale), [t.assigned]: req.assignedTo ?? '' } : {}),
+  [t.status]: enumLabel(req.status, locale),
+  ...(options.includeDates ? { [t.created]: formatDate(req.createdAt, locale), [t.due]: formatDate(req.dueDate, locale), [t.completed]: formatDate(req.completedAt, locale), [t.quoted]: formatDate(req.quotedDate, locale) } : {}),
+  ...(options.includePricing ? { [t.price]: req.quotedPrice ?? '' } : {}),
+  ...(req.recurringType ? { [t.recurrence]: enumLabel(req.recurringType, locale) } : {}),
+ }))
 }
 
-export function exportWorkOrdersToExcel(
-  data: ExportableWorkOrder[],
-  options: ExportOptions
-) {
-  const rows = data.map(wo => {
-    const row: Record<string, string | number> = {}
-    if (wo.workOrderNumber) row['رقم الأمر'] = `WO-${String(wo.workOrderNumber).padStart(4, '0')}`
-    row['الوصف'] = wo.description
-    if (options.includeClient) {
-      row['العميل'] = wo.clientName
-      row['الفرع'] = wo.branchName
-    }
-    row['الحالة'] = formatStatus(wo.stage)
-    row['النوع'] = formatStatus(wo.workOrderType)
-    if (options.includeDates) {
-      row['تاريخ الجدولة'] = formatDate(wo.scheduledDate)
-    }
-    if (options.includePricing) {
-      row['السعر (ر.س)'] = wo.price ?? ''
-    }
-    return row
-  })
-
-  const ws = XLSX.utils.json_to_sheet(rows)
-  const wb = XLSX.utils.book_new()
-  XLSX.utils.book_append_sheet(wb, ws, 'أوامر العمل')
-
-  const colWidths = Object.keys(rows[0] || {}).map(key => ({
-    wch: Math.max(key.length, ...rows.map(r => String(r[key] ?? '').length)) + 2
-  }))
-  ws['!cols'] = colWidths
-
-  const buf = XLSX.write(wb, { bookType: 'xlsx', type: 'array' })
-  const blob = new Blob([buf], { type: 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet' })
-  saveAs(blob, `work-orders-${new Date().toISOString().split('T')[0]}.xlsx`)
+function saveSheet(rows: Row[], kind: 'workOrders' | 'requests', locale: Locale, csv = false) {
+ const sheet = XLSX.utils.json_to_sheet(rows)
+ sheet['!cols'] = Object.keys(rows[0] ?? {}).map(key => ({ wch: Math.min(60, Math.max(key.length, ...rows.map(row => String(row[key] ?? '').length)) + 2) }))
+ const book = XLSX.utils.book_new()
+ book.Workbook = { Views: [{ RTL: locale === 'ar' }] }
+ XLSX.utils.book_append_sheet(book, sheet, exportLabels[locale][kind])
+ const filename = `${kind}-${new Date().toISOString().slice(0, 10)}`
+ if (csv) {
+  const safeRows = rows.map(row => Object.fromEntries(Object.entries(row).map(([key, value]) => [key, typeof value === 'string' && /^[=+@\-\t\r]/.test(value) ? `'${value}` : value])))
+  saveAs(new Blob(['\uFEFF', XLSX.utils.sheet_to_csv(XLSX.utils.json_to_sheet(safeRows))], { type: 'text/csv;charset=utf-8' }), `${filename}.csv`)
+ } else {
+  saveAs(new Blob([XLSX.write(book, { bookType: 'xlsx', type: 'array' })], { type: 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet' }), `${filename}.xlsx`)
+ }
 }
 
-export function exportWorkOrdersToCsv(
-  data: ExportableWorkOrder[],
-  options: ExportOptions
-) {
-  const rows = data.map(wo => {
-    const row: Record<string, string | number> = {}
-    if (wo.workOrderNumber) row['رقم الأمر'] = `WO-${String(wo.workOrderNumber).padStart(4, '0')}`
-    row['الوصف'] = wo.description
-    if (options.includeClient) {
-      row['العميل'] = wo.clientName
-      row['الفرع'] = wo.branchName
-    }
-    row['الحالة'] = formatStatus(wo.stage)
-    row['النوع'] = formatStatus(wo.workOrderType)
-    if (options.includeDates) {
-      row['تاريخ الجدولة'] = formatDate(wo.scheduledDate)
-    }
-    if (options.includePricing) {
-      row['السعر (ر.س)'] = wo.price ?? ''
-    }
-    return row
-  })
-
-  const ws = XLSX.utils.json_to_sheet(rows)
-  const csv = XLSX.utils.sheet_to_csv(ws)
-  const blob = new Blob([csv], { type: 'text/csv;charset=utf-8' })
-  saveAs(blob, `work-orders-${new Date().toISOString().split('T')[0]}.csv`)
+let fontData: Promise<string> | undefined
+async function pdfFont(): Promise<string> {
+ fontData ??= fetch('/fonts/Tajawal-Regular.ttf').then(async response => {
+  if (!response.ok) throw new Error('PDF font unavailable')
+  const bytes = new Uint8Array(await response.arrayBuffer())
+  let binary = ''
+  for (const byte of bytes) binary += String.fromCharCode(byte)
+  return btoa(binary)
+ }).catch(error => { fontData = undefined; throw error })
+ return fontData
 }
 
-export function exportWorkOrdersToPdf(
-  data: ExportableWorkOrder[],
-  options: ExportOptions
-) {
-  const doc = new jsPDF()
-
-  // Header
-  doc.setFontSize(18)
-  doc.text('تقرير أوامر العمل', doc.internal.pageSize.getWidth() / 2, 15, { align: 'center' })
-
-  doc.setFontSize(10)
-  doc.text(
-    `تم الإنشاء في ${new Date().toLocaleDateString('ar-SA-u-nu-latn', { year: 'numeric', month: 'long', day: 'numeric' })}`,
-    doc.internal.pageSize.getWidth() / 2,
-    22,
-    { align: 'center' }
-  )
-  doc.text(`المجموع: ${data.length} أمر عمل`, doc.internal.pageSize.getWidth() / 2, 28, { align: 'center' })
-
-  // Prepare table columns
-  const columns: Array<{ header: string; dataKey: string }> = []
-  columns.push({ header: 'رقم الأمر', dataKey: 'woNumber' })
-  columns.push({ header: 'الوصف', dataKey: 'description' })
-  if (options.includeClient) {
-    columns.push({ header: 'العميل', dataKey: 'client' })
-    columns.push({ header: 'الفرع', dataKey: 'branch' })
-  }
-  columns.push({ header: 'الحالة', dataKey: 'status' })
-  columns.push({ header: 'النوع', dataKey: 'type' })
-  if (options.includeDates) {
-    columns.push({ header: 'التاريخ', dataKey: 'date' })
-  }
-  if (options.includePricing) {
-    columns.push({ header: 'السعر (ر.س)', dataKey: 'price' })
-  }
-
-  // Prepare table rows
-  const rows = data.map(wo => {
-    const row: Record<string, string> = {
-      woNumber: wo.workOrderNumber ? `WO-${String(wo.workOrderNumber).padStart(4, '0')}` : '-',
-      description: wo.description,
-      status: formatStatus(wo.stage),
-      type: formatStatus(wo.workOrderType),
-    }
-    if (options.includeClient) {
-      row.client = wo.clientName
-      row.branch = wo.branchName
-    }
-    if (options.includeDates) {
-      row.date = formatDate(wo.scheduledDate)
-    }
-    if (options.includePricing) {
-      row.price = wo.price ? wo.price.toLocaleString() : '-'
-    }
-    return row
-  })
-
-  // Generate table
-  autoTable(doc, {
-    startY: 35,
-    head: [columns.map(col => col.header)],
-    body: rows.map(row => columns.map(col => row[col.dataKey])),
-    theme: 'grid',
-    headStyles: { fillColor: [220, 38, 38], textColor: 255, fontStyle: 'bold' },
-    styles: { fontSize: 8, cellPadding: 2 },
-    columnStyles: {
-      0: { cellWidth: 20 },
-      1: { cellWidth: 'auto' },
-    },
-  })
-
-  // Footer
-  const pageCount = doc.getNumberOfPages()
-  for (let i = 1; i <= pageCount; i++) {
-    doc.setPage(i)
-    doc.setFontSize(8)
-    doc.text(
-      'منصة تسهيل لإدارة السلامة - www.tasheel.live',
-      doc.internal.pageSize.getWidth() / 2,
-      doc.internal.pageSize.getHeight() - 10,
-      { align: 'center' }
-    )
-  }
-
-  doc.save(`work-orders-${new Date().toISOString().split('T')[0]}.pdf`)
+async function savePdf(rows: Row[], kind: 'workOrders' | 'requests', locale: Locale) {
+ const t = exportLabels[locale]
+ const doc = new jsPDF({ orientation: 'landscape' })
+ doc.addFileToVFS('Tajawal-Regular.ttf', await pdfFont())
+ doc.addFont('Tajawal-Regular.ttf', 'Tajawal', 'normal')
+ doc.setFont('Tajawal')
+ doc.setR2L(locale === 'ar')
+ const width = doc.internal.pageSize.getWidth()
+ doc.setFontSize(18)
+ doc.text(t[kind], width / 2, 15, { align: 'center' })
+ doc.setFontSize(10)
+ doc.text(`${t.generated}: ${formatDate(new Date(), locale)} · ${t.total}: ${rows.length}`, width / 2, 23, { align: 'center' })
+ const columns = Object.keys(rows[0] ?? {})
+ if (locale === 'ar') columns.reverse()
+ autoTable(doc, {
+  startY: 30, head: [columns], body: rows.map(row => columns.map(key => typeof row[key] === 'number' && key === t.price ? formatCurrency(row[key] as number, locale) : String(row[key] ?? ''))),
+  theme: 'grid', styles: { font: 'Tajawal', fontStyle: 'normal', fontSize: 9, halign: locale === 'ar' ? 'right' : 'left' },
+  headStyles: { font: 'Tajawal', fontStyle: 'normal', fillColor: [180, 83, 9] },
+ })
+ doc.save(`${kind}-${new Date().toISOString().slice(0, 10)}.pdf`)
 }
 
-export function exportRequestsToExcel(
-  data: ExportableRequest[],
-  options: ExportOptions
-) {
-  const rows = data.map(req => {
-    const row: Record<string, string | number> = {}
-    if (req.requestNumber) row['رقم الطلب'] = `REQ-${String(req.requestNumber).padStart(4, '0')}`
-    row['العنوان'] = req.title
-    if (options.includeDetails) {
-      row['الوصف'] = req.description || ''
-      row['النوع'] = req.workOrderType ? formatStatus(req.workOrderType) : ''
-      row['الأولوية'] = formatStatus(req.priority)
-      row['مُسند إلى'] = req.assignedTo || ''
-    }
-    row['الحالة'] = formatStatus(req.status)
-    if (options.includeDates) {
-      row['تاريخ الإنشاء'] = formatDate(req.createdAt)
-      row['تاريخ الاستحقاق'] = formatDate(req.dueDate)
-      row['تاريخ الإكمال'] = formatDate(req.completedAt)
-      row['تاريخ التسعير'] = formatDate(req.quotedDate)
-    }
-    if (options.includePricing) {
-      row['السعر المسعر (ر.س)'] = req.quotedPrice ?? ''
-    }
-    if (req.recurringType && req.recurringType !== 'ONCE') {
-      row['التكرار'] = formatStatus(req.recurringType)
-    }
-    return row
-  })
-
-  const ws = XLSX.utils.json_to_sheet(rows)
-  const wb = XLSX.utils.book_new()
-  XLSX.utils.book_append_sheet(wb, ws, 'الطلبات')
-
-  const colWidths = Object.keys(rows[0] || {}).map(key => ({
-    wch: Math.max(key.length, ...rows.map(r => String(r[key] ?? '').length)) + 2
-  }))
-  ws['!cols'] = colWidths
-
-  const buf = XLSX.write(wb, { bookType: 'xlsx', type: 'array' })
-  const blob = new Blob([buf], { type: 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet' })
-  saveAs(blob, `requests-${new Date().toISOString().split('T')[0]}.xlsx`)
-}
-
-export function exportRequestsToCsv(
-  data: ExportableRequest[],
-  options: ExportOptions
-) {
-  const rows = data.map(req => {
-    const row: Record<string, string | number> = {}
-    if (req.requestNumber) row['رقم الطلب'] = `REQ-${String(req.requestNumber).padStart(4, '0')}`
-    row['العنوان'] = req.title
-    if (options.includeDetails) {
-      row['الوصف'] = req.description || ''
-      row['النوع'] = req.workOrderType ? formatStatus(req.workOrderType) : ''
-      row['الأولوية'] = formatStatus(req.priority)
-      row['مُسند إلى'] = req.assignedTo || ''
-    }
-    row['الحالة'] = formatStatus(req.status)
-    if (options.includeDates) {
-      row['تاريخ الإنشاء'] = formatDate(req.createdAt)
-      row['تاريخ الاستحقاق'] = formatDate(req.dueDate)
-      row['تاريخ الإكمال'] = formatDate(req.completedAt)
-    }
-    if (options.includePricing) {
-      row['السعر المسعر (ر.س)'] = req.quotedPrice ?? ''
-    }
-    return row
-  })
-
-  const ws = XLSX.utils.json_to_sheet(rows)
-  const csv = XLSX.utils.sheet_to_csv(ws)
-  const blob = new Blob([csv], { type: 'text/csv;charset=utf-8' })
-  saveAs(blob, `requests-${new Date().toISOString().split('T')[0]}.csv`)
-}
+export const exportWorkOrdersToExcel = (data: ExportableWorkOrder[], options: ExportOptions, locale: Locale) => saveSheet(workOrderRows(data, options, locale), 'workOrders', locale)
+export const exportWorkOrdersToCsv = (data: ExportableWorkOrder[], options: ExportOptions, locale: Locale) => saveSheet(workOrderRows(data, options, locale), 'workOrders', locale, true)
+export const exportWorkOrdersToPdf = (data: ExportableWorkOrder[], options: ExportOptions, locale: Locale) => savePdf(workOrderRows(data, options, locale), 'workOrders', locale)
+export const exportRequestsToExcel = (data: ExportableRequest[], options: ExportOptions, locale: Locale) => saveSheet(requestRows(data, options, locale), 'requests', locale)
+export const exportRequestsToCsv = (data: ExportableRequest[], options: ExportOptions, locale: Locale) => saveSheet(requestRows(data, options, locale), 'requests', locale, true)
+export const exportRequestsToPdf = (data: ExportableRequest[], options: ExportOptions, locale: Locale) => savePdf(requestRows(data, options, locale), 'requests', locale)

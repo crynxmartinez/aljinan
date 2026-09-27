@@ -1,4 +1,8 @@
 'use client'
+import { LocalizedError } from '@/components/localized-error'
+import { TranslatedText } from '@/components/translated-text'
+
+import { enumLabel } from '@/lib/i18n/enum-labels'
 
 import { useState, useEffect } from 'react'
 import { useRouter } from 'next/navigation'
@@ -56,6 +60,7 @@ import { FileUploadDropzone } from '@/components/ui/file-upload-dropzone'
 import { ExportDialog } from '@/components/export/export-dialog'
 import {
   exportRequestsToExcel,
+  exportRequestsToPdf,
   exportRequestsToCsv,
   type ExportOptions,
   type ExportableRequest,
@@ -236,7 +241,7 @@ function WorkOrdersGroupedViewContractor({
         const hasAdhoc = items.some(wo => wo.type === 'adhoc' || wo.type === 'ADHOC')
 
         return (
-          <div key={groupName} className="bg-white">
+          <div key={groupName} className="bg-card">
             {/* Group Header */}
             <div className="flex items-center justify-between p-4 hover:bg-muted/50 transition-colors">
               <button
@@ -476,6 +481,7 @@ export function RequestsList({ branchId, userRole, userId }: RequestsListProps) 
       formData.append('file', files[0])
       formData.append('type', 'document')
       formData.append('folder', 'quotations')
+      formData.append('branchId', branchId)
       const response = await fetch('/api/upload', { method: 'POST', body: formData })
       if (!response.ok) throw new Error('Upload failed')
       const data = await response.json()
@@ -574,6 +580,7 @@ export function RequestsList({ branchId, userRole, userId }: RequestsListProps) 
       formData.append('file', files[0])
       formData.append('type', 'document')
       formData.append('folder', 'quotations')
+      formData.append('branchId', branchId)
       const response = await fetch('/api/upload', { method: 'POST', body: formData })
       if (!response.ok) throw new Error('Upload failed')
       const data = await response.json()
@@ -996,10 +1003,12 @@ export function RequestsList({ branchId, userRole, userId }: RequestsListProps) 
       includePhotos: options.includePhotos ?? false,
     }
 
-    if (format === 'excel' || format === 'pdf') {
-      exportRequestsToExcel(dataToExport, exportOpts)
+    if (format === 'excel') {
+      exportRequestsToExcel(dataToExport, exportOpts, locale)
+    } else if (format === 'pdf') {
+      return exportRequestsToPdf(dataToExport, exportOpts, locale)
     } else if (format === 'csv') {
-      exportRequestsToCsv(dataToExport, exportOpts)
+      exportRequestsToCsv(dataToExport, exportOpts, locale)
     }
   }
 
@@ -1164,7 +1173,7 @@ export function RequestsList({ branchId, userRole, userId }: RequestsListProps) 
           <form onSubmit={handleCreateRequest}>
             {error && (
               <div className="bg-destructive/10 text-destructive p-3 rounded-lg text-sm mb-4">
-                {error}
+                <LocalizedError message={error} />
               </div>
             )}
             <div className="space-y-4">
@@ -1242,7 +1251,7 @@ export function RequestsList({ branchId, userRole, userId }: RequestsListProps) 
           <form onSubmit={handleContractorCreateRequest}>
             {error && (
               <div className="bg-destructive/10 text-destructive p-3 rounded-lg text-sm mb-4">
-                {error}
+                <LocalizedError message={error} />
               </div>
             )}
             <div className="space-y-4">
@@ -1339,7 +1348,7 @@ export function RequestsList({ branchId, userRole, userId }: RequestsListProps) 
 
               {/* Work Order Notes */}
               <div className="space-y-2">
-                <Label htmlFor="contractor-workOrderNotes">{tr.workOrderNotes} <span className="text-xs text-muted-foreground">(optional)</span></Label>
+                <Label htmlFor="contractor-workOrderNotes">{tr.workOrderNotes} <span className="text-xs text-muted-foreground"><TranslatedText path="dashboard.checklistKanban.optional" /></span></Label>
                 <Textarea
                   id="contractor-workOrderNotes"
                   value={contractorNewRequest.workOrderNotes}
@@ -1351,7 +1360,7 @@ export function RequestsList({ branchId, userRole, userId }: RequestsListProps) 
 
               {/* Document Upload */}
               <div className="space-y-2">
-                <Label>{tr.uploadDocument} <span className="text-xs text-muted-foreground">(optional)</span></Label>
+                <Label>{tr.uploadDocument} <span className="text-xs text-muted-foreground"><TranslatedText path="dashboard.checklistKanban.optional" /></span></Label>
                 <FileUploadDropzone
                   onFilesSelected={handleQuotationUpload}
                   accept=".pdf,.doc,.docx,.jpg,.jpeg,.png,.gif,.webp"
@@ -1562,7 +1571,7 @@ export function RequestsList({ branchId, userRole, userId }: RequestsListProps) 
                 {getPriorityBadge(selectedRequest.priority)}
                 {getStatusBadge(selectedRequest.status)}
                 {selectedRequest.workOrderType && (
-                  <Badge variant="outline">{selectedRequest.workOrderType}</Badge>
+                  <Badge variant="outline">{enumLabel(selectedRequest.workOrderType, locale)}</Badge>
                 )}
                 {selectedRequest.recurringType && selectedRequest.recurringType !== 'ONCE' && (
                   <Badge variant="secondary">{selectedRequest.recurringType === 'MONTHLY' ? tr.monthly : tr.quarterly}</Badge>
@@ -1643,12 +1652,12 @@ export function RequestsList({ branchId, userRole, userId }: RequestsListProps) 
                           <th className="px-3 py-2 text-start text-amber-800 dark:text-amber-400">{tr.expiry}</th>
                         </tr>
                       </thead>
-                      <tbody className="bg-white dark:bg-card divide-y divide-amber-100 dark:divide-amber-900">
+                      <tbody className="bg-card dark:bg-card divide-y divide-amber-100 dark:divide-amber-900">
                         {selectedRequest.equipment.map((eq) => (
                           <tr key={eq.id}>
                             <td className="px-3 py-2 font-medium">{eq.equipmentNumber}</td>
                             <td className="px-3 py-2 text-muted-foreground">
-                              {eq.equipmentType.replace(/_/g, ' ').toLowerCase().replace(/\b\w/g, l => l.toUpperCase())}
+                              {enumLabel(eq.equipmentType, locale)}
                             </td>
                             <td className="px-3 py-2 text-muted-foreground">{eq.location || '-'}</td>
                             <td className="px-3 py-2 text-muted-foreground">
@@ -1675,7 +1684,7 @@ export function RequestsList({ branchId, userRole, userId }: RequestsListProps) 
                           selectedRequest.recurringType === 'QUARTERLY' ? `4 ${tr.quarterlyWorkOrders}` :
                             selectedRequest.recurringType === 'SEMI_ANNUALLY' ? `2 ${tr.semiAnnualWorkOrders}` : ''}
                       </p>
-                      <div className="border border-purple-200 dark:border-purple-900 rounded-lg overflow-hidden bg-white dark:bg-card">
+                      <div className="border border-purple-200 dark:border-purple-900 rounded-lg overflow-hidden bg-card dark:bg-card">
                         <table className="w-full text-sm">
                           <thead className="bg-purple-100 dark:bg-purple-950/60">
                             <tr>
@@ -1692,7 +1701,7 @@ export function RequestsList({ branchId, userRole, userId }: RequestsListProps) 
                                   {occ.visitDate ? formatDate(occ.visitDate, locale) : '-'}
                                 </td>
                                 <td className="px-3 py-2 text-end font-medium">
-                                  {occ.price ? occ.price.toLocaleString() : '-'}
+                                  {occ.price != null ? formatCurrency(occ.price, locale) : '-'}
                                 </td>
                               </tr>
                             ))}
@@ -1713,7 +1722,7 @@ export function RequestsList({ branchId, userRole, userId }: RequestsListProps) 
                     <div className="grid grid-cols-2 gap-2 text-sm">
                       <div>
                         <p className="text-purple-600 dark:text-purple-400">{tr.price}</p>
-                        <p className="font-semibold">{tr.sar} {selectedRequest.quotedPrice.toLocaleString()}</p>
+                        <p className="font-semibold">{formatCurrency(selectedRequest.quotedPrice, locale)}</p>
                       </div>
                       {selectedRequest.quotedDate && (
                         <div>
@@ -1843,7 +1852,7 @@ export function RequestsList({ branchId, userRole, userId }: RequestsListProps) 
 
           {error && (
             <div className="bg-destructive/10 text-destructive p-3 rounded-lg text-sm">
-              {error}
+              <LocalizedError message={error} />
             </div>
           )}
 
@@ -1981,7 +1990,7 @@ export function RequestsList({ branchId, userRole, userId }: RequestsListProps) 
                   {/* Notes for Client */}
                   <div className="space-y-2">
                     <Label htmlFor="quotedNotes">
-                      {tr.notesForClient} <span className="text-xs text-muted-foreground">(optional)</span>
+                      {tr.notesForClient} <span className="text-xs text-muted-foreground"><TranslatedText path="dashboard.checklistKanban.optional" /></span>
                     </Label>
                     <textarea
                       id="quotedNotes"
@@ -2018,7 +2027,7 @@ export function RequestsList({ branchId, userRole, userId }: RequestsListProps) 
                                   <span className="text-blue-700 dark:text-blue-400">
                                     └ {quoteRequest.recurringType === 'MONTHLY' ? `${tr.month} ${idx + 1}` : `Q${idx + 1}`}: {formatDate(date, locale)}
                                   </span>
-                                  <span className="font-medium text-blue-800 dark:text-blue-400">{tr.sar} {price.toLocaleString()}</span>
+                                  <span className="font-medium text-blue-800 dark:text-blue-400">{formatCurrency(price, locale)}</span>
                                 </div>
                               ))}
                               {dates.length > 4 && (
@@ -2026,7 +2035,7 @@ export function RequestsList({ branchId, userRole, userId }: RequestsListProps) 
                               )}
                               <div className="flex justify-between items-center pt-3 mt-2 border-t border-blue-300 dark:border-blue-800 font-semibold">
                                 <span className="text-blue-800 dark:text-blue-400">{tr.total} ({dates.length} {tr.totalWorkOrders})</span>
-                                <span className="font-medium text-blue-900 dark:text-blue-300">{tr.sar} {(price * dates.length).toLocaleString()}</span>
+                                <span className="font-medium text-blue-900 dark:text-blue-300">{formatCurrency(price * dates.length, locale)}</span>
                               </div>
                             </>
                           )
@@ -2037,7 +2046,7 @@ export function RequestsList({ branchId, userRole, userId }: RequestsListProps) 
 
                   {/* Quotation Upload */}
                   <div className="space-y-2">
-                    <Label>{tr.uploadQuotation} <span className="text-xs text-muted-foreground">(optional)</span></Label>
+                    <Label>{tr.uploadQuotation} <span className="text-xs text-muted-foreground"><TranslatedText path="dashboard.checklistKanban.optional" /></span></Label>
                     <FileUploadDropzone
                       onFilesSelected={handleQuoteQuotationUpload}
                       accept=".pdf,.doc,.docx,.jpg,.jpeg,.png,.gif,.webp"

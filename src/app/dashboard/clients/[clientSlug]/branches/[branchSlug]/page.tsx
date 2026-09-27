@@ -1,3 +1,5 @@
+
+import { TranslatedText } from '@/components/translated-text'
 import { getServerSession } from 'next-auth'
 import { redirect, notFound } from 'next/navigation'
 import { authOptions } from '@/lib/auth'
@@ -121,8 +123,7 @@ export default async function BranchPage({
           href={`/dashboard/clients/${client.slug || client.id}`}
           className="inline-flex items-center text-sm text-muted-foreground hover:text-foreground mb-4"
         >
-          <ArrowLeft className="me-2 h-4 w-4" />
-          Back to {client.companyName}
+          <ArrowLeft className="me-2 h-4 w-4" /><TranslatedText path="copy.Back_to" />{' '}{client.companyName}
         </Link>
       </div>
 

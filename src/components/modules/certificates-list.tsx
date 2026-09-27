@@ -1,4 +1,8 @@
 'use client'
+import { LocalizedError } from '@/components/localized-error'
+import { TranslatedText } from '@/components/translated-text'
+
+import { enumLabel } from '@/lib/i18n/enum-labels'
 
 import { useState, useEffect } from 'react'
 import { useRouter } from 'next/navigation'
@@ -56,7 +60,7 @@ import {
   Clock,
 } from 'lucide-react'
 
-type CertificateType = 'PREVENTIVE_MAINTENANCE' | 'COMPLETION' | 'COMPLIANCE' | 'INSPECTION' | 'CIVIL_DEFENSE' | 'OTHER'
+type CertificateType = 'PREVENTIVE_MAINTENANCE' | 'COMPLETION' | 'COMPLIANCE' | 'INSPECTION' | 'CIVIL_DEFENSE' | 'EQUIPMENT_CERTIFICATE'
 
 interface Certificate {
   id: string
@@ -87,18 +91,14 @@ interface CertificatesListProps {
   userRole: 'CONTRACTOR' | 'CLIENT'
 }
 
-const CERTIFICATE_TYPES: { value: CertificateType; label: string; icon: string }[] = [
-  { value: 'PREVENTIVE_MAINTENANCE', label: 'Preventive Maintenance', icon: '🛠️' },
-  { value: 'COMPLETION', label: 'Completion Certificate', icon: '✅' },
-  { value: 'COMPLIANCE', label: 'Compliance Certificate', icon: '📋' },
-  { value: 'INSPECTION', label: 'Inspection Certificate', icon: '🔍' },
-  { value: 'CIVIL_DEFENSE', label: 'Civil Defense', icon: '🚒' },
-  { value: 'OTHER', label: 'Other', icon: '📄' },
+const CERTIFICATE_TYPES: { value: CertificateType; icon: string }[] = [
+  { value: 'PREVENTIVE_MAINTENANCE', icon: '🛠️' },
+  { value: 'COMPLETION', icon: '✅' },
+  { value: 'COMPLIANCE', icon: '📋' },
+  { value: 'INSPECTION', icon: '🔍' },
+  { value: 'CIVIL_DEFENSE', icon: '🚒' },
+  { value: 'EQUIPMENT_CERTIFICATE', icon: '📄' },
 ]
-
-function getCertificateTypeLabel(type: CertificateType): string {
-  return CERTIFICATE_TYPES.find(t => t.value === type)?.label || type
-}
 
 function getCertificateTypeIcon(type: CertificateType): string {
   return CERTIFICATE_TYPES.find(t => t.value === type)?.icon || '📄'
@@ -175,6 +175,7 @@ export function CertificatesList({ branchId, userRole }: CertificatesListProps) 
       formData.append('file', file)
       formData.append('type', 'document')
       formData.append('folder', 'certificates')
+      formData.append('branchId', branchId)
 
       const response = await fetch('/api/upload', {
         method: 'POST',
@@ -282,31 +283,23 @@ export function CertificatesList({ branchId, userRole }: CertificatesListProps) 
         <CardHeader className="flex flex-row items-center justify-between">
           <div>
             <CardTitle className="flex items-center gap-2">
-              <Award className="h-5 w-5" />
-              Documents
-            </CardTitle>
-            <CardDescription>
-              Manage documents and compliance records for this branch
-            </CardDescription>
+              <Award className="h-5 w-5" /><TranslatedText path="dashboard.branchWorkspace.documents" /></CardTitle>
+            <CardDescription><TranslatedText path="copy.Manage_documents_and_compliance_records_for_this_branch" /></CardDescription>
           </div>
           <div className="flex items-center gap-2">
             {expiredCount > 0 && (
               <Badge variant="destructive" className="flex items-center gap-1">
                 <AlertTriangle className="h-3 w-3" />
-                {expiredCount} Expired
-              </Badge>
+                {expiredCount}{' '}<TranslatedText path="dashboard.equipmentList.expired" /></Badge>
             )}
             {expiringCount > 0 && (
               <Badge className="bg-orange-100 dark:bg-orange-950/40 text-orange-700 dark:text-orange-400 flex items-center gap-1">
                 <Clock className="h-3 w-3" />
-                {expiringCount} Expiring Soon
-              </Badge>
+                {expiringCount}{' '}<TranslatedText path="dashboard.equipmentList.expiringSoon" /></Badge>
             )}
             {userRole === 'CONTRACTOR' && (
               <Button onClick={() => setCreateDialogOpen(true)}>
-                <Plus className="me-2 h-4 w-4" />
-                Add Certificate
-              </Button>
+                <Plus className="me-2 h-4 w-4" /><TranslatedText path="dashboard.certificatesList.addCertificate" /></Button>
             )}
           </div>
         </CardHeader>
@@ -314,7 +307,7 @@ export function CertificatesList({ branchId, userRole }: CertificatesListProps) 
           {certificates.length === 0 ? (
             <div className="flex flex-col items-center justify-center py-12 text-center">
               <Award className="h-12 w-12 text-muted-foreground/30 mb-4" />
-              <h3 className="text-lg font-semibold mb-2">لا توجد شهادات بعد</h3>
+              <h3 className="text-lg font-semibold mb-2"><TranslatedText path="dashboard.certificatesList.noCertificatesYet" /></h3>
               <p className="text-muted-foreground max-w-md mb-4">
                 {userRole === 'CONTRACTOR'
                   ? 'Add certificates to track compliance and maintenance records for this branch.'
@@ -322,21 +315,19 @@ export function CertificatesList({ branchId, userRole }: CertificatesListProps) 
               </p>
               {userRole === 'CONTRACTOR' && (
                 <Button onClick={() => setCreateDialogOpen(true)}>
-                  <Plus className="me-2 h-4 w-4" />
-                  Add Certificate
-                </Button>
+                  <Plus className="me-2 h-4 w-4" /><TranslatedText path="dashboard.certificatesList.addCertificate" /></Button>
               )}
             </div>
           ) : (
             <Table>
               <TableHeader>
                 <TableRow>
-                  <TableHead>Certificate</TableHead>
-                  <TableHead>النوع</TableHead>
-                  <TableHead>Equipment</TableHead>
-                  <TableHead>Issue Date</TableHead>
-                  <TableHead>Expiry</TableHead>
-                  <TableHead>الحالة</TableHead>
+                  <TableHead><TranslatedText path="dashboard.equipmentList.certificate" /></TableHead>
+                  <TableHead><TranslatedText path="dashboard.equipmentList.type" /></TableHead>
+                  <TableHead><TranslatedText path="dashboard.certificatesList.equipment" /></TableHead>
+                  <TableHead><TranslatedText path="dashboard.certificatesList.issueDate" /></TableHead>
+                  <TableHead><TranslatedText path="dashboard.certificatesList.expiry" /></TableHead>
+                  <TableHead><TranslatedText path="dashboard.equipmentList.status" /></TableHead>
                   <TableHead className="w-[80px]"></TableHead>
                 </TableRow>
               </TableHeader>
@@ -355,13 +346,13 @@ export function CertificatesList({ branchId, userRole }: CertificatesListProps) 
                       </TableCell>
                       <TableCell>
                         <Badge variant="outline">
-                          {getCertificateTypeIcon(certificate.type)} {getCertificateTypeLabel(certificate.type)}
+                          {getCertificateTypeIcon(certificate.type)} {enumLabel(certificate.type, locale)}
                         </Badge>
                       </TableCell>
                       <TableCell>
                         {certificate.equipment ? (
                           <Badge variant="outline" className="text-xs">
-                            {certificate.equipment.equipmentNumber} · {certificate.equipment.equipmentType === 'OTHER' ? t.dashboard.equipmentList.other : certificate.equipment.equipmentType.replace(/_/g, ' ')}
+                            {certificate.equipment.equipmentNumber} · {certificate.equipment.equipmentType === 'OTHER' ? t.dashboard.equipmentList.other : enumLabel(certificate.equipment.equipmentType, locale)}
                           </Badge>
                         ) : (
                           <span className="text-xs text-muted-foreground">{tcl.siteCertificate}</span>
@@ -408,23 +399,17 @@ export function CertificatesList({ branchId, userRole }: CertificatesListProps) 
                           </DropdownMenuTrigger>
                           <DropdownMenuContent align="end">
                             <DropdownMenuItem onClick={(e) => { e.stopPropagation(); openViewDialog(certificate); }}>
-                              <Eye className="me-2 h-4 w-4" />
-                              View Details
-                            </DropdownMenuItem>
+                              <Eye className="me-2 h-4 w-4" /><TranslatedText path="dashboard.clientsPage.viewDetails" /></DropdownMenuItem>
                             {certificate.fileUrl && (
                               <DropdownMenuItem onClick={(e) => { e.stopPropagation(); window.open(certificate.fileUrl!, '_blank'); }}>
-                                <Download className="me-2 h-4 w-4" />
-                                Download
-                              </DropdownMenuItem>
+                                <Download className="me-2 h-4 w-4" /><TranslatedText path="dashboard.equipmentList.download" /></DropdownMenuItem>
                             )}
                             {userRole === 'CONTRACTOR' && (
                               <DropdownMenuItem
                                 onClick={(e) => { e.stopPropagation(); handleDeleteCertificate(certificate.id); }}
                                 className="text-destructive"
                               >
-                                <Trash2 className="me-2 h-4 w-4" />
-                                Delete
-                              </DropdownMenuItem>
+                                <Trash2 className="me-2 h-4 w-4" /><TranslatedText path="dashboard.teamListPage.delete" /></DropdownMenuItem>
                             )}
                           </DropdownMenuContent>
                         </DropdownMenu>
@@ -442,20 +427,18 @@ export function CertificatesList({ branchId, userRole }: CertificatesListProps) 
       <Dialog open={createDialogOpen} onOpenChange={setCreateDialogOpen}>
         <DialogContent className="sm:max-w-[500px]">
           <DialogHeader>
-            <DialogTitle>Add Certificate</DialogTitle>
-            <DialogDescription>
-              Upload a new certificate or compliance document
-            </DialogDescription>
+            <DialogTitle><TranslatedText path="dashboard.certificatesList.addCertificate" /></DialogTitle>
+            <DialogDescription><TranslatedText path="dashboard.certificatesList.addCertificateDesc" /></DialogDescription>
           </DialogHeader>
           <form onSubmit={handleCreateCertificate}>
             {error && (
               <div className="bg-destructive/10 text-destructive p-3 rounded-lg text-sm mb-4">
-                {error}
+                <LocalizedError message={error} />
               </div>
             )}
             <div className="space-y-4">
               <div className="space-y-2">
-                <Label htmlFor="type">Certificate Type *</Label>
+                <Label htmlFor="type"><TranslatedText path="dashboard.certificatesList.certificateType" /></Label>
                 <Select
                   value={newCertificate.type}
                   onValueChange={(value: CertificateType) => setNewCertificate({ ...newCertificate, type: value })}
@@ -466,7 +449,7 @@ export function CertificatesList({ branchId, userRole }: CertificatesListProps) 
                   <SelectContent>
                     {CERTIFICATE_TYPES.map((type) => (
                       <SelectItem key={type.value} value={type.value}>
-                        {type.icon} {type.label}
+                        {type.icon} {enumLabel(type.value, locale)}
                       </SelectItem>
                     ))}
                   </SelectContent>
@@ -474,28 +457,28 @@ export function CertificatesList({ branchId, userRole }: CertificatesListProps) 
               </div>
 
               <div className="space-y-2">
-                <Label htmlFor="title">العنوان *</Label>
+                <Label htmlFor="title"><TranslatedText path="dashboard.certificatesList.title" /></Label>
                 <Input
                   id="title"
                   value={newCertificate.title}
                   onChange={(e) => setNewCertificate({ ...newCertificate, title: e.target.value })}
-                  placeholder="e.g., Annual Fire Safety Inspection"
+                  placeholder={t.copy.certificateTitleExample}
                   required
                 />
               </div>
 
               <div className="grid grid-cols-2 gap-4">
                 <div className="space-y-2">
-                  <Label htmlFor="certificateNumber">Certificate Number</Label>
+                  <Label htmlFor="certificateNumber"><TranslatedText path="dashboard.certificatesList.certificateNumber" /></Label>
                   <Input
                     id="certificateNumber"
                     value={newCertificate.certificateNumber}
                     onChange={(e) => setNewCertificate({ ...newCertificate, certificateNumber: e.target.value })}
-                    placeholder="e.g., CERT-2024-001"
+                    placeholder={t.copy.certificateNumberExample}
                   />
                 </div>
                 <div className="space-y-2">
-                  <Label htmlFor="issueDate">Issue Date *</Label>
+                  <Label htmlFor="issueDate"><TranslatedText path="copy.Issue_Date" /></Label>
                   <Input
                     id="issueDate"
                     type="date"
@@ -518,18 +501,18 @@ export function CertificatesList({ branchId, userRole }: CertificatesListProps) 
               </div>
 
               <div className="space-y-2">
-                <Label htmlFor="description">الوصف</Label>
+                <Label htmlFor="description"><TranslatedText path="dashboard.certificatesList.description" /></Label>
                 <Textarea
                   id="description"
                   value={newCertificate.description}
                   onChange={(e) => setNewCertificate({ ...newCertificate, description: e.target.value })}
-                  placeholder="Additional details about this certificate..."
+                  placeholder={t.copy.certificateDetails}
                   rows={2}
                 />
               </div>
 
               <div className="space-y-2">
-                <Label>Certificate File</Label>
+                <Label><TranslatedText path="copy.Certificate_File" /></Label>
                 <FileUploadDropzone
                   onFilesSelected={(files) => {
                     const event = {
@@ -548,13 +531,9 @@ export function CertificatesList({ branchId, userRole }: CertificatesListProps) 
               </div>
             </div>
             <DialogFooter className="mt-6">
-              <Button type="button" variant="outline" onClick={() => setCreateDialogOpen(false)}>
-                Cancel
-              </Button>
+              <Button type="button" variant="outline" onClick={() => setCreateDialogOpen(false)}><TranslatedText path="dashboard.equipmentList.cancel" /></Button>
               <Button type="submit" disabled={creating || uploading}>
-                {creating && <Loader2 className="me-2 h-4 w-4 animate-spin" />}
-                Add Certificate
-              </Button>
+                {creating && <Loader2 className="me-2 h-4 w-4 animate-spin" />}<TranslatedText path="dashboard.certificatesList.addCertificate" /></Button>
             </DialogFooter>
           </form>
         </DialogContent>
@@ -565,9 +544,7 @@ export function CertificatesList({ branchId, userRole }: CertificatesListProps) 
         <DialogContent className="sm:max-w-[500px]">
           <DialogHeader>
             <DialogTitle className="flex items-center gap-2">
-              <Award className="h-5 w-5" />
-              Certificate Details
-            </DialogTitle>
+              <Award className="h-5 w-5" /><TranslatedText path="copy.Certificate_Details" /></DialogTitle>
           </DialogHeader>
 
           {selectedCertificate && (
@@ -575,7 +552,7 @@ export function CertificatesList({ branchId, userRole }: CertificatesListProps) 
               <div>
                 <h3 className="font-semibold text-lg">{selectedCertificate.title}</h3>
                 <Badge variant="outline" className="mt-1">
-                  {getCertificateTypeIcon(selectedCertificate.type)} {getCertificateTypeLabel(selectedCertificate.type)}
+                  {getCertificateTypeIcon(selectedCertificate.type)} {enumLabel(selectedCertificate.type, locale)}
                 </Badge>
               </div>
 
@@ -637,7 +614,7 @@ export function CertificatesList({ branchId, userRole }: CertificatesListProps) 
                 <div>
                   <p className="text-sm text-muted-foreground">{tcl.coversEquipment}</p>
                   <p className="text-sm font-medium">
-                    {selectedCertificate.equipment.equipmentNumber} ({selectedCertificate.equipment.equipmentType === 'OTHER' ? t.dashboard.equipmentList.other : selectedCertificate.equipment.equipmentType.replace(/_/g, ' ')})
+                    {selectedCertificate.equipment.equipmentNumber} ({selectedCertificate.equipment.equipmentType === 'OTHER' ? t.dashboard.equipmentList.other : enumLabel(selectedCertificate.equipment.equipmentType, locale)})
                   </p>
                 </div>
               )}
@@ -664,17 +641,13 @@ export function CertificatesList({ branchId, userRole }: CertificatesListProps) 
                     className="w-full"
                     variant="default"
                   >
-                    <Eye className="me-2 h-4 w-4" />
-                    View Certificate
-                  </Button>
+                    <Eye className="me-2 h-4 w-4" /><TranslatedText path="dashboard.contractorProfileCard.viewCertificate" /></Button>
                   <Button
                     onClick={() => window.open(selectedCertificate.fileUrl!, '_blank')}
                     className="w-full"
                     variant="outline"
                   >
-                    <Download className="me-2 h-4 w-4" />
-                    Download Certificate
-                  </Button>
+                    <Download className="me-2 h-4 w-4" /><TranslatedText path="copy.Download_Certificate" /></Button>
                 </div>
               )}
             </div>

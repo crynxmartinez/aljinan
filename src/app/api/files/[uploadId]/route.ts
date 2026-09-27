@@ -4,6 +4,7 @@ import { authOptions } from '@/lib/auth'
 import { prisma } from '@/lib/prisma'
 import { getSignedDownloadUrl } from '@/lib/s3'
 import { verifyBranchAccess } from '@/lib/permissions'
+import { canReadAttachment } from '@/lib/file-access'
 
 /**
  * Serve a stored file.
@@ -38,9 +39,10 @@ export async function GET(
       return NextResponse.json({ error: 'File not found' }, { status: 404 })
     }
 
-    const canRead = upload.branchId
-      ? await verifyBranchAccess(upload.branchId, session.user.id, session.user.role)
-      : upload.uploadedById === session.user.id
+    const isOwner = upload.uploadedById === session.user.id
+    const canRead = isOwner
+      ? (!upload.branchId || await verifyBranchAccess(upload.branchId, session.user.id, session.user.role))
+      : await canReadAttachment(uploadId, session.user.id, session.user.role)
 
     if (!canRead) {
       return NextResponse.json({ error: 'Access denied' }, { status: 403 })

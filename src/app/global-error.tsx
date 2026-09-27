@@ -1,6 +1,8 @@
 'use client'
 
-import { useEffect } from 'react'
+import { useEffect, useState } from 'react'
+import { systemMessages } from '@/lib/i18n/system-messages'
+import type { Locale } from '@/lib/i18n/translations'
 
 /**
  * Last-resort boundary. Catches errors thrown in the root layout itself, where the normal
@@ -15,12 +17,16 @@ export default function GlobalError({
   error: Error & { digest?: string }
   reset: () => void
 }) {
+  const [locale, setLocale] = useState<Locale>('ar')
+  const t = systemMessages[locale]
   useEffect(() => {
+    const cookie = document.cookie.match(/(?:^|; )tasheel_locale=(en|ar)(?:;|$)/)?.[1]
+    setLocale(cookie === 'en' ? 'en' : 'ar')
     console.error('Unhandled application error:', error)
   }, [error])
 
   return (
-    <html lang="en">
+    <html lang={locale} dir={locale === 'ar' ? 'rtl' : 'ltr'}>
       <body
         style={{
           margin: 0,
@@ -35,11 +41,10 @@ export default function GlobalError({
       >
         <div style={{ maxWidth: '32rem', padding: '2rem', textAlign: 'center' }}>
           <h1 style={{ fontSize: '1.5rem', fontWeight: 700, marginBottom: '0.75rem' }}>
-            Something went wrong
+            {t.loadFailed}
           </h1>
           <p style={{ color: '#475569', lineHeight: 1.6, marginBottom: '1.5rem' }}>
-            The page could not be loaded. Your data has not been changed. Try again, and if
-            it keeps happening, contact support with the reference below.
+            {t.serverError}
           </p>
           {error.digest && (
             <p
@@ -50,7 +55,7 @@ export default function GlobalError({
                 marginBottom: '1.5rem',
               }}
             >
-              Reference: {error.digest}
+              <bdi>{error.digest}</bdi>
             </p>
           )}
           <button
@@ -66,7 +71,7 @@ export default function GlobalError({
               cursor: 'pointer',
             }}
           >
-            Try again
+            {t.retry}
           </button>
         </div>
       </body>

@@ -247,7 +247,7 @@ export function MaintenanceReportForm({ data, onChange, readOnly = false }: Main
                     <Input
                       value={measurement.name}
                       onChange={(e) => updateMeasurement(index, 'name', e.target.value)}
-                      placeholder="e.g., Pressure"
+                      placeholder={t.copy.pressureExample}
                       disabled={readOnly}
                     />
                   </div>

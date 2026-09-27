@@ -177,7 +177,7 @@ export function ClientBranchQuotations({ branchId }: ClientBranchQuotationsProps
               {pendingQuotations.map((quotation) => (
                 <div
                   key={quotation.id}
-                  className="p-4 bg-white border rounded-lg"
+                  className="p-4 bg-card border rounded-lg"
                 >
                   <div className="flex items-start justify-between mb-4">
                     <div>

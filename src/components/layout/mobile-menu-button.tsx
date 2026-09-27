@@ -14,7 +14,7 @@ export function MobileMenuButton() {
       variant="ghost"
       size="icon"
       className="md:hidden shrink-0"
-      onClick={() => setOpen(true)}
+      data-sidebar-trigger onClick={() => setOpen(true)}
       aria-label={t.common.openMenu}
     >
       <Menu className="h-5 w-5" />

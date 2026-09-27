@@ -1,4 +1,6 @@
 'use client'
+import { TranslatedText } from '@/components/translated-text'
+
 
 import { useRef, useEffect, useState } from 'react'
 import { Button } from '@/components/ui/button'
@@ -122,9 +124,7 @@ export function SignaturePad({
         />
       </div>
       <div className="flex items-center justify-between mt-2">
-        <p className="text-xs text-muted-foreground">
-          Draw your signature above
-        </p>
+        <p className="text-xs text-muted-foreground"><TranslatedText path="copy.Draw_your_signature_above" /></p>
         <Button
           type="button"
           variant="outline"
@@ -132,15 +132,11 @@ export function SignaturePad({
           onClick={clearSignature}
           disabled={!hasSignature}
         >
-          <Eraser className="h-3 w-3 me-1" />
-          Clear
-        </Button>
+          <Eraser className="h-3 w-3 me-1" /><TranslatedText path="dashboard.clientBranchContractsPage.clearBtn" /></Button>
       </div>
       {hasSignature && (
         <div className="flex items-center gap-1 mt-2 text-xs text-green-600">
-          <Check className="h-3 w-3" />
-          Signature captured
-        </div>
+          <Check className="h-3 w-3" /><TranslatedText path="copy.Signature_captured" /></div>
       )}
     </div>
   )

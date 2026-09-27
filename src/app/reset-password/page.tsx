@@ -1,4 +1,5 @@
 'use client'
+import { LocalizedError } from '@/components/localized-error'
 
 import { useState, useEffect, Suspense } from 'react'
 import { useRouter, useSearchParams } from 'next/navigation'
@@ -120,7 +121,7 @@ function ResetPasswordForm() {
               <form onSubmit={handleSubmit} className="space-y-6">
                 {error && (
                   <div className="bg-destructive/10 text-destructive p-3 rounded-lg text-sm">
-                    {error}
+                    <LocalizedError message={error} />
                   </div>
                 )}
 

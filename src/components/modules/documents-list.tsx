@@ -164,7 +164,7 @@ export function DocumentsList({ branchId }: DocumentsListProps) {
 
   useEffect(() => {
     fetchDocuments()
-  }, [branchId])
+  }, [branchId, locale])
 
   const toggleSection = (source: SourceType) => {
     setExpandedSections(prev => {
@@ -205,7 +205,7 @@ export function DocumentsList({ branchId }: DocumentsListProps) {
   }
 
   if (loadFailed) {
-    return <LoadFailure onRetry={fetchDocuments} message={td.documents + ' could not be loaded.'} />
+    return <LoadFailure onRetry={fetchDocuments}  />
   }
 
   const docsBySource = (source: SourceType) => documents.filter(d => d.source === source)
@@ -320,7 +320,7 @@ export function DocumentsList({ branchId }: DocumentsListProps) {
                                 )}
                                 {expiryInfo.status === 'expiring' && (
                                   <Badge className="bg-orange-100 dark:bg-orange-950/40 text-orange-700 dark:text-orange-400 flex items-center gap-1 w-fit">
-                                    <Clock className="h-3 w-3" />{expiryInfo.daysLeft}d
+                                    <Clock className="h-3 w-3" />{t.system.days.replace('{count}', String(expiryInfo.daysLeft))}
                                   </Badge>
                                 )}
                                 {expiryInfo.status === 'valid' && (

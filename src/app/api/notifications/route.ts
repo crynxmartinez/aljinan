@@ -2,6 +2,7 @@ import { getServerSession } from 'next-auth'
 import { NextResponse } from 'next/server'
 import { authOptions } from '@/lib/auth'
 import { prisma } from '@/lib/prisma'
+import { resolveNotificationLink } from '@/lib/notification-links'
 
 // GET - Fetch notifications for current user
 export async function GET() {
@@ -21,17 +22,14 @@ export async function GET() {
       select: { id: true, type: true, title: true, message: true, isRead: true, createdAt: true, link: true }
     })
 
-    // Count unread from the fetched batch — only hit DB again if all 50 are unread
-    const unreadInBatch = notifications.filter(n => !n.isRead).length
-    let unreadCount = unreadInBatch
-    if (notifications.length === 50 && unreadInBatch === 50) {
-      // All 50 fetched are unread, there may be more — get exact count
-      unreadCount = await prisma.notification.count({
-        where: { userId: session.user.id, isRead: false }
-      })
-    }
+    const unreadCount = await prisma.notification.count({
+      where: { userId: session.user.id, isRead: false }
+    })
 
-    return NextResponse.json({ notifications, unreadCount })
+    const visible = await Promise.all(notifications.map(async notification => ({
+      ...notification, link: await resolveNotificationLink(notification.link),
+    })))
+    return NextResponse.json({ notifications: visible, unreadCount })
   } catch (error) {
     console.error('Error fetching notifications:', error)
     return NextResponse.json(

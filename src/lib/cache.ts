@@ -40,7 +40,7 @@ export async function getCached<T>(
   ttl: number = 60 // seconds
 ): Promise<T> {
   // If Redis is not configured, just fetch
-  if (!redis) {
+  if (!redis || ttl <= 0) {
     return fetcher()
   }
 

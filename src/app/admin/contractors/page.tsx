@@ -1,4 +1,6 @@
 'use client'
+import { TranslatedText } from '@/components/translated-text'
+
 
 import { useState, useEffect } from 'react'
 import { useRouter, useSearchParams } from 'next/navigation'
@@ -428,7 +430,7 @@ export default function ContractorsPage() {
             <TableHeader>
               <TableRow>
                 <TableHead className="w-8"></TableHead>
-                <TableHead>Contractor</TableHead>
+                <TableHead><TranslatedText path="dashboard.adminContractorsPage.contractor" /></TableHead>
                 <TableHead>{tc.status}</TableHead>
                 <TableHead className="text-center">{tc.clients}</TableHead>
                 <TableHead className="text-center">{tc.branches}</TableHead>

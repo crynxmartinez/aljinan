@@ -1,4 +1,5 @@
 'use client'
+import { LocalizedError } from '@/components/localized-error'
 
 import { useState, useEffect } from 'react'
 import {
@@ -22,6 +23,7 @@ import {
 import { Checkbox } from '@/components/ui/checkbox'
 import { ScrollArea } from '@/components/ui/scroll-area'
 import { Loader2 } from 'lucide-react'
+import { useTranslation } from '@/lib/i18n/use-translation'
 
 interface Branch {
   id: string
@@ -75,6 +77,8 @@ export function TeamMemberDialog({
   clients,
   onSuccess,
 }: TeamMemberDialogProps) {
+  const { t } = useTranslation()
+  const td = t.dashboard.teamMemberDialog
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState<string | null>(null)
   
@@ -140,17 +144,17 @@ export function TeamMemberDialog({
     setError(null)
 
     if (!name.trim()) {
-      setError('Name is required')
+      setError(td.errorNameRequired)
       return
     }
 
     if (!isEditing && !email.trim()) {
-      setError('Email is required')
+      setError(td.errorEmailRequired)
       return
     }
 
     if (selectedBranchIds.length === 0) {
-      setError('At least one branch must be selected')
+      setError(td.errorBranchRequired)
       return
     }
 
@@ -189,14 +193,14 @@ export function TeamMemberDialog({
       const data = await response.json()
 
       if (!response.ok) {
-        setError(data.error || 'Failed to save team member')
+        setError(data.error || td.errorSaveFailed)
         return
       }
 
       onSuccess(data)
     } catch (err) {
       console.error('Error saving team member:', err)
-      setError('An error occurred. Please try again.')
+      setError(td.errorGeneric)
     } finally {
       setLoading(false)
     }
@@ -208,54 +212,54 @@ export function TeamMemberDialog({
         <form onSubmit={handleSubmit}>
           <DialogHeader>
             <DialogTitle>
-              {isEditing ? 'Edit Team Member' : 'Add Team Member'}
+              {isEditing ? td.editTitle : td.addTitle}
             </DialogTitle>
             <DialogDescription>
               {isEditing
-                ? 'Update team member details and branch access.'
-                : 'Create a new team member account with branch access.'}
+                ? td.editDescription
+                : td.addDescription}
             </DialogDescription>
           </DialogHeader>
 
           <div className="grid gap-4 py-4">
             {/* Name */}
             <div className="grid gap-2">
-              <Label htmlFor="name">Name *</Label>
+              <Label htmlFor="name">{td.nameLabel}</Label>
               <Input
                 id="name"
                 value={name}
                 onChange={(e) => setName(e.target.value)}
-                placeholder="John Doe"
+                placeholder={td.namePlaceholder}
               />
             </div>
 
             {/* Email (only for new members) */}
             {!isEditing && (
               <div className="grid gap-2">
-                <Label htmlFor="email">Email *</Label>
+                <Label htmlFor="email">{td.emailLabel}</Label>
                 <Input
                   id="email"
                   type="email"
                   value={email}
                   onChange={(e) => setEmail(e.target.value)}
-                  placeholder="john@example.com"
+                  placeholder={td.emailPlaceholder}
                 />
               </div>
             )}
 
             {/* Role */}
             <div className="grid gap-2">
-              <Label htmlFor="role">Role *</Label>
+              <Label htmlFor="role">{td.roleLabel}</Label>
               <Select value={teamRole} onValueChange={(v) => setTeamRole(v as 'SUPERVISOR' | 'TECHNICIAN')}>
                 <SelectTrigger>
                   <SelectValue />
                 </SelectTrigger>
                 <SelectContent>
                   <SelectItem value="SUPERVISOR">
-                    Supervisor - Full access to assigned branches
+                    {td.supervisorOption}
                   </SelectItem>
                   <SelectItem value="TECHNICIAN">
-                    Technician - Limited access (no billing/contracts)
+                    {td.technicianOption}
                   </SelectItem>
                 </SelectContent>
               </Select>
@@ -263,36 +267,36 @@ export function TeamMemberDialog({
 
             {/* Job Title */}
             <div className="grid gap-2">
-              <Label htmlFor="jobTitle">Job Title</Label>
+              <Label htmlFor="jobTitle">{td.jobTitleLabel}</Label>
               <Input
                 id="jobTitle"
                 value={jobTitle}
                 onChange={(e) => setJobTitle(e.target.value)}
-                placeholder="e.g., Senior Technician"
+                placeholder={td.jobTitlePlaceholder}
               />
             </div>
 
             {/* Phone */}
             <div className="grid gap-2">
-              <Label htmlFor="phone">الهاتف</Label>
+              <Label htmlFor="phone">{td.phoneLabel}</Label>
               <Input
                 id="phone"
                 value={phone}
                 onChange={(e) => setPhone(e.target.value)}
-                placeholder="+1 234 567 8900"
+                placeholder={td.phonePlaceholder}
               />
             </div>
 
             {/* Branch Access */}
             <div className="grid gap-2">
-              <Label>Branch Access *</Label>
+              <Label>{td.branchAccessLabel}</Label>
               <p className="text-xs text-muted-foreground">
-                Select which branches this team member can access
+                {td.branchAccessHint}
               </p>
               <ScrollArea className="h-[200px] rounded-md border p-3">
                 {clients.length === 0 ? (
                   <p className="text-sm text-muted-foreground text-center py-4">
-                    No clients with branches available
+                    {td.noClientsWithBranches}
                   </p>
                 ) : (
                   <div className="space-y-4">
@@ -344,14 +348,15 @@ export function TeamMemberDialog({
               </ScrollArea>
               {selectedBranchIds.length > 0 && (
                 <p className="text-xs text-muted-foreground">
-                  {selectedBranchIds.length} branch{selectedBranchIds.length !== 1 ? 'es' : ''} selected
+                  {(selectedBranchIds.length === 1 ? td.branchSelectedSingular : td.branchSelectedPlural)
+                    .replace('{count}', String(selectedBranchIds.length))}
                 </p>
               )}
             </div>
 
             {/* Error */}
             {error && (
-              <p className="text-sm text-destructive">{error}</p>
+              <p className="text-sm text-destructive"><LocalizedError message={error} /></p>
             )}
           </div>
 
@@ -362,11 +367,11 @@ export function TeamMemberDialog({
               onClick={() => onOpenChange(false)}
               disabled={loading}
             >
-              Cancel
+              {td.cancel}
             </Button>
             <Button type="submit" disabled={loading}>
               {loading && <Loader2 className="me-2 h-4 w-4 animate-spin" />}
-              {isEditing ? 'Save Changes' : 'Create Team Member'}
+              {isEditing ? td.saveChanges : td.createTeamMember}
             </Button>
           </DialogFooter>
         </form>

@@ -1,6 +1,7 @@
 'use client'
 
-import { useState, useEffect } from 'react'
+import { useState, useEffect, useMemo } from 'react'
+import { businessDayStart, businessDayEndExclusive } from '@/lib/i18n/date-boundaries'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
 import { FilterPanel, QuickFilters } from '@/components/filters/filter-panel'
 import { ExportDialog } from '@/components/export/export-dialog'
@@ -42,34 +43,47 @@ export default function ClientWorkOrdersPage() {
   const [dateRange, setDateRange] = useState({ from: '', to: '' })
   const [selectedBranches, setSelectedBranches] = useState<string[]>([])
   const [availableBranches, setAvailableBranches] = useState<{ id: string; name: string }[]>([])
-  const [filters, setFilters] = useState<{ id: string; label: string; options: { value: string; label: string; checked: boolean }[] }[]>([
+  const [filterState, setFilters] = useState<{ id: string; label: string; options: { value: string; label: string; checked: boolean }[] }[]>([
     {
       id: 'status',
-      label: tw.status,
+      label: '',
       options: [
-        { value: 'SCHEDULED', label: tw.statusScheduled, checked: false },
-        { value: 'IN_PROGRESS', label: tw.statusInProgress, checked: false },
-        { value: 'FOR_REVIEW', label: tw.statusForReview, checked: false },
-        { value: 'COMPLETED', label: tw.statusCompleted, checked: false },
+        { value: 'SCHEDULED', label: '', checked: false },
+        { value: 'IN_PROGRESS', label: '', checked: false },
+        { value: 'FOR_REVIEW', label: '', checked: false },
+        { value: 'COMPLETED', label: '', checked: false },
       ]
     },
     {
       id: 'type',
-      label: tw.type,
+      label: '',
       options: [
-        { value: 'SERVICE', label: tw.typeService, checked: false },
-        { value: 'INSPECTION', label: tw.typeInspection, checked: false },
-        { value: 'MAINTENANCE', label: tw.typeMaintenance, checked: false },
-        { value: 'INSTALLATION', label: tw.typeInstallation, checked: false },
+        { value: 'SERVICE', label: '', checked: false },
+        { value: 'INSPECTION', label: '', checked: false },
+        { value: 'MAINTENANCE', label: '', checked: false },
+        { value: 'INSTALLATION', label: '', checked: false },
       ]
     }
   ])
-  const [quickFilters, setQuickFilters] = useState<{ label: string; value: string; active: boolean }[]>([
-    { label: tw.quickDueToday, value: 'due_today', active: false },
-    { label: tw.quickOverdue, value: 'overdue', active: false },
-    { label: tw.quickInProgress, value: 'in_progress', active: false },
-    { label: tw.quickThisWeek, value: 'this_week', active: false },
+  const [quickState, setQuickFilters] = useState<{ label: string; value: string; active: boolean }[]>([
+    { label: '', value: 'due_today', active: false },
+    { label: '', value: 'overdue', active: false },
+    { label: '', value: 'in_progress', active: false },
+    { label: '', value: 'this_week', active: false },
   ])
+
+  const filters = useMemo<typeof filterState>(() => {
+    const labels: Record<string, string> = { SCHEDULED: tw.statusScheduled, IN_PROGRESS: tw.statusInProgress,
+      FOR_REVIEW: tw.statusForReview, COMPLETED: tw.statusCompleted, SERVICE: tw.typeService,
+      INSPECTION: tw.typeInspection, MAINTENANCE: tw.typeMaintenance, INSTALLATION: tw.typeInstallation }
+    return filterState.map(group => ({ ...group, label: group.id === 'status' ? tw.status : tw.type,
+      options: group.options.map(option => ({ ...option, label: labels[option.value] ?? option.value })) }))
+  }, [filterState, tw])
+  const quickFilters = useMemo(() => {
+    const labels: Record<string, string> = { due_today: tw.quickDueToday, overdue: tw.quickOverdue,
+      in_progress: tw.quickInProgress, this_week: tw.quickThisWeek }
+    return quickState.map(filter => ({ ...filter, label: labels[filter.value] }))
+  }, [quickState, tw])
 
   useEffect(() => {
     fetchWorkOrders()
@@ -103,12 +117,12 @@ export default function ClientWorkOrdersPage() {
     // 3. Date range filter
     if (dateRange.from) {
       filtered = filtered.filter(wo =>
-        wo.scheduledDate && new Date(wo.scheduledDate) >= new Date(dateRange.from)
+        wo.scheduledDate && new Date(wo.scheduledDate) >= businessDayStart(dateRange.from)
       )
     }
     if (dateRange.to) {
       filtered = filtered.filter(wo =>
-        wo.scheduledDate && new Date(wo.scheduledDate) <= new Date(dateRange.to)
+        wo.scheduledDate && new Date(wo.scheduledDate) < businessDayEndExclusive(dateRange.to)
       )
     }
 
@@ -243,9 +257,9 @@ export default function ClientWorkOrdersPage() {
     const dataToExport = filteredWorkOrders.length > 0 ? filteredWorkOrders : workOrders
 
     if (format === 'excel') {
-      exportWorkOrdersToExcel(dataToExport, exportOpts)
+      exportWorkOrdersToExcel(dataToExport, exportOpts, locale)
     } else if (format === 'pdf') {
-      exportWorkOrdersToPdf(dataToExport, exportOpts)
+      return exportWorkOrdersToPdf(dataToExport, exportOpts, locale)
     }
   }
 

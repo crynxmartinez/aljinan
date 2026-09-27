@@ -20,32 +20,30 @@ export async function GET() {
     const locale = await getLocale()
     const t = getTranslationsForLocale(locale)
     const dateLocale = locale === 'en' ? 'en-US' : 'ar-SA-u-nu-latn'
-    const cacheKey = `analytics:${session.user.id}:${locale}`
+    const profile = session.user.role === 'CONTRACTOR'
+      ? await prisma.contractor.findUnique({ where: { userId: session.user.id }, select: { id: true } })
+      : await prisma.teamMember.findUnique({ where: { userId: session.user.id }, select: { contractorId: true } })
+    if (!profile) return NextResponse.json({ error: 'Access denied' }, { status: 403 })
+    const contractorId = 'contractorId' in profile ? profile.contractorId : profile.id
+    const cacheKey = `analytics:v2:${session.user.id}:${locale}`
 
     const data = await getCached(cacheKey, async () => {
       const now = new Date()
       const firstDayThisMonth = new Date(now.getFullYear(), now.getMonth(), 1)
       const firstDayLastMonth = new Date(now.getFullYear(), now.getMonth() - 1, 1)
-      const lastDayLastMonth = new Date(now.getFullYear(), now.getMonth(), 0)
 
       // Build base where clause based on role
-      const isTeamMember = session.user.role === 'TEAM_MEMBER' && session.user.assignedBranchIds
-      const branchIds = isTeamMember ? session.user.assignedBranchIds! : undefined
-
-      const baseWhere = branchIds
-        ? {
-          checklist: {
-            branchId: { in: branchIds },
-            branch: { client: { user: { status: { not: 'ARCHIVED' as const } } } }
+      const baseWhere = {
+        checklist: {
+          branch: {
+            client: { contractorId, user: { status: { not: 'ARCHIVED' as const } } },
+            ...(session.user.role === 'TEAM_MEMBER' ? {
+              teamMemberAccess: { some: { teamMember: { userId: session.user.id } } },
+            } : {}),
           },
-          deletedAt: null
-        }
-        : {
-          checklist: {
-            branch: { client: { user: { status: { not: 'ARCHIVED' as const } } } }
-          },
-          deletedAt: null
-        }
+        },
+        deletedAt: null,
+      }
 
       // 1. Revenue aggregations (replaces fetching ALL work orders)
       const [thisMonthAgg, lastMonthAgg] = await Promise.all([
@@ -61,7 +59,7 @@ export async function GET() {
           where: {
             ...baseWhere,
             stage: 'COMPLETED',
-            updatedAt: { gte: firstDayLastMonth, lte: lastDayLastMonth }
+            updatedAt: { gte: firstDayLastMonth, lt: firstDayThisMonth }
           },
           _sum: { price: true }
         })
@@ -131,13 +129,13 @@ export async function GET() {
       const revenueByMonthPromises = []
       for (let i = 5; i >= 0; i--) {
         const monthStart = new Date(now.getFullYear(), now.getMonth() - i, 1)
-        const monthEnd = new Date(now.getFullYear(), now.getMonth() - i + 1, 0)
+        const monthEnd = new Date(now.getFullYear(), now.getMonth() - i + 1, 1)
         revenueByMonthPromises.push(
           prisma.checklistItem.aggregate({
             where: {
               ...baseWhere,
               stage: 'COMPLETED',
-              updatedAt: { gte: monthStart, lte: monthEnd }
+              updatedAt: { gte: monthStart, lt: monthEnd }
             },
             _sum: { price: true }
           }).then(agg => ({
@@ -149,35 +147,27 @@ export async function GET() {
       const revenueByMonth = await Promise.all(revenueByMonthPromises)
 
       // 4. Top clients by revenue (aggregated, not fetching all work orders)
-      const topClientRevenue = await prisma.checklistItem.findMany({
+      const topClientRevenue = await prisma.checklistItem.groupBy({
+        by: ['checklistId'],
         where: {
           ...baseWhere,
           stage: 'COMPLETED',
           price: { not: null }
         },
-        select: {
-          price: true,
-          checklist: {
-            select: {
-              branch: {
-                select: {
-                  client: {
-                    select: { id: true, companyName: true }
-                  }
-                }
-              }
-            }
-          }
-        },
-        take: 500 // Limit to recent completed work orders with prices
+        _sum: { price: true },
       })
+      const checklists = await prisma.checklist.findMany({
+        where: { id: { in: topClientRevenue.map(row => row.checklistId) } },
+        select: { id: true, branch: { select: { client: { select: { id: true, companyName: true } } } } },
+      })
+      const clientsByChecklist = new Map(checklists.map(row => [row.id, row.branch.client]))
 
       const clientRevenue = new Map<string, { name: string; revenue: number }>()
       topClientRevenue.forEach(wo => {
-        const client = wo.checklist?.branch?.client
+        const client = clientsByChecklist.get(wo.checklistId)
         if (!client) return
         const current = clientRevenue.get(client.id) || { name: client.companyName, revenue: 0 }
-        current.revenue += Number(wo.price || 0)
+        current.revenue += Number(wo._sum.price || 0)
         clientRevenue.set(client.id, current)
       })
 
@@ -222,7 +212,7 @@ export async function GET() {
         },
         topClients
       }
-    }, 300) // Cache for 5 minutes
+    }, session.user.role === 'TEAM_MEMBER' ? 0 : 300)
 
     return NextResponse.json(data)
   } catch (error) {

@@ -1,16 +1,14 @@
 import { NextResponse } from 'next/server'
 import { prisma } from '@/lib/prisma'
-import { sendTempPasswordEmail } from '@/lib/email'
+import { validatePassword } from '@/lib/password-validation'
 import bcrypt from 'bcryptjs'
-import crypto from 'crypto'
 import { enforceRateLimit } from '@/lib/rate-limit'
-import { getLocale } from '@/lib/i18n/server'
 
 export async function POST(request: Request) {
   try {
-    const { token } = await request.json()
+    const { token, password } = await request.json()
 
-    if (!token) {
+    if (typeof token !== 'string' || !token) {
       return NextResponse.json(
         { error: 'Verification token is required' },
         { status: 400 }
@@ -39,30 +37,25 @@ export async function POST(request: Request) {
       )
     }
 
-    // Generate temporary password
-    const tempPassword = crypto.randomBytes(6).toString('hex') // 12 char random password
-    const hashedPassword = await bcrypt.hash(tempPassword, 12)
-
-    // Update user: activate account, set password, clear verification token
-    await prisma.user.update({
-      where: { id: user.id },
+    // The verified link lets the recipient choose credentials directly. No generated
+    // password is lost if an email provider fails after the account has changed.
+    if (password === undefined) return NextResponse.json({ requiresPassword: true })
+    if (typeof password !== 'string' || !validatePassword(password).isValid) {
+      return NextResponse.json({ error: 'Password does not meet the requirements' }, { status: 400 })
+    }
+    const hashedPassword = await bcrypt.hash(password, 12)
+    const activated = await prisma.user.updateMany({
+      where: { id: user.id, emailVerificationToken: token, emailVerificationExpiry: { gt: new Date() } },
       data: {
-        password: hashedPassword,
-        status: 'ACTIVE',
-        emailVerified: new Date(),
-        mustChangePassword: true,
-        emailVerificationToken: null,
-        emailVerificationExpiry: null,
-        sessionVersion: { increment: 1 },
+        password: hashedPassword, status: 'ACTIVE', emailVerified: new Date(), mustChangePassword: false,
+        emailVerificationToken: null, emailVerificationExpiry: null, sessionVersion: { increment: 1 },
       },
     })
-
-    // Send temp password email
-    await sendTempPasswordEmail(user.email, user.name || 'there', tempPassword, await getLocale())
+    if (activated.count !== 1) return NextResponse.json({ error: 'Invalid or expired verification token' }, { status: 400 })
 
     return NextResponse.json({
       success: true,
-      message: 'Email verified successfully. Check your inbox for login credentials.',
+      message: 'Account activated. You can now sign in.',
     })
   } catch (error) {
     console.error('Error verifying email:', error)

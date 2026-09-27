@@ -1,3 +1,4 @@
+import { publishedFor } from '@/lib/publication'
 import { getServerSession } from 'next-auth'
 import { NextResponse } from 'next/server'
 import { authOptions } from '@/lib/auth'
@@ -25,7 +26,7 @@ export async function GET(
     }
 
     const invoice = await prisma.invoice.findFirst({
-      where: { id: invoiceId, branchId },
+      where: { id: invoiceId, branchId, ...publishedFor(session.user.role) },
       include: { items: true }
     })
 

@@ -63,6 +63,10 @@ export async function POST(request: Request) {
       return NextResponse.json({ error: 'Upload type and folder are required' }, { status: 400 })
     }
 
+    if (folder !== 'logos' && !branchId) {
+      return NextResponse.json({ error: 'Branch is required for this upload' }, { status: 400 })
+    }
+
     // The folder becomes part of the object key, so it cannot be free text.
     if (!isAllowedFolder(folder)) {
       return NextResponse.json(
@@ -215,9 +219,8 @@ export async function DELETE(request: Request) {
     }
 
     const isOwner = upload.uploadedById === session.user.id
-    const canReach = upload.branchId
-      ? await verifyBranchAccess(upload.branchId, session.user.id, session.user.role)
-      : isOwner
+    const canReach = isOwner && (!upload.branchId ||
+      await verifyBranchAccess(upload.branchId, session.user.id, session.user.role))
 
     if (!canReach) {
       return NextResponse.json({ error: 'Access denied' }, { status: 403 })

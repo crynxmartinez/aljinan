@@ -1,3 +1,4 @@
+import { publishedFor } from '@/lib/publication'
 import { getServerSession } from 'next-auth'
 import { NextResponse } from 'next/server'
 import { authOptions } from '@/lib/auth'
@@ -49,7 +50,7 @@ export async function GET(
     }
 
     const contract = await prisma.contract.findFirst({
-      where: { id: contractId, branchId },
+      where: { id: contractId, branchId, ...publishedFor(session.user.role) },
       include: {
         checklist: {
           include: {
@@ -112,7 +113,7 @@ export async function PATCH(
 
       // Verify contract exists and belongs to this branch
       const contractExists = await prisma.contract.findFirst({
-        where: { id: contractId, branchId }
+        where: { id: contractId, branchId, ...publishedFor(session.user.role) }
       })
       if (!contractExists) {
         return NextResponse.json({ error: 'Contract not found' }, { status: 404 })
@@ -278,7 +279,7 @@ export async function PATCH(
 
       // Verify all work orders are completed AND paid before allowing end signature
       const contract = await prisma.contract.findFirst({
-        where: { id: contractId, branchId },
+        where: { id: contractId, branchId, ...publishedFor(session.user.role) },
         include: {
           checklist: {
             include: {
@@ -620,7 +621,7 @@ export async function DELETE(
 
     // Check for active work orders before deleting
     const contractWithChecklist = await prisma.contract.findFirst({
-      where: { id: contractId, branchId },
+      where: { id: contractId, branchId, ...publishedFor(session.user.role) },
       include: {
         checklist: {
           include: {

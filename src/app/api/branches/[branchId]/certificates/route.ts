@@ -25,7 +25,7 @@ export async function GET(
     }
 
     const certificates = await prisma.certificate.findMany({
-      where: { branchId },
+      where: { branchId, ...(session.user.role === 'CLIENT' ? { OR: [{ contractId: null }, { contract: { status: { not: 'DRAFT' as const } } }] } : {}) },
       include: {
         contract: { select: { id: true, title: true } },
         equipment: { select: { id: true, equipmentNumber: true, equipmentType: true } }
@@ -86,6 +86,14 @@ export async function POST(
     // Only contractors can create certificates
     if (session.user.role !== 'CONTRACTOR') {
       return NextResponse.json({ error: 'Only contractors can create certificates' }, { status: 403 })
+    }
+
+    // Related IDs must belong to the same authorized branch too.
+    if (contractId && !await prisma.contract.findFirst({ where: { id: contractId, branchId }, select: { id: true } })) {
+      return NextResponse.json({ error: 'Contract not found' }, { status: 404 })
+    }
+    if (workOrderId && !await prisma.checklistItem.findFirst({ where: { id: workOrderId, checklist: { branchId }, deletedAt: null }, select: { id: true } })) {
+      return NextResponse.json({ error: 'Work order not found' }, { status: 404 })
     }
 
     // Use transaction to create certificate and update equipment if needed

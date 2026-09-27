@@ -222,7 +222,7 @@ export function ContractorProfileForm({ contractor, open, onOpenChange }: Contra
                   id="contactPersonName"
                   value={formData.contactPersonName}
                   onChange={(e) => setFormData({ ...formData, contactPersonName: e.target.value })}
-                  placeholder="John Doe"
+                  placeholder={t.auth.register.fullNamePlaceholder}
                 />
               </div>
 

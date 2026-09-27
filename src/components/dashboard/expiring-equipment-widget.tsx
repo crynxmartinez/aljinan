@@ -1,4 +1,5 @@
 'use client'
+import { enumLabel } from '@/lib/i18n/enum-labels'
 
 import { useState, useEffect } from 'react'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
@@ -131,7 +132,7 @@ export function ExpiringEquipmentWidget({ contractorId }: ExpiringEquipmentWidge
                 <div className="flex items-center gap-2">
                   <span className="font-medium text-sm">{eq.equipmentNumber}</span>
                   <Badge variant="outline" className="text-xs">
-                    {eq.equipmentType.replace(/_/g, ' ')}
+                    {enumLabel(eq.equipmentType, locale)}
                   </Badge>
                   {eq.calculatedStatus === 'EXPIRED' ? (
                     <Badge variant="destructive" className="text-xs">

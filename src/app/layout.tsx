@@ -8,7 +8,7 @@ import { Analytics } from '@vercel/analytics/react';
 import { SpeedInsights } from '@vercel/speed-insights/next';
 import { OrganizationSchema } from "@/components/seo/organization-schema";
 import { ImpersonationBanner } from "@/components/layout/impersonation-banner";
-import { Toaster } from 'sonner';
+import { LocalizedToaster } from '@/components/localized-toaster';
 import { displayFont } from "@/lib/fonts";
 import "./globals.css";
 
@@ -72,7 +72,7 @@ export default async function RootLayout({
               <ImpersonationBanner />
               {children}
             </SessionProvider>
-            <Toaster position="top-left" richColors />
+            <LocalizedToaster />
             <Analytics />
             <SpeedInsights />
           </TranslationProvider>

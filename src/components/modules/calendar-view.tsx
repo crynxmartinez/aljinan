@@ -1,4 +1,6 @@
 'use client'
+import { TranslatedText } from '@/components/translated-text'
+
 
 import { useState, useEffect } from 'react'
 import { api } from '@/lib/api-client'
@@ -114,9 +116,9 @@ export function CalendarView({ branchId }: CalendarViewProps) {
     setCurrentDate(prev => {
       const newDate = new Date(prev)
       if (direction === 'prev') {
-        newDate.setMonth(newDate.getMonth() - 1)
+        newDate.setMonth(newDate.getMonth() - 1, 1)
       } else {
-        newDate.setMonth(newDate.getMonth() + 1)
+        newDate.setMonth(newDate.getMonth() + 1, 1)
       }
       return newDate
     })
@@ -248,8 +250,7 @@ export function CalendarView({ branchId }: CalendarViewProps) {
                       ))}
                       {dayTasks.length > 3 && (
                         <div className="text-xs text-muted-foreground px-1">
-                          +{dayTasks.length - 3} أخرى
-                        </div>
+                          +{dayTasks.length - 3}{' '}<TranslatedText path="dashboard.contractorProfileCard.businessTypeOther" /></div>
                       )}
                     </div>
                   </div>

@@ -61,7 +61,10 @@ export function FilterPanel({
 }: FilterPanelProps) {
   const { t, locale } = useTranslation()
   const ta = t.dashboard.filterPanel
-  const [localFilters, setLocalFilters] = useState(filters)
+  const [draftFilters, setLocalFilters] = useState(filters)
+  const localFilters = filters.map(group => ({ ...group, options: group.options.map(option => ({
+    ...option, checked: draftFilters.find(draft => draft.id === group.id)?.options.find(draft => draft.value === option.value)?.checked ?? option.checked,
+  })) }))
   const [isOpen, setIsOpen] = useState(false)
 
   const handleToggle = (groupId: string, optionValue: string) => {
@@ -98,7 +101,7 @@ export function FilterPanel({
   }
 
   return (
-    <Sheet open={isOpen} onOpenChange={setIsOpen}>
+    <Sheet open={isOpen} onOpenChange={(open) => { if (open) setLocalFilters(filters); setIsOpen(open) }}>
       <SheetTrigger asChild>
         <Button variant="outline" size="sm" className="relative">
           <Filter className="h-4 w-4 me-2" />

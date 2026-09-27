@@ -11,11 +11,11 @@ import path from 'node:path'
  */
 export default defineConfig({
   resolve: {
-    alias: { '@': path.resolve(__dirname, './src') },
+    alias: { '@': path.resolve(import.meta.dirname, './src') },
   },
   test: {
     environment: 'node',
-    include: ['tests/unit/**/*.test.ts'],
+    include: ['tests/unit/**/*.test.ts', 'tests/unit/**/*.test.tsx'],
     exclude: ['node_modules', '.next', 'tests/integration/**'],
     // These suites talk to a database and an HTTP server; parallel runs would fight over
     // the same rows.

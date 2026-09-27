@@ -109,7 +109,7 @@ export function RescheduleNotificationModal({
                 </div>
 
                 {wo.rescheduledReason && (
-                  <div className="mt-3 p-2 bg-white rounded border border-orange-100">
+                  <div className="mt-3 p-2 bg-card rounded border border-orange-100">
                     <p className="text-xs text-muted-foreground mb-1">{tr.reason}</p>
                     <p className="text-sm">{wo.rescheduledReason}</p>
                   </div>

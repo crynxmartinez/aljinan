@@ -1,4 +1,6 @@
 'use client'
+import { TranslatedText } from '@/components/translated-text'
+
 
 import { useState } from 'react'
 import { useRouter } from 'next/navigation'
@@ -79,40 +81,30 @@ export function TeamMemberProfileForm({ teamMember }: TeamMemberProfileFormProps
       <CardHeader>
         <div className="flex items-center justify-between">
           <CardTitle className="flex items-center gap-2">
-            <User className="h-5 w-5" />
-            My Profile
-          </CardTitle>
+            <User className="h-5 w-5" /><TranslatedText path="dashboard.profilePage.myProfile" /></CardTitle>
           <Badge variant={teamMember.teamRole === 'SUPERVISOR' ? 'default' : 'secondary'}>
             {teamMember.teamRole === 'SUPERVISOR' ? (
               <>
-                <Shield className="h-3 w-3 me-1" />
-                Supervisor
-              </>
+                <Shield className="h-3 w-3 me-1" /><TranslatedText path="dashboard.checklistKanban.roleSupervisor" /></>
             ) : (
               <>
-                <Wrench className="h-3 w-3 me-1" />
-                Technician
-              </>
+                <Wrench className="h-3 w-3 me-1" /><TranslatedText path="dashboard.printView.technician" /></>
             )}
           </Badge>
         </div>
-        <p className="text-sm text-muted-foreground">
-          Update your personal information
-        </p>
+        <p className="text-sm text-muted-foreground"><TranslatedText path="copy.Update_your_personal_information" /></p>
       </CardHeader>
       <CardContent>
         <form onSubmit={handleSubmit} className="space-y-6">
           {/* Full Name */}
           <div className="space-y-2">
             <Label htmlFor="name">
-              <User className="h-4 w-4 inline me-1" />
-              Full Name
-            </Label>
+              <User className="h-4 w-4 inline me-1" /><TranslatedText path="copy.Full_Name" /></Label>
             <Input
               id="name"
               value={formData.name}
               onChange={(e) => setFormData({ ...formData, name: e.target.value })}
-              placeholder="Your full name"
+              placeholder={t.pages.contact.namePlaceholder}
               required
             />
           </div>
@@ -120,9 +112,7 @@ export function TeamMemberProfileForm({ teamMember }: TeamMemberProfileFormProps
           {/* Email */}
           <div className="space-y-2">
             <Label htmlFor="email">
-              <Mail className="h-4 w-4 inline me-1" />
-              Email
-            </Label>
+              <Mail className="h-4 w-4 inline me-1" /><TranslatedText path="pages.contact.emailTitle" /></Label>
             <Input
               id="email"
               type="email"
@@ -131,17 +121,13 @@ export function TeamMemberProfileForm({ teamMember }: TeamMemberProfileFormProps
               placeholder="your.email@company.com"
               required
             />
-            <p className="text-xs text-muted-foreground">
-              This email is used for login
-            </p>
+            <p className="text-xs text-muted-foreground"><TranslatedText path="copy.This_email_is_used_for_login" /></p>
           </div>
 
           {/* Phone */}
           <div className="space-y-2">
             <Label htmlFor="phone">
-              <Phone className="h-4 w-4 inline me-1" />
-              Phone Number
-            </Label>
+              <Phone className="h-4 w-4 inline me-1" /><TranslatedText path="copy.Phone_Number" /></Label>
             <Input
               id="phone"
               type="tel"
@@ -154,28 +140,24 @@ export function TeamMemberProfileForm({ teamMember }: TeamMemberProfileFormProps
           {/* Job Title */}
           <div className="space-y-2">
             <Label htmlFor="jobTitle">
-              <Briefcase className="h-4 w-4 inline me-1" />
-              Job Title
-            </Label>
+              <Briefcase className="h-4 w-4 inline me-1" /><TranslatedText path="dashboard.teamMemberDialog.jobTitleLabel" /></Label>
             <Input
               id="jobTitle"
               value={formData.jobTitle}
               onChange={(e) => setFormData({ ...formData, jobTitle: e.target.value })}
-              placeholder="e.g., Fire Safety Technician"
+              placeholder={t.copy.technicianExample}
             />
           </div>
 
           {/* Address */}
           <div className="space-y-2">
             <Label htmlFor="address">
-              <MapPin className="h-4 w-4 inline me-1" />
-              Address
-            </Label>
+              <MapPin className="h-4 w-4 inline me-1" /><TranslatedText path="pages.contact.addressTitle" /></Label>
             <Textarea
               id="address"
               value={formData.address}
               onChange={(e) => setFormData({ ...formData, address: e.target.value })}
-              placeholder="Your address"
+              placeholder={t.copy.yourAddress}
               rows={3}
             />
           </div>
@@ -184,14 +166,10 @@ export function TeamMemberProfileForm({ teamMember }: TeamMemberProfileFormProps
           <Button type="submit" disabled={loading} className="w-full">
             {loading ? (
               <>
-                <Loader2 className="me-2 h-4 w-4 animate-spin" />
-                Saving...
-              </>
+                <Loader2 className="me-2 h-4 w-4 animate-spin" /><TranslatedText path="pages.changePassword.saving" /></>
             ) : (
               <>
-                <Save className="me-2 h-4 w-4" />
-                Save Changes
-              </>
+                <Save className="me-2 h-4 w-4" /><TranslatedText path="dashboard.adminAdminsPage.saveChanges" /></>
             )}
           </Button>
         </form>

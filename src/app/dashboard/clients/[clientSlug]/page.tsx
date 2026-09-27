@@ -126,7 +126,7 @@ export default async function ClientDetailPage({
           className="inline-flex items-center text-sm text-muted-foreground hover:text-foreground mb-4"
         >
           <ArrowLeft className="me-2 h-4 w-4" />
-          Back to Clients
+          {tc.backToClients}
         </Link>
       </div>
 
@@ -141,7 +141,7 @@ export default async function ClientDetailPage({
               {getStatusBadge(client.user.status)}
             </div>
             <p className="text-muted-foreground mt-1">
-              {isTeamMember ? 'Assigned branches: ' : ''}{client.branches.length} branch{client.branches.length !== 1 ? 'es' : ''}
+              {isTeamMember ? tc.assignedBranchesLabel : ''}{client.branches.length} {client.branches.length !== 1 ? tc.branches : tc.branch}
             </p>
           </div>
         </div>
@@ -149,7 +149,7 @@ export default async function ClientDetailPage({
           <Link href={`/dashboard/clients/${client.slug || client.id}/branches/new`}>
             <Button>
               <Plus className="me-2 h-4 w-4" />
-              Add Branch
+              {tc.addBranch}
             </Button>
           </Link>
         )}
@@ -159,9 +159,9 @@ export default async function ClientDetailPage({
         <div className="lg:col-span-2 space-y-6">
           <Card>
             <CardHeader>
-              <CardTitle>Branches</CardTitle>
+              <CardTitle>{tc.branchesTitle}</CardTitle>
               <CardDescription>
-                {isTeamMember ? 'Your assigned locations' : 'All locations for this client'}
+                {isTeamMember ? tc.yourAssignedLocations : tc.allLocationsForClient}
               </CardDescription>
             </CardHeader>
             <CardContent>
@@ -169,13 +169,13 @@ export default async function ClientDetailPage({
                 <div className="text-center py-8 bg-muted/50 rounded-lg">
                   <MapPin className="h-10 w-10 text-muted-foreground/50 mx-auto mb-3" />
                   <p className="text-muted-foreground mb-3">
-                    {isTeamMember ? 'No branches assigned' : 'No branches yet'}
+                    {isTeamMember ? tc.noBranchesAssigned : tc.noBranchesYet}
                   </p>
                   {!isTeamMember && (
                     <Link href={`/dashboard/clients/${client.slug || client.id}/branches/new`}>
                       <Button>
                         <Plus className="me-2 h-4 w-4" />
-                        Add First Branch
+                        {tc.addFirstBranch}
                       </Button>
                     </Link>
                   )}

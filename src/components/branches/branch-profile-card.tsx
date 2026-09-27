@@ -169,7 +169,7 @@ export function BranchProfileCard({ branch, canEdit }: BranchProfileCardProps) {
                 <div>
                   <p className="text-xs text-muted-foreground">{tb.areaSize}</p>
                   <p className={`text-sm ${branch.areaSize ? 'font-medium' : 'text-muted-foreground italic'}`}>
-                    {branch.areaSize ? `${branch.areaSize.toLocaleString()} ${tb.sqm}` : tb.notSet}
+                    {branch.areaSize ? `${branch.areaSize.toLocaleString(locale === 'ar' ? 'ar-SA-u-nu-latn' : 'en-US')} ${tb.sqm}` : tb.notSet}
                   </p>
                 </div>
               </div>

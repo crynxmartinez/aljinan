@@ -1,4 +1,7 @@
 'use client'
+import { TranslatedText } from '@/components/translated-text'
+
+import { formatCurrency as localizedCurrency } from '@/lib/i18n/format-date'
 
 import { useState } from 'react'
 import { useTranslation } from '@/lib/i18n/use-translation'
@@ -83,14 +86,6 @@ function formatDate(dateString: string | null, notScheduledLabel: string, locale
   })
 }
 
-function formatCurrency(amount: number | null) {
-  if (amount === null || amount === undefined) return '-'
-  return new Intl.NumberFormat('en-SA', {
-    style: 'currency',
-    currency: 'SAR',
-    minimumFractionDigits: 2,
-  }).format(amount)
-}
 
 function getPaymentStatusBadge(status: BillingWorkOrder['paymentStatus'], labels: { paid: string; pendingVerification: string; unpaid: string }) {
   switch (status) {
@@ -138,6 +133,7 @@ export function BillingWorkOrdersDisplay({
   onViewProof,
 }: BillingWorkOrdersDisplayProps) {
   const { t, locale } = useTranslation()
+  const formatCurrency = (amount: number | null) => amount == null ? '-' : localizedCurrency(amount, locale)
   const tb = t.dashboard.billingWorkOrders
   const [expandedGroups, setExpandedGroups] = useState<Set<string>>(new Set())
   const [payAllMode, setPayAllMode] = useState<Record<string, boolean>>({})
@@ -222,7 +218,7 @@ export function BillingWorkOrdersDisplay({
                         <div>
                           <h4 className="font-medium text-sm">{groupName}</h4>
                           <p className="text-xs text-muted-foreground">
-                            {items.length} occurrence{items.length !== 1 ? 's' : ''} • {paidCount}/{items.length} {tb.paid}
+                            {items.length}{' '}<TranslatedText path="copy.occurrence" />{items.length !== 1 ? 's' : ''} • {paidCount}/{items.length} {tb.paid}
                           </p>
                         </div>
                       </div>

@@ -1,17 +1,28 @@
 'use client'
+import { LocalizedError } from '@/components/localized-error'
 
 import { useState, useEffect, Suspense } from 'react'
 import { useSearchParams } from 'next/navigation'
 import Link from 'next/link'
+import { PasswordInput } from '@/components/ui/password-input'
+import { Label } from '@/components/ui/label'
+import { validatePassword } from '@/lib/password-policy'
 import { Button } from '@/components/ui/button'
-import { Loader2, CheckCircle, AlertCircle, Mail } from 'lucide-react'
+import { Loader2, CheckCircle, AlertCircle } from 'lucide-react'
 import { useTranslation } from '@/lib/i18n/use-translation'
 
 function VerifyEmailContent() {
-  const { t } = useTranslation()
+  const { t, locale, setLocale } = useTranslation()
   const tr = t.pages.verifyEmail
   const searchParams = useSearchParams()
   const token = searchParams.get('token')
+
+  const [requiresPassword, setRequiresPassword] = useState(false)
+  const [password, setPassword] = useState('')
+  const linkLocale = searchParams.get('locale')
+  useEffect(() => {
+    if ((linkLocale === 'en' || linkLocale === 'ar') && linkLocale !== locale) setLocale(linkLocale)
+  }, [linkLocale, locale, setLocale])
 
   const [verifying, setVerifying] = useState(true)
   const [success, setSuccess] = useState(false)
@@ -27,26 +38,45 @@ function VerifyEmailContent() {
     verifyEmail()
   }, [token])
 
-  const verifyEmail = async () => {
+  const verifyEmail = async (chosenPassword?: string) => {
     try {
       const response = await fetch('/api/auth/verify-email', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ token }),
+        body: JSON.stringify({ token, ...(chosenPassword !== undefined ? { password: chosenPassword } : {}) }),
       })
 
       const data = await response.json()
 
       if (!response.ok) {
-        throw new Error(data.error || 'Failed to verify email')
+        throw new Error(tr.genericError)
       }
 
-      setSuccess(true)
+      if (data.requiresPassword) setRequiresPassword(true)
+      else { setRequiresPassword(false); setSuccess(true) }
     } catch (err) {
       setError(err instanceof Error ? err.message : tr.genericError)
     } finally {
       setVerifying(false)
     }
+  }
+
+  if (requiresPassword) {
+    return <div className="min-h-screen grid place-items-center bg-muted p-4">
+      <form className="w-full max-w-md space-y-4 rounded-xl border bg-card p-8" onSubmit={(event) => {
+        event.preventDefault()
+        if (!validatePassword(password).isValid) { setError(t.system.invalid); return }
+        setVerifying(true); setError(''); verifyEmail(password)
+      }}>
+        <h1 className="text-2xl font-semibold">{t.system.setupPassword}</h1>
+        <p className="text-muted-foreground">{t.system.setupDescription}</p>
+        <p className="text-sm text-muted-foreground">{t.system.passwordRequirements}</p>
+        <Label htmlFor="setup-password">{t.system.password}</Label>
+        <PasswordInput id="setup-password" autoComplete="new-password" value={password} onChange={event => setPassword(event.target.value)} required />
+        {error && <p role="alert" className="text-destructive"><LocalizedError message={error} /></p>}
+        <Button type="submit" disabled={verifying} className="w-full">{t.system.activate}</Button>
+      </form>
+    </div>
   }
 
   if (verifying) {
@@ -78,7 +108,7 @@ function VerifyEmailContent() {
               </div>
               <h1 className="text-2xl font-bold mb-2">{tr.failedTitle}</h1>
               <p className="text-muted-foreground mb-6">
-                {error}
+                <LocalizedError message={error} />
               </p>
               <div className="space-y-3">
                 <p className="text-sm text-muted-foreground">
@@ -106,26 +136,12 @@ function VerifyEmailContent() {
               </div>
               <h1 className="text-2xl font-bold mb-2">{tr.verifiedTitle}</h1>
               <p className="text-muted-foreground mb-6">
-                {tr.verifiedDesc}
+                {t.system.setupComplete}
               </p>
-
-              <div className="bg-blue-50 border border-blue-200 rounded-lg p-4 mb-6">
-                <div className="flex items-start gap-3">
-                  <Mail className="h-5 w-5 text-blue-600 mt-0.5 flex-shrink-0" />
-                  <div className="text-start">
-                    <p className="text-sm font-medium text-blue-900 mb-1">
-                      {tr.checkInboxTitle}
-                    </p>
-                    <p className="text-sm text-blue-700">
-                      {tr.checkInboxDesc}
-                    </p>
-                  </div>
-                </div>
-              </div>
 
               <div className="space-y-3">
                 <p className="text-sm text-muted-foreground">
-                  {tr.onceReceivedNote}
+                  {t.system.setupComplete}
                 </p>
                 <Link href="/login">
                   <Button className="w-full">{tr.goToLogin}</Button>

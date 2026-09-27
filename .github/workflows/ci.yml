@@ -6,9 +6,9 @@ name: CI
 
 on:
   push:
-    branches: [main, develop]
+    branches: [main, develop, production]
   pull_request:
-    branches: [main, develop]
+    branches: [main, develop, production]
 
 jobs:
   static:
@@ -39,6 +39,9 @@ jobs:
 
       - name: Lint
         run: npm run lint
+
+      - name: Localization regression guard
+        run: npm run check:localization
 
       - name: Unit tests
         run: npm test

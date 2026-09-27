@@ -1,4 +1,5 @@
 'use client'
+import { LocalizedError } from '@/components/localized-error'
 
 import { useState, useEffect } from 'react'
 import { useTranslation } from '@/lib/i18n/use-translation'
@@ -177,7 +178,7 @@ export function RequestComments({ branchId, requestId, currentUserId }: RequestC
 
       {error && (
         <div className="bg-destructive/10 text-destructive p-2 rounded text-sm">
-          {error}
+          <LocalizedError message={error} />
         </div>
       )}
 

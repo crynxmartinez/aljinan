@@ -1,5 +1,7 @@
 'use client'
 
+import { formatCurrency as localizedCurrency } from '@/lib/i18n/format-date'
+
 import { useState, useEffect } from 'react'
 import { useRouter } from 'next/navigation'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
@@ -119,7 +121,7 @@ export function BillingView({ branchId, userRole }: BillingViewProps) {
 
   const formatCurrency = (amount: number | null) => {
     if (amount === null) return '-'
-    return new Intl.NumberFormat('en-SA', { style: 'currency', currency: 'SAR' }).format(amount)
+    return localizedCurrency(amount, locale)
   }
 
   // Work order payment handlers

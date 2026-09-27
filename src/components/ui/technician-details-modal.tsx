@@ -1,4 +1,5 @@
 'use client'
+import { LocalizedError } from '@/components/localized-error'
 
 import { useState, useEffect } from 'react'
 import {
@@ -102,7 +103,7 @@ export function TechnicianDetailsModal({
         ) : error ? (
           <div className="flex items-center gap-3 p-4 bg-red-50 dark:bg-red-950/40 border border-red-200 dark:border-red-900 rounded-lg">
             <AlertCircle className="h-5 w-5 text-red-600 dark:text-red-400 flex-shrink-0" />
-            <p className="text-sm text-red-800 dark:text-red-400">{error}</p>
+            <p className="text-sm text-red-800 dark:text-red-400"><LocalizedError message={error} /></p>
           </div>
         ) : technician ? (
           <div className="space-y-4">

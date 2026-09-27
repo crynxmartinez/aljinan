@@ -1,4 +1,6 @@
 'use client'
+import { TranslatedText } from '@/components/translated-text'
+
 
 import { useState, useEffect, useRef } from 'react'
 import { api } from '@/lib/api-client'
@@ -18,6 +20,7 @@ import {
   AlertTriangle,
 } from 'lucide-react'
 import { useTranslation } from '@/lib/i18n/use-translation'
+import { enumLabel } from '@/lib/i18n/enum-labels'
 import { formatDate } from '@/lib/i18n/format-date'
 
 interface Activity {
@@ -50,6 +53,8 @@ export function ActivityPanel({ branchId, isOpen, onClose }: ActivityPanelProps)
   const { t, locale } = useTranslation()
   const ta = t.dashboard.activityPanel
   const [activities, setActivities] = useState<Activity[]>([])
+  const [hasOlder, setHasOlder] = useState(false)
+  const [loadingOlder, setLoadingOlder] = useState(false)
   const [loading, setLoading] = useState(false)
   const [comment, setComment] = useState('')
   const [sending, setSending] = useState(false)
@@ -64,6 +69,7 @@ export function ActivityPanel({ branchId, isOpen, onClose }: ActivityPanelProps)
         showToast: false,
       })
       setActivities(data ?? [])
+      setHasOlder(data.length === 100)
     } catch (err) {
       console.error('Failed to fetch activities:', err)
       setLoadFailed(true)
@@ -77,6 +83,20 @@ export function ActivityPanel({ branchId, isOpen, onClose }: ActivityPanelProps)
       fetchActivities()
     }
   }, [isOpen, branchId])
+
+  const loadOlder = async () => {
+    const first = activities[0]
+    if (!first) return
+    setLoadingOlder(true)
+    try {
+      const query = new URLSearchParams({ before: first.createdAt, beforeId: first.id })
+      const older = await api.get<Activity[]>(`/api/branches/${branchId}/activities?${query}`)
+      setActivities(current => [...older, ...current])
+      setHasOlder(older.length === 100)
+    } catch (error) {
+      console.error('Failed to load older comments:', error)
+    } finally { setLoadingOlder(false) }
+  }
 
   const handleSendComment = async (e: React.FormEvent) => {
     e.preventDefault()
@@ -121,7 +141,7 @@ export function ActivityPanel({ branchId, isOpen, onClose }: ActivityPanelProps)
           <MessageSquare className="h-5 w-5" />
           <h3 className="font-semibold">{ta.activity}</h3>
         </div>
-        <Button variant="ghost" size="icon" onClick={onClose}>
+        <Button variant="ghost" size="icon" aria-label={t.system.close} onClick={onClose}>
           <X className="h-4 w-4" />
         </Button>
       </div>
@@ -138,16 +158,12 @@ export function ActivityPanel({ branchId, isOpen, onClose }: ActivityPanelProps)
             {loadFailed ? (
               <div className="text-center py-8">
                 <AlertTriangle className="h-8 w-8 mx-auto mb-2 text-destructive/60" />
-                <p className="text-sm text-muted-foreground">
-                  The activity history could not be loaded.
-                </p>
+                <p className="text-sm text-muted-foreground"><TranslatedText path="copy.The_activity_history_could_not_be_loaded" /></p>
                 <button
                   type="button"
                   onClick={fetchActivities}
                   className="mt-3 text-xs underline text-muted-foreground hover:text-foreground"
-                >
-                  Try again
-                </button>
+                ><TranslatedText path="system.retry" /></button>
               </div>
             ) : activities.length === 0 ? (
               <div className="text-center text-muted-foreground py-8">
@@ -156,6 +172,7 @@ export function ActivityPanel({ branchId, isOpen, onClose }: ActivityPanelProps)
               </div>
             ) : (
               <div className="space-y-4">
+                {hasOlder && <Button variant="outline" onClick={loadOlder} disabled={loadingOlder}>{t.system.olderComments}</Button>}
                 {activities.map((activity) => (
                   <div key={activity.id} className="flex gap-3">
                     <div className="flex-shrink-0 w-8 h-8 rounded-full bg-muted flex items-center justify-center">
@@ -164,12 +181,12 @@ export function ActivityPanel({ branchId, isOpen, onClose }: ActivityPanelProps)
                     <div className="flex-1 min-w-0">
                       <div className="flex items-center gap-2 text-xs text-muted-foreground">
                         <span className="font-medium text-foreground">
-                          {activity.createdByName || activity.createdByRole}
+                          {activity.createdByName || enumLabel(activity.createdByRole, locale)}
                         </span>
                         {activity.createdByName && (
                           <>
                             <span>•</span>
-                            <span className="capitalize">{activity.createdByRole.toLowerCase()}</span>
+                            <span className="capitalize">{enumLabel(activity.createdByRole, locale)}</span>
                           </>
                         )}
                         <span>•</span>
@@ -196,7 +213,7 @@ export function ActivityPanel({ branchId, isOpen, onClose }: ActivityPanelProps)
                 placeholder={ta.addComment}
                 disabled={sending}
               />
-              <Button type="submit" size="icon" disabled={sending || !comment.trim()}>
+              <Button type="submit" aria-label={ta.addComment} size="icon" disabled={sending || !comment.trim()}>
                 {sending ? (
                   <Loader2 className="h-4 w-4 animate-spin" />
                 ) : (

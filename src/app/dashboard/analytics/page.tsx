@@ -1,4 +1,5 @@
 'use client'
+import { LocalizedError } from '@/components/localized-error'
 
 import { useEffect, useState } from 'react'
 import { useSession } from 'next-auth/react'
@@ -38,23 +39,19 @@ export default function AnalyticsPage() {
   const isTechnician = session?.user?.role === 'TEAM_MEMBER' && session?.user?.teamMemberRole === 'TECHNICIAN'
 
   useEffect(() => {
-    fetchAnalytics()
-  }, [])
-
-  const fetchAnalytics = async () => {
-    try {
-      const response = await fetch('/api/analytics/dashboard')
-      if (!response.ok) {
-        throw new Error('Failed to fetch analytics')
-      }
-      const analyticsData = await response.json()
-      setData(analyticsData)
-    } catch (err) {
-      setError(err instanceof Error ? err.message : 'An error occurred')
-    } finally {
-      setLoading(false)
-    }
-  }
+    const controller = new AbortController()
+    setLoading(true)
+    setError(null)
+    fetch('/api/analytics/dashboard', { signal: controller.signal })
+      .then(async response => {
+        if (!response.ok) throw new Error('Failed to fetch analytics')
+        return response.json() as Promise<AnalyticsData>
+      })
+      .then(result => { if (!controller.signal.aborted) setData(result) })
+      .catch(() => { if (!controller.signal.aborted) setError(t.system.loadFailed) })
+      .finally(() => { if (!controller.signal.aborted) setLoading(false) })
+    return () => controller.abort()
+  }, [locale, t.system.loadFailed])
 
   if (loading) {
     return (
@@ -85,7 +82,7 @@ export default function AnalyticsPage() {
           <CardContent className="flex flex-col items-center justify-center py-12">
             <AlertCircle className="h-12 w-12 text-destructive mb-4" />
             <p className="text-lg font-medium">{ta.failedToLoad}</p>
-            <p className="text-sm text-muted-foreground">{error}</p>
+            <p className="text-sm text-muted-foreground"><LocalizedError message={error} /></p>
           </CardContent>
         </Card>
       </div>

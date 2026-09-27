@@ -1,4 +1,6 @@
 'use client'
+import { TranslatedText } from '@/components/translated-text'
+
 
 import Image from 'next/image'
 import { useState } from 'react'
@@ -49,7 +51,7 @@ export function OptimizedImage({
   if (hasError) {
     return (
       <div className={cn('flex items-center justify-center bg-muted', className)}>
-        <span className="text-sm text-muted-foreground">Failed to load image</span>
+        <span className="text-sm text-muted-foreground"><TranslatedText path="copy.Failed_to_load_image" /></span>
       </div>
     )
   }

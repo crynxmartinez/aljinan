@@ -303,7 +303,7 @@ export default function AdminUsersPage() {
                 <Input
                   value={newAdmin.name}
                   onChange={(e) => setNewAdmin({ ...newAdmin, name: e.target.value })}
-                  placeholder="Admin name"
+                  placeholder={t.system.adminName}
                   required
                 />
               </div>

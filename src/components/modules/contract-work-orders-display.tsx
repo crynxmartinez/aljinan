@@ -1,5 +1,7 @@
 'use client'
 
+import { formatCurrency as localizedCurrency } from '@/lib/i18n/format-date'
+
 import { useTranslation } from '@/lib/i18n/use-translation'
 import { Badge } from '@/components/ui/badge'
 import {
@@ -56,14 +58,6 @@ function formatDate(dateString: string | null, notScheduledLabel: string, locale
   })
 }
 
-function formatCurrency(amount: number | null) {
-  if (amount === null || amount === undefined) return '-'
-  return new Intl.NumberFormat('en-SA', {
-    style: 'currency',
-    currency: 'SAR',
-    minimumFractionDigits: 2,
-  }).format(amount)
-}
 
 function getStageIcon(stage: string) {
   switch (stage) {
@@ -95,6 +89,7 @@ function getStageColor(stage: string) {
 
 export function ContractWorkOrdersDisplay({ workOrders, showStatus = true }: ContractWorkOrdersDisplayProps) {
   const { t, locale } = useTranslation()
+  const formatCurrency = (amount: number | null) => amount == null ? '-' : localizedCurrency(amount, locale)
   const tb = t.dashboard.billingWorkOrders
   const STAGE_LABELS: Record<string, string> = {
     SCHEDULED: tb.stageScheduled,
