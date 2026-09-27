@@ -106,7 +106,7 @@ export async function GET(
     // Format response
     const printData = {
       id: workOrder.id,
-      workOrderNumber: workOrder.workOrderNumber || 0,
+      workOrderNumber: workOrder.workOrderNumber,
       description: workOrder.description,
       generatedContent: workOrder.generatedContent,
       notes: workOrder.notes,

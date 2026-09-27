@@ -137,6 +137,8 @@ export function RequestQuotePrint({ requestId, branchId }: RequestQuotePrintProp
         @media print {
           /* Ensure proper height calculation for pagination */
           html, body {
+            background: white !important;
+            min-height: 0 !important;
             height: auto !important;
             overflow: visible !important;
           }
@@ -159,6 +161,7 @@ export function RequestQuotePrint({ requestId, branchId }: RequestQuotePrintProp
             width: 100%;
             max-width: 210mm;
             margin: 0 auto;
+            padding: 0 !important;
           }
           
           /* A4 page setup */
@@ -391,7 +394,7 @@ export function RequestQuotePrint({ requestId, branchId }: RequestQuotePrintProp
         )}
 
         {/* Footer */}
-        <div className="mt-8 pt-4 border-t text-center text-xs text-muted-foreground">
+        <div className="print-section mt-8 pt-4 border-t text-center text-xs text-muted-foreground">
           <p>{tp.officialDocument.replace('{type}', isQuoted ? tp.quotationType : tp.requestType)}</p>
           <p className="mt-1">{tp.forInquiries}</p>
         </div>

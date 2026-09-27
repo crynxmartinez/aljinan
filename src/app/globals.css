@@ -150,3 +150,14 @@
 [dir="rtl"] body {
   font-family: 'Tajawal', 'Cairo', 'Segoe UI', system-ui, -apple-system, sans-serif;
 }
+
+/* Paper is always light, even when the application is in dark mode. */
+.print-container {
+  color-scheme: light;
+  --foreground: #1c1917;
+  --muted-foreground: #57534e;
+  --border: #e7e5e4;
+  --primary: #d97706;
+  color: var(--foreground);
+  background: white;
+}

@@ -43,11 +43,14 @@ for (const role of roles) test(`${role.name}: language, theme, navigation and br
       expect(response.ok()).toBe(true)
       const orders = await response.json()
       expect(orders.length).toBeGreaterThan(0)
+      await page.getByRole('button', { name: translations[locale].common.switchToDarkMode }).click()
       const printPage = await context.newPage()
       await printPage.goto(`/print/work-orders/${orders[0].id}`)
       await expect(printPage.locator('.print-container')).toBeVisible()
-      await printPage.pdf({ path: testInfo.outputPath(`${locale}-work-order.pdf`), format: 'A4', printBackground: true })
+      const pdf = await printPage.pdf({ path: testInfo.outputPath(`${locale}-work-order.pdf`), format: 'A4', printBackground: true })
+      expect(pdf.toString('latin1').match(/\/Type\s*\/Page\b/g)).toHaveLength(1)
       await printPage.close()
+      await page.getByRole('button', { name: translations[locale].common.switchToLightMode }).click()
       await page.goto(branch ?? role.root)
     }
     for (const theme of ['dark', 'light'] as const) {
