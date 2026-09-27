@@ -20,7 +20,7 @@ export function scan(source, file = 'fixture.tsx') {
     if (ts.isPropertyAssignment(node) && /^(label|placeholder|title)$/.test(node.name.getText(ast)) && ts.isStringLiteral(node.initializer)) add('label', node, node.initializer.text)
     if (ts.isCallExpression(node)) {
       const callee = node.expression.getText(ast)
-      if (/^(toast\.(error|success|warning|info)|alert|confirm|setError)$/.test(callee)) {
+      if (/^(toast\.(error|success|warning|info)|showErrorToast|alert|confirm|setError)$/.test(callee)) {
         const arg = node.arguments[0]
         if (arg && (ts.isStringLiteral(arg) || ts.isNoSubstitutionTemplateLiteral(arg))) add('message', node, arg.text)
       }

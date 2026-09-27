@@ -1,4 +1,5 @@
 'use client'
+import { showErrorToast } from '@/lib/i18n/error-toast'
 import { enumLabel } from '@/lib/i18n/enum-labels'
 
 import { useState, useEffect } from 'react'
@@ -850,7 +851,7 @@ export function ChecklistKanban({ branchId, readOnly = false, userRole }: Checkl
       }
     } catch (error) {
       console.error('Failed to save report:', error)
-      toast.error(t.toasts.reportSaveFailed)
+      showErrorToast(t.toasts.reportSaveFailed)
     } finally {
       setSavingInspection(false)
     }
@@ -881,7 +882,7 @@ export function ChecklistKanban({ branchId, readOnly = false, userRole }: Checkl
         throw new Error(error.error || t.toasts.inspectionSignFailed)
       }
     } catch (error) {
-      toast.error(error instanceof Error ? error.message : t.toasts.inspectionSignFailed)
+      showErrorToast(error instanceof Error ? error.message : t.toasts.inspectionSignFailed)
       throw error
     } finally {
       setUpdating(false)
@@ -917,7 +918,7 @@ export function ChecklistKanban({ branchId, readOnly = false, userRole }: Checkl
         throw new Error(error.error || t.toasts.signFailed)
       }
     } catch (error) {
-      toast.error(error instanceof Error ? error.message : t.toasts.signFailed)
+      showErrorToast(error instanceof Error ? error.message : t.toasts.signFailed)
       throw error
     } finally {
       setUpdating(false)
@@ -971,7 +972,7 @@ export function ChecklistKanban({ branchId, readOnly = false, userRole }: Checkl
         throw new Error(error.error || t.toasts.signFailed)
       }
     } catch (error) {
-      toast.error(error instanceof Error ? error.message : t.toasts.signFailed)
+      showErrorToast(error instanceof Error ? error.message : t.toasts.signFailed)
       throw error
     } finally {
       setUpdating(false)
@@ -1006,11 +1007,11 @@ export function ChecklistKanban({ branchId, readOnly = false, userRole }: Checkl
         router.refresh()
       } else {
         const error = await response.json()
-        toast.error(error.error || t.toasts.priceUpdateFailed)
+        showErrorToast(error.error || t.toasts.priceUpdateFailed)
       }
     } catch (error) {
       console.error('Failed to update price:', error)
-      toast.error(t.toasts.priceUpdateFailed)
+      showErrorToast(t.toasts.priceUpdateFailed)
     } finally {
       setUpdating(false)
     }
@@ -1070,10 +1071,10 @@ export function ChecklistKanban({ branchId, readOnly = false, userRole }: Checkl
         router.refresh()
       } else {
         const error = await response.json()
-        toast.error(error.error || t.toasts.rescheduleFailed)
+        showErrorToast(error.error || t.toasts.rescheduleFailed)
       }
     } catch {
-      toast.error(t.toasts.rescheduleFailed)
+      showErrorToast(t.toasts.rescheduleFailed)
     } finally {
       setRescheduling(false)
     }
@@ -1106,7 +1107,7 @@ export function ChecklistKanban({ branchId, readOnly = false, userRole }: Checkl
     const isClient = userRole === 'CLIENT'
     if (!canTransition(item.stage, targetStage, isClient, item)) {
       if (targetStage === 'FOR_REVIEW' && item.price === null) {
-        toast.error(t.toasts.priceRequiredForReview)
+        showErrorToast(t.toasts.priceRequiredForReview)
       }
       return
     }
@@ -1134,7 +1135,7 @@ export function ChecklistKanban({ branchId, readOnly = false, userRole }: Checkl
       if (!response.ok) {
         // Revert on error
         fetchItems()
-        toast.error(t.toasts.sendToReviewFailed)
+        showErrorToast(t.toasts.sendToReviewFailed)
       } else {
         toast.success(t.toasts.sentToReview)
         router.refresh()
@@ -1142,7 +1143,7 @@ export function ChecklistKanban({ branchId, readOnly = false, userRole }: Checkl
     } catch (error) {
       console.error('Failed to update stage:', error)
       fetchItems()
-      toast.error(t.toasts.sendToReviewFailed)
+      showErrorToast(t.toasts.sendToReviewFailed)
     }
   }
 
@@ -1178,9 +1179,9 @@ export function ChecklistKanban({ branchId, readOnly = false, userRole }: Checkl
     if (!canTransition(item.stage, targetStage, isClient, item)) {
       // Show specific message if trying to move without price
       if (targetStage === 'FOR_REVIEW' && item.price === null) {
-        toast.error(t.toasts.priceRequiredForReview)
+        showErrorToast(t.toasts.priceRequiredForReview)
       } else if (targetStage === 'COMPLETED' && item.price === null) {
-        toast.error(t.toasts.priceRequiredToComplete)
+        showErrorToast(t.toasts.priceRequiredToComplete)
       } else {
         console.log(`Transition from ${item.stage} to ${targetStage} not allowed for ${isClient ? 'client' : 'contractor'}`)
       }
@@ -2031,7 +2032,7 @@ export function ChecklistKanban({ branchId, readOnly = false, userRole }: Checkl
                           variant="outline"
                           onClick={() => {
                             if (!selectedItem.price) {
-                              toast.error(t.toasts.priceRequiredToSign)
+                              showErrorToast(t.toasts.priceRequiredToSign)
                               return
                             }
                             setSignatureType('supervisor')
@@ -2060,7 +2061,7 @@ export function ChecklistKanban({ branchId, readOnly = false, userRole }: Checkl
                           variant="outline"
                           onClick={() => {
                             if (!selectedItem.price) {
-                              toast.error(t.toasts.priceRequiredAskContractor)
+                              showErrorToast(t.toasts.priceRequiredAskContractor)
                               return
                             }
                             setSignatureType('client')

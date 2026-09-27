@@ -1,4 +1,5 @@
 'use client'
+import { showErrorToast } from '@/lib/i18n/error-toast'
 import { LocalizedError } from '@/components/localized-error'
 
 import { useState } from 'react'
@@ -174,7 +175,7 @@ export function ClientsList({ clients }: ClientsListProps) {
         description: `${tc.sentTo} ${email}`
       })
     } catch (err) {
-      toast.error(tc.failedResend, {
+      showErrorToast(tc.failedResend, {
         description: err instanceof Error ? err.message : 'Unknown error'
       })
     }
@@ -219,7 +220,7 @@ export function ClientsList({ clients }: ClientsListProps) {
       cancelEditing()
       router.refresh()
     } catch (err) {
-      toast.error(err instanceof Error ? err.message : tc.updateFailed)
+      showErrorToast(err instanceof Error ? err.message : tc.updateFailed)
     } finally {
       setSavingId(null)
     }
@@ -242,7 +243,7 @@ export function ClientsList({ clients }: ClientsListProps) {
       cancelEditing()
       router.refresh()
     } catch (err) {
-      toast.error(err instanceof Error ? err.message : tc.updateFailed)
+      showErrorToast(err instanceof Error ? err.message : tc.updateFailed)
     } finally {
       setSavingId(null)
     }

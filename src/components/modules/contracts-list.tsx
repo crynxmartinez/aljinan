@@ -400,13 +400,6 @@ export function ContractsList({ branchId }: ContractsListProps) {
     setNewContract({ ...newContract, payments: updated })
   }
 
-  // Helper: Get ordinal suffix
-  const getOrdinal = (n: number) => {
-    const s = ['th', 'st', 'nd', 'rd']
-    const v = n % 100
-    return n + (s[(v - 20) % 10] || s[v] || s[0])
-  }
-
   // Handle contract file upload (create form)
   const handleContractFileUpload = async (files: File[]) => {
     if (files.length === 0) return
@@ -1435,7 +1428,7 @@ export function ContractsList({ branchId }: ContractsListProps) {
                           <div className="grid grid-cols-2 sm:grid-cols-4 gap-2">
                             {system.visitDates.map((date, dateIndex) => (
                               <div key={dateIndex} className="space-y-1">
-                                <Label className="text-xs">{getOrdinal(dateIndex + 1)} {tcl.visit}</Label>
+                                <Label className="text-xs">{tcl.visit} {dateIndex + 1}</Label>
                                 <Input
                                   type="date"
                                   value={date}
@@ -1475,7 +1468,7 @@ export function ContractsList({ branchId }: ContractsListProps) {
                             {system.paymentDueDates.map((date, dateIndex) => (
                               <div key={dateIndex} className="grid grid-cols-3 gap-2 items-end">
                                 <div className="space-y-1">
-                                  <Label className="text-xs">{getOrdinal(dateIndex + 1)} {tcl.paymentDue}</Label>
+                                  <Label className="text-xs">{tcl.paymentDue} {dateIndex + 1}</Label>
                                   <Input
                                     type="date"
                                     value={date}
@@ -1705,7 +1698,7 @@ export function ContractsList({ branchId }: ContractsListProps) {
                             <div className="grid grid-cols-2 sm:grid-cols-4 gap-2">
                               {system.visitDates.map((date, dateIndex) => (
                                 <div key={dateIndex} className="space-y-1">
-                                  <Label className="text-xs">{getOrdinal(dateIndex + 1)} {tcl.visit}</Label>
+                                  <Label className="text-xs">{tcl.visit} {dateIndex + 1}</Label>
                                   <Input
                                     type="date"
                                     value={date}
@@ -1745,7 +1738,7 @@ export function ContractsList({ branchId }: ContractsListProps) {
                               {system.paymentDueDates.map((date, dateIndex) => (
                                 <div key={dateIndex} className="grid grid-cols-3 gap-2 items-end">
                                   <div className="space-y-1">
-                                    <Label className="text-xs">{getOrdinal(dateIndex + 1)} {tcl.paymentDue}</Label>
+                                    <Label className="text-xs">{tcl.paymentDue} {dateIndex + 1}</Label>
                                     <Input
                                       type="date"
                                       value={date}

@@ -1,4 +1,5 @@
 'use client'
+import { showErrorToast } from '@/lib/i18n/error-toast'
 import { LocalizedError } from '@/components/localized-error'
 
 import { useState, useEffect } from 'react'
@@ -551,7 +552,7 @@ export function ClientBranchRequests({ branchId, onDataChange, userId }: ClientB
       toast.success(tc.workOrderCreatedToast.replace('{id}', result.workOrderId?.slice(0, 8) ?? ''))
     } catch (err) {
       setError(err instanceof Error ? err.message : tc.genericError)
-      toast.error(err instanceof Error ? err.message : t.toasts.createWorkOrderFailed)
+      showErrorToast(err instanceof Error ? err.message : t.toasts.createWorkOrderFailed)
     } finally {
       setStartingImmediately(false)
     }

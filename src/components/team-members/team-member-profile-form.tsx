@@ -1,4 +1,5 @@
 'use client'
+import { showErrorToast } from '@/lib/i18n/error-toast'
 import { TranslatedText } from '@/components/translated-text'
 
 
@@ -70,7 +71,7 @@ export function TeamMemberProfileForm({ teamMember }: TeamMemberProfileFormProps
       toast.success(t.toasts.profileUpdated)
       router.refresh()
     } catch (error) {
-      toast.error(error instanceof Error ? error.message : t.toasts.profileUpdateFailed)
+      showErrorToast(error instanceof Error ? error.message : t.toasts.profileUpdateFailed)
     } finally {
       setLoading(false)
     }

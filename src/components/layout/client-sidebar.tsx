@@ -1,4 +1,5 @@
 'use client'
+import { showErrorToast } from '@/lib/i18n/error-toast'
 
 import Link from 'next/link'
 import { usePathname, useRouter } from 'next/navigation'
@@ -124,7 +125,7 @@ export function ClientSidebar({ client }: ClientSidebarProps) {
       setNickname('')
     } catch (error) {
       console.error('Error updating nickname:', error)
-      toast.error(error instanceof Error ? error.message : t.dashboard.portal.nicknameUpdateFailed)
+      showErrorToast(error instanceof Error ? error.message : t.dashboard.portal.nicknameUpdateFailed)
     } finally {
       setSaving(false)
     }

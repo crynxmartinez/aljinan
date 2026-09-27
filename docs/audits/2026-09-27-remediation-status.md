@@ -20,7 +20,7 @@ The user authorized fixing and pushing on 27 September. Target: `production`; `m
 ## Local evidence
 
 - Production build passed (Next.js 16.3.6).
-- 78 unit/component tests passed across 14 files, followed by two additional mobile-drawer tests passing in both languages. Final CI reruns the complete suite.
+- 84 unit/component tests passed across 16 files, including drawer tests in both languages and scoped comment tests. Final CI reruns the complete suite.
 - Type checking passed as part of the build. A test-fixture certificate enum typo found during a separate check was corrected to `INSPECTION` before the successful build.
 - Lint: 197 warnings, zero errors, below the unchanged ceiling of 205. These warnings are still debt, not a clean-lint claim.
 - Certificate write regression was observed failing before the fix. Localization detector tests include positive violations and user-data negative controls.
@@ -30,9 +30,9 @@ The user authorized fixing and pushing on 27 September. Target: `production`; `m
 
 ## Verification limits
 
-Windows Device Guard blocked the embedded PostgreSQL executable. Local database integration tests therefore could not run. Automatic approval review separately rejected starting the local app with supplied test settings (reason: “blocked by policy”). No attempt was made to bypass either restriction. GitHub's isolated Postgres suite is the database release gate.
+Windows Device Guard blocked the embedded PostgreSQL executable. Local database integration tests therefore could not run. Automatic approval review separately rejected starting the local app with supplied test settings (reason: “blocked by policy”). No attempt was made to bypass either restriction. GitHub's isolated Postgres suite is the database release gate. Both CI jobs passed for the initial batch in run https://github.com/crynxmartinez/aljinan/actions/runs/36289729208; the final follow-up is rechecked before updating production.
 
-Real-browser screenshots, authenticated multi-role walkthroughs, live storage/email delivery and visual Arabic PDF inspection remain unverified. No production customer data was changed for testing. No database schema migration is included in this batch.
+The preview browser reached Vercel deployment protection, requiring a Vercel login; no authentication bypass was attempted. Real-browser screenshots, authenticated multi-role walkthroughs, live storage/email delivery and visual Arabic PDF inspection remain unverified. No production customer data was changed for testing. No database schema migration is included in this batch.
 
 ## Explicit remaining work
 

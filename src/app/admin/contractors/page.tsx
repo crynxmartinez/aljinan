@@ -1,4 +1,5 @@
 'use client'
+import { showErrorToast } from '@/lib/i18n/error-toast'
 import { TranslatedText } from '@/components/translated-text'
 
 
@@ -200,16 +201,16 @@ export default function ContractorsPage() {
           // Redirect to appropriate dashboard
           window.location.href = data.redirectUrl
         } else {
-          toast.error(tc.failedImpersonation)
+          showErrorToast(tc.failedImpersonation)
         }
       } else {
         // Includes the 503 returned while impersonation is being rebuilt securely.
         const data = await response.json().catch(() => null)
-        toast.error(data?.error || tc.failedImpersonation)
+        showErrorToast(data?.error || tc.failedImpersonation)
       }
     } catch (err) {
       console.error('Failed to impersonate:', err)
-      toast.error(tc.failedImpersonation)
+      showErrorToast(tc.failedImpersonation)
     } finally {
       setImpersonating(false)
       setImpersonateTarget(null)
@@ -238,7 +239,7 @@ export default function ContractorsPage() {
       fetchContractors()
     } catch (err) {
       const errorMsg = err instanceof Error ? err.message : tc.failedToCreateContractor
-      toast.error(tc.failedToCreate, { description: errorMsg })
+      showErrorToast(tc.failedToCreate, { description: errorMsg })
     } finally {
       setCreating(false)
     }
@@ -257,7 +258,7 @@ export default function ContractorsPage() {
       })
     } catch (err) {
       const errorMsg = err instanceof Error ? err.message : tc.failedToResendEmail
-      toast.error(tc.failedToResend, { description: errorMsg })
+      showErrorToast(tc.failedToResend, { description: errorMsg })
     }
   }
 
@@ -273,7 +274,7 @@ export default function ContractorsPage() {
         description: `${tc.sentTo} ${email}`
       })
     } catch (err) {
-      toast.error(tc.failedToResendEmail, {
+      showErrorToast(tc.failedToResendEmail, {
         description: err instanceof Error ? err.message : 'Unknown error'
       })
     }
@@ -292,7 +293,7 @@ export default function ContractorsPage() {
       })
       fetchContractors()
     } catch (err) {
-      toast.error(tc.failedToActivate, {
+      showErrorToast(tc.failedToActivate, {
         description: err instanceof Error ? err.message : 'Unknown error'
       })
     }

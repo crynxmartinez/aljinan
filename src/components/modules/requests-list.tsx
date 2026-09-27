@@ -1,4 +1,5 @@
 'use client'
+import { showErrorToast } from '@/lib/i18n/error-toast'
 import { LocalizedError } from '@/components/localized-error'
 import { TranslatedText } from '@/components/translated-text'
 
@@ -851,7 +852,7 @@ export function RequestsList({ branchId, userRole, userId }: RequestsListProps) 
 
       if (!response.ok) {
         const data = await response.json()
-        toast.error(data.error || data.details || t.toasts.createWorkOrderFailed)
+        showErrorToast(data.error || data.details || t.toasts.createWorkOrderFailed)
         return
       }
 
@@ -861,7 +862,7 @@ export function RequestsList({ branchId, userRole, userId }: RequestsListProps) 
       fetchRequests()
       router.refresh()
     } catch {
-      toast.error(t.toasts.createWorkOrderFailed)
+      showErrorToast(t.toasts.createWorkOrderFailed)
     }
   }
 
