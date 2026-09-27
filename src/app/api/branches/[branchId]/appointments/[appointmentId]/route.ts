@@ -7,6 +7,7 @@ import { verifyBranchAccess } from '@/lib/permissions'
 import {
   notifyAppointmentConfirmed,
   notifyAppointmentCancelled,
+  notifyAppointmentCancelledByContractor,
   notifyAppointmentRescheduleRequested,
   notifyAppointmentTimeChanged
 } from '@/lib/notification-service'
@@ -133,6 +134,7 @@ export async function PATCH(
 
         return NextResponse.json(updated)
       } else if (action === 'request_reschedule') {
+        if (currentAppointment.status === 'RESCHEDULED' && currentAppointment.rescheduleNote === (rescheduleNote || null)) return NextResponse.json(currentAppointment)
         if (currentAppointment.status === 'COMPLETED' || currentAppointment.status === 'CANCELLED') {
           return NextResponse.json({ error: 'Cannot reschedule this appointment' }, { status: 400 })
         }
@@ -175,6 +177,10 @@ export async function PATCH(
       
       if (status !== undefined) {
         updateData.status = status
+        if (status === 'CANCELLED' && currentAppointment.status !== 'CANCELLED') {
+          updateData.cancelledAt = new Date()
+          updateData.cancelledById = session.user.id
+        }
         if (status === 'COMPLETED') {
           updateData.completedAt = new Date()
         }
@@ -190,13 +196,15 @@ export async function PATCH(
       // interrupting them for.
       const dateChanged = date !== undefined && new Date(date).getTime() !== currentAppointment.date.getTime()
       const timeChanged = startTime !== undefined && startTime !== currentAppointment.startTime
-      if (dateChanged || timeChanged) {
+      const cancelled = status === 'CANCELLED' && currentAppointment.status !== 'CANCELLED'
+      if (dateChanged || timeChanged || cancelled) {
         const branch = await prisma.branch.findUnique({
           where: { id: branchId },
           include: { client: { select: { userId: true } } }
         })
         if (branch?.client?.userId) {
-          await notifyAppointmentTimeChanged(branch.client.userId, updated.title, appointmentId, branchId, prisma)
+          if (cancelled) await notifyAppointmentCancelledByContractor(branch.client.userId, updated.title, appointmentId, branchId, prisma)
+          else await notifyAppointmentTimeChanged(branch.client.userId, updated.title, appointmentId, branchId, prisma)
         }
       }
 
@@ -243,10 +251,14 @@ export async function DELETE(
       return NextResponse.json({ error: 'Access denied' }, { status: 403 })
     }
 
-    await prisma.appointment.delete({
+    const deleted = await prisma.appointment.delete({
       where: { id: appointmentId, branchId }
     })
 
+    if (deleted.status !== 'CANCELLED' && deleted.status !== 'COMPLETED') {
+      const branch = await prisma.branch.findUnique({ where: { id: branchId }, select: { client: { select: { userId: true } } } })
+      if (branch?.client.userId) await notifyAppointmentCancelledByContractor(branch.client.userId, deleted.title, appointmentId, branchId, prisma)
+    }
     return NextResponse.json({ success: true })
   } catch (error) {
     if (error && typeof error === 'object' && 'code' in error && error.code === 'P2025') {

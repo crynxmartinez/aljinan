@@ -98,5 +98,9 @@
   [
     "notifyCertificateGenerated",
     4
+  ],
+  [
+    "notifyAppointmentCancelledByContractor",
+    4
   ]
 ]

@@ -1,4 +1,4 @@
-import { notificationData } from '@/lib/i18n/notification-messages'
+import { notificationData, notificationRegistry } from '@/lib/i18n/notification-messages'
 import type { Database } from '@/lib/atomic-mutation'
 import { prisma } from '@/lib/prisma'
 import { resolveNotificationLink } from '@/lib/notification-links'
@@ -513,5 +513,16 @@ export async function notifyCertificateGenerated(clientId: string, certificateTi
     relatedType: 'Certificate',
     priority: 'medium',
     showPopup: true
+  }, db)
+}
+
+/** A contractor cancellation must reach the client, not the contractor inbox. */
+export async function notifyAppointmentCancelledByContractor(clientId: string, title: string, appointmentId: string, branchId: string, db: Database = prisma) {
+  return createNotification({
+    userId: clientId, type: 'APPOINTMENT_CANCELLED',
+    title: notificationRegistry.notice033[1],
+    message: notificationRegistry.notice093[1].replace('{0}', () => title),
+    link: `/portal/branches/${branchId}?tab=calendar`,
+    relatedId: appointmentId, relatedType: 'APPOINTMENT', priority: 'high', showPopup: true,
   }, db)
 }

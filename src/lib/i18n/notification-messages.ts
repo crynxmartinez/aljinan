@@ -97,6 +97,7 @@ export const notificationRegistry = {
   notice090: ['اقترب موعد فحص المعدات', 'Equipment Inspection Due Soon'],
   notice091: ['تأخر موعد فحص المعدة {0} ({1}) في {2}.', 'Equipment {0} ({1}) at {2} is overdue for inspection.'],
   notice092: ['تنتهي صلاحية المعدة {0} ({1}) في {2} بعد {3} يوم.', 'Equipment {0} ({1}) at {2} expires in {3} days.'],
+  notice093: ['ألغى المقاول الموعد: "{0}"', 'The contractor cancelled appointment: "{0}"'],
 } as const
 export const notificationTemplates: ReadonlyArray<readonly [string, string]> = Object.values(notificationRegistry)
 
