@@ -3,11 +3,16 @@ vi.mock('file-saver', () => ({ saveAs: vi.fn() }))
 import { workOrderRows, requestRows, exportRequestsToExcel, exportRequestsToCsv, type ExportOptions } from '@/lib/export/export-utils'
 import { saveAs } from 'file-saver'
 import * as XLSX from 'xlsx'
-import { enumLabel, enumLabels } from '@/lib/i18n/enum-labels'
+import { enumLabel, enumLabels, timeSlotLabel } from '@/lib/i18n/enum-labels'
 import { readFileSync } from 'node:fs'
 
 const options: ExportOptions = { includeDetails: true, includeClient: true, includePricing: true, includeDates: true, includePhotos: false }
 describe('exported content', () => {
+  it('translates predefined time slots and preserves custom appointment times', () => {
+    expect(timeSlotLabel('Morning', 'ar')).toBe('صباحًا')
+    expect(timeSlotLabel('ANY_TIME', 'en')).toBe('Any time')
+    expect(timeSlotLabel('10:30 - customer preference', 'ar')).toBe('10:30 - customer preference')
+  })
   it('writes an actual Arabic XLSX and escapes formula-leading CSV user content', async () => {
     const data = [{ id: 'r', title: '=1+1', description: null, priority: 'URGENT', status: 'QUOTED', assignedTo: null, createdAt: '2026-09-27', dueDate: null, completedAt: null, quotedPrice: 0 }]
     exportRequestsToExcel(data, options, 'ar')

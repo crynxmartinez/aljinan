@@ -1,6 +1,6 @@
 'use client'
 
-import { enumLabel } from '@/lib/i18n/enum-labels'
+import { enumLabel, timeSlotLabel } from '@/lib/i18n/enum-labels'
 import { showErrorToast } from '@/lib/i18n/error-toast'
 import { LocalizedError } from '@/components/localized-error'
 
@@ -1283,7 +1283,7 @@ export function ClientBranchRequests({ branchId, onDataChange, userId }: ClientB
                 {selectedRequest.preferredTimeSlot && (
                   <div>
                     <p className="text-muted-foreground">{tc.preferredTimeLabel}</p>
-                    <p className="font-medium">{selectedRequest.preferredTimeSlot}</p>
+                    <p className="font-medium">{timeSlotLabel(selectedRequest.preferredTimeSlot, locale)}</p>
                   </div>
                 )}
               </div>

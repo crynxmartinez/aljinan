@@ -1,7 +1,7 @@
 'use client'
 import { generatedField } from '@/lib/i18n/generated-content'
 import { formatDate as localizedDate, formatDateTime, formatCurrency as localizedCurrency } from '@/lib/i18n/format-date'
-import { enumLabel } from '@/lib/i18n/enum-labels'
+import { enumLabel, timeSlotLabel } from '@/lib/i18n/enum-labels'
 
 import { useEffect, useState } from 'react'
 import { useTranslation } from '@/lib/i18n/use-translation'
@@ -281,7 +281,7 @@ export function RequestQuotePrint({ requestId, branchId }: RequestQuotePrintProp
             {data.preferredTimeSlot && (
               <div>
                 <p className="text-sm text-muted-foreground">{tp.preferredTime}</p>
-                <p className="font-semibold">{data.preferredTimeSlot}</p>
+                <p className="font-semibold">{timeSlotLabel(data.preferredTimeSlot, locale)}</p>
               </div>
             )}
           </div>

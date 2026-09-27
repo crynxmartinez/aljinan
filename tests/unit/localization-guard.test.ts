@@ -12,6 +12,10 @@ describe('localization regression detector', () => {
     const result = scan('const x = <p>{ready ? "Done" : "Waiting"}{order.status}</p>; const y = <img alt={`Request photo ${i}`}/>')
     expect(result.map(item => item.kind)).toEqual(expect.arrayContaining(['text', 'attribute', 'raw-enum']))
   })
+  it('detects raw enum variables hidden behind case and underscore formatting', () => {
+    const result = scan("const x = <p>{priority}{status.replace('_', ' ')}{member.teamRole.toLowerCase()}</p>")
+    expect(result.map(item => item.text)).toEqual(['priority', 'status', 'member.teamRole'])
+  })
   it('ignores CSS syntax and translated status keys', () => {
     expect(scan('const x = <><style>{`body {color: red}`}</style><p>{t.status}</p></>')).toEqual([])
   })

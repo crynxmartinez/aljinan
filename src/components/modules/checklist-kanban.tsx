@@ -1329,9 +1329,9 @@ export function ChecklistKanban({ branchId, readOnly = false, userRole }: Checkl
               {/* Drag Overlay */}
               <DragOverlay>
                 {activeItem && (
-                  <div className="bg-white rounded-lg border-2 border-primary p-3 shadow-xl opacity-90 w-64">
+                  <div className="bg-card text-card-foreground rounded-lg border-2 border-primary p-3 shadow-xl opacity-90 w-64">
                     <p className="font-medium text-sm line-clamp-2">
-                      {activeItem.description}
+                      {generatedField(activeItem, 'description', locale)}
                     </p>
                   </div>
                 )}
@@ -1462,7 +1462,7 @@ export function ChecklistKanban({ branchId, readOnly = false, userRole }: Checkl
                       <SelectItem value="unassigned">{tk.unassigned}</SelectItem>
                       {teamMembers.map((member) => (
                         <SelectItem key={member.userId} value={member.userId}>
-                          {member.user.name || member.user.email} ({member.teamRole.toLowerCase()})
+                          {member.user.name || member.user.email} ({enumLabel(member.teamRole, locale)})
                         </SelectItem>
                       ))}
                     </SelectContent>

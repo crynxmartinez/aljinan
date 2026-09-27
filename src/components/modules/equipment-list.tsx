@@ -420,7 +420,7 @@ export function EquipmentList({ branchId, userRole = 'CONTRACTOR' }: EquipmentLi
     return (
       <Badge className={`${config.bg} ${config.text} border-0`}>
         <Icon className="h-3 w-3 me-1" />
-        {STATUS_LABELS[status] || status}
+        {STATUS_LABELS[status] || enumLabel(status, locale)}
       </Badge>
     )
   }

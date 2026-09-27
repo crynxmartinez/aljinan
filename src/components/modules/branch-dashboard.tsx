@@ -408,7 +408,7 @@ export function BranchDashboard({ branchId }: BranchDashboardProps) {
   }
 
   if (loadFailed) {
-    return <LoadFailure message="The branch summary could not be loaded." />
+    return <LoadFailure />
   }
 
   return (

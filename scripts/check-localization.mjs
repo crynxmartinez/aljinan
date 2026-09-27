@@ -4,7 +4,7 @@ import path from 'node:path'
 import { fileURLToPath } from 'node:url'
 
 const words = /[A-Za-z\u0600-\u06ff]{2}/u
-const textAttributes = new Set(['placeholder', 'title', 'alt', 'aria-label'])
+const textAttributes = new Set(['placeholder', 'title', 'alt', 'aria-label', 'message', 'description'])
 /** Candidate detector, not a proof of complete localization. User data and code
  * identifiers are excluded. The checked-in exceptions have per-entry review reasons. */
 export function scan(source, file = 'fixture.tsx') {
@@ -16,7 +16,9 @@ export function scan(source, file = 'fixture.tsx') {
   }
   function visibleExpression(node, kind) {
     if (!node) return
-    if (ts.isPropertyAccessExpression(node) && !/^t[a-z]{0,2}\./.test(node.getText(ast)) && /^(status|stage|role|workOrderType|equipmentType|inspectionResult|businessType|priority|frequency|riskLevel)$/.test(node.name.text)) add('raw-enum', node, node.getText(ast))
+    if (ts.isPropertyAccessExpression(node) && !/^t[a-z]{0,2}\./.test(node.getText(ast)) && /^(status|stage|role|workOrderType|equipmentType|inspectionResult|businessType|priority|frequency|riskLevel|teamRole|preferredTimeSlot)$/.test(node.name.text)) add('raw-enum', node, node.getText(ast))
+    else if (ts.isIdentifier(node) && /^(status|stage|priority|role|teamRole|workOrderType|equipmentType|preferredTimeSlot)$/.test(node.text)) add('raw-enum', node, node.text)
+    else if (ts.isCallExpression(node) && ts.isPropertyAccessExpression(node.expression) && /^(replace|replaceAll|toLowerCase|toUpperCase)$/.test(node.expression.name.text)) visibleExpression(node.expression.expression, kind)
     else if (ts.isStringLiteral(node) || ts.isNoSubstitutionTemplateLiteral(node)) add(kind, node, node.text)
     else if (ts.isTemplateExpression(node)) {
       const fixed = node.head.text + node.templateSpans.map(span => span.literal.text).join(' ')

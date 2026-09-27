@@ -409,7 +409,7 @@ export default function ClientWorkOrdersPage() {
                   </div>
                   <div className="col-span-2 flex items-center">
                     <Badge className={getStatusColor(wo.stage)} variant="secondary">
-                      {wo.stage.replace('_', ' ')}
+                      {enumLabel(wo.stage, locale)}
                     </Badge>
                   </div>
                   <div className="col-span-1 flex items-center">

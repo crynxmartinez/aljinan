@@ -327,7 +327,7 @@ export default function ContractorsPage() {
       case 'ARCHIVED':
         return <Badge className="bg-gray-100 text-gray-800 hover:bg-gray-100">{tc.archived}</Badge>
       default:
-        return <Badge variant="outline">{status}</Badge>
+        return <Badge variant="outline">{enumLabel(status, locale)}</Badge>
     }
   }
 

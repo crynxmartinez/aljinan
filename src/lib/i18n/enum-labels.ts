@@ -293,3 +293,14 @@ export function enumLabel(value: string | null | undefined, locale: Locale): str
   const key = value.toUpperCase() as keyof typeof enumLabels.en
   return enumLabels[locale][key] ?? systemMessages[locale].unknown
 }
+
+/** Legacy requests also accept free-form times; preserve those customer values. */
+export function timeSlotLabel(value: string | null | undefined, locale: Locale): string {
+  if (!value) return '-'
+  const key = value.toLowerCase().replaceAll('_', ' ')
+  const slots: Record<string, readonly [string, string]> = {
+    morning: ['Morning', 'صباحًا'], afternoon: ['Afternoon', 'بعد الظهر'], evening: ['Evening', 'مساءً'],
+    'any time': ['Any time', 'أي وقت'], flexible: ['Flexible', 'مرن'],
+  }
+  return slots[key]?.[locale === 'en' ? 0 : 1] ?? value
+}

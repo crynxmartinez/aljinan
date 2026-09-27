@@ -413,7 +413,7 @@ export default function WorkOrdersPage() {
                       {wo.stage === 'SCHEDULED' ? tw.statusScheduled :
                         wo.stage === 'IN_PROGRESS' ? tw.statusInProgress :
                           wo.stage === 'FOR_REVIEW' ? tw.statusForReview :
-                            wo.stage === 'COMPLETED' ? tw.statusCompleted : wo.stage.replace('_', ' ')}
+                            wo.stage === 'COMPLETED' ? tw.statusCompleted : enumLabel(wo.stage, locale)}
                     </Badge>
                   </div>
                   <div className="col-span-1 flex items-center">
