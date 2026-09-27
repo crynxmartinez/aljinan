@@ -1,4 +1,5 @@
 'use client'
+import { generatedField } from '@/lib/i18n/generated-content'
 import { LocalizedError } from '@/components/localized-error'
 
 import { formatCurrency as localizedCurrency, formatDateTime as localizedTimestamp } from '@/lib/i18n/format-date'
@@ -100,7 +101,7 @@ export function PaymentVerifyDialog({
       onOpenChange(false)
       onSuccess()
     } catch (err) {
-      setError(err instanceof Error ? err.message : 'An error occurred')
+      setError(err instanceof Error ? err.message : t.system.serverError)
     } finally {
       setVerifying(false)
     }
@@ -137,7 +138,7 @@ export function PaymentVerifyDialog({
           <div className="space-y-2 max-h-[150px] overflow-y-auto">
             {workOrders.map((wo) => (
               <div key={wo.id} className="flex items-center justify-between text-sm">
-                <span className="truncate flex-1">{wo.description}</span>
+                <span className="truncate flex-1">{generatedField(wo, 'description', locale)}</span>
                 <span className="font-medium ms-2">{formatCurrency(wo.price)}</span>
               </div>
             ))}

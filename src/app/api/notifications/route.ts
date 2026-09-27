@@ -1,3 +1,4 @@
+import { enrichNotificationContent } from '@/lib/notification-content'
 import { getServerSession } from 'next-auth'
 import { NextResponse } from 'next/server'
 import { authOptions } from '@/lib/auth'
@@ -19,14 +20,15 @@ export async function GET() {
       where: { userId: session.user.id },
       orderBy: { createdAt: 'desc' },
       take: 50,
-      select: { id: true, type: true, title: true, message: true, isRead: true, createdAt: true, link: true }
+      select: { relatedId: true, relatedType: true, content: true, id: true, type: true, title: true, message: true, isRead: true, createdAt: true, link: true }
     })
 
     const unreadCount = await prisma.notification.count({
       where: { userId: session.user.id, isRead: false }
     })
 
-    const visible = await Promise.all(notifications.map(async notification => ({
+    const localized = await enrichNotificationContent(notifications)
+    const visible = await Promise.all(localized.map(async notification => ({
       ...notification, link: await resolveNotificationLink(notification.link),
     })))
     return NextResponse.json({ notifications: visible, unreadCount })

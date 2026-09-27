@@ -1,3 +1,6 @@
+import { generatedRecord } from '@/lib/i18n/generated-content'
+import { notificationData } from '@/lib/i18n/notification-messages'
+import { atomicMutation, joinTransaction } from '@/lib/atomic-mutation'
 import { getServerSession } from 'next-auth'
 import { NextResponse } from 'next/server'
 import { authOptions } from '@/lib/auth'
@@ -132,7 +135,7 @@ async function generateCertificatesForWorkOrder(
 
       const expiryDate = calcExpiry(workOrder.recurringType)
       const cert = await tx.certificate.create({
-        data: {
+        data: generatedRecord({
           branchId,
           contractId: workOrder.checklist.contractId,
           workOrderId,
@@ -144,7 +147,7 @@ async function generateCertificatesForWorkOrder(
           expiryDate,
           issuedBy: 'System (Auto-generated)',
           issuedById: sessionUserId,
-        }
+        }, 'equipmentCertificate', { type: eq.equipmentType, number: eq.equipmentNumber })
       })
 
       await tx.equipment.update({
@@ -162,7 +165,7 @@ async function generateCertificatesForWorkOrder(
   } else {
     const expiryDate = calcExpiry(workOrder.recurringType)
     await tx.certificate.create({
-      data: {
+      data: generatedRecord({
         branchId,
         contractId: workOrder.checklist.contractId,
         workOrderId,
@@ -173,7 +176,7 @@ async function generateCertificatesForWorkOrder(
         expiryDate,
         issuedBy: 'System (Auto-generated)',
         issuedById: sessionUserId,
-      }
+      }, 'workOrderCertificate', { type: certType, work: workOrder.description, defaultDescription: String(!workOrder.findings && !workOrder.recommendations) })
     })
   }
 
@@ -207,7 +210,7 @@ export async function GET(
     const contractId = searchParams.get('contractId')
     const stage = searchParams.get('stage')
 
-    const hasAccess = await verifyBranchAccess(branchId, session.user.id, session.user.role)
+    const hasAccess = await verifyBranchAccess(branchId, session.user.id, session.user.role, prisma)
     if (!hasAccess) {
       return NextResponse.json({ error: 'Access denied' }, { status: 403 })
     }
@@ -281,6 +284,7 @@ export async function GET(
         return {
           id: item.id,
           description: item.description,
+          generatedContent: item.generatedContent,
           notes: item.notes,
           stage: item.stage,
           type: item.type,
@@ -291,6 +295,8 @@ export async function GET(
           isCompleted: item.isCompleted,
           checklistId: item.checklistId,
           checklistTitle: item.checklist.title,
+          checklistLabelKind: !item.checklist.contractId && item.checklist.title === 'Adhoc Work Orders' ? 'adhoc' : item.checklist.contract && item.checklist.title === `${item.checklist.contract.title} - Maintenance Schedule` ? 'maintenance' : null,
+          checklistContractTitle: item.checklist.contract?.title,
           contractTitle: item.checklist.contract?.title || null,
           contractSystemId: item.contractSystem?.id || null,
           linkedRequestId: item.linkedRequestId,
@@ -380,8 +386,10 @@ export async function PATCH(
   request: Request,
   { params }: { params: Promise<{ branchId: string }> }
 ) {
+  const session = await getServerSession(authOptions)
+  if (!session) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
+  return atomicMutation(async prisma => {
   try {
-    const session = await getServerSession(authOptions)
 
     if (!session) {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
@@ -429,7 +437,7 @@ export async function PATCH(
       assignedTo,
     } = body
 
-    const hasAccess = await verifyBranchAccess(branchId, session.user.id, session.user.role)
+    const hasAccess = await verifyBranchAccess(branchId, session.user.id, session.user.role, prisma)
     if (!hasAccess) {
       return NextResponse.json({ error: 'Access denied' }, { status: 403 })
     }
@@ -648,7 +656,7 @@ export async function PATCH(
         // these ran as separate statements, so a failure part-way through a twenty-item
         // sticker inspection left some items certificated and some not, with the work order
         // already marked complete and signed — and no way to tell afterwards.
-        await prisma.$transaction(async (tx) => {
+        await joinTransaction(prisma, async (tx) => {
           await tx.checklistItem.update({
             where: { id: workOrderId },
             data: {
@@ -670,10 +678,9 @@ export async function PATCH(
               createdByRole: session.user.role as 'CONTRACTOR' | 'CLIENT' | 'TEAM_MEMBER',
             }
           })
-        }, { timeout: 30_000, maxWait: 10_000 })
+        })
 
-        // Notification is a side effect, deliberately outside the transaction: a mail or
-        // insert failure here must not roll back a completed and certificated inspection.
+        // The durable inbox entry joins the surrounding mutation transaction.
         const branch = await prisma.branch.findUnique({
           where: { id: branchId },
           include: { client: true }
@@ -683,7 +690,7 @@ export async function PATCH(
             branch.client.userId,
             currentWorkOrder.description,
             workOrderId,
-            branchId
+            branchId, prisma
           )
         }
       }
@@ -732,7 +739,7 @@ export async function PATCH(
       if (hasTechnicianOrSupervisorSignature && currentWorkOrder.price !== null) {
         // Same invariant as the supervisor path: completion, certificates and the activity
         // record commit together or not at all.
-        await prisma.$transaction(async (tx) => {
+        await joinTransaction(prisma, async (tx) => {
           await tx.checklistItem.update({
             where: { id: workOrderId },
             data: {
@@ -754,7 +761,7 @@ export async function PATCH(
               createdByRole: 'CLIENT',
             }
           })
-        }, { timeout: 30_000, maxWait: 10_000 })
+        })
       }
 
       return NextResponse.json(updatedWorkOrder)
@@ -793,7 +800,7 @@ export async function PATCH(
           assignedTo,
           workOrder.description,
           workOrderId,
-          branchId
+          branchId, prisma
         )
       }
 
@@ -848,21 +855,21 @@ export async function PATCH(
             clientId,
             updatedWorkOrder.description,
             itemId,
-            branchId
+            branchId, prisma
           )
         } else if (stage === 'IN_PROGRESS' && oldStage !== 'IN_PROGRESS') {
           await notifyWorkOrderStarted(
             clientId,
             updatedWorkOrder.description,
             itemId,
-            branchId
+            branchId, prisma
           )
         } else if (stage === 'COMPLETED' && oldStage !== 'COMPLETED') {
           await notifyWorkOrderCompleted(
             clientId,
             updatedWorkOrder.description,
             itemId,
-            branchId
+            branchId, prisma
           )
         }
       }
@@ -907,7 +914,7 @@ export async function PATCH(
           action: 'Price changed after signature',
           details: { from: Number(workOrder.price), to: Number(price) },
           success: true,
-        })
+        }, prisma)
       }
 
       // Update the price
@@ -935,7 +942,7 @@ export async function PATCH(
           updatedWorkOrder.description,
           price,
           itemId,
-          branchId
+          branchId, prisma
         )
       }
 
@@ -1073,13 +1080,13 @@ export async function PATCH(
 
         if (branch?.client?.contractor?.userId) {
           await prisma.notification.create({
-            data: {
+            data: notificationData({
               userId: branch.client.contractor.userId,
               type: 'PAYMENT_SUBMITTED',
               title: 'Payment Proof Submitted',
               message: `Payment proof submitted for ${workOrderIds.length} work order${workOrderIds.length > 1 ? 's' : ''} in ${contract.title}`,
               link: `/dashboard/clients/${branch.client.id}/branches/${branchId}?tab=billing`,
-            }
+            })
           })
         }
       }
@@ -1124,13 +1131,13 @@ export async function PATCH(
 
         if (branch?.client?.userId) {
           await prisma.notification.create({
-            data: {
+            data: notificationData({
               userId: branch.client.userId,
               type: 'PAYMENT_VERIFIED',
               title: 'Payment Verified',
               message: `Payment verified for ${workOrderIds.length} work order${workOrderIds.length > 1 ? 's' : ''} in ${verifyContract.title}`,
               link: `/portal/branches/${branchId}?tab=billing`,
-            }
+            })
           })
         }
 
@@ -1169,13 +1176,13 @@ export async function PATCH(
             // Notify client
             if (branch?.client?.userId) {
               await prisma.notification.create({
-                data: {
+                data: notificationData({
                   userId: branch.client.userId,
                   type: 'CONTRACT_SIGNED',
                   title: 'Contract Completed',
                   message: `Contract "${verifyContract.title}" has been completed. All work orders are paid.`,
                   link: `/portal/branches/${branchId}?tab=contracts`,
-                }
+                })
               })
             }
           }
@@ -1195,4 +1202,6 @@ export async function PATCH(
       { status: 500 }
     )
   }
+
+  })
 }

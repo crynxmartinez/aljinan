@@ -12,6 +12,11 @@ describe('public API failure contract', () => {
     vi.stubGlobal('document', { documentElement: { lang: 'ar' } })
     await expect(api.get('/test')).rejects.toMatchObject({ message: systemMessages.ar.forbidden })
   })
+  it('renders stable public error codes instead of discarding useful recovery instructions', async () => {
+    vi.stubGlobal('document', { documentElement: { lang: 'en' } })
+    vi.stubGlobal('fetch', vi.fn().mockResolvedValue(Response.json({ code: 'EMAIL_DELIVERY_FAILED', error: 'provider internals' }, { status: 502 })))
+    await expect(api.post('/test')).rejects.toMatchObject({ message: 'Email delivery failed. Please retry sending the verification email.' })
+  })
   it('does not treat malformed successful JSON as saved data', async () => {
     vi.stubGlobal('fetch', vi.fn().mockResolvedValue(new Response('<html>proxy failure</html>')))
     await expect(api.get('/test')).rejects.toBeInstanceOf(ApiError)

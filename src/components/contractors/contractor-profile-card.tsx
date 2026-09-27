@@ -1,4 +1,5 @@
 'use client'
+import { enumLabel } from '@/lib/i18n/enum-labels'
 
 import { useState } from 'react'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
@@ -115,7 +116,7 @@ export function ContractorProfileCard({ contractor }: ContractorProfileCardProps
                 </h1>
                 <div className="flex items-center gap-3 mt-1 text-sm text-muted-foreground">
                   {contractor.businessType && (
-                    <span>{BUSINESS_TYPE_LABELS[contractor.businessType] || contractor.businessType}</span>
+                    <span>{enumLabel(contractor.businessType, locale)}</span>
                   )}
                   {contractor.yearEstablished && (
                     <>

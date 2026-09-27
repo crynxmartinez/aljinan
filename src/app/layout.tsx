@@ -21,7 +21,7 @@ export async function generateMetadata(): Promise<Metadata> {
     metadataBase: new URL(baseUrl),
     title: t.rootTitle,
     description: t.rootDescription,
-    manifest: "/manifest.json",
+    manifest: `/manifest.webmanifest?lang=${locale}`,
     appleWebApp: {
       capable: true,
       statusBarStyle: "default",
@@ -43,7 +43,6 @@ export async function generateMetadata(): Promise<Metadata> {
 export const viewport: Viewport = {
   width: "device-width",
   initialScale: 1,
-  maximumScale: 1,
   themeColor: [
     { media: "(prefers-color-scheme: light)", color: "#d97706" },
     { media: "(prefers-color-scheme: dark)", color: "#1c1917" },

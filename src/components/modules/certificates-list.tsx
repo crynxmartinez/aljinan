@@ -1,4 +1,5 @@
 'use client'
+import { generatedField } from '@/lib/i18n/generated-content'
 import { LocalizedError } from '@/components/localized-error'
 import { TranslatedText } from '@/components/translated-text'
 
@@ -232,7 +233,7 @@ export function CertificatesList({ branchId, userRole }: CertificatesListProps) 
       fetchCertificates()
       router.refresh()
     } catch (err) {
-      setError(err instanceof Error ? err.message : 'An error occurred')
+      setError(err instanceof Error ? err.message : t.system.serverError)
     } finally {
       setCreating(false)
     }
@@ -310,8 +311,8 @@ export function CertificatesList({ branchId, userRole }: CertificatesListProps) 
               <h3 className="text-lg font-semibold mb-2"><TranslatedText path="dashboard.certificatesList.noCertificatesYet" /></h3>
               <p className="text-muted-foreground max-w-md mb-4">
                 {userRole === 'CONTRACTOR'
-                  ? 'Add certificates to track compliance and maintenance records for this branch.'
-                  : 'No certificates have been uploaded for this branch yet.'}
+                  ? t.system.addCertificatesHint
+                  : t.system.noCertificatesHint}
               </p>
               {userRole === 'CONTRACTOR' && (
                 <Button onClick={() => setCreateDialogOpen(true)}>
@@ -338,7 +339,7 @@ export function CertificatesList({ branchId, userRole }: CertificatesListProps) 
                     <TableRow key={certificate.id} className="cursor-pointer hover:bg-muted/50" onClick={() => openViewDialog(certificate)}>
                       <TableCell>
                         <div>
-                          <p className="font-medium">{certificate.title}</p>
+                          <p className="font-medium">{generatedField(certificate, 'title', locale)}</p>
                           {certificate.certificateNumber && (
                             <p className="text-xs text-muted-foreground">#{certificate.certificateNumber}</p>
                           )}
@@ -550,7 +551,7 @@ export function CertificatesList({ branchId, userRole }: CertificatesListProps) 
           {selectedCertificate && (
             <div className="space-y-4">
               <div>
-                <h3 className="font-semibold text-lg">{selectedCertificate.title}</h3>
+                <h3 className="font-semibold text-lg">{generatedField(selectedCertificate, 'title', locale)}</h3>
                 <Badge variant="outline" className="mt-1">
                   {getCertificateTypeIcon(selectedCertificate.type)} {enumLabel(selectedCertificate.type, locale)}
                 </Badge>
@@ -599,7 +600,7 @@ export function CertificatesList({ branchId, userRole }: CertificatesListProps) 
               {selectedCertificate.description && (
                 <div>
                   <p className="text-sm text-muted-foreground">{tcl.description}</p>
-                  <p className="text-sm">{selectedCertificate.description}</p>
+                  <p className="text-sm">{generatedField(selectedCertificate, 'description', locale)}</p>
                 </div>
               )}
 
@@ -622,7 +623,7 @@ export function CertificatesList({ branchId, userRole }: CertificatesListProps) 
               {selectedCertificate.notes && (
                 <div>
                   <p className="text-sm text-muted-foreground">{tcl.notes}</p>
-                  <p className="text-sm">{selectedCertificate.notes}</p>
+                  <p className="text-sm">{generatedField(selectedCertificate, 'notes', locale)}</p>
                 </div>
               )}
 

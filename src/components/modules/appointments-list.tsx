@@ -140,7 +140,7 @@ export function AppointmentsList({ branchId }: AppointmentsListProps) {
       fetchAppointments()
       router.refresh()
     } catch (err) {
-      setError(err instanceof Error ? err.message : 'An error occurred')
+      setError(err instanceof Error ? err.message : t.system.serverError)
     } finally {
       setCreating(false)
     }

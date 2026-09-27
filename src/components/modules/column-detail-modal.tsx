@@ -1,4 +1,5 @@
 'use client'
+import { generatedField } from '@/lib/i18n/generated-content'
 
 import { formatCurrency as localizedCurrency } from '@/lib/i18n/format-date'
 
@@ -75,6 +76,8 @@ interface ChecklistItem {
   isCompleted: boolean
   checklistId: string
   checklistTitle: string
+  checklistLabelKind?: string | null
+  checklistContractTitle?: string
   projectTitle: string | null
   deletedAt: string | null
   deletedBy: string | null
@@ -279,13 +282,13 @@ export function ColumnDetailModal({
       ['ID', 'Description', 'Type', 'Work Order Type', 'Scheduled Date', 'Price', 'Project', 'Checklist'].join(','),
       ...filteredAndSortedItems.map(item => [
         item.id,
-        `"${item.description}"`,
+        `"${generatedField(item, 'description', locale)}"`,
         item.type,
         item.workOrderType || '-',
         item.scheduledDate || '-',
         item.price || 0,
         `"${item.projectTitle || '-'}"`,
-        `"${item.checklistTitle}"`,
+        `"${item.checklistLabelKind === 'adhoc' ? t.system.adhocWorkOrders : item.checklistLabelKind === 'maintenance' ? `${item.checklistContractTitle} - ${t.system.maintenanceSchedule}` : item.checklistTitle}"`,
       ].join(','))
     ].join('\n')
 
@@ -451,8 +454,8 @@ export function ColumnDetailModal({
                         />
                       </TableCell>
                       <TableCell className="font-medium max-w-xs">
-                        <div className="truncate">{item.description}</div>
-                        <div className="text-xs text-muted-foreground truncate">{item.checklistTitle}</div>
+                        <div className="truncate">{generatedField(item, 'description', locale)}</div>
+                        <div className="text-xs text-muted-foreground truncate">{item.checklistLabelKind === 'adhoc' ? t.system.adhocWorkOrders : item.checklistLabelKind === 'maintenance' ? `${item.checklistContractTitle} - ${t.system.maintenanceSchedule}` : item.checklistTitle}</div>
                       </TableCell>
                       <TableCell>
                         {item.type === 'ADHOC' ? (

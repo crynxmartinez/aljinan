@@ -1,3 +1,5 @@
+import { generatedRecord } from '@/lib/i18n/generated-content'
+import { atomicMutation, joinTransaction } from '@/lib/atomic-mutation'
 import { publishedFor } from '@/lib/publication'
 import { getServerSession } from 'next-auth'
 import { NextResponse } from 'next/server'
@@ -44,7 +46,7 @@ export async function GET(
 
     const { branchId, contractId } = await params
 
-    const hasAccess = await verifyBranchAccess(branchId, session.user.id, session.user.role)
+    const hasAccess = await verifyBranchAccess(branchId, session.user.id, session.user.role, prisma)
     if (!hasAccess) {
       return NextResponse.json({ error: 'Access denied' }, { status: 403 })
     }
@@ -85,8 +87,10 @@ export async function PATCH(
   request: Request,
   { params }: { params: Promise<{ branchId: string; contractId: string }> }
 ) {
+  const session = await getServerSession(authOptions)
+  if (!session) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
+  return atomicMutation(async prisma => {
   try {
-    const session = await getServerSession(authOptions)
 
     if (!session) {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
@@ -95,7 +99,7 @@ export async function PATCH(
     const { branchId, contractId } = await params
     const body = await request.json()
 
-    const hasAccess = await verifyBranchAccess(branchId, session.user.id, session.user.role)
+    const hasAccess = await verifyBranchAccess(branchId, session.user.id, session.user.role, prisma)
     if (!hasAccess) {
       return NextResponse.json({ error: 'Access denied' }, { status: 403 })
     }
@@ -120,7 +124,7 @@ export async function PATCH(
       }
 
       // Use transaction to update contract and generate work orders
-      const result = await prisma.$transaction(async (tx) => {
+      const result = await joinTransaction(prisma, async (tx) => {
         // Update contract with signature
         const updated = await tx.contract.update({
           where: { id: contractId },
@@ -219,7 +223,7 @@ export async function PATCH(
                 // Get price from payment amounts if set, otherwise null (contractor sets manually)
                 const price = paymentAmounts[i] ?? null
 
-                workOrdersToCreate.push({
+                workOrdersToCreate.push(generatedRecord({
                   checklistId: checklist.id,
                   description: `${system.name} - ${frequencyLabel} Visit ${i + 1}`,
                   notes: system.description || `Scheduled maintenance for ${system.name}`,
@@ -233,7 +237,7 @@ export async function PATCH(
                   price,
                   visitIndex: i,
                   paymentDueDate
-                })
+                }, 'maintenanceVisit', { system: system.name, frequency: system.frequency, visit: String(i + 1), defaultNotes: String(!system.description) }))
               }
             }
           }
@@ -259,7 +263,7 @@ export async function PATCH(
           branchWithParties.client.id,
           result.title,
           contractId,
-          branchId
+          branchId, prisma
         )
       }
 
@@ -323,7 +327,7 @@ export async function PATCH(
           branchWithParties.client.id,
           updated.title,
           contractId,
-          branchId
+          branchId, prisma
         )
       }
 
@@ -453,7 +457,7 @@ export async function PATCH(
     }
 
     // Use transaction to update contract with systems and payments
-    const updated = await prisma.$transaction(async (tx) => {
+    const updated = await joinTransaction(prisma, async (tx) => {
       // Build update data for contract
       const updateData: Record<string, unknown> = {}
       if (title !== undefined) updateData.title = title
@@ -594,6 +598,8 @@ export async function PATCH(
       { status: 500 }
     )
   }
+
+  })
 }
 
 // DELETE - Delete a contract (contractor only)
@@ -601,8 +607,10 @@ export async function DELETE(
   request: Request,
   { params }: { params: Promise<{ branchId: string; contractId: string }> }
 ) {
+  const session = await getServerSession(authOptions)
+  if (!session) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
+  return atomicMutation(async prisma => {
   try {
-    const session = await getServerSession(authOptions)
 
     if (!session) {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
@@ -614,7 +622,7 @@ export async function DELETE(
 
     const { branchId, contractId } = await params
 
-    const hasAccess = await verifyBranchAccess(branchId, session.user.id, session.user.role)
+    const hasAccess = await verifyBranchAccess(branchId, session.user.id, session.user.role, prisma)
     if (!hasAccess) {
       return NextResponse.json({ error: 'Access denied' }, { status: 403 })
     }
@@ -659,4 +667,6 @@ export async function DELETE(
       { status: 500 }
     )
   }
+
+  })
 }

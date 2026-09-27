@@ -3,7 +3,6 @@ import { NextResponse } from 'next/server'
 import { authOptions } from '@/lib/auth'
 import { prisma } from '@/lib/prisma'
 import { sendVerificationEmail } from '@/lib/email'
-import { getLocale } from '@/lib/i18n/server'
 import { generateSlug, generateUniqueSlug } from '@/lib/utils/slugify'
 import crypto from 'crypto'
 
@@ -54,7 +53,7 @@ export async function POST(request: Request) {
     }
 
     const body = await request.json()
-    const { companyName, companyEmail, companyPhone } = body
+    const { companyName, companyEmail, companyPhone, invitationLocale } = body
 
     if (!companyName || !companyEmail) {
       return NextResponse.json(
@@ -114,6 +113,7 @@ export async function POST(request: Request) {
             name: companyName,
             role: 'CLIENT',
             status: 'PENDING',
+          preferredLocale: invitationLocale === 'en' ? 'en' : 'ar',
             emailVerificationToken: verificationToken,
             emailVerificationExpiry: verificationExpiry,
           }
@@ -131,11 +131,12 @@ export async function POST(request: Request) {
     })
 
     // Send verification email
-    await sendVerificationEmail(companyEmail, companyName, verificationToken, 'CLIENT', await getLocale())
+    const delivery = await sendVerificationEmail(companyEmail, companyName, verificationToken, 'CLIENT', invitationLocale === 'en' ? 'en' : 'ar')
 
     return NextResponse.json({
       ...client,
-      message: `Verification email sent to ${companyEmail}`
+      emailSent: delivery.success,
+      message: delivery.success ? `Verification email sent to ${companyEmail}` : 'Account created; verification email delivery failed'
     }, { status: 201 })
   } catch (error) {
     console.error('Error creating client:', error)

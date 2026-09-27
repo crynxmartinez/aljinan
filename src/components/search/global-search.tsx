@@ -15,7 +15,7 @@ import { useTranslation } from '@/lib/i18n/use-translation'
 
 type ResultType =
   | 'client' | 'branch' | 'work_order' | 'request' | 'contract' | 'invoice' | 'equipment' | 'certificate'
-  | 'team_member' | 'branch_request' | 'appointment' | 'contractor' | 'inquiry'
+  | 'team_member' | 'branch_request' | 'appointment' | 'contractor' | 'inquiry' | 'quotation'
 
 interface SearchResult {
   id: string
@@ -26,7 +26,7 @@ interface SearchResult {
 }
 
 export function GlobalSearch() {
-  const { t } = useTranslation()
+  const { t, locale } = useTranslation()
   const ts = t.dashboard.globalSearch
 
   const TYPE_CONFIG: Record<ResultType, { icon: React.ElementType; label: string; color: string }> = {
@@ -35,6 +35,7 @@ export function GlobalSearch() {
     work_order: { icon: ClipboardList, label: ts.categoryWorkOrders, color: 'text-indigo-600' },
     request: { icon: FileText, label: ts.categoryRequests, color: 'text-purple-600' },
     contract: { icon: ScrollText, label: ts.categoryContracts, color: 'text-orange-600' },
+    quotation: { icon: FileText, label: ts.categoryQuotations, color: 'text-orange-600' },
     invoice: { icon: Banknote, label: ts.categoryInvoices, color: 'text-emerald-600' },
     equipment: { icon: Wrench, label: ts.categoryEquipment, color: 'text-cyan-600' },
     certificate: { icon: Award, label: ts.categoryCertificates, color: 'text-amber-600' },
@@ -46,7 +47,7 @@ export function GlobalSearch() {
   }
 
   const TYPE_ORDER: ResultType[] = [
-    'client', 'branch', 'work_order', 'request', 'contract', 'invoice', 'equipment', 'certificate',
+    'client', 'branch', 'work_order', 'request', 'contract', 'quotation', 'invoice', 'equipment', 'certificate',
     'team_member', 'branch_request', 'appointment', 'contractor', 'inquiry',
   ]
 
@@ -101,7 +102,7 @@ export function GlobalSearch() {
       }
     }, 300)
     return () => clearTimeout(timer)
-  }, [query, performSearch])
+  }, [query, performSearch, locale])
 
   const handleResultClick = (result: SearchResult) => {
     router.push(result.link)

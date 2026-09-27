@@ -19,7 +19,7 @@ export async function GET() {
 
     const locale = await getLocale()
     const t = getTranslationsForLocale(locale)
-    const dateLocale = locale === 'en' ? 'en-US' : 'ar-SA-u-nu-latn'
+    const dateLocale = locale === 'en' ? 'en-US' : 'ar-SA-u-ca-gregory-nu-latn'
     const profile = session.user.role === 'CONTRACTOR'
       ? await prisma.contractor.findUnique({ where: { userId: session.user.id }, select: { id: true } })
       : await prisma.teamMember.findUnique({ where: { userId: session.user.id }, select: { contractorId: true } })

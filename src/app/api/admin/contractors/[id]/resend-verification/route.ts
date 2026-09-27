@@ -3,7 +3,6 @@ import { prisma } from '@/lib/prisma'
 import { sendVerificationEmail } from '@/lib/email'
 import crypto from 'crypto'
 import { requireAdmin } from '@/lib/admin-auth'
-import { getLocale } from '@/lib/i18n/server'
 
 export async function POST(
   request: Request,
@@ -47,13 +46,17 @@ export async function POST(
     })
 
     // Resend verification email
-    await sendVerificationEmail(
+    const delivery = await sendVerificationEmail(
       contractor.user.email,
       contractor.user.name || 'there',
       verificationToken,
       undefined,
-      await getLocale()
+      contractor.user.preferredLocale === 'en' ? 'en' : 'ar'
     )
+
+    if (!delivery.success) {
+      return NextResponse.json({ code: 'EMAIL_DELIVERY_FAILED', error: 'Email delivery failed. Please retry sending the verification email.' }, { status: 502 })
+    }
 
     return NextResponse.json({
       success: true,

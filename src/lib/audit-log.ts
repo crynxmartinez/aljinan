@@ -5,6 +5,7 @@
  */
 
 import { prisma } from '@/lib/prisma'
+import type { Database } from './atomic-mutation'
 import { UserRole } from '@prisma/client'
 
 // Audit event types
@@ -65,9 +66,9 @@ export interface AuditLogEntry {
 /**
  * Log an audit event
  */
-export async function logAuditEvent(entry: AuditLogEntry): Promise<void> {
+export async function logAuditEvent(entry: AuditLogEntry, db: Database = prisma): Promise<void> {
   try {
-    await prisma.auditLog.create({
+    await db.auditLog.create({
       data: {
         eventType: entry.eventType,
         userId: entry.userId ?? null,

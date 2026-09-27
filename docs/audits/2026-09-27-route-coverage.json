@@ -1,0 +1,352 @@
+{
+  "pages": [
+    {
+      "route": "/",
+      "source": "src/app/page.tsx",
+      "evidence": "tests/browser/system.spec.ts",
+      "scope": "EN/AR route smoke; representative themes/mobile plus branch tabs. Does not imply every mutation was exercised."
+    },
+    {
+      "route": "/about",
+      "source": "src/app/(marketing)/about/page.tsx",
+      "evidence": "tests/browser/system.spec.ts",
+      "scope": "EN/AR route smoke; representative themes/mobile plus branch tabs. Does not imply every mutation was exercised."
+    },
+    {
+      "route": "/admin",
+      "source": "src/app/admin/page.tsx",
+      "evidence": "tests/browser/system.spec.ts",
+      "scope": "EN/AR route smoke; representative themes/mobile plus branch tabs. Does not imply every mutation was exercised."
+    },
+    {
+      "route": "/admin/analytics",
+      "source": "src/app/admin/analytics/page.tsx",
+      "evidence": "tests/browser/system.spec.ts",
+      "scope": "EN/AR route smoke; representative themes/mobile plus branch tabs. Does not imply every mutation was exercised."
+    },
+    {
+      "route": "/admin/backfill-work-order-numbers",
+      "source": "src/app/admin/backfill-work-order-numbers/page.tsx",
+      "evidence": "tests/browser/system.spec.ts",
+      "scope": "EN/AR route smoke; representative themes/mobile plus branch tabs. Does not imply every mutation was exercised."
+    },
+    {
+      "route": "/admin/contractors",
+      "source": "src/app/admin/contractors/page.tsx",
+      "evidence": "tests/browser/system.spec.ts",
+      "scope": "EN/AR route smoke; representative themes/mobile plus branch tabs. Does not imply every mutation was exercised."
+    },
+    {
+      "route": "/admin/generate-slugs",
+      "source": "src/app/admin/generate-slugs/page.tsx",
+      "evidence": "tests/browser/system.spec.ts",
+      "scope": "EN/AR route smoke; representative themes/mobile plus branch tabs. Does not imply every mutation was exercised."
+    },
+    {
+      "route": "/admin/messages",
+      "source": "src/app/admin/messages/page.tsx",
+      "evidence": "tests/browser/system.spec.ts",
+      "scope": "EN/AR route smoke; representative themes/mobile plus branch tabs. Does not imply every mutation was exercised."
+    },
+    {
+      "route": "/admin/settings",
+      "source": "src/app/admin/settings/page.tsx",
+      "evidence": "tests/browser/system.spec.ts",
+      "scope": "EN/AR route smoke; representative themes/mobile plus branch tabs. Does not imply every mutation was exercised."
+    },
+    {
+      "route": "/admin/settings/admins",
+      "source": "src/app/admin/settings/admins/page.tsx",
+      "evidence": "tests/browser/system.spec.ts",
+      "scope": "EN/AR route smoke; representative themes/mobile plus branch tabs. Does not imply every mutation was exercised."
+    },
+    {
+      "route": "/change-password",
+      "source": "src/app/change-password/page.tsx",
+      "evidence": "tests/browser/system.spec.ts",
+      "scope": "EN/AR route smoke; representative themes/mobile plus branch tabs. Does not imply every mutation was exercised."
+    },
+    {
+      "route": "/contact",
+      "source": "src/app/(marketing)/contact/page.tsx",
+      "evidence": "tests/browser/system.spec.ts",
+      "scope": "EN/AR route smoke; representative themes/mobile plus branch tabs. Does not imply every mutation was exercised."
+    },
+    {
+      "route": "/dashboard",
+      "source": "src/app/dashboard/page.tsx",
+      "evidence": "tests/browser/system.spec.ts",
+      "scope": "EN/AR route smoke; representative themes/mobile plus branch tabs. Does not imply every mutation was exercised."
+    },
+    {
+      "route": "/dashboard/analytics",
+      "source": "src/app/dashboard/analytics/page.tsx",
+      "evidence": "tests/browser/system.spec.ts",
+      "scope": "EN/AR route smoke; representative themes/mobile plus branch tabs. Does not imply every mutation was exercised."
+    },
+    {
+      "route": "/dashboard/clients",
+      "source": "src/app/dashboard/clients/page.tsx",
+      "evidence": "tests/browser/system.spec.ts",
+      "scope": "EN/AR route smoke; representative themes/mobile plus branch tabs. Does not imply every mutation was exercised."
+    },
+    {
+      "route": "/dashboard/clients/[clientSlug]",
+      "source": "src/app/dashboard/clients/[clientSlug]/page.tsx",
+      "evidence": "tests/browser/system.spec.ts",
+      "scope": "EN/AR route smoke; representative themes/mobile plus branch tabs. Does not imply every mutation was exercised."
+    },
+    {
+      "route": "/dashboard/clients/[clientSlug]/branches/[branchSlug]",
+      "source": "src/app/dashboard/clients/[clientSlug]/branches/[branchSlug]/page.tsx",
+      "evidence": "tests/browser/system.spec.ts",
+      "scope": "EN/AR route smoke; representative themes/mobile plus branch tabs. Does not imply every mutation was exercised."
+    },
+    {
+      "route": "/dashboard/clients/[clientSlug]/branches/new",
+      "source": "src/app/dashboard/clients/[clientSlug]/branches/new/page.tsx",
+      "evidence": "tests/browser/system.spec.ts",
+      "scope": "EN/AR route smoke; representative themes/mobile plus branch tabs. Does not imply every mutation was exercised."
+    },
+    {
+      "route": "/dashboard/company",
+      "source": "src/app/dashboard/company/page.tsx",
+      "evidence": "tests/browser/system.spec.ts",
+      "scope": "EN/AR route smoke; representative themes/mobile plus branch tabs. Does not imply every mutation was exercised."
+    },
+    {
+      "route": "/dashboard/notifications",
+      "source": "src/app/dashboard/notifications/page.tsx",
+      "evidence": "tests/browser/system.spec.ts",
+      "scope": "EN/AR route smoke; representative themes/mobile plus branch tabs. Does not imply every mutation was exercised."
+    },
+    {
+      "route": "/dashboard/profile",
+      "source": "src/app/dashboard/profile/page.tsx",
+      "evidence": "tests/browser/system.spec.ts",
+      "scope": "EN/AR route smoke; representative themes/mobile plus branch tabs. Does not imply every mutation was exercised."
+    },
+    {
+      "route": "/dashboard/settings",
+      "source": "src/app/dashboard/settings/page.tsx",
+      "evidence": "tests/browser/system.spec.ts",
+      "scope": "EN/AR route smoke; representative themes/mobile plus branch tabs. Does not imply every mutation was exercised."
+    },
+    {
+      "route": "/dashboard/team",
+      "source": "src/app/dashboard/team/page.tsx",
+      "evidence": "tests/browser/system.spec.ts",
+      "scope": "EN/AR route smoke; representative themes/mobile plus branch tabs. Does not imply every mutation was exercised."
+    },
+    {
+      "route": "/dashboard/templates",
+      "source": "src/app/dashboard/templates/page.tsx",
+      "evidence": "tests/browser/system.spec.ts",
+      "scope": "EN/AR route smoke; representative themes/mobile plus branch tabs. Does not imply every mutation was exercised."
+    },
+    {
+      "route": "/dashboard/work-orders",
+      "source": "src/app/dashboard/work-orders/page.tsx",
+      "evidence": "tests/browser/system.spec.ts",
+      "scope": "EN/AR route smoke; representative themes/mobile plus branch tabs. Does not imply every mutation was exercised."
+    },
+    {
+      "route": "/download",
+      "source": "src/app/(marketing)/download/page.tsx",
+      "evidence": "tests/browser/system.spec.ts",
+      "scope": "EN/AR route smoke; representative themes/mobile plus branch tabs. Does not imply every mutation was exercised."
+    },
+    {
+      "route": "/faq",
+      "source": "src/app/(marketing)/faq/page.tsx",
+      "evidence": "tests/browser/system.spec.ts",
+      "scope": "EN/AR route smoke; representative themes/mobile plus branch tabs. Does not imply every mutation was exercised."
+    },
+    {
+      "route": "/features",
+      "source": "src/app/(marketing)/features/page.tsx",
+      "evidence": "tests/browser/system.spec.ts",
+      "scope": "EN/AR route smoke; representative themes/mobile plus branch tabs. Does not imply every mutation was exercised."
+    },
+    {
+      "route": "/forgot-password",
+      "source": "src/app/forgot-password/page.tsx",
+      "evidence": "tests/browser/system.spec.ts",
+      "scope": "EN/AR route smoke; representative themes/mobile plus branch tabs. Does not imply every mutation was exercised."
+    },
+    {
+      "route": "/install",
+      "source": "src/app/(marketing)/install/page.tsx",
+      "evidence": "tests/browser/system.spec.ts",
+      "scope": "EN/AR route smoke; representative themes/mobile plus branch tabs. Does not imply every mutation was exercised."
+    },
+    {
+      "route": "/login",
+      "source": "src/app/login/page.tsx",
+      "evidence": "tests/browser/system.spec.ts",
+      "scope": "EN/AR route smoke; representative themes/mobile plus branch tabs. Does not imply every mutation was exercised."
+    },
+    {
+      "route": "/portal",
+      "source": "src/app/portal/page.tsx",
+      "evidence": "tests/browser/system.spec.ts",
+      "scope": "EN/AR route smoke; representative themes/mobile plus branch tabs. Does not imply every mutation was exercised."
+    },
+    {
+      "route": "/portal/archived",
+      "source": "src/app/portal/archived/page.tsx",
+      "evidence": "tests/browser/system.spec.ts",
+      "scope": "EN/AR route smoke; representative themes/mobile plus branch tabs. Does not imply every mutation was exercised."
+    },
+    {
+      "route": "/portal/branches/[branchId]",
+      "source": "src/app/portal/branches/[branchId]/page.tsx",
+      "evidence": "tests/browser/system.spec.ts",
+      "scope": "EN/AR route smoke; representative themes/mobile plus branch tabs. Does not imply every mutation was exercised."
+    },
+    {
+      "route": "/portal/notifications",
+      "source": "src/app/portal/notifications/page.tsx",
+      "evidence": "tests/browser/system.spec.ts",
+      "scope": "EN/AR route smoke; representative themes/mobile plus branch tabs. Does not imply every mutation was exercised."
+    },
+    {
+      "route": "/portal/settings",
+      "source": "src/app/portal/settings/page.tsx",
+      "evidence": "tests/browser/system.spec.ts",
+      "scope": "EN/AR route smoke; representative themes/mobile plus branch tabs. Does not imply every mutation was exercised."
+    },
+    {
+      "route": "/portal/work-orders",
+      "source": "src/app/portal/work-orders/page.tsx",
+      "evidence": "tests/browser/system.spec.ts",
+      "scope": "EN/AR route smoke; representative themes/mobile plus branch tabs. Does not imply every mutation was exercised."
+    },
+    {
+      "route": "/print/branches/[branchId]/requests/[requestId]",
+      "source": "src/app/print/branches/[branchId]/requests/[requestId]/page.tsx",
+      "evidence": "tests/browser/system.spec.ts",
+      "scope": "EN/AR route smoke; representative themes/mobile plus branch tabs. Does not imply every mutation was exercised."
+    },
+    {
+      "route": "/print/work-orders/[workOrderId]",
+      "source": "src/app/print/work-orders/[workOrderId]/page.tsx",
+      "evidence": "tests/browser/system.spec.ts",
+      "scope": "EN/AR route smoke; representative themes/mobile plus branch tabs. Does not imply every mutation was exercised."
+    },
+    {
+      "route": "/privacy",
+      "source": "src/app/(marketing)/privacy/page.tsx",
+      "evidence": "tests/browser/system.spec.ts",
+      "scope": "EN/AR route smoke; representative themes/mobile plus branch tabs. Does not imply every mutation was exercised."
+    },
+    {
+      "route": "/register",
+      "source": "src/app/register/page.tsx",
+      "evidence": "tests/browser/system.spec.ts",
+      "scope": "EN/AR route smoke; representative themes/mobile plus branch tabs. Does not imply every mutation was exercised."
+    },
+    {
+      "route": "/reset-password",
+      "source": "src/app/reset-password/page.tsx",
+      "evidence": "tests/browser/system.spec.ts",
+      "scope": "EN/AR route smoke; representative themes/mobile plus branch tabs. Does not imply every mutation was exercised."
+    },
+    {
+      "route": "/terms",
+      "source": "src/app/(marketing)/terms/page.tsx",
+      "evidence": "tests/browser/system.spec.ts",
+      "scope": "EN/AR route smoke; representative themes/mobile plus branch tabs. Does not imply every mutation was exercised."
+    },
+    {
+      "route": "/verify-email",
+      "source": "src/app/verify-email/page.tsx",
+      "evidence": "tests/browser/system.spec.ts",
+      "scope": "EN/AR route smoke; representative themes/mobile plus branch tabs. Does not imply every mutation was exercised."
+    }
+  ],
+  "apiRoutes": [
+    "src/app/api/admin/admins/route.ts",
+    "src/app/api/admin/backfill-work-order-numbers/route.ts",
+    "src/app/api/admin/contractors/[id]/resend-verification/route.ts",
+    "src/app/api/admin/contractors/create/route.ts",
+    "src/app/api/admin/contractors/route.ts",
+    "src/app/api/admin/generate-slugs/route.ts",
+    "src/app/api/admin/impersonate/route.ts",
+    "src/app/api/admin/impersonate/status/route.ts",
+    "src/app/api/admin/messages/route.ts",
+    "src/app/api/admin/messages/unread-count/route.ts",
+    "src/app/api/admin/users/[userId]/activate/route.ts",
+    "src/app/api/admin/users/[userId]/resend-verification/route.ts",
+    "src/app/api/analytics/dashboard/route.ts",
+    "src/app/api/auth/[...nextauth]/route.ts",
+    "src/app/api/auth/change-password/route.ts",
+    "src/app/api/auth/forgot-password/route.ts",
+    "src/app/api/auth/reset-password/route.ts",
+    "src/app/api/auth/verify-email/route.ts",
+    "src/app/api/branch-requests/[requestId]/route.ts",
+    "src/app/api/branch-requests/route.ts",
+    "src/app/api/branches/[branchId]/activities/route.ts",
+    "src/app/api/branches/[branchId]/appointments/[appointmentId]/route.ts",
+    "src/app/api/branches/[branchId]/appointments/route.ts",
+    "src/app/api/branches/[branchId]/certificates/[certificateId]/route.ts",
+    "src/app/api/branches/[branchId]/certificates/route.ts",
+    "src/app/api/branches/[branchId]/checklist-items/route.ts",
+    "src/app/api/branches/[branchId]/checklists/[checklistId]/route.ts",
+    "src/app/api/branches/[branchId]/checklists/route.ts",
+    "src/app/api/branches/[branchId]/client-nickname/route.ts",
+    "src/app/api/branches/[branchId]/contract-payments/[paymentId]/route.ts",
+    "src/app/api/branches/[branchId]/contract-payments/route.ts",
+    "src/app/api/branches/[branchId]/contracts/[contractId]/route.ts",
+    "src/app/api/branches/[branchId]/contracts/route.ts",
+    "src/app/api/branches/[branchId]/display-name/route.ts",
+    "src/app/api/branches/[branchId]/documents/route.ts",
+    "src/app/api/branches/[branchId]/equipment/[equipmentId]/route.ts",
+    "src/app/api/branches/[branchId]/equipment/route.ts",
+    "src/app/api/branches/[branchId]/invoices/[invoiceId]/route.ts",
+    "src/app/api/branches/[branchId]/invoices/route.ts",
+    "src/app/api/branches/[branchId]/quotations/[quotationId]/route.ts",
+    "src/app/api/branches/[branchId]/quotations/route.ts",
+    "src/app/api/branches/[branchId]/requests/[requestId]/comments/route.ts",
+    "src/app/api/branches/[branchId]/requests/[requestId]/print-data/route.ts",
+    "src/app/api/branches/[branchId]/requests/[requestId]/route.ts",
+    "src/app/api/branches/[branchId]/requests/[requestId]/start-now/route.ts",
+    "src/app/api/branches/[branchId]/requests/route.ts",
+    "src/app/api/branches/[branchId]/work-orders/create-immediate/route.ts",
+    "src/app/api/clients/[clientId]/archive/route.ts",
+    "src/app/api/clients/[clientId]/branches/[branchId]/route.ts",
+    "src/app/api/clients/[clientId]/branches/route.ts",
+    "src/app/api/clients/[clientId]/delete/route.ts",
+    "src/app/api/clients/[clientId]/display-name/route.ts",
+    "src/app/api/clients/[clientId]/resend-invite/route.ts",
+    "src/app/api/clients/[clientId]/resend-verification/route.ts",
+    "src/app/api/clients/[clientId]/route.ts",
+    "src/app/api/clients/[clientId]/unarchive/route.ts",
+    "src/app/api/clients/route.ts",
+    "src/app/api/contact/route.ts",
+    "src/app/api/contractor/profile/route.ts",
+    "src/app/api/cron/auto-archive/route.ts",
+    "src/app/api/cron/work-order-notifications/route.ts",
+    "src/app/api/dashboard/action-center/route.ts",
+    "src/app/api/dev-seed/route.ts",
+    "src/app/api/equipment/check-expiry/route.ts",
+    "src/app/api/equipment/expiring/route.ts",
+    "src/app/api/files/[uploadId]/route.ts",
+    "src/app/api/geocode/route.ts",
+    "src/app/api/invoices/[invoiceId]/pay/route.ts",
+    "src/app/api/notifications/popup/route.ts",
+    "src/app/api/notifications/route.ts",
+    "src/app/api/preferences/route.ts",
+    "src/app/api/reports/inspection/[workOrderId]/route.ts",
+    "src/app/api/search/route.ts",
+    "src/app/api/team-members/[teamMemberId]/public/route.ts",
+    "src/app/api/team-members/[teamMemberId]/route.ts",
+    "src/app/api/team-members/me/route.ts",
+    "src/app/api/team-members/route.ts",
+    "src/app/api/upload/route.ts",
+    "src/app/api/work-orders/[workOrderId]/print-data/route.ts",
+    "src/app/api/work-orders/rescheduled/route.ts",
+    "src/app/api/work-orders/route.ts"
+  ],
+  "apiEvidence": "tests/integration/access-matrix.test.ts classifies all API routes and exercises tenant boundaries; domain fixtures cover critical write paths separately."
+}

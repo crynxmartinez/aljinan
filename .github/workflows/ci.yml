@@ -16,9 +16,9 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1 (Node 24)
 
-      - uses: actions/setup-node@v4
+      - uses: actions/setup-node@820762786026740c76f36085b0efc47a31fe5020 # v7.0.0 (Node 24)
         with:
           node-version: '24'
           cache: 'npm'
@@ -28,6 +28,9 @@ jobs:
         env:
           # postinstall runs prisma generate, which needs a URL but never connects.
           DATABASE_URL: postgresql://user:password@localhost:5432/dummy
+
+      - name: Dependency security audit
+        run: npm audit --audit-level=high
 
       - name: Generate Prisma client
         run: npx prisma generate
@@ -94,9 +97,9 @@ jobs:
       CRON_SECRET: ci-cron-secret
 
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1 (Node 24)
 
-      - uses: actions/setup-node@v4
+      - uses: actions/setup-node@820762786026740c76f36085b0efc47a31fe5020 # v7.0.0 (Node 24)
         with:
           node-version: '24'
           cache: 'npm'
@@ -123,3 +126,22 @@ jobs:
 
       - name: Integration tests
         run: npm run test:integration
+
+      - name: Seed browser-only accounts
+        run: npx tsx scripts/seed-browser-fixtures.ts
+
+      - name: Install test browser
+        run: npx playwright install --with-deps chromium
+
+      - name: Browser language, theme and role matrix
+        run: npx playwright test
+
+      - name: Browser evidence
+        if: always()
+        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1 (Node 24)
+        with:
+          name: browser-evidence
+          path: |
+            playwright-report/
+            test-results/
+          retention-days: 7

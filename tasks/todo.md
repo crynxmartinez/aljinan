@@ -1,6 +1,6 @@
 # Implementation checklist — system reliability and EN/AR completion
 
-Status: implementation in progress; push to production authorized by the user. Existing source edits were preserved. See [release evidence and remaining work](../docs/audits/2026-09-27-remediation-status.md). Unchecked tasks include work implemented but not yet verified against their full acceptance criteria.
+Status: code remediation and automated verification completed in slices; final release checks in progress; push to production authorized by the user. Existing source edits were preserved. Current scope and verification boundaries: [closure report](../docs/audits/2026-09-27-system-closure.md). See [release evidence and remaining work](../docs/audits/2026-09-27-remediation-status.md). Unchecked tasks include work implemented but not yet verified against their full acceptance criteria.
 
 ## How to execute
 
@@ -106,7 +106,7 @@ Status: implementation in progress; push to production authorized by the user. E
 | Done | Task | Depends on | Likely files / scope | Acceptance | Verification | Audit IDs |
 |---|---|---|---|---|---|---|
 | [ ] | T49: Close the evidence ledger | All applicable implementation tasks | coverage ledger; browser/output evidence; audit disposition table | Every S/L/F/D item has fixed evidence or explicit open status; no candidate silently disappears. Arabic glossary/content reviewed. | Independent diff-to-ledger review; guard negative controls and complete route/state matrix. | All |
-| [ ] | T50: Run release checks and prepare local review | 05,13,16,39–49 | verification report; isolated migration fixtures; local review instructions | Typecheck/lint/unit/component/integration/browser/build pass; legacy migration trial recorded; safe role accounts ready locally. No push. | Fresh install/build, all configured checks, migrations from old fixture state; user local review before any release. | All |
+| [ ] | T50: Run release checks and prepare local review | 05,13,16,39–49 | verification report; isolated migration fixtures; local review instructions | Typecheck/lint/unit/component/integration/browser/build pass; legacy migration trial recorded; safe role accounts ready locally. Push only after current-head release checks, per the later user authorization. | Fresh install/build, all configured checks, migrations from old fixture state; user local review before any release. | All |
 
 - [ ] Phase checkpoint: focused tests/typecheck/build results recorded; completed behaviors reviewed against the audit; failures and remaining work remain explicit.
 

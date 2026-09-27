@@ -4,7 +4,6 @@ import { authOptions } from '@/lib/auth'
 import { prisma } from '@/lib/prisma'
 import { generateSlug, generateUniqueSlug } from '@/lib/utils/slugify'
 import { sendVerificationEmail } from '@/lib/email'
-import { getLocale } from '@/lib/i18n/server'
 
 export async function GET(
   request: Request,
@@ -140,7 +139,7 @@ export async function POST(
     // If client is still pending, resend verification email
     const clientUser = await prisma.user.findUnique({
       where: { id: client.userId },
-      select: { status: true, email: true, name: true, emailVerificationToken: true }
+      select: { status: true, email: true, name: true, emailVerificationToken: true, preferredLocale: true }
     })
 
     if (clientUser?.status === 'PENDING' && clientUser.emailVerificationToken) {
@@ -149,7 +148,7 @@ export async function POST(
         clientUser.name || 'there',
         clientUser.emailVerificationToken,
         'CLIENT',
-        await getLocale()
+        clientUser.preferredLocale === 'en' ? 'en' : 'ar'
       )
     }
 

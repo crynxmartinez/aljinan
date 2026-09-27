@@ -1,4 +1,6 @@
 'use client'
+import { generatedField } from '@/lib/i18n/generated-content'
+import { enumLabel } from '@/lib/i18n/enum-labels'
 
 import { useState, useEffect, useMemo } from 'react'
 import { businessDayStart, businessDayEndExclusive } from '@/lib/i18n/date-boundaries'
@@ -400,7 +402,7 @@ export default function WorkOrdersPage() {
                     />
                   </div>
                   <div className="col-span-4">
-                    <p className="font-medium">{wo.description}</p>
+                    <p className="font-medium">{generatedField(wo, 'description', locale)}</p>
                     <p className="text-xs text-muted-foreground">{wo.branchName}</p>
                   </div>
                   <div className="col-span-2 flex items-center">
@@ -411,7 +413,7 @@ export default function WorkOrdersPage() {
                       {wo.stage === 'SCHEDULED' ? tw.statusScheduled :
                         wo.stage === 'IN_PROGRESS' ? tw.statusInProgress :
                           wo.stage === 'FOR_REVIEW' ? tw.statusForReview :
-                            wo.stage === 'COMPLETED' ? tw.statusCompleted : wo.stage.replace('_', ' ')}
+                            wo.stage === 'COMPLETED' ? tw.statusCompleted : enumLabel(wo.stage, locale)}
                     </Badge>
                   </div>
                   <div className="col-span-1 flex items-center">
@@ -419,7 +421,7 @@ export default function WorkOrdersPage() {
                       {wo.workOrderType === 'SERVICE' ? tw.typeService :
                         wo.workOrderType === 'INSPECTION' ? tw.typeInspection :
                           wo.workOrderType === 'MAINTENANCE' ? tw.typeMaintenance :
-                            wo.workOrderType === 'INSTALLATION' ? tw.typeInstallation : wo.workOrderType}
+                            wo.workOrderType === 'INSTALLATION' ? tw.typeInstallation : enumLabel(wo.workOrderType, locale)}
                     </Badge>
                   </div>
                   <div className="col-span-1 flex items-center">

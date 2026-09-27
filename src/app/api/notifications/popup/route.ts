@@ -1,3 +1,4 @@
+import { enrichNotificationContent } from '@/lib/notification-content'
 import { getServerSession } from 'next-auth'
 import { NextResponse } from 'next/server'
 import { authOptions } from '@/lib/auth'
@@ -27,7 +28,8 @@ export async function GET() {
       return NextResponse.json({ notification: null })
     }
 
-    return NextResponse.json({ notification: { ...notification, link: await resolveNotificationLink(notification.link) } })
+    const [localized] = await enrichNotificationContent([notification])
+    return NextResponse.json({ notification: { ...localized, link: await resolveNotificationLink(notification.link) } })
   } catch (error) {
     console.error('Error fetching popup notification:', error)
     return NextResponse.json(

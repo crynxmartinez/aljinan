@@ -1,5 +1,6 @@
+import { notificationData } from '@/lib/i18n/notification-messages'
+import { atomicMutation } from '@/lib/atomic-mutation'
 import { NextResponse } from 'next/server'
-import { prisma } from '@/lib/prisma'
 
 /**
  * Daily notification job. Runs at 08:00 UTC (11:00 in Riyadh).
@@ -60,6 +61,11 @@ type PendingNotification = {
 }
 
 export async function GET(request: Request) {
+  // Authorize before acquiring a database connection.
+  if (!process.env.CRON_SECRET || request.headers.get('authorization') !== `Bearer ${process.env.CRON_SECRET}`) {
+    return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
+  }
+  return atomicMutation(async prisma => {
   try {
     const authHeader = request.headers.get('authorization')
     const expected = process.env.CRON_SECRET
@@ -288,7 +294,7 @@ export async function GET(request: Request) {
     let notificationsCreated = 0
     if (notifications.length > 0) {
       const result = await prisma.notification.createMany({
-        data: notifications,
+        data: notifications.map(notificationData),
         skipDuplicates: true,
       })
       notificationsCreated = result.count
@@ -319,4 +325,5 @@ export async function GET(request: Request) {
       { status: 500 }
     )
   }
+  })
 }

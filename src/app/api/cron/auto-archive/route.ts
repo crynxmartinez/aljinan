@@ -1,3 +1,4 @@
+import { notificationData } from '@/lib/i18n/notification-messages'
 import { NextRequest, NextResponse } from 'next/server'
 import { prisma } from '@/lib/prisma'
 
@@ -17,7 +18,7 @@ export async function GET(request: NextRequest) {
   try {
     // Verify this is a cron request (Vercel sets this header)
     const authHeader = request.headers.get('authorization')
-    if (authHeader !== `Bearer ${process.env.CRON_SECRET}`) {
+    if (!process.env.CRON_SECRET || authHeader !== `Bearer ${process.env.CRON_SECRET}`) {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
     }
 
@@ -62,13 +63,16 @@ export async function GET(request: NextRequest) {
 
     let archivedCount = 0
     let notificationCount = 0
+    let failedCount = 0
 
     // Archive each work order
     for (const workOrder of workOrdersToArchive) {
       try {
+        const result = await prisma.$transaction(async prisma => {
+        let notices = 0
         // Update work order to ARCHIVED
-        await prisma.checklistItem.update({
-          where: { id: workOrder.id },
+        const updated = await prisma.checklistItem.updateMany({
+          where: { id: workOrder.id, stage: 'COMPLETED', deletedAt: null },
           data: {
             stage: 'ARCHIVED',
             deletedAt: now,
@@ -77,12 +81,12 @@ export async function GET(request: NextRequest) {
           }
         })
 
-        archivedCount++
+        if (!updated.count) return { archived: 0, notices: 0 }
 
         // Skip notifications if branch is null
         if (!workOrder.checklist.branch) {
           console.log(`[Auto-Archive] Skipping notifications for work order ${workOrder.id} - no branch`)
-          continue
+          return { archived: 1, notices: 0 }
         }
 
         // Create notification for client
@@ -93,7 +97,7 @@ export async function GET(request: NextRequest) {
             : 'previous year'
 
           await prisma.notification.create({
-            data: {
+            data: notificationData({
               userId: clientUserId,
               type: 'WORK_ORDER_COMPLETED',
               title: 'Work Order Auto-Archived',
@@ -101,10 +105,10 @@ export async function GET(request: NextRequest) {
               link: `/portal/branches/${workOrder.checklist.branchId}?tab=checklist`,
               relatedId: workOrder.id,
               relatedType: 'ChecklistItem'
-            }
+            })
           })
 
-          notificationCount++
+          notices++
         }
 
         // Create notification for contractor
@@ -115,7 +119,7 @@ export async function GET(request: NextRequest) {
             : 'previous year'
 
           await prisma.notification.create({
-            data: {
+            data: notificationData({
               userId: contractorUserId,
               type: 'WORK_ORDER_COMPLETED',
               title: 'Work Order Auto-Archived',
@@ -123,14 +127,19 @@ export async function GET(request: NextRequest) {
               link: `/dashboard/clients/${workOrder.checklist.branch.client.slug}/branches/${workOrder.checklist.branch.slug}?tab=checklist`,
               relatedId: workOrder.id,
               relatedType: 'ChecklistItem'
-            }
+            })
           })
 
-          notificationCount++
+          notices++
         }
 
+        return { archived: 1, notices }
+        })
+        archivedCount += result.archived
+        notificationCount += result.notices
         console.log(`[Auto-Archive] Archived work order: ${workOrder.description} (ID: ${workOrder.id})`)
       } catch (error) {
+        failedCount++
         console.error(`[Auto-Archive] Failed to archive work order ${workOrder.id}:`, error)
       }
     }
@@ -139,11 +148,12 @@ export async function GET(request: NextRequest) {
     console.log(`[Auto-Archive] Created ${notificationCount} notifications`)
 
     return NextResponse.json({
-      success: true,
+      success: failedCount === 0,
+      failedCount,
       archivedCount,
       notificationCount,
       message: `Auto-archived ${archivedCount} work orders from previous years`
-    })
+    }, { status: failedCount ? 500 : 200 })
   } catch (error) {
     console.error('[Auto-Archive] Error:', error)
     return NextResponse.json(

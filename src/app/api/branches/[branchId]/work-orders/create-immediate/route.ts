@@ -1,3 +1,5 @@
+import { notificationData } from '@/lib/i18n/notification-messages'
+import { atomicMutation } from '@/lib/atomic-mutation'
 import { getServerSession } from 'next-auth'
 import { NextResponse } from 'next/server'
 import { authOptions } from '@/lib/auth'
@@ -8,8 +10,10 @@ export async function POST(
   request: Request,
   { params }: { params: Promise<{ branchId: string }> }
 ) {
+  const session = await getServerSession(authOptions)
+  if (!session) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
+  return atomicMutation(async prisma => {
   try {
-    const session = await getServerSession(authOptions)
     if (!session) {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
     }
@@ -41,7 +45,7 @@ export async function POST(
       return NextResponse.json({ error: 'Work order type is required' }, { status: 400 })
     }
 
-    const hasAccess = await verifyBranchAccess(branchId, session.user.id, session.user.role)
+    const hasAccess = await verifyBranchAccess(branchId, session.user.id, session.user.role, prisma)
     if (!hasAccess) {
       return NextResponse.json({ error: 'Access denied' }, { status: 403 })
     }
@@ -161,14 +165,14 @@ export async function POST(
         : `Work order started: "${title}"`
 
       await prisma.notification.create({
-        data: {
+        data: notificationData({
           userId: branch.client.userId,
           type: 'WORK_ORDER_STARTED',
           title: '🔧 Work Order Started',
           message: notificationMessage,
           link: `/portal/branches/${branchId}?tab=work-orders`,
           isRead: false
-        }
+        })
       })
     }
 
@@ -187,4 +191,6 @@ export async function POST(
     console.error('Error creating immediate work order:', error)
     return NextResponse.json({ error: 'Failed to create work order' }, { status: 500 })
   }
+
+  })
 }

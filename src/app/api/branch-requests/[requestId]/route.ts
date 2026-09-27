@@ -1,3 +1,4 @@
+import { atomicMutation } from '@/lib/atomic-mutation'
 import { getServerSession } from 'next-auth'
 import { NextResponse } from 'next/server'
 import { authOptions } from '@/lib/auth'
@@ -50,8 +51,10 @@ export async function PATCH(
   request: Request,
   { params }: { params: Promise<{ requestId: string }> }
 ) {
+  const session = await getServerSession(authOptions)
+  if (!session) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
+  return atomicMutation(async prisma => {
   try {
-    const session = await getServerSession(authOptions)
 
     if (!session) {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
@@ -125,7 +128,7 @@ export async function PATCH(
       })
 
       if (branchRequest.client.userId) {
-        await notifyBranchRequestApproved(branchRequest.client.userId, branchRequest.name, requestId, branch.id)
+        await notifyBranchRequestApproved(branchRequest.client.userId, branchRequest.name, requestId, branch.id, prisma)
       }
 
       return NextResponse.json({ branchRequest: updated, branch })
@@ -141,7 +144,7 @@ export async function PATCH(
       })
 
       if (branchRequest.client.userId) {
-        await notifyBranchRequestRejected(branchRequest.client.userId, branchRequest.name, requestId, rejectionNote)
+        await notifyBranchRequestRejected(branchRequest.client.userId, branchRequest.name, requestId, rejectionNote, prisma)
       }
 
       return NextResponse.json(updated)
@@ -155,6 +158,8 @@ export async function PATCH(
       { status: 500 }
     )
   }
+
+  })
 }
 
 // DELETE - Delete a branch request (client can delete their own pending requests)
@@ -162,8 +167,10 @@ export async function DELETE(
   request: Request,
   { params }: { params: Promise<{ requestId: string }> }
 ) {
+  const session = await getServerSession(authOptions)
+  if (!session) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
+  return atomicMutation(async prisma => {
   try {
-    const session = await getServerSession(authOptions)
 
     if (!session) {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
@@ -200,4 +207,6 @@ export async function DELETE(
       { status: 500 }
     )
   }
+
+  })
 }

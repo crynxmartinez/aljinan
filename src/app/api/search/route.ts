@@ -1,3 +1,4 @@
+import { generatedField } from '@/lib/i18n/generated-content'
 import { enumLabel } from '@/lib/i18n/enum-labels'
 import { getLocale } from '@/lib/i18n/server'
 import { publishedFor } from '@/lib/publication'
@@ -95,6 +96,7 @@ export async function GET(request: Request) {
         appointments,
         contractors,
         inquiries,
+        quotations,
       ] = await Promise.all([
 
         // 1. Clients — contractor/team member only
@@ -168,7 +170,7 @@ export async function GET(request: Request) {
                 ...(numericValue !== null ? [{ workOrderNumber: numericValue }] : []),
               ],
             },
-            select: { id: true, description: true, workOrderNumber: true, stage: true, checklist: { select: { branchId: true, branch: { select: { slug: true, client: { select: { id: true, slug: true, companyName: true } } } } } } },
+            select: { generatedContent: true, id: true, description: true, workOrderNumber: true, stage: true, checklist: { select: { branchId: true, branch: { select: { slug: true, client: { select: { id: true, slug: true, companyName: true } } } } } } },
             take: LIMIT,
           })
           : clientBranchIds.length > 0
@@ -182,7 +184,7 @@ export async function GET(request: Request) {
                   ...(numericValue !== null ? [{ workOrderNumber: numericValue }] : []),
                 ],
               },
-              select: { id: true, description: true, workOrderNumber: true, stage: true, checklist: { select: { branchId: true, branch: { select: { id: true, slug: true } } } } },
+              select: { generatedContent: true, id: true, description: true, workOrderNumber: true, stage: true, checklist: { select: { branchId: true, branch: { select: { id: true, slug: true } } } } },
               take: LIMIT,
             })
             : Promise.resolve([]),
@@ -315,7 +317,7 @@ export async function GET(request: Request) {
                 { description: { contains: query, mode: 'insensitive' } },
               ],
             },
-            select: { id: true, title: true, type: true, branchId: true, branch: { select: { slug: true, client: { select: { id: true, slug: true, companyName: true } } } } },
+            select: { generatedContent: true, id: true, title: true, type: true, branchId: true, branch: { select: { slug: true, client: { select: { id: true, slug: true, companyName: true } } } } },
             take: LIMIT,
           })
           : clientBranchIds.length > 0
@@ -328,7 +330,7 @@ export async function GET(request: Request) {
                   { description: { contains: query, mode: 'insensitive' } },
                 ],
               },
-              select: { id: true, title: true, type: true, branchId: true, branch: { select: { id: true, slug: true } } },
+              select: { generatedContent: true, id: true, title: true, type: true, branchId: true, branch: { select: { id: true, slug: true } } },
               take: LIMIT,
             })
             : Promise.resolve([]),
@@ -452,13 +454,23 @@ export async function GET(request: Request) {
             take: LIMIT,
           })
           : Promise.resolve([]),
+        // Quotations share billing publication and branch-access rules.
+        contractorId || clientBranchIds.length > 0
+          ? prisma.quotation.findMany({
+            where: {
+              ...(contractorId ? { branch: { client: { contractorId }, ...staffScope } } : { branchId: { in: clientBranchIds }, ...publishedFor(role) }),
+              OR: [{ title: { contains: query, mode: 'insensitive' } }, { description: { contains: query, mode: 'insensitive' } }],
+            },
+            select: { id: true, title: true, status: true, branchId: true, branch: { select: { slug: true, client: { select: { id: true, slug: true, companyName: true } } } } },
+            take: LIMIT,
+          }) : Promise.resolve([]),
       ])
 
       // --- Format results ---
       type SearchResult = {
         id: string
         type: 'client' | 'branch' | 'work_order' | 'request' | 'contract' | 'invoice' | 'equipment' | 'certificate'
-          | 'team_member' | 'branch_request' | 'appointment' | 'contractor' | 'inquiry'
+          | 'team_member' | 'branch_request' | 'appointment' | 'contractor' | 'inquiry' | 'quotation'
         title: string
         subtitle: string
         link: string
@@ -510,10 +522,10 @@ export async function GET(request: Request) {
         ...(workOrders as WorkOrderRow[]).map(wo => ({
           id: wo.id,
           type: 'work_order' as const,
-          title: wo.workOrderNumber ? `WO-${String(wo.workOrderNumber).padStart(4, '0')} ${wo.description}` : wo.description,
+          title: wo.workOrderNumber ? `WO-${String(wo.workOrderNumber).padStart(4, '0')} ${generatedField(wo, 'description', locale)}` : generatedField(wo, 'description', locale),
           subtitle: isContractor
             ? `${wo.checklist?.branch?.client?.companyName} · ${enumLabel(wo.stage, locale)}`
-            : wo.stage,
+            : enumLabel(wo.stage, locale),
           link: isContractor
             ? `/dashboard/clients/${wo.checklist?.branch?.client?.slug || wo.checklist?.branch?.client?.id}/branches/${wo.checklist?.branch?.slug || wo.checklist?.branchId}?tab=checklists`
             : `/portal/branches/${wo.checklist?.branch?.slug || wo.checklist?.branchId}?tab=checklist`,
@@ -526,7 +538,7 @@ export async function GET(request: Request) {
           title: r.requestNumber ? `REQ-${String(r.requestNumber).padStart(4, '0')} ${r.title}` : r.title,
           subtitle: isContractor
             ? `${r.branch?.client?.companyName} · ${enumLabel(r.status, locale)}`
-            : r.status,
+            : enumLabel(r.status, locale),
           link: isContractor
             ? `/dashboard/clients/${r.branch?.client?.slug || r.branch?.client?.id}/branches/${r.branch?.slug || r.branchId}?tab=requests`
             : `/portal/branches/${r.branch?.slug || r.branchId}?tab=requests`,
@@ -539,12 +551,21 @@ export async function GET(request: Request) {
           title: c.title,
           subtitle: isContractor
             ? `${c.branch?.client?.companyName} · ${enumLabel(c.status, locale)}`
-            : c.status,
+            : enumLabel(c.status, locale),
           link: isContractor
             ? `/dashboard/clients/${c.branch?.client?.slug || c.branch?.client?.id}/branches/${c.branch?.slug || c.branchId}?tab=contracts`
             : `/portal/branches/${c.branch?.slug || c.branchId}?tab=contracts`,
         })),
 
+        ...quotations.map(q => ({
+          id: q.id,
+          type: 'quotation' as const,
+          title: q.title,
+          subtitle: enumLabel(q.status, locale),
+          link: isContractor
+            ? `/dashboard/clients/${q.branch.client.slug || q.branch.client.id}/branches/${q.branch.slug || q.branchId}?tab=billing`
+            : `/portal/branches/${q.branch.slug || q.branchId}?tab=billing`,
+        })),
         // Invoices
         ...(invoices as InvoiceRow[]).map(inv => ({
           id: inv.id,
@@ -552,7 +573,7 @@ export async function GET(request: Request) {
           title: inv.invoiceNumber ? `${inv.invoiceNumber} — ${inv.title}` : inv.title,
           subtitle: isContractor
             ? `${inv.branch?.client?.companyName} · ${enumLabel(inv.status, locale)}`
-            : inv.status,
+            : enumLabel(inv.status, locale),
           link: isContractor
             ? `/dashboard/clients/${inv.branch?.client?.slug || inv.branch?.client?.id}/branches/${inv.branch?.slug || inv.branchId}?tab=billing`
             : `/portal/branches/${inv.branch?.slug || inv.branchId}?tab=billing`,
@@ -575,10 +596,10 @@ export async function GET(request: Request) {
         ...(certificates as CertificateRow[]).map(cert => ({
           id: cert.id,
           type: 'certificate' as const,
-          title: cert.title,
+          title: generatedField(cert, 'title', locale),
           subtitle: isContractor
-            ? `${cert.branch?.client?.companyName} · ${cert.type.replace(/_/g, ' ')}`
-            : cert.type.replace(/_/g, ' '),
+            ? `${cert.branch?.client?.companyName} · ${enumLabel(cert.type, locale)}`
+            : enumLabel(cert.type, locale),
           link: isContractor
             ? `/dashboard/clients/${cert.branch?.client?.slug || cert.branch?.client?.id}/branches/${cert.branch?.slug || cert.branchId}?tab=certificates`
             : `/portal/branches/${cert.branch?.slug || cert.branchId}?tab=certificates`,
@@ -589,7 +610,7 @@ export async function GET(request: Request) {
           id: m.id,
           type: 'team_member' as const,
           title: m.user?.name || m.user?.email,
-          subtitle: m.jobTitle || m.teamRole,
+          subtitle: m.jobTitle || enumLabel(m.teamRole, locale),
           link: `/dashboard/team`,
         })),
 
@@ -600,7 +621,7 @@ export async function GET(request: Request) {
           title: br.name,
           subtitle: isContractor
             ? `${br.client?.companyName} · ${enumLabel(br.status, locale)}`
-            : br.status,
+            : enumLabel(br.status, locale),
           link: isContractor ? `/dashboard` : `/portal`,
         })),
 
@@ -611,7 +632,7 @@ export async function GET(request: Request) {
           title: a.title,
           subtitle: isContractor
             ? `${a.branch?.client?.companyName} · ${enumLabel(a.status, locale)}`
-            : a.status,
+            : enumLabel(a.status, locale),
           link: isContractor
             ? `/dashboard/clients/${a.branch?.client?.slug || a.branch?.client?.id}/branches/${a.branch?.slug || a.branchId}?tab=calendar`
             : `/portal/branches/${a.branch?.slug || a.branchId}?tab=calendar`,

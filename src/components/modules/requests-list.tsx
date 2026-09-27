@@ -3,7 +3,7 @@ import { showErrorToast } from '@/lib/i18n/error-toast'
 import { LocalizedError } from '@/components/localized-error'
 import { TranslatedText } from '@/components/translated-text'
 
-import { enumLabel } from '@/lib/i18n/enum-labels'
+import { enumLabel, timeSlotLabel } from '@/lib/i18n/enum-labels'
 
 import { useState, useEffect } from 'react'
 import { useRouter } from 'next/navigation'
@@ -653,7 +653,7 @@ export function RequestsList({ branchId, userRole, userId }: RequestsListProps) 
       fetchRequests()
       router.refresh()
     } catch (err) {
-      setError(err instanceof Error ? err.message : 'An error occurred')
+      setError(err instanceof Error ? err.message : t.system.serverError)
     } finally {
       setCreating(false)
     }
@@ -749,7 +749,7 @@ export function RequestsList({ branchId, userRole, userId }: RequestsListProps) 
       fetchRequests()
       router.refresh()
     } catch (err) {
-      setError(err instanceof Error ? err.message : 'An error occurred')
+      setError(err instanceof Error ? err.message : t.system.serverError)
     } finally {
       setContractorCreating(false)
     }
@@ -928,7 +928,7 @@ export function RequestsList({ branchId, userRole, userId }: RequestsListProps) 
       fetchRequests()
       router.refresh()
     } catch (err) {
-      setError(err instanceof Error ? err.message : 'An error occurred')
+      setError(err instanceof Error ? err.message : t.system.serverError)
     } finally {
       setSubmittingQuote(false)
     }
@@ -954,7 +954,7 @@ export function RequestsList({ branchId, userRole, userId }: RequestsListProps) 
       HIGH: 'bg-orange-100 dark:bg-orange-950/40 text-orange-700 dark:text-orange-400',
       URGENT: 'bg-red-100 dark:bg-red-950/40 text-red-700 dark:text-red-400',
     }
-    return <Badge className={styles[priority]}>{priority}</Badge>
+    return <Badge className={styles[priority]}>{enumLabel(priority, locale)}</Badge>
   }
 
   const getStatusBadge = (status: Request['status']) => {
@@ -974,7 +974,7 @@ export function RequestsList({ branchId, userRole, userId }: RequestsListProps) 
     return (
       <Badge className={`${style} flex items-center gap-1`}>
         <Icon className="h-3 w-3" />
-        {status.replace('_', ' ')}
+        {enumLabel(status, locale)}
       </Badge>
     )
   }
@@ -1338,7 +1338,7 @@ export function RequestsList({ branchId, userRole, userId }: RequestsListProps) 
                         <SelectItem key={member.id} value={member.userId}>
                           <span className="flex items-center gap-2">
                             {member.user.name || member.user.email}
-                            <span className="text-xs text-muted-foreground capitalize">({member.teamRole.toLowerCase()})</span>
+                            <span className="text-xs text-muted-foreground capitalize">({enumLabel(member.teamRole, locale)})</span>
                           </span>
                         </SelectItem>
                       ))}
@@ -1602,7 +1602,7 @@ export function RequestsList({ branchId, userRole, userId }: RequestsListProps) 
                 {selectedRequest.preferredTimeSlot && (
                   <div>
                     <p className="font-medium text-muted-foreground">{tr.preferredTime}</p>
-                    <p>{selectedRequest.preferredTimeSlot}</p>
+                    <p>{timeSlotLabel(selectedRequest.preferredTimeSlot, locale)}</p>
                   </div>
                 )}
                 <div>
@@ -1630,7 +1630,7 @@ export function RequestsList({ branchId, userRole, userId }: RequestsListProps) 
                       <img
                         key={idx}
                         src={photo.url}
-                        alt={`Request photo ${idx + 1}`}
+                        alt={`${t.system.requestPhoto} ${idx + 1}`}
                         className="w-full h-24 object-cover rounded-lg cursor-pointer hover:opacity-80"
                         onClick={() => window.open(photo.url, '_blank')}
                       />
@@ -1899,7 +1899,7 @@ export function RequestsList({ branchId, userRole, userId }: RequestsListProps) 
                       {quoteRequest.preferredTimeSlot && (
                         <div className="flex items-center gap-1">
                           <Clock className="h-4 w-4 text-blue-600 dark:text-blue-400" />
-                          <span className="capitalize">{quoteRequest.preferredTimeSlot.toLowerCase().replace('_', ' ')}</span>
+                          <span className="capitalize">{timeSlotLabel(quoteRequest.preferredTimeSlot, locale)}</span>
                         </div>
                       )}
                     </div>
@@ -1924,7 +1924,7 @@ export function RequestsList({ branchId, userRole, userId }: RequestsListProps) 
                         >
                           <img
                             src={photo.url}
-                            alt={photo.caption || 'Request photo'}
+                            alt={photo.caption || t.system.requestPhoto}
                             className="h-20 w-20 object-cover rounded-lg border hover:opacity-80 transition-opacity"
                           />
                         </a>

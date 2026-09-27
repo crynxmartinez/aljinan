@@ -828,7 +828,7 @@ export function ClientBranchContracts({ branchId }: ClientBranchContractsProps) 
                                     {paymentDueDates[i] ? formatDateUtil(paymentDueDates[i], locale) : '—'}
                                   </div>
                                   <div className="font-medium">
-                                    {paymentAmounts[i] ? `${t.dashboard.requestsList.sar} ${paymentAmounts[i]?.toLocaleString(dateLocale, { minimumFractionDigits: 2 })}` : '—'}
+                                    {paymentAmounts[i] != null ? `${t.dashboard.requestsList.sar} ${paymentAmounts[i]?.toLocaleString(dateLocale, { minimumFractionDigits: 2 })}` : '—'}
                                   </div>
                                 </div>
                               ))}
@@ -865,7 +865,7 @@ export function ClientBranchContracts({ branchId }: ClientBranchContractsProps) 
                             {payment.dueDate ? formatDateUtil(payment.dueDate, locale) : '—'}
                           </TableCell>
                           <TableCell>
-                            {payment.amount ? `${t.dashboard.requestsList.sar} ${payment.amount.toLocaleString(dateLocale, { minimumFractionDigits: 2 })}` : '—'}
+                            {payment.amount != null ? `${t.dashboard.requestsList.sar} ${payment.amount.toLocaleString(dateLocale, { minimumFractionDigits: 2 })}` : '—'}
                           </TableCell>
                           <TableCell>
                             <Badge variant={payment.status === 'PAID' ? 'default' : payment.status === 'OVERDUE' ? 'destructive' : 'secondary'}>

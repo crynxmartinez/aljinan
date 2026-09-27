@@ -1,4 +1,5 @@
 'use client'
+import { generatedField } from '@/lib/i18n/generated-content'
 
 import { useState, useEffect } from 'react'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
@@ -183,7 +184,7 @@ export function ClientBranchInvoices({ branchId }: ClientBranchInvoicesProps) {
                       <tbody>
                         {invoice.items.map((item) => (
                           <tr key={item.id} className="border-t border-muted">
-                            <td className="py-2">{item.description}</td>
+                            <td className="py-2">{generatedField(item, 'description', locale)}</td>
                             <td className="text-end py-2">{item.quantity}</td>
                             <td className="text-end py-2">{formatCurrency(item.unitPrice)}</td>
                             <td className="text-end py-2">{formatCurrency(item.total)}</td>

@@ -56,14 +56,14 @@ interface NominatimResult {
 }
 
 export function AddressPicker({ value, onChange, showManualFields = true }: AddressPickerProps) {
-  const { t } = useTranslation()
+  const { t, locale } = useTranslation()
   const tap = t.uiComponents.addressPicker
   const [searchQuery, setSearchQuery] = useState('')
   const [suggestions, setSuggestions] = useState<NominatimResult[]>([])
   const [isSearching, setIsSearching] = useState(false)
   const [showSuggestions, setShowSuggestions] = useState(false)
   const [manualMode, setManualMode] = useState(false)
-  const [lookupNotice, setLookupNotice] = useState('')
+  const [lookupNotice, setLookupNotice] = useState(false)
   const searchTimeout = useRef<NodeJS.Timeout | null>(null)
   const containerRef = useRef<HTMLDivElement>(null)
 
@@ -81,6 +81,7 @@ export function AddressPicker({ value, onChange, showManualFields = true }: Addr
 
         const request = {
           input: query,
+          language: locale,
           componentRestrictions: { country: 'sa' },
         }
 
@@ -125,7 +126,7 @@ export function AddressPicker({ value, onChange, showManualFields = true }: Addr
     } finally {
       setIsSearching(false)
     }
-  }, [])
+  }, [locale])
 
   useEffect(() => {
     if (searchTimeout.current) {
@@ -181,13 +182,13 @@ export function AddressPicker({ value, onChange, showManualFields = true }: Addr
     })
 
     setManualMode(true)
-    setLookupNotice(tap.lookupNotice)
+    setLookupNotice(true)
   }
 
   const selectAddress = (result: NominatimResult) => {
     setSearchQuery(result.display_name)
     setShowSuggestions(false)
-    setLookupNotice('')
+    setLookupNotice(false)
 
     // If coordinates are already available (from old format), use them directly
     if (result.lat !== '0' && result.lon !== '0') {
@@ -216,6 +217,7 @@ export function AddressPicker({ value, onChange, showManualFields = true }: Addr
       placesService.getDetails(
         {
           placeId: String(result.place_id),
+          language: locale,
           fields: ['geometry', 'address_components', 'formatted_address'],
         },
         (place, status) => {
@@ -262,7 +264,8 @@ export function AddressPicker({ value, onChange, showManualFields = true }: Addr
       if (typeof google !== 'undefined' && google.maps) {
         const geocoder = new google.maps.Geocoder()
         const response = await geocoder.geocode({
-          location: { lat, lng }
+          location: { lat, lng },
+          language: locale
         })
 
         if (response.results && response.results[0]) {
@@ -344,7 +347,7 @@ export function AddressPicker({ value, onChange, showManualFields = true }: Addr
   }
 
   return (
-    <APIProvider apiKey={apiKey} libraries={['places']}>
+    <APIProvider apiKey={apiKey} libraries={['places']} language={locale} region="SA">
       <div className="space-y-4">
         {/* Search Box */}
         <div ref={containerRef} className="relative">
@@ -392,7 +395,7 @@ export function AddressPicker({ value, onChange, showManualFields = true }: Addr
 
           {lookupNotice && (
             <p className="mt-2 text-sm text-amber-600" role="status">
-              {lookupNotice}
+              {tap.lookupNotice}
             </p>
           )}
 

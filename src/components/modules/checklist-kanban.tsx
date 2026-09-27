@@ -1,4 +1,5 @@
 'use client'
+import { generatedField } from '@/lib/i18n/generated-content'
 import { showErrorToast } from '@/lib/i18n/error-toast'
 import { enumLabel } from '@/lib/i18n/enum-labels'
 
@@ -325,7 +326,7 @@ function DraggableCard({
             </span>
           )}
           <p className="font-medium text-sm line-clamp-2 mb-2">
-            {item.description}
+            {generatedField(item, 'description', locale)}
           </p>
 
           {/* Priority badges */}
@@ -497,14 +498,14 @@ function DroppableColumn({
 // `options` is optional (not defaulted) so a call site that wants the browser's plain
 // numeric date (year/month/day, no options) can omit it — passing a default here would
 // force every call site into the same short month/day shape.
-function formatDate(dateString: string | null, locale: 'en' | 'ar' = 'ar', options?: Intl.DateTimeFormatOptions) {
+function formatDate(dateString: string | null, locale: 'en' | 'ar', options?: Intl.DateTimeFormatOptions) {
   if (!dateString) return null
-  return new Date(dateString).toLocaleDateString(locale === 'ar' ? 'ar-SA-u-nu-latn' : 'en-US', options)
+  return new Date(dateString).toLocaleDateString(locale === 'ar' ? 'ar-SA-u-ca-gregory-nu-latn' : 'en-US', { timeZone: 'Asia/Riyadh', ...options })
 }
 
-function formatTime(dateString: string | null, locale: 'en' | 'ar' = 'ar') {
+function formatTime(dateString: string | null, locale: 'en' | 'ar') {
   if (!dateString) return null
-  return new Date(dateString).toLocaleTimeString(locale === 'ar' ? 'ar-SA-u-nu-latn' : 'en-US')
+  return new Date(dateString).toLocaleTimeString(locale === 'ar' ? 'ar-SA-u-ca-gregory-nu-latn' : 'en-US', { timeZone: 'Asia/Riyadh' })
 }
 
 // Date priority types for visual indicators
@@ -1328,9 +1329,9 @@ export function ChecklistKanban({ branchId, readOnly = false, userRole }: Checkl
               {/* Drag Overlay */}
               <DragOverlay>
                 {activeItem && (
-                  <div className="bg-white rounded-lg border-2 border-primary p-3 shadow-xl opacity-90 w-64">
+                  <div className="bg-card text-card-foreground rounded-lg border-2 border-primary p-3 shadow-xl opacity-90 w-64">
                     <p className="font-medium text-sm line-clamp-2">
-                      {activeItem.description}
+                      {generatedField(activeItem, 'description', locale)}
                     </p>
                   </div>
                 )}
@@ -1357,7 +1358,7 @@ export function ChecklistKanban({ branchId, readOnly = false, userRole }: Checkl
             <div className="space-y-4">
               {/* Basic Info */}
               <div className="p-4 bg-muted/50 rounded-lg">
-                <h4 className="font-medium mb-2">{selectedItem.description}</h4>
+                <h4 className="font-medium mb-2">{generatedField(selectedItem, 'description', locale)}</h4>
                 <div className="flex items-center gap-2 flex-wrap">
                   <Badge className={cn(
                     stages.find(s => s.id === selectedItem.stage)?.bgColor,
@@ -1461,7 +1462,7 @@ export function ChecklistKanban({ branchId, readOnly = false, userRole }: Checkl
                       <SelectItem value="unassigned">{tk.unassigned}</SelectItem>
                       {teamMembers.map((member) => (
                         <SelectItem key={member.userId} value={member.userId}>
-                          {member.user.name || member.user.email} ({member.teamRole.toLowerCase()})
+                          {member.user.name || member.user.email} ({enumLabel(member.teamRole, locale)})
                         </SelectItem>
                       ))}
                     </SelectContent>
@@ -1890,7 +1891,7 @@ export function ChecklistKanban({ branchId, readOnly = false, userRole }: Checkl
                                     )}
                                     {eq.inspectionResult && (
                                       <Badge variant={eq.inspectionResult === 'PASS' ? 'default' : 'destructive'} className="text-xs">
-                                        {eq.inspectionResult}
+                                        {enumLabel(eq.inspectionResult, locale)}
                                       </Badge>
                                     )}
                                   </div>
@@ -2154,7 +2155,7 @@ export function ChecklistKanban({ branchId, readOnly = false, userRole }: Checkl
               {selectedItem.notes && (
                 <div className="border-t pt-4">
                   <p className="text-sm text-muted-foreground">{tk.notes}</p>
-                  <p className="text-sm">{selectedItem.notes}</p>
+                  <p className="text-sm">{generatedField(selectedItem, 'notes', locale)}</p>
                 </div>
               )}
 
@@ -2222,7 +2223,7 @@ export function ChecklistKanban({ branchId, readOnly = false, userRole }: Checkl
             <div className="space-y-4">
               {/* Work Order Summary */}
               <div className="p-4 bg-muted/50 rounded-lg">
-                <h4 className="font-medium mb-2">{selectedItem.description}</h4>
+                <h4 className="font-medium mb-2">{generatedField(selectedItem, 'description', locale)}</h4>
                 <div className="grid grid-cols-2 gap-2 text-sm">
                   {selectedItem.scheduledDate && (
                     <div>
@@ -2230,10 +2231,10 @@ export function ChecklistKanban({ branchId, readOnly = false, userRole }: Checkl
                       <p className="font-medium">{formatDate(selectedItem.scheduledDate, locale)}</p>
                     </div>
                   )}
-                  {selectedItem.price && (
+                  {selectedItem.price != null && (
                     <div>
                       <p className="text-muted-foreground">{tk.price}</p>
-                      <p className="font-semibold text-green-700">{formatCurrency(selectedItem.price)}</p>
+                      <p className="font-semibold text-green-700">{formatCurrency(selectedItem.price, locale)}</p>
                     </div>
                   )}
                 </div>

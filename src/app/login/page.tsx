@@ -48,7 +48,7 @@ export default function LoginPage() {
         router.refresh()
       }
     } catch {
-      setError('An error occurred. Please try again.')
+      setError(t.system.serverError)
     } finally {
       setLoading(false)
     }

@@ -1,3 +1,4 @@
+import { atomicMutation, joinTransaction } from '@/lib/atomic-mutation'
 import { getServerSession } from 'next-auth'
 import { NextResponse } from 'next/server'
 import { authOptions } from '@/lib/auth'
@@ -28,7 +29,7 @@ export async function GET(
     const { branchId } = await params
 
     // Verify user has access to this branch
-    const hasAccess = await verifyBranchAccess(branchId, session.user.id, session.user.role)
+    const hasAccess = await verifyBranchAccess(branchId, session.user.id, session.user.role, prisma)
     if (!hasAccess) {
       return NextResponse.json({ error: 'Access denied' }, { status: 403 })
     }
@@ -77,8 +78,10 @@ export async function POST(
   request: Request,
   { params }: { params: Promise<{ branchId: string }> }
 ) {
+  const session = await getServerSession(authOptions)
+  if (!session) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
+  return atomicMutation(async prisma => {
   try {
-    const session = await getServerSession(authOptions)
 
     if (!session) {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
@@ -139,7 +142,7 @@ export async function POST(
     }
 
     // Verify user has access to this branch
-    const hasAccess = await verifyBranchAccess(branchId, session.user.id, session.user.role)
+    const hasAccess = await verifyBranchAccess(branchId, session.user.id, session.user.role, prisma)
     if (!hasAccess) {
       return NextResponse.json({ error: 'Access denied' }, { status: 403 })
     }
@@ -157,7 +160,7 @@ export async function POST(
     }
 
     // Auto-generate request number using atomic increment
-    const newRequest = await prisma.$transaction(async (tx) => {
+    const newRequest = await joinTransaction(prisma, async (tx) => {
       // Atomically increment the contractor's request counter
       const contractor = await tx.contractor.update({
         where: { id: branch.client.contractorId },
@@ -233,7 +236,7 @@ export async function POST(
           contractor.userId,
           newRequest.id,
           title,
-          branchId
+          branchId, prisma
         )
       }
     }
@@ -246,4 +249,6 @@ export async function POST(
       { status: 500 }
     )
   }
+
+  })
 }

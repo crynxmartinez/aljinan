@@ -1,4 +1,6 @@
 'use client'
+
+import { enumLabel, timeSlotLabel } from '@/lib/i18n/enum-labels'
 import { showErrorToast } from '@/lib/i18n/error-toast'
 import { LocalizedError } from '@/components/localized-error'
 
@@ -576,7 +578,7 @@ export function ClientBranchRequests({ branchId, onDataChange, userId }: ClientB
       FIRE_HOSE_REEL: el.fireHoseReel,
       OTHER: el.other,
     }
-    return map[type] ?? type.replace(/_/g, ' ').toLowerCase().replace(/\b\w/g, l => l.toUpperCase())
+    return map[type] ?? enumLabel(type, locale)
   }
 
   // Count + frequency label for a recurring type, used to fill "{count} {freq}" templates.
@@ -1281,7 +1283,7 @@ export function ClientBranchRequests({ branchId, onDataChange, userId }: ClientB
                 {selectedRequest.preferredTimeSlot && (
                   <div>
                     <p className="text-muted-foreground">{tc.preferredTimeLabel}</p>
-                    <p className="font-medium">{selectedRequest.preferredTimeSlot}</p>
+                    <p className="font-medium">{timeSlotLabel(selectedRequest.preferredTimeSlot, locale)}</p>
                   </div>
                 )}
               </div>
@@ -1295,7 +1297,7 @@ export function ClientBranchRequests({ branchId, onDataChange, userId }: ClientB
                       <img
                         key={idx}
                         src={photo.url}
-                        alt={`Request photo ${idx + 1}`}
+                        alt={`${t.system.requestPhoto} ${idx + 1}`}
                         className="w-full h-24 object-cover rounded-lg cursor-pointer hover:opacity-80"
                         onClick={() => window.open(photo.url, '_blank')}
                       />
@@ -1367,7 +1369,7 @@ export function ClientBranchRequests({ branchId, onDataChange, userId }: ClientB
                                   {occ.visitDate ? formatDateUtil(occ.visitDate, locale) : '-'}
                                 </td>
                                 <td className="px-3 py-2 text-end font-medium">
-                                  {occ.price ? occ.price.toLocaleString(dateLocale) : '-'}
+                                  {occ.price != null ? occ.price.toLocaleString(dateLocale) : '-'}
                                 </td>
                               </tr>
                             ))}
@@ -1682,7 +1684,7 @@ export function ClientBranchRequests({ branchId, onDataChange, userId }: ClientB
                                   └ #{occ.order}: {occ.visitDate ? formatDateUtil(occ.visitDate, locale) : tc.pendingSchedule}
                                 </span>
                                 <span className="font-medium text-blue-800 dark:text-blue-400">
-                                  {occ.price ? `${t.dashboard.requestsList.sar} ${occ.price.toLocaleString(dateLocale)}` : '-'}
+                                  {occ.price != null ? `${t.dashboard.requestsList.sar} ${occ.price.toLocaleString(dateLocale)}` : '-'}
                                 </span>
                               </div>
                             ))}

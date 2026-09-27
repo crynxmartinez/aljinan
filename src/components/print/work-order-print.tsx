@@ -1,4 +1,5 @@
 'use client'
+import { generatedField } from '@/lib/i18n/generated-content'
 import { formatDate as localizedDate, formatDateTime, formatCurrency as localizedCurrency } from '@/lib/i18n/format-date'
 import { enumLabel } from '@/lib/i18n/enum-labels'
 
@@ -116,7 +117,7 @@ type ReportData = MaintenanceReportData | ServiceReportData | InstallationReport
 
 interface WorkOrderPrintData {
   id: string
-  workOrderNumber: number
+  workOrderNumber: number | null
   description: string
   notes: string | null
   stage: string
@@ -254,6 +255,9 @@ export function WorkOrderPrint({ workOrderId }: WorkOrderPrintProps) {
         @media print {
           /* Ensure proper height calculation for pagination */
           html, body {
+            background: white !important;
+            color-scheme: light !important;
+            min-height: 0 !important;
             height: auto !important;
             overflow: visible !important;
           }
@@ -276,10 +280,12 @@ export function WorkOrderPrint({ workOrderId }: WorkOrderPrintProps) {
             width: 100%;
             max-width: 210mm;
             margin: 0 auto;
+            padding: 0 !important;
           }
           
           /* A4 page setup */
           @page {
+            background: white;
             size: A4;
             margin: 20mm;
           }
@@ -326,7 +332,7 @@ export function WorkOrderPrint({ workOrderId }: WorkOrderPrintProps) {
             </div>
             <div className="text-end">
               <h2 className="text-2xl font-bold mb-1">{tp.workOrderReport}</h2>
-              <p className="text-lg font-semibold">WO #{data.workOrderNumber}</p>
+              <p className="text-lg font-semibold"><bdi dir="ltr">WO #{data.workOrderNumber ?? '—'}</bdi></p>
               <p className="text-sm text-muted-foreground mt-1">
                 {tp.generated} {formatDateTime(new Date(), locale)}
               </p>
@@ -393,11 +399,11 @@ export function WorkOrderPrint({ workOrderId }: WorkOrderPrintProps) {
         {/* Description */}
         <div className="mb-6 print-section">
           <h3 className="text-lg font-bold mb-3 text-primary border-b pb-2">{tp.description}</h3>
-          <p className="whitespace-pre-wrap">{data.description}</p>
+          <p className="whitespace-pre-wrap">{generatedField(data, 'description', locale)}</p>
           {data.notes && (
             <div className="mt-3 p-3 bg-gray-50 rounded">
               <p className="text-sm font-semibold mb-1">{tp.notes}</p>
-              <p className="text-sm whitespace-pre-wrap">{data.notes}</p>
+              <p className="text-sm whitespace-pre-wrap">{generatedField(data, 'notes', locale)}</p>
             </div>
           )}
         </div>
@@ -1167,7 +1173,7 @@ export function WorkOrderPrint({ workOrderId }: WorkOrderPrintProps) {
         </div>
 
         {/* Footer */}
-        <div className="mt-8 pt-4 border-t text-center text-xs text-muted-foreground">
+        <div className="print-section mt-8 pt-4 border-t text-center text-xs text-muted-foreground">
           <p>{tp.officialWorkOrderDoc}</p>
           <p className="mt-1">{t.dashboard.requestQuotePrint.forInquiries}</p>
         </div>

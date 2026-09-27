@@ -1,6 +1,7 @@
 'use client'
+import { generatedField } from '@/lib/i18n/generated-content'
 import { formatDate as localizedDate, formatDateTime, formatCurrency as localizedCurrency } from '@/lib/i18n/format-date'
-import { enumLabel } from '@/lib/i18n/enum-labels'
+import { enumLabel, timeSlotLabel } from '@/lib/i18n/enum-labels'
 
 import { useEffect, useState } from 'react'
 import { useTranslation } from '@/lib/i18n/use-translation'
@@ -136,6 +137,9 @@ export function RequestQuotePrint({ requestId, branchId }: RequestQuotePrintProp
         @media print {
           /* Ensure proper height calculation for pagination */
           html, body {
+            background: white !important;
+            color-scheme: light !important;
+            min-height: 0 !important;
             height: auto !important;
             overflow: visible !important;
           }
@@ -158,10 +162,12 @@ export function RequestQuotePrint({ requestId, branchId }: RequestQuotePrintProp
             width: 100%;
             max-width: 210mm;
             margin: 0 auto;
+            padding: 0 !important;
           }
           
           /* A4 page setup */
           @page {
+            background: white;
             size: A4;
             margin: 20mm;
           }
@@ -211,7 +217,7 @@ export function RequestQuotePrint({ requestId, branchId }: RequestQuotePrintProp
                 {isQuoted ? tp.serviceQuotation : tp.serviceRequest}
               </h2>
               {data.requestNumber && (
-                <p className="text-lg font-semibold">REQ #{data.requestNumber}</p>
+                <p className="text-lg font-semibold"><bdi dir="ltr">REQ #{data.requestNumber}</bdi></p>
               )}
               <p className="text-sm text-muted-foreground mt-1">
                 {tp.generated} {formatDateTime(new Date(), locale)}
@@ -249,7 +255,7 @@ export function RequestQuotePrint({ requestId, branchId }: RequestQuotePrintProp
         <div className="mb-6">
           <h3 className="text-lg font-bold mb-3 text-primary border-b pb-2">{tp.requestDetails}</h3>
           <div className="mb-3">
-            <p className="text-lg font-bold">{data.title}</p>
+            <p className="text-lg font-bold">{generatedField(data, 'title', locale)}</p>
           </div>
           <div className="grid grid-cols-2 gap-4">
             <div>
@@ -277,7 +283,7 @@ export function RequestQuotePrint({ requestId, branchId }: RequestQuotePrintProp
             {data.preferredTimeSlot && (
               <div>
                 <p className="text-sm text-muted-foreground">{tp.preferredTime}</p>
-                <p className="font-semibold">{data.preferredTimeSlot}</p>
+                <p className="font-semibold">{timeSlotLabel(data.preferredTimeSlot, locale)}</p>
               </div>
             )}
           </div>
@@ -287,7 +293,7 @@ export function RequestQuotePrint({ requestId, branchId }: RequestQuotePrintProp
         {data.description && (
           <div className="mb-6">
             <h3 className="text-lg font-bold mb-3 text-primary border-b pb-2">{tp.description}</h3>
-            <p className="whitespace-pre-wrap">{data.description}</p>
+            <p className="whitespace-pre-wrap">{generatedField(data, 'description', locale)}</p>
           </div>
         )}
 
@@ -390,7 +396,7 @@ export function RequestQuotePrint({ requestId, branchId }: RequestQuotePrintProp
         )}
 
         {/* Footer */}
-        <div className="mt-8 pt-4 border-t text-center text-xs text-muted-foreground">
+        <div className="print-section mt-8 pt-4 border-t text-center text-xs text-muted-foreground">
           <p>{tp.officialDocument.replace('{type}', isQuoted ? tp.quotationType : tp.requestType)}</p>
           <p className="mt-1">{tp.forInquiries}</p>
         </div>

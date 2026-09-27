@@ -56,7 +56,8 @@
  * theme, replacing shadcn's stock neutral defaults, so the product looks like it belongs to
  * the same brand as the marketing site instead of a generic admin template.
  */
-:root {
+:root,
+.marketing-site {
   --radius: 0.625rem;
   --background: oklch(0.985 0.001 106.423); /* stone-50 */
   --foreground: oklch(0.216 0.006 56.043); /* stone-900 */
@@ -149,4 +150,15 @@
 /* Arabic font rendering */
 [dir="rtl"] body {
   font-family: 'Tajawal', 'Cairo', 'Segoe UI', system-ui, -apple-system, sans-serif;
+}
+
+/* Paper is always light, even when the application is in dark mode. */
+.print-container {
+  color-scheme: light;
+  --foreground: #1c1917;
+  --muted-foreground: #57534e;
+  --border: #e7e5e4;
+  --primary: #d97706;
+  color: var(--foreground);
+  background: white;
 }

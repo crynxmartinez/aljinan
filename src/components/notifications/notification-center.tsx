@@ -1,5 +1,5 @@
 'use client'
-import { localizeNotificationText } from '@/lib/i18n/notification-messages'
+import { renderNotificationText } from '@/lib/i18n/notification-messages'
 
 import { useState, useEffect } from 'react'
 import { useRouter } from 'next/navigation'
@@ -22,6 +22,7 @@ import { useTranslation } from '@/lib/i18n/use-translation'
 interface Notification {
   id: string
   type: 'quote' | 'work_order' | 'payment' | 'certificate' | 'comment' | 'alert'
+  content?: unknown
   title: string
   message: string
   link?: string
@@ -95,6 +96,7 @@ export function NotificationCenter() {
           .filter((n: any) => n && n.id && n.title && n.message) // Filter out invalid entries
           .map((n: any) => ({
             id: n.id,
+            content: n.content,
             type: iconKeyFor(n.type),
             title: n.title || tn.defaultTitle,
             message: n.message || '',
@@ -262,14 +264,14 @@ export function NotificationCenter() {
                   <div className="flex-1 space-y-1">
                     <div className="flex items-start justify-between gap-2">
                       <p className="text-sm font-medium leading-none">
-                        {localizeNotificationText(notification.title, locale)}
+                        {renderNotificationText(notification.title, notification.content, 'title', locale)}
                       </p>
                       {!notification.read && (
                         <div className="h-2 w-2 rounded-full bg-blue-600 mt-1" />
                       )}
                     </div>
                     <p className="text-xs text-muted-foreground line-clamp-2">
-                      {localizeNotificationText(notification.message, locale)}
+                      {renderNotificationText(notification.message, notification.content, 'message', locale)}
                     </p>
                     <p className="text-xs text-muted-foreground">
                       {formatTime(notification.createdAt)}

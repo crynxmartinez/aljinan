@@ -1,4 +1,5 @@
 'use client'
+import { generatedField } from '@/lib/i18n/generated-content'
 import { enumLabel } from '@/lib/i18n/enum-labels'
 
 import { useState, useEffect } from 'react'
@@ -251,7 +252,7 @@ export function ActionCenterTable({ userRole }: ActionCenterTableProps) {
                           </div>
                         </TableCell>
                         <TableCell className="max-w-[200px] truncate">
-                          {wo.description}
+                          {generatedField(wo, 'description', locale)}
                         </TableCell>
                         <TableCell>
                           {formatDate(wo.scheduledDate, locale)}

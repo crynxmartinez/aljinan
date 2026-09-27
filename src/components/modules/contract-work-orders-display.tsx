@@ -1,4 +1,5 @@
 'use client'
+import { enumLabel } from '@/lib/i18n/enum-labels'
 
 import { formatCurrency as localizedCurrency } from '@/lib/i18n/format-date'
 
@@ -196,7 +197,7 @@ export function ContractWorkOrdersDisplay({ workOrders, showStatus = true }: Con
                             className={cn("text-xs ms-2", getStageColor(wo.stage))}
                           >
                             {getStageIcon(wo.stage)}
-                            <span className="ms-1">{STAGE_LABELS[wo.stage] || wo.stage.replace('_', ' ')}</span>
+                            <span className="ms-1">{STAGE_LABELS[wo.stage] || enumLabel(wo.stage, locale)}</span>
                           </Badge>
                         )}
                       </div>

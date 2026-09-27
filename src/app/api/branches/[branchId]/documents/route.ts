@@ -1,3 +1,4 @@
+import { generatedField } from '@/lib/i18n/generated-content'
 import { getLocale } from '@/lib/i18n/server'
 import { systemMessages } from '@/lib/i18n/system-messages'
 import { enumLabel } from '@/lib/i18n/enum-labels'
@@ -232,7 +233,7 @@ export async function GET(
 
     for (const cert of certificates) {
       // Get uploader name
-      let uploaderName = cert.issuedBy || t.system
+      let uploaderName = generatedField(cert, 'issuedBy', locale) || t.system
       if (cert.issuedById) {
         const user = await prisma.user.findUnique({
           where: { id: cert.issuedById },
@@ -242,7 +243,7 @@ export async function GET(
       }
 
       // Determine related to
-      let relatedTo = cert.title
+      let relatedTo = generatedField(cert, 'title', locale)
       if (cert.workOrder) {
         relatedTo = cert.workOrder.description
       } else if (cert.contract) {
@@ -256,7 +257,7 @@ export async function GET(
 
       documents.push({
         id: `certificate-${cert.id}`,
-        fileName: cert.title,
+        fileName: generatedField(cert, 'title', locale),
         fileUrl: cert.fileUrl || '',
         source: isGenerated ? 'generated' : 'certificate',
         sourceLabel: isGenerated ? t.certificate : t.certificate,

@@ -1,4 +1,5 @@
 'use client'
+import { generatedField } from '@/lib/i18n/generated-content'
 
 import { useState } from 'react'
 import {
@@ -78,7 +79,7 @@ export function RescheduleNotificationModal({
               >
                 <div className="flex items-start justify-between mb-2">
                   <div>
-                    <p className="font-medium text-sm">{wo.description}</p>
+                    <p className="font-medium text-sm">{generatedField(wo, 'description', locale)}</p>
                     <p className="text-xs text-muted-foreground">{wo.branchName}</p>
                   </div>
                   <Badge variant="outline" className="text-xs border-orange-300 dark:border-orange-800 text-orange-700 dark:text-orange-400">

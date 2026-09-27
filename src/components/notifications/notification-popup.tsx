@@ -1,6 +1,6 @@
 'use client'
 import { api } from '@/lib/api-client'
-import { localizeNotificationText } from '@/lib/i18n/notification-messages'
+import { renderNotificationText } from '@/lib/i18n/notification-messages'
 
 import { useEffect, useState, useRef } from 'react'
 import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle } from '@/components/ui/dialog'
@@ -17,6 +17,7 @@ interface NotificationPopupProps {
 interface PopupNotification {
   id: string
   type: string
+  content?: unknown
   title: string
   message: string
   link: string | null
@@ -129,10 +130,10 @@ export function NotificationPopup({ userRole }: NotificationPopupProps) {
             {getIcon(notification.type)}
           </div>
           <DialogTitle className="text-center text-xl">
-            {localizeNotificationText(notification.title, locale)}
+            {renderNotificationText(notification.title, notification.content, 'title', locale)}
           </DialogTitle>
           <DialogDescription className="text-center">
-            {localizeNotificationText(notification.message, locale)}
+            {renderNotificationText(notification.message, notification.content, 'message', locale)}
           </DialogDescription>
         </DialogHeader>
 

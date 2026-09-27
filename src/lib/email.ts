@@ -3,6 +3,13 @@ import { translations, getDirection, type Locale } from '@/lib/i18n/translations
 
 const resend = new Resend(process.env.RESEND_API_KEY || '')
 
+function escapeHtml(value: string): string {
+  return value.replace(/[&<>"']/g, character => ({
+    '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;',
+  })[character]!)
+}
+
+
 /** Wraps templated content in the shared header/footer chrome, honoring the email's direction. */
 function renderEmailShell(locale: Locale, title: string, bodyHtml: string): string {
   const dir = getDirection(locale)
@@ -46,7 +53,7 @@ export async function sendVerificationEmail(
       to: email,
       subject: t.subject,
       html: renderEmailShell(locale, 'Tasheel', `
-        <h2 style="color: #1f2937; margin-top: 0;">${t.welcomeTitle.replace('{name}', name)}</h2>
+        <h2 style="color: #1f2937; margin-top: 0;">${t.welcomeTitle.replace('{name}', escapeHtml(name))}</h2>
 
         <p style="color: #4b5563; font-size: 16px;">
           ${t.bodyText.replace('{accountType}', accountType)}
@@ -95,17 +102,17 @@ export async function sendTempPasswordEmail(email: string, name: string, tempPas
         <h2 style="color: #1f2937; margin-top: 0;">${t.title}</h2>
 
         <p style="color: #4b5563; font-size: 16px;">
-          ${t.greeting.replace('{name}', name)}
+          ${t.greeting.replace('{name}', escapeHtml(name))}
         </p>
 
         <div style="background: #f3f4f6; border-${getDirection(locale) === 'rtl' ? 'right' : 'left'}: 4px solid #dc2626; padding: 20px; margin: 25px 0; border-radius: 4px;">
           <div style="margin-bottom: 15px;">
             <p style="color: #6b7280; font-size: 12px; margin: 0 0 5px 0; text-transform: uppercase; font-weight: 600;">${t.emailLabel}</p>
-            <p style="color: #1f2937; font-size: 16px; margin: 0; font-family: 'Courier New', monospace;">${email}</p>
+            <p style="color: #1f2937; font-size: 16px; margin: 0; font-family: 'Courier New', monospace;">${escapeHtml(email)}</p>
           </div>
           <div>
             <p style="color: #6b7280; font-size: 12px; margin: 0 0 5px 0; text-transform: uppercase; font-weight: 600;">${t.tempPasswordLabel}</p>
-            <p style="color: #1f2937; font-size: 16px; margin: 0; font-family: 'Courier New', monospace; background: white; padding: 8px; border-radius: 4px;">${tempPassword}</p>
+            <p style="color: #1f2937; font-size: 16px; margin: 0; font-family: 'Courier New', monospace; background: white; padding: 8px; border-radius: 4px;">${escapeHtml(tempPassword)}</p>
           </div>
         </div>
 

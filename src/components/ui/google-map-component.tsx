@@ -18,14 +18,14 @@ export default function GoogleMapComponent({
   onMapClick 
 }: GoogleMapComponentProps) {
   const [markerPosition, setMarkerPosition] = useState<{ lat: number; lng: number } | null>(
-    latitude && longitude ? { lat: latitude, lng: longitude } : null
+    latitude != null && longitude != null ? { lat: latitude, lng: longitude } : null
   )
 
   const center = markerPosition || defaultCenter
   const zoom = markerPosition ? 16 : defaultZoom
 
   useEffect(() => {
-    if (latitude && longitude) {
+    if (latitude != null && longitude != null) {
       setMarkerPosition({ lat: latitude, lng: longitude })
     }
   }, [latitude, longitude])

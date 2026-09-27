@@ -202,6 +202,7 @@ function discoverRoutes(dir: string, prefix = '/api'): string[] {
  * a new endpoint cannot be added without someone deciding who may reach it.
  */
 const CLASSIFIED_ELSEWHERE: Array<[RegExp, string]> = [
+  [/^\/api\/preferences$/, 'authenticated user may update only their own language preference'],
   [/^\/api\/auth\//, 'authentication; covered by the bypass and enumeration tests'],
   [/^\/api\/admin\//, 'platform admin; covered by the impersonation and permission tests'],
   [/^\/api\/cron\//, 'scheduled jobs; covered by the secret tests'],
@@ -277,6 +278,31 @@ describe('owned branch cannot authorize a different tenant record', () => {
     } finally {
       await prisma.certificate.deleteMany({ where: { id: certificate.id } })
       await prisma.appointment.deleteMany({ where: { id: appointment.id } })
+    }
+  })
+})
+
+describe('notification persistence failure', () => {
+  it('rolls back a request comment if its recipient notification cannot be saved', async () => {
+    const serviceRequest = await prisma.request.create({ data: {
+      branchId, title: 'ATOMIC_TEST_COMMENT', createdById: clientUserId, createdByRole: 'CLIENT',
+    } })
+    try {
+      await prisma.$executeRawUnsafe(`CREATE OR REPLACE FUNCTION test_reject_notification() RETURNS trigger AS $$
+        BEGIN IF NEW.message LIKE '%ATOMIC_TEST_COMMENT%' THEN RAISE EXCEPTION 'simulated notification failure'; END IF; RETURN NEW; END;
+        $$ LANGUAGE plpgsql`)
+      await prisma.$executeRawUnsafe(`CREATE TRIGGER test_reject_notification BEFORE INSERT ON "Notification" FOR EACH ROW EXECUTE FUNCTION test_reject_notification()`)
+      const response = await apiFetch(`/api/branches/${branchId}/requests/${serviceRequest.id}/comments`, {
+        cookies: contractor, method: 'POST', json: { content: 'Must not be saved without notification' },
+      })
+      expect(response.status).toBe(500)
+      expect(await prisma.requestComment.count({ where: { requestId: serviceRequest.id } })).toBe(0)
+      expect(await prisma.notification.count({ where: { relatedId: serviceRequest.id } })).toBe(0)
+    } finally {
+      await prisma.$executeRawUnsafe('DROP TRIGGER IF EXISTS test_reject_notification ON "Notification"')
+      await prisma.$executeRawUnsafe('DROP FUNCTION IF EXISTS test_reject_notification()')
+      await prisma.notification.deleteMany({ where: { relatedId: serviceRequest.id } })
+      await prisma.request.delete({ where: { id: serviceRequest.id } })
     }
   })
 })

@@ -50,7 +50,7 @@ export async function generateMetadata(): Promise<Metadata> {
 
 export default function HomePage() {
   return (
-    <div className={`min-h-screen flex flex-col ${displayFont.variable}`}>
+    <div className={`marketing-site min-h-screen flex flex-col bg-background text-foreground ${displayFont.variable}`}>
       <Navbar variant="marketing" />
       <main className="flex-1">
         <Hero />

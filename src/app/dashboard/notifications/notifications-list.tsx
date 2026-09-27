@@ -1,5 +1,5 @@
 'use client'
-import { localizeNotificationText } from '@/lib/i18n/notification-messages'
+import { renderNotificationText } from '@/lib/i18n/notification-messages'
 
 import { useState, useEffect } from 'react'
 import { useRouter } from 'next/navigation'
@@ -26,6 +26,7 @@ interface Notification {
   id: string
   userId: string
   type: string
+  content?: unknown
   title: string
   message: string
   link: string | null
@@ -180,14 +181,14 @@ export function NotificationsList() {
                   <div className="flex-1 min-w-0">
                     <div className="flex items-center gap-2 mb-1">
                       <p className={`font-medium truncate ${!notification.isRead ? 'text-primary' : ''}`}>
-                        {localizeNotificationText(notification.title, locale)}
+                        {renderNotificationText(notification.title, notification.content, 'title', locale)}
                       </p>
                       {getTypeBadge(notification.type)}
                       {!notification.isRead && (
                         <span className="h-2 w-2 rounded-full bg-primary" />
                       )}
                     </div>
-                    <p className="text-sm text-muted-foreground">{localizeNotificationText(notification.message, locale)}</p>
+                    <p className="text-sm text-muted-foreground">{renderNotificationText(notification.message, notification.content, 'message', locale)}</p>
                     <div className="flex items-center gap-2 mt-2">
                       <span className="text-xs text-muted-foreground">
                         {formatTimeAgo(notification.createdAt)}

@@ -1,3 +1,5 @@
+import { notificationData } from '@/lib/i18n/notification-messages'
+import { atomicMutation } from '@/lib/atomic-mutation'
 import { NextRequest, NextResponse } from 'next/server'
 import { getServerSession } from 'next-auth'
 import { authOptions } from '@/lib/auth'
@@ -17,7 +19,7 @@ export async function GET(
 
     const { branchId, requestId } = await params
 
-    const hasAccess = await verifyBranchAccess(branchId, session.user.id, session.user.role)
+    const hasAccess = await verifyBranchAccess(branchId, session.user.id, session.user.role, prisma)
     if (!hasAccess) {
       return NextResponse.json({ error: 'Access denied' }, { status: 403 })
     }
@@ -66,8 +68,10 @@ export async function POST(
   request: NextRequest,
   { params }: { params: Promise<{ branchId: string; requestId: string }> }
 ) {
+  const session = await getServerSession(authOptions)
+  if (!session) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
+  return atomicMutation(async prisma => {
   try {
-    const session = await getServerSession(authOptions)
     if (!session?.user) {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
     }
@@ -80,7 +84,7 @@ export async function POST(
       return NextResponse.json({ error: 'Comment content is required' }, { status: 400 })
     }
 
-    const hasAccess = await verifyBranchAccess(branchId, session.user.id, session.user.role)
+    const hasAccess = await verifyBranchAccess(branchId, session.user.id, session.user.role, prisma)
     if (!hasAccess) {
       return NextResponse.json({ error: 'Access denied' }, { status: 403 })
     }
@@ -124,14 +128,14 @@ export async function POST(
     })
 
     // Create notification for the other party
-    const isContractor = session.user.role === 'CONTRACTOR' || session.user.role === 'SUPERVISOR'
+    const isContractor = session.user.role === 'CONTRACTOR' || session.user.role === 'TEAM_MEMBER'
     
     if (isContractor) {
       // Notify the client
       const clientUserId = serviceRequest.branch.client?.userId
       if (clientUserId) {
         await prisma.notification.create({
-          data: {
+          data: notificationData({
             userId: clientUserId,
             type: 'REQUEST_COMMENT',
             title: 'New Comment on Request',
@@ -139,7 +143,7 @@ export async function POST(
             relatedId: requestId,
             relatedType: 'REQUEST',
             link: `/portal/branches/${branchId}?tab=requests`,
-          },
+          }),
         })
       }
     } else {
@@ -163,7 +167,7 @@ export async function POST(
       const contractorUserId = branch?.client?.contractor?.userId
       if (contractorUserId) {
         await prisma.notification.create({
-          data: {
+          data: notificationData({
             userId: contractorUserId,
             type: 'REQUEST_COMMENT',
             title: 'New Comment on Request',
@@ -171,7 +175,7 @@ export async function POST(
             relatedId: requestId,
             relatedType: 'REQUEST',
             link: `/dashboard/clients/${serviceRequest.branch.clientId}/branches/${branchId}?tab=requests`,
-          },
+          }),
         })
       }
     }
@@ -181,6 +185,8 @@ export async function POST(
     console.error('Error creating comment:', error)
     return NextResponse.json({ error: 'Failed to create comment' }, { status: 500 })
   }
+
+  })
 }
 
 // PATCH /api/branches/[branchId]/requests/[requestId]/comments - Update a comment

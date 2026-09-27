@@ -1,5 +1,7 @@
 'use client'
 
+import { useSession } from 'next-auth/react'
+import { api } from '@/lib/api-client'
 import { Globe } from 'lucide-react'
 import { useRouter } from 'next/navigation'
 import { Button } from '@/components/ui/button'
@@ -14,8 +16,12 @@ import { useTranslation } from '@/lib/i18n/use-translation'
 export function LanguageToggle() {
   const { locale, setLocale } = useTranslation()
   const router = useRouter()
+  const { status } = useSession()
 
-  const changeLocale = (newLocale: 'en' | 'ar') => {
+  const changeLocale = async (newLocale: 'en' | 'ar') => {
+    if (status === 'authenticated') {
+      try { await api.put('/api/preferences', { locale: newLocale }) } catch { return }
+    }
     setLocale(newLocale)
     router.refresh()
   }

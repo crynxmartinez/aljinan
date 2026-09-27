@@ -1,3 +1,5 @@
+import { notificationData, notificationRegistry } from '@/lib/i18n/notification-messages'
+import type { Database } from '@/lib/atomic-mutation'
 import { prisma } from '@/lib/prisma'
 import { resolveNotificationLink } from '@/lib/notification-links'
 
@@ -48,9 +50,8 @@ interface CreateNotificationParams {
 /**
  * Create a notification for a user
  */
-export async function createNotification(params: CreateNotificationParams) {
-  try {
-    const {
+export async function createNotification(params: CreateNotificationParams, db: Database = prisma) {
+  const {
       userId,
       type,
       title,
@@ -62,32 +63,28 @@ export async function createNotification(params: CreateNotificationParams) {
       showPopup = false
     } = params
 
-    const notification = await prisma.notification.create({
-      data: {
+    const notification = await db.notification.create({
+      data: notificationData({
         userId,
         type,
         title,
         message,
-        link: await resolveNotificationLink(link),
+        link: await resolveNotificationLink(link, db),
         relatedId,
         relatedType,
         priority,
         showPopup,
         isRead: false
-      }
+      })
     })
 
     return notification
-  } catch (error) {
-    console.error('Failed to create notification:', error)
-    return null
-  }
 }
 
 /**
  * Create notification for new request (for contractor)
  */
-export async function notifyNewRequest(contractorId: string, requestId: string, requestTitle: string, branchId: string) {
+export async function notifyNewRequest(contractorId: string, requestId: string, requestTitle: string, branchId: string, db: Database = prisma) {
   return createNotification({
     userId: contractorId,
     type: 'NEW_REQUEST',
@@ -98,13 +95,13 @@ export async function notifyNewRequest(contractorId: string, requestId: string, 
     relatedType: 'REQUEST',
     priority: 'high',
     showPopup: true
-  })
+  }, db)
 }
 
 /**
  * Create notification for work order moved to FOR_REVIEW
  */
-export async function notifyWorkOrderForReview(clientId: string, workOrderDescription: string, workOrderId: string, branchId: string) {
+export async function notifyWorkOrderForReview(clientId: string, workOrderDescription: string, workOrderId: string, branchId: string, db: Database = prisma) {
   return createNotification({
     userId: clientId,
     type: 'WORK_ORDER_FOR_REVIEW',
@@ -115,13 +112,13 @@ export async function notifyWorkOrderForReview(clientId: string, workOrderDescri
     relatedType: 'WORK_ORDER',
     priority: 'high',
     showPopup: true
-  })
+  }, db)
 }
 
 /**
  * Create notification for work order started
  */
-export async function notifyWorkOrderStarted(clientId: string, workOrderDescription: string, workOrderId: string, branchId: string) {
+export async function notifyWorkOrderStarted(clientId: string, workOrderDescription: string, workOrderId: string, branchId: string, db: Database = prisma) {
   return createNotification({
     userId: clientId,
     type: 'WORK_ORDER_STARTED',
@@ -132,13 +129,13 @@ export async function notifyWorkOrderStarted(clientId: string, workOrderDescript
     relatedType: 'WORK_ORDER',
     priority: 'medium',
     showPopup: false
-  })
+  }, db)
 }
 
 /**
  * Create notification for work order completed
  */
-export async function notifyWorkOrderCompleted(clientId: string, workOrderDescription: string, workOrderId: string, branchId: string) {
+export async function notifyWorkOrderCompleted(clientId: string, workOrderDescription: string, workOrderId: string, branchId: string, db: Database = prisma) {
   return createNotification({
     userId: clientId,
     type: 'WORK_ORDER_COMPLETED',
@@ -149,13 +146,13 @@ export async function notifyWorkOrderCompleted(clientId: string, workOrderDescri
     relatedType: 'WORK_ORDER',
     priority: 'high',
     showPopup: true
-  })
+  }, db)
 }
 
 /**
  * Create notification for work order rejected (moved back to IN_PROGRESS)
  */
-export async function notifyWorkOrderRejected(contractorId: string, workOrderDescription: string, workOrderId: string, branchId: string) {
+export async function notifyWorkOrderRejected(contractorId: string, workOrderDescription: string, workOrderId: string, branchId: string, db: Database = prisma) {
   return createNotification({
     userId: contractorId,
     type: 'WORK_ORDER_REJECTED',
@@ -166,13 +163,13 @@ export async function notifyWorkOrderRejected(contractorId: string, workOrderDes
     relatedType: 'WORK_ORDER',
     priority: 'high',
     showPopup: true
-  })
+  }, db)
 }
 
 /**
  * Create notification for work order assigned to technician
  */
-export async function notifyWorkOrderAssigned(technicianId: string, workOrderDescription: string, workOrderId: string, branchId: string) {
+export async function notifyWorkOrderAssigned(technicianId: string, workOrderDescription: string, workOrderId: string, branchId: string, db: Database = prisma) {
   return createNotification({
     userId: technicianId,
     type: 'WORK_ORDER_ASSIGNED',
@@ -183,13 +180,13 @@ export async function notifyWorkOrderAssigned(technicianId: string, workOrderDes
     relatedType: 'WORK_ORDER',
     priority: 'high',
     showPopup: true
-  })
+  }, db)
 }
 
 /**
  * Create notification for price set on work order
  */
-export async function notifyPriceSet(clientId: string, workOrderDescription: string, price: number, workOrderId: string, branchId: string) {
+export async function notifyPriceSet(clientId: string, workOrderDescription: string, price: number, workOrderId: string, branchId: string, db: Database = prisma) {
   return createNotification({
     userId: clientId,
     type: 'WORK_ORDER_PRICE_SET',
@@ -200,13 +197,13 @@ export async function notifyPriceSet(clientId: string, workOrderDescription: str
     relatedType: 'WORK_ORDER',
     priority: 'medium',
     showPopup: false
-  })
+  }, db)
 }
 
 /**
  * Create notification for signature required
  */
-export async function notifySignatureRequired(userId: string, workOrderDescription: string, workOrderId: string, branchId: string, role: 'CLIENT' | 'CONTRACTOR') {
+export async function notifySignatureRequired(userId: string, workOrderDescription: string, workOrderId: string, branchId: string, role: 'CLIENT' | 'CONTRACTOR', db: Database = prisma) {
   const link = role === 'CLIENT'
     ? `/portal/branches/${branchId}?tab=checklist`
     : `/dashboard/branches/${branchId}?tab=checklist`
@@ -221,13 +218,13 @@ export async function notifySignatureRequired(userId: string, workOrderDescripti
     relatedType: 'WORK_ORDER',
     priority: 'high',
     showPopup: true
-  })
+  }, db)
 }
 
 /**
  * Create notification for a contractor's quote on a request (for client)
  */
-export async function notifyRequestQuoted(clientId: string, requestTitle: string, requestId: string, branchId: string) {
+export async function notifyRequestQuoted(clientId: string, requestTitle: string, requestId: string, branchId: string, db: Database = prisma) {
   return createNotification({
     userId: clientId,
     type: 'REQUEST_QUOTED',
@@ -238,13 +235,13 @@ export async function notifyRequestQuoted(clientId: string, requestTitle: string
     relatedType: 'REQUEST',
     priority: 'high',
     showPopup: true
-  })
+  }, db)
 }
 
 /**
  * Create notification for a client accepting a request's quote (for contractor)
  */
-export async function notifyRequestApproved(contractorId: string, clientId: string, requestTitle: string, requestId: string, branchId: string) {
+export async function notifyRequestApproved(contractorId: string, clientId: string, requestTitle: string, requestId: string, branchId: string, db: Database = prisma) {
   return createNotification({
     userId: contractorId,
     type: 'REQUEST_APPROVED',
@@ -255,13 +252,13 @@ export async function notifyRequestApproved(contractorId: string, clientId: stri
     relatedType: 'REQUEST',
     priority: 'high',
     showPopup: true
-  })
+  }, db)
 }
 
 /**
  * Create notification for a client rejecting a request's quote (for contractor)
  */
-export async function notifyRequestRejected(contractorId: string, clientId: string, requestTitle: string, requestId: string, branchId: string, rejectionNote?: string | null) {
+export async function notifyRequestRejected(contractorId: string, clientId: string, requestTitle: string, requestId: string, branchId: string, rejectionNote?: string | null, db: Database = prisma) {
   return createNotification({
     userId: contractorId,
     type: 'REQUEST_REJECTED',
@@ -274,13 +271,13 @@ export async function notifyRequestRejected(contractorId: string, clientId: stri
     relatedType: 'REQUEST',
     priority: 'high',
     showPopup: true
-  })
+  }, db)
 }
 
 /**
  * Create notification for a quotation being sent to the client
  */
-export async function notifyQuotationSent(clientId: string, quotationTitle: string, quotationId: string, branchId: string) {
+export async function notifyQuotationSent(clientId: string, quotationTitle: string, quotationId: string, branchId: string, db: Database = prisma) {
   return createNotification({
     userId: clientId,
     type: 'QUOTATION_SENT',
@@ -291,13 +288,13 @@ export async function notifyQuotationSent(clientId: string, quotationTitle: stri
     relatedType: 'QUOTATION',
     priority: 'high',
     showPopup: true
-  })
+  }, db)
 }
 
 /**
  * Create notification for a client approving a quotation (for contractor)
  */
-export async function notifyQuotationApproved(contractorId: string, clientId: string, quotationTitle: string, quotationId: string, branchId: string) {
+export async function notifyQuotationApproved(contractorId: string, clientId: string, quotationTitle: string, quotationId: string, branchId: string, db: Database = prisma) {
   return createNotification({
     userId: contractorId,
     type: 'QUOTATION_APPROVED',
@@ -308,13 +305,13 @@ export async function notifyQuotationApproved(contractorId: string, clientId: st
     relatedType: 'QUOTATION',
     priority: 'high',
     showPopup: true
-  })
+  }, db)
 }
 
 /**
  * Create notification for a client rejecting a quotation (for contractor)
  */
-export async function notifyQuotationRejected(contractorId: string, clientId: string, quotationTitle: string, quotationId: string, branchId: string, rejectionNote?: string | null) {
+export async function notifyQuotationRejected(contractorId: string, clientId: string, quotationTitle: string, quotationId: string, branchId: string, rejectionNote?: string | null, db: Database = prisma) {
   return createNotification({
     userId: contractorId,
     type: 'QUOTATION_REJECTED',
@@ -327,13 +324,13 @@ export async function notifyQuotationRejected(contractorId: string, clientId: st
     relatedType: 'QUOTATION',
     priority: 'high',
     showPopup: true
-  })
+  }, db)
 }
 
 /**
  * Create notification for a new appointment scheduled by the contractor (for client)
  */
-export async function notifyAppointmentScheduled(clientId: string, appointmentTitle: string, appointmentId: string, branchId: string) {
+export async function notifyAppointmentScheduled(clientId: string, appointmentTitle: string, appointmentId: string, branchId: string, db: Database = prisma) {
   return createNotification({
     userId: clientId,
     type: 'APPOINTMENT_SCHEDULED',
@@ -344,13 +341,13 @@ export async function notifyAppointmentScheduled(clientId: string, appointmentTi
     relatedType: 'APPOINTMENT',
     priority: 'medium',
     showPopup: true
-  })
+  }, db)
 }
 
 /**
  * Create notification for a client confirming an appointment (for contractor)
  */
-export async function notifyAppointmentConfirmed(contractorId: string, clientId: string, appointmentTitle: string, appointmentId: string, branchId: string) {
+export async function notifyAppointmentConfirmed(contractorId: string, clientId: string, appointmentTitle: string, appointmentId: string, branchId: string, db: Database = prisma) {
   return createNotification({
     userId: contractorId,
     type: 'APPOINTMENT_CONFIRMED',
@@ -361,13 +358,13 @@ export async function notifyAppointmentConfirmed(contractorId: string, clientId:
     relatedType: 'APPOINTMENT',
     priority: 'medium',
     showPopup: false
-  })
+  }, db)
 }
 
 /**
  * Create notification for a client cancelling an appointment (for contractor)
  */
-export async function notifyAppointmentCancelled(contractorId: string, clientId: string, appointmentTitle: string, appointmentId: string, branchId: string) {
+export async function notifyAppointmentCancelled(contractorId: string, clientId: string, appointmentTitle: string, appointmentId: string, branchId: string, db: Database = prisma) {
   return createNotification({
     userId: contractorId,
     type: 'APPOINTMENT_CANCELLED',
@@ -378,13 +375,13 @@ export async function notifyAppointmentCancelled(contractorId: string, clientId:
     relatedType: 'APPOINTMENT',
     priority: 'high',
     showPopup: true
-  })
+  }, db)
 }
 
 /**
  * Create notification for a client requesting to reschedule an appointment (for contractor)
  */
-export async function notifyAppointmentRescheduleRequested(contractorId: string, clientId: string, appointmentTitle: string, appointmentId: string, branchId: string) {
+export async function notifyAppointmentRescheduleRequested(contractorId: string, clientId: string, appointmentTitle: string, appointmentId: string, branchId: string, db: Database = prisma) {
   return createNotification({
     userId: contractorId,
     type: 'APPOINTMENT_RESCHEDULED',
@@ -395,13 +392,13 @@ export async function notifyAppointmentRescheduleRequested(contractorId: string,
     relatedType: 'APPOINTMENT',
     priority: 'high',
     showPopup: true
-  })
+  }, db)
 }
 
 /**
  * Create notification for the contractor changing an appointment's date/time (for client)
  */
-export async function notifyAppointmentTimeChanged(clientId: string, appointmentTitle: string, appointmentId: string, branchId: string) {
+export async function notifyAppointmentTimeChanged(clientId: string, appointmentTitle: string, appointmentId: string, branchId: string, db: Database = prisma) {
   return createNotification({
     userId: clientId,
     type: 'APPOINTMENT_RESCHEDULED',
@@ -412,13 +409,13 @@ export async function notifyAppointmentTimeChanged(clientId: string, appointment
     relatedType: 'APPOINTMENT',
     priority: 'medium',
     showPopup: true
-  })
+  }, db)
 }
 
 /**
  * Create notification for a new branch request (for contractor)
  */
-export async function notifyBranchRequestCreated(contractorId: string, branchName: string, branchRequestId: string) {
+export async function notifyBranchRequestCreated(contractorId: string, branchName: string, branchRequestId: string, db: Database = prisma) {
   return createNotification({
     userId: contractorId,
     type: 'BRANCH_REQUEST_CREATED',
@@ -429,13 +426,13 @@ export async function notifyBranchRequestCreated(contractorId: string, branchNam
     relatedType: 'BRANCH_REQUEST',
     priority: 'high',
     showPopup: true
-  })
+  }, db)
 }
 
 /**
  * Create notification for an approved branch request (for client)
  */
-export async function notifyBranchRequestApproved(clientId: string, branchName: string, branchRequestId: string, branchId: string) {
+export async function notifyBranchRequestApproved(clientId: string, branchName: string, branchRequestId: string, branchId: string, db: Database = prisma) {
   return createNotification({
     userId: clientId,
     type: 'BRANCH_REQUEST_APPROVED',
@@ -446,13 +443,13 @@ export async function notifyBranchRequestApproved(clientId: string, branchName: 
     relatedType: 'BRANCH_REQUEST',
     priority: 'high',
     showPopup: true
-  })
+  }, db)
 }
 
 /**
  * Create notification for a rejected branch request (for client)
  */
-export async function notifyBranchRequestRejected(clientId: string, branchName: string, branchRequestId: string, rejectionNote?: string | null) {
+export async function notifyBranchRequestRejected(clientId: string, branchName: string, branchRequestId: string, rejectionNote?: string | null, db: Database = prisma) {
   return createNotification({
     userId: clientId,
     type: 'BRANCH_REQUEST_REJECTED',
@@ -465,13 +462,13 @@ export async function notifyBranchRequestRejected(clientId: string, branchName: 
     relatedType: 'BRANCH_REQUEST',
     priority: 'high',
     showPopup: true
-  })
+  }, db)
 }
 
 /**
  * Create notification for a client signing a contract (for contractor)
  */
-export async function notifyContractSigned(contractorId: string, clientId: string, contractTitle: string, contractId: string, branchId: string) {
+export async function notifyContractSigned(contractorId: string, clientId: string, contractTitle: string, contractId: string, branchId: string, db: Database = prisma) {
   return createNotification({
     userId: contractorId,
     type: 'CONTRACT_SIGNED',
@@ -482,13 +479,13 @@ export async function notifyContractSigned(contractorId: string, clientId: strin
     relatedType: 'Contract',
     priority: 'high',
     showPopup: true
-  })
+  }, db)
 }
 
 /**
  * Create notification for a contract being completed (for contractor)
  */
-export async function notifyContractCompleted(contractorId: string, clientId: string, contractTitle: string, contractId: string, branchId: string) {
+export async function notifyContractCompleted(contractorId: string, clientId: string, contractTitle: string, contractId: string, branchId: string, db: Database = prisma) {
   return createNotification({
     userId: contractorId,
     type: 'CONTRACT_SIGNED',
@@ -499,13 +496,13 @@ export async function notifyContractCompleted(contractorId: string, clientId: st
     relatedType: 'Contract',
     priority: 'medium',
     showPopup: true
-  })
+  }, db)
 }
 
 /**
  * Create notification for an auto-generated or issued certificate (for client)
  */
-export async function notifyCertificateGenerated(clientId: string, certificateTitle: string, certificateId: string, branchId: string) {
+export async function notifyCertificateGenerated(clientId: string, certificateTitle: string, certificateId: string, branchId: string, db: Database = prisma) {
   return createNotification({
     userId: clientId,
     type: 'CERTIFICATE_GENERATED',
@@ -516,5 +513,16 @@ export async function notifyCertificateGenerated(clientId: string, certificateTi
     relatedType: 'Certificate',
     priority: 'medium',
     showPopup: true
-  })
+  }, db)
+}
+
+/** A contractor cancellation must reach the client, not the contractor inbox. */
+export async function notifyAppointmentCancelledByContractor(clientId: string, title: string, appointmentId: string, branchId: string, db: Database = prisma) {
+  return createNotification({
+    userId: clientId, type: 'APPOINTMENT_CANCELLED',
+    title: notificationRegistry.notice033[1],
+    message: notificationRegistry.notice093[1].replace('{0}', () => title),
+    link: `/portal/branches/${branchId}?tab=calendar`,
+    relatedId: appointmentId, relatedType: 'APPOINTMENT', priority: 'high', showPopup: true,
+  }, db)
 }

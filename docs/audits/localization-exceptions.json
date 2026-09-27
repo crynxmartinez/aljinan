@@ -1,0 +1,723 @@
+[
+  {
+    "file": "src/app/(marketing)/download/download-content.tsx",
+    "kind": "text",
+    "text": "AppImage",
+    "line": 77,
+    "reason": "Product or package proper name."
+  },
+  {
+    "file": "src/app/admin/backfill-work-order-numbers/page.tsx",
+    "kind": "text",
+    "text": "workOrderNumber = null",
+    "line": 52,
+    "reason": "Record identifier, administrator code expression, punctuation or illustrative URL; not translatable prose."
+  },
+  {
+    "file": "src/app/admin/backfill-work-order-numbers/page.tsx",
+    "kind": "text",
+    "text": "WO #",
+    "line": 119,
+    "reason": "Record identifier, administrator code expression, punctuation or illustrative URL; not translatable prose."
+  },
+  {
+    "file": "src/app/admin/contractors/page.tsx",
+    "kind": "attribute",
+    "text": "contractor@company.com",
+    "line": 722,
+    "reason": "Locale-neutral example address, URL, telephone syntax or engineering unit."
+  },
+  {
+    "file": "src/app/admin/contractors/page.tsx",
+    "kind": "attribute",
+    "text": "+966 5XX XXX XXXX",
+    "line": 732,
+    "reason": "Locale-neutral example address, URL, telephone syntax or engineering unit."
+  },
+  {
+    "file": "src/app/admin/settings/admins/page.tsx",
+    "kind": "attribute",
+    "text": "admin@tasheel.com",
+    "line": 316,
+    "reason": "Locale-neutral example address, URL, telephone syntax or engineering unit."
+  },
+  {
+    "file": "src/app/api/branches/[branchId]/checklist-items/route.ts",
+    "kind": "label",
+    "text": "Payment Proof Submitted",
+    "line": 1084,
+    "reason": "System notification source normalized into registered bilingual template data before persistence."
+  },
+  {
+    "file": "src/app/api/branches/[branchId]/checklist-items/route.ts",
+    "kind": "label",
+    "text": "Payment Verified",
+    "line": 1135,
+    "reason": "System notification source normalized into registered bilingual template data before persistence."
+  },
+  {
+    "file": "src/app/api/branches/[branchId]/checklist-items/route.ts",
+    "kind": "label",
+    "text": "Contract Completed",
+    "line": 1180,
+    "reason": "System notification source normalized into registered bilingual template data before persistence."
+  },
+  {
+    "file": "src/app/api/branches/[branchId]/invoices/[invoiceId]/route.ts",
+    "kind": "label",
+    "text": "Payment Proof Submitted",
+    "line": 123,
+    "reason": "System notification source normalized into registered bilingual template data before persistence."
+  },
+  {
+    "file": "src/app/api/branches/[branchId]/invoices/[invoiceId]/route.ts",
+    "kind": "label",
+    "text": "Payment Confirmed",
+    "line": 170,
+    "reason": "System notification source normalized into registered bilingual template data before persistence."
+  },
+  {
+    "file": "src/app/api/branches/[branchId]/requests/[requestId]/comments/route.ts",
+    "kind": "label",
+    "text": "New Comment on Request",
+    "line": 141,
+    "reason": "System notification source normalized into registered bilingual template data before persistence."
+  },
+  {
+    "file": "src/app/api/branches/[branchId]/requests/[requestId]/comments/route.ts",
+    "kind": "label",
+    "text": "New Comment on Request",
+    "line": 173,
+    "reason": "System notification source normalized into registered bilingual template data before persistence."
+  },
+  {
+    "file": "src/app/api/branches/[branchId]/requests/[requestId]/route.ts",
+    "kind": "label",
+    "text": "Adhoc Work Orders",
+    "line": 193,
+    "reason": "Internal checklist identity; display uses checklistLabelKind and localized shared copy."
+  },
+  {
+    "file": "src/app/api/branches/[branchId]/requests/[requestId]/route.ts",
+    "kind": "label",
+    "text": "Adhoc Work Orders",
+    "line": 303,
+    "reason": "Internal checklist identity; display uses checklistLabelKind and localized shared copy."
+  },
+  {
+    "file": "src/app/api/branches/[branchId]/requests/[requestId]/start-now/route.ts",
+    "kind": "label",
+    "text": "Adhoc Work Orders",
+    "line": 68,
+    "reason": "Internal checklist identity; display uses checklistLabelKind and localized shared copy."
+  },
+  {
+    "file": "src/app/api/branches/[branchId]/requests/[requestId]/start-now/route.ts",
+    "kind": "label",
+    "text": "🚨 Work Started Immediately",
+    "line": 141,
+    "reason": "System notification source normalized into registered bilingual template data before persistence."
+  },
+  {
+    "file": "src/app/api/branches/[branchId]/work-orders/create-immediate/route.ts",
+    "kind": "label",
+    "text": "Adhoc Work Orders",
+    "line": 84,
+    "reason": "Internal checklist identity; display uses checklistLabelKind and localized shared copy."
+  },
+  {
+    "file": "src/app/api/branches/[branchId]/work-orders/create-immediate/route.ts",
+    "kind": "label",
+    "text": "🔧 Work Order Started",
+    "line": 171,
+    "reason": "System notification source normalized into registered bilingual template data before persistence."
+  },
+  {
+    "file": "src/app/api/cron/auto-archive/route.ts",
+    "kind": "label",
+    "text": "Work Order Auto-Archived",
+    "line": 103,
+    "reason": "System notification source normalized into registered bilingual template data before persistence."
+  },
+  {
+    "file": "src/app/api/cron/auto-archive/route.ts",
+    "kind": "label",
+    "text": "Work Order Auto-Archived",
+    "line": 125,
+    "reason": "System notification source normalized into registered bilingual template data before persistence."
+  },
+  {
+    "file": "src/app/api/cron/work-order-notifications/route.ts",
+    "kind": "label",
+    "text": "Work Order Starting Today",
+    "line": 150,
+    "reason": "System notification source normalized into registered bilingual template data before persistence."
+  },
+  {
+    "file": "src/app/api/cron/work-order-notifications/route.ts",
+    "kind": "label",
+    "text": "Contract Expiring Soon",
+    "line": 204,
+    "reason": "System notification source normalized into registered bilingual template data before persistence."
+  },
+  {
+    "file": "src/app/api/cron/work-order-notifications/route.ts",
+    "kind": "label",
+    "text": "Contract Expiring Tomorrow",
+    "line": 217,
+    "reason": "System notification source normalized into registered bilingual template data before persistence."
+  },
+  {
+    "file": "src/app/api/cron/work-order-notifications/route.ts",
+    "kind": "label",
+    "text": "Certificate Expiring Soon",
+    "line": 268,
+    "reason": "System notification source normalized into registered bilingual template data before persistence."
+  },
+  {
+    "file": "src/app/api/cron/work-order-notifications/route.ts",
+    "kind": "label",
+    "text": "Certificate Expiring Tomorrow",
+    "line": 281,
+    "reason": "System notification source normalized into registered bilingual template data before persistence."
+  },
+  {
+    "file": "src/app/forgot-password/page.tsx",
+    "kind": "attribute",
+    "text": "your.email@company.com",
+    "line": 101,
+    "reason": "Locale-neutral example address, URL, telephone syntax or engineering unit."
+  },
+  {
+    "file": "src/app/layout.tsx",
+    "kind": "label",
+    "text": "Tasheel",
+    "line": 28,
+    "reason": "Product or package proper name."
+  },
+  {
+    "file": "src/app/portal/branches/[branchId]/client-branch-requests.tsx",
+    "kind": "message",
+    "text": "Please sign to accept the quote",
+    "line": 446,
+    "reason": "Legacy caller resolves this exact approved message through public-errors and error-toast before display."
+  },
+  {
+    "file": "src/app/portal/branches/[branchId]/client-branch-requests.tsx",
+    "kind": "text",
+    "text": "REQ-",
+    "line": 783,
+    "reason": "Record identifier, administrator code expression, punctuation or illustrative URL; not translatable prose."
+  },
+  {
+    "file": "src/app/portal/branches/[branchId]/client-branch-requests.tsx",
+    "kind": "text",
+    "text": "&quot;",
+    "line": 1533,
+    "reason": "Record identifier, administrator code expression, punctuation or illustrative URL; not translatable prose."
+  },
+  {
+    "file": "src/app/portal/branches/[branchId]/client-branch-requests.tsx",
+    "kind": "text",
+    "text": "&quot;",
+    "line": 1533,
+    "reason": "Record identifier, administrator code expression, punctuation or illustrative URL; not translatable prose."
+  },
+  {
+    "file": "src/components/branches/branch-profile-form.tsx",
+    "kind": "attribute",
+    "text": "+966 5X XXX XXXX",
+    "line": 318,
+    "reason": "Locale-neutral example address, URL, telephone syntax or engineering unit."
+  },
+  {
+    "file": "src/components/branches/branch-profile-form.tsx",
+    "kind": "attribute",
+    "text": "contact@example.com",
+    "line": 330,
+    "reason": "Locale-neutral example address, URL, telephone syntax or engineering unit."
+  },
+  {
+    "file": "src/components/clients/client-profile-form.tsx",
+    "kind": "attribute",
+    "text": "company@example.com",
+    "line": 141,
+    "reason": "Locale-neutral example address, URL, telephone syntax or engineering unit."
+  },
+  {
+    "file": "src/components/clients/client-profile-form.tsx",
+    "kind": "attribute",
+    "text": "+966 xxx xxx xxxx",
+    "line": 213,
+    "reason": "Locale-neutral example address, URL, telephone syntax or engineering unit."
+  },
+  {
+    "file": "src/components/clients/client-profile-form.tsx",
+    "kind": "attribute",
+    "text": "john.doe@company.com",
+    "line": 225,
+    "reason": "Locale-neutral example address, URL, telephone syntax or engineering unit."
+  },
+  {
+    "file": "src/components/contractors/contractor-profile-form.tsx",
+    "kind": "attribute",
+    "text": "contact@company.com",
+    "line": 186,
+    "reason": "Locale-neutral example address, URL, telephone syntax or engineering unit."
+  },
+  {
+    "file": "src/components/contractors/contractor-profile-form.tsx",
+    "kind": "attribute",
+    "text": "+966 xxx xxx xxxx",
+    "line": 196,
+    "reason": "Locale-neutral example address, URL, telephone syntax or engineering unit."
+  },
+  {
+    "file": "src/components/contractors/contractor-profile-form.tsx",
+    "kind": "attribute",
+    "text": "+966 xxx xxx xxxx",
+    "line": 235,
+    "reason": "Locale-neutral example address, URL, telephone syntax or engineering unit."
+  },
+  {
+    "file": "src/components/contractors/contractor-profile-form.tsx",
+    "kind": "attribute",
+    "text": "john.doe@company.com",
+    "line": 246,
+    "reason": "Locale-neutral example address, URL, telephone syntax or engineering unit."
+  },
+  {
+    "file": "src/components/contractors/contractor-profile-form.tsx",
+    "kind": "attribute",
+    "text": "www.company.com",
+    "line": 264,
+    "reason": "Locale-neutral example address, URL, telephone syntax or engineering unit."
+  },
+  {
+    "file": "src/components/contractors/contractor-profile-form.tsx",
+    "kind": "attribute",
+    "text": "https://...",
+    "line": 287,
+    "reason": "Locale-neutral example address, URL, telephone syntax or engineering unit."
+  },
+  {
+    "file": "src/components/contractors/contractor-profile-form.tsx",
+    "kind": "attribute",
+    "text": "https://...",
+    "line": 361,
+    "reason": "Locale-neutral example address, URL, telephone syntax or engineering unit."
+  },
+  {
+    "file": "src/components/language-toggle.tsx",
+    "kind": "text",
+    "text": "English",
+    "line": 34,
+    "reason": "Language autonyms and ISO labels intentionally remain recognizable before switching."
+  },
+  {
+    "file": "src/components/language-toggle.tsx",
+    "kind": "text",
+    "text": "العربية",
+    "line": 34,
+    "reason": "Language autonyms and ISO labels intentionally remain recognizable before switching."
+  },
+  {
+    "file": "src/components/language-toggle.tsx",
+    "kind": "text",
+    "text": "EN",
+    "line": 35,
+    "reason": "Language autonyms and ISO labels intentionally remain recognizable before switching."
+  },
+  {
+    "file": "src/components/language-toggle.tsx",
+    "kind": "text",
+    "text": "AR",
+    "line": 35,
+    "reason": "Language autonyms and ISO labels intentionally remain recognizable before switching."
+  },
+  {
+    "file": "src/components/language-toggle.tsx",
+    "kind": "text",
+    "text": "English",
+    "line": 44,
+    "reason": "Language autonyms and ISO labels intentionally remain recognizable before switching."
+  },
+  {
+    "file": "src/components/language-toggle.tsx",
+    "kind": "text",
+    "text": "العربية",
+    "line": 51,
+    "reason": "Language autonyms and ISO labels intentionally remain recognizable before switching."
+  },
+  {
+    "file": "src/components/layout/admin-sidebar.tsx",
+    "kind": "text",
+    "text": "Tasheel",
+    "line": 129,
+    "reason": "Product or package proper name."
+  },
+  {
+    "file": "src/components/layout/client-sidebar.tsx",
+    "kind": "text",
+    "text": "Aljinan",
+    "line": 140,
+    "reason": "Product or package proper name."
+  },
+  {
+    "file": "src/components/layout/sidebar.tsx",
+    "kind": "text",
+    "text": "Aljinan",
+    "line": 176,
+    "reason": "Product or package proper name."
+  },
+  {
+    "file": "src/components/marketing/logo.tsx",
+    "kind": "text",
+    "text": "TASHEEL",
+    "line": 22,
+    "reason": "Product or package proper name."
+  },
+  {
+    "file": "src/components/marketing/product-mockup.tsx",
+    "kind": "text",
+    "text": "app.tasheel.sa/dashboard",
+    "line": 28,
+    "reason": "Record identifier, administrator code expression, punctuation or illustrative URL; not translatable prose."
+  },
+  {
+    "file": "src/components/modules/branch-dashboard.tsx",
+    "kind": "text",
+    "text": "WO-",
+    "line": 241,
+    "reason": "Record identifier, administrator code expression, punctuation or illustrative URL; not translatable prose."
+  },
+  {
+    "file": "src/components/modules/certificates-list.tsx",
+    "kind": "message",
+    "text": "Title is required",
+    "line": 200,
+    "reason": "Legacy caller resolves this exact approved message through public-errors and error-toast before display."
+  },
+  {
+    "file": "src/components/modules/contract-attachments-section.tsx",
+    "kind": "attribute",
+    "text": "https://...",
+    "line": 219,
+    "reason": "Locale-neutral example address, URL, telephone syntax or engineering unit."
+  },
+  {
+    "file": "src/components/modules/contracts-list.tsx",
+    "kind": "message",
+    "text": "Failed to upload contract file",
+    "line": 422,
+    "reason": "Legacy caller resolves this exact approved message through public-errors and error-toast before display."
+  },
+  {
+    "file": "src/components/modules/contracts-list.tsx",
+    "kind": "message",
+    "text": "Failed to upload contract file",
+    "line": 445,
+    "reason": "Legacy caller resolves this exact approved message through public-errors and error-toast before display."
+  },
+  {
+    "file": "src/components/modules/contracts-list.tsx",
+    "kind": "attribute",
+    "text": "https://...",
+    "line": 2047,
+    "reason": "Locale-neutral example address, URL, telephone syntax or engineering unit."
+  },
+  {
+    "file": "src/components/modules/contracts-list.tsx",
+    "kind": "attribute",
+    "text": "https://...",
+    "line": 2097,
+    "reason": "Locale-neutral example address, URL, telephone syntax or engineering unit."
+  },
+  {
+    "file": "src/components/modules/equipment-list.tsx",
+    "kind": "message",
+    "text": "Failed to fetch equipment",
+    "line": 180,
+    "reason": "Legacy caller resolves this exact approved message through public-errors and error-toast before display."
+  },
+  {
+    "file": "src/components/modules/payment-submit-dialog.tsx",
+    "kind": "attribute",
+    "text": "https://...",
+    "line": 249,
+    "reason": "Locale-neutral example address, URL, telephone syntax or engineering unit."
+  },
+  {
+    "file": "src/components/modules/requests-list.tsx",
+    "kind": "message",
+    "text": "Failed to upload quotation file",
+    "line": 492,
+    "reason": "Legacy caller resolves this exact approved message through public-errors and error-toast before display."
+  },
+  {
+    "file": "src/components/modules/requests-list.tsx",
+    "kind": "message",
+    "text": "Failed to upload quotation file",
+    "line": 591,
+    "reason": "Legacy caller resolves this exact approved message through public-errors and error-toast before display."
+  },
+  {
+    "file": "src/components/modules/requests-list.tsx",
+    "kind": "text",
+    "text": "REQ-",
+    "line": 1101,
+    "reason": "Record identifier, administrator code expression, punctuation or illustrative URL; not translatable prose."
+  },
+  {
+    "file": "src/components/print/request-quote-print.tsx",
+    "kind": "text",
+    "text": "TASHEEL",
+    "line": 207,
+    "reason": "Product or package proper name."
+  },
+  {
+    "file": "src/components/print/request-quote-print.tsx",
+    "kind": "text",
+    "text": "REQ #",
+    "line": 215,
+    "reason": "Record identifier, administrator code expression, punctuation or illustrative URL; not translatable prose."
+  },
+  {
+    "file": "src/components/print/work-order-print.tsx",
+    "kind": "text",
+    "text": "TASHEEL",
+    "line": 325,
+    "reason": "Product or package proper name."
+  },
+  {
+    "file": "src/components/print/work-order-print.tsx",
+    "kind": "text",
+    "text": "WO #",
+    "line": 330,
+    "reason": "Record identifier, administrator code expression, punctuation or illustrative URL; not translatable prose."
+  },
+  {
+    "file": "src/components/reports/maintenance-report-form.tsx",
+    "kind": "attribute",
+    "text": "PSI",
+    "line": 266,
+    "reason": "Locale-neutral example address, URL, telephone syntax or engineering unit."
+  },
+  {
+    "file": "src/components/team-members/team-member-profile-form.tsx",
+    "kind": "attribute",
+    "text": "your.email@company.com",
+    "line": 122,
+    "reason": "Locale-neutral example address, URL, telephone syntax or engineering unit."
+  },
+  {
+    "file": "src/lib/auth.ts",
+    "kind": "label",
+    "text": "Email",
+    "line": 19,
+    "reason": "Credential schema keys for custom login; built-in provider form is not the app login surface."
+  },
+  {
+    "file": "src/lib/auth.ts",
+    "kind": "label",
+    "text": "Password",
+    "line": 20,
+    "reason": "Credential schema keys for custom login; built-in provider form is not the app login surface."
+  },
+  {
+    "file": "src/lib/auth.ts",
+    "kind": "label",
+    "text": "Impersonation grant",
+    "line": 23,
+    "reason": "Credential schema keys for custom login; built-in provider form is not the app login surface."
+  },
+  {
+    "file": "src/lib/export/export-utils.ts",
+    "kind": "label",
+    "text": "Title",
+    "line": 10,
+    "reason": "Explicit paired export dictionary, selected by required locale argument."
+  },
+  {
+    "file": "src/lib/export/export-utils.ts",
+    "kind": "label",
+    "text": "العنوان",
+    "line": 11,
+    "reason": "Explicit paired export dictionary, selected by required locale argument."
+  },
+  {
+    "file": "src/lib/notification-service.ts",
+    "kind": "label",
+    "text": "طلب خدمة جديد",
+    "line": 91,
+    "reason": "System notification source normalized into registered bilingual template data before persistence."
+  },
+  {
+    "file": "src/lib/notification-service.ts",
+    "kind": "label",
+    "text": "أمر عمل جاهز للمراجعة",
+    "line": 108,
+    "reason": "System notification source normalized into registered bilingual template data before persistence."
+  },
+  {
+    "file": "src/lib/notification-service.ts",
+    "kind": "label",
+    "text": "بدء أمر العمل",
+    "line": 125,
+    "reason": "System notification source normalized into registered bilingual template data before persistence."
+  },
+  {
+    "file": "src/lib/notification-service.ts",
+    "kind": "label",
+    "text": "إكمال أمر العمل",
+    "line": 142,
+    "reason": "System notification source normalized into registered bilingual template data before persistence."
+  },
+  {
+    "file": "src/lib/notification-service.ts",
+    "kind": "label",
+    "text": "رفض أمر العمل",
+    "line": 159,
+    "reason": "System notification source normalized into registered bilingual template data before persistence."
+  },
+  {
+    "file": "src/lib/notification-service.ts",
+    "kind": "label",
+    "text": "تعيين أمر عمل جديد",
+    "line": 176,
+    "reason": "System notification source normalized into registered bilingual template data before persistence."
+  },
+  {
+    "file": "src/lib/notification-service.ts",
+    "kind": "label",
+    "text": "تحديد سعر أمر العمل",
+    "line": 193,
+    "reason": "System notification source normalized into registered bilingual template data before persistence."
+  },
+  {
+    "file": "src/lib/notification-service.ts",
+    "kind": "label",
+    "text": "التوقيع مطلوب",
+    "line": 214,
+    "reason": "System notification source normalized into registered bilingual template data before persistence."
+  },
+  {
+    "file": "src/lib/notification-service.ts",
+    "kind": "label",
+    "text": "عرض سعر جديد",
+    "line": 231,
+    "reason": "System notification source normalized into registered bilingual template data before persistence."
+  },
+  {
+    "file": "src/lib/notification-service.ts",
+    "kind": "label",
+    "text": "قبول عرض السعر",
+    "line": 248,
+    "reason": "System notification source normalized into registered bilingual template data before persistence."
+  },
+  {
+    "file": "src/lib/notification-service.ts",
+    "kind": "label",
+    "text": "رفض عرض السعر",
+    "line": 265,
+    "reason": "System notification source normalized into registered bilingual template data before persistence."
+  },
+  {
+    "file": "src/lib/notification-service.ts",
+    "kind": "label",
+    "text": "عرض سعر جديد",
+    "line": 284,
+    "reason": "System notification source normalized into registered bilingual template data before persistence."
+  },
+  {
+    "file": "src/lib/notification-service.ts",
+    "kind": "label",
+    "text": "الموافقة على عرض السعر",
+    "line": 301,
+    "reason": "System notification source normalized into registered bilingual template data before persistence."
+  },
+  {
+    "file": "src/lib/notification-service.ts",
+    "kind": "label",
+    "text": "رفض عرض السعر",
+    "line": 318,
+    "reason": "System notification source normalized into registered bilingual template data before persistence."
+  },
+  {
+    "file": "src/lib/notification-service.ts",
+    "kind": "label",
+    "text": "موعد جديد",
+    "line": 337,
+    "reason": "System notification source normalized into registered bilingual template data before persistence."
+  },
+  {
+    "file": "src/lib/notification-service.ts",
+    "kind": "label",
+    "text": "تأكيد الموعد",
+    "line": 354,
+    "reason": "System notification source normalized into registered bilingual template data before persistence."
+  },
+  {
+    "file": "src/lib/notification-service.ts",
+    "kind": "label",
+    "text": "إلغاء الموعد",
+    "line": 371,
+    "reason": "System notification source normalized into registered bilingual template data before persistence."
+  },
+  {
+    "file": "src/lib/notification-service.ts",
+    "kind": "label",
+    "text": "طلب إعادة جدولة",
+    "line": 388,
+    "reason": "System notification source normalized into registered bilingual template data before persistence."
+  },
+  {
+    "file": "src/lib/notification-service.ts",
+    "kind": "label",
+    "text": "تغيير موعد",
+    "line": 405,
+    "reason": "System notification source normalized into registered bilingual template data before persistence."
+  },
+  {
+    "file": "src/lib/notification-service.ts",
+    "kind": "label",
+    "text": "طلب فرع جديد",
+    "line": 422,
+    "reason": "System notification source normalized into registered bilingual template data before persistence."
+  },
+  {
+    "file": "src/lib/notification-service.ts",
+    "kind": "label",
+    "text": "الموافقة على طلب الفرع",
+    "line": 439,
+    "reason": "System notification source normalized into registered bilingual template data before persistence."
+  },
+  {
+    "file": "src/lib/notification-service.ts",
+    "kind": "label",
+    "text": "رفض طلب الفرع",
+    "line": 456,
+    "reason": "System notification source normalized into registered bilingual template data before persistence."
+  },
+  {
+    "file": "src/lib/notification-service.ts",
+    "kind": "label",
+    "text": "توقيع العقد",
+    "line": 475,
+    "reason": "System notification source normalized into registered bilingual template data before persistence."
+  },
+  {
+    "file": "src/lib/notification-service.ts",
+    "kind": "label",
+    "text": "اكتمال العقد",
+    "line": 492,
+    "reason": "System notification source normalized into registered bilingual template data before persistence."
+  },
+  {
+    "file": "src/lib/notification-service.ts",
+    "kind": "label",
+    "text": "إصدار شهادة",
+    "line": 509,
+    "reason": "System notification source normalized into registered bilingual template data before persistence."
+  }
+]

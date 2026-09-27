@@ -1,3 +1,4 @@
+import { publicErrorMessage } from '@/lib/i18n/public-errors'
 import { browserLocale, errorMessage } from '@/lib/i18n/errors'
 import { systemMessages } from '@/lib/i18n/system-messages'
 import { toast } from 'sonner'
@@ -58,14 +59,16 @@ async function request<T>(method: string, url: string, options: RequestOptions =
     // The server may answer with JSON, or with an HTML error page — which is what made an
     // earlier bug show visitors a raw JSON parse error instead of anything useful.
     let details: unknown
+    let code: unknown
     try {
       const payload = await response.json()
       details = payload?.details
+      code = payload?.code
     } catch {
       // not JSON; fall back to the status
     }
 
-    const message = errorMessage(response.status)
+    const message = publicErrorMessage(code, browserLocale()) ?? errorMessage(response.status)
     if (showToast) toast.error(message)
     throw new ApiError(message, response.status, details)
   }
