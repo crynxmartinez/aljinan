@@ -1,6 +1,6 @@
 'use client'
 
-import { useState, useEffect } from 'react'
+import { useCallback, useState, useEffect } from 'react'
 import { useRouter } from 'next/navigation'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
@@ -71,7 +71,7 @@ export function ClientBranchQuotations({ branchId }: ClientBranchQuotationsProps
   const [rejectionNote, setRejectionNote] = useState('')
   const [processing, setProcessing] = useState(false)
 
-  const fetchQuotations = async () => {
+  const fetchQuotations = useCallback(async () => {
     try {
       const response = await fetch(`/api/branches/${branchId}/quotations`)
       if (response.ok) {
@@ -83,11 +83,11 @@ export function ClientBranchQuotations({ branchId }: ClientBranchQuotationsProps
     } finally {
       setLoading(false)
     }
-  }
+  }, [branchId])
 
   useEffect(() => {
-    fetchQuotations()
-  }, [branchId])
+    void Promise.resolve().then(fetchQuotations)
+  }, [fetchQuotations])
 
   const handleAction = async () => {
     if (!selectedQuotation || !actionType) return

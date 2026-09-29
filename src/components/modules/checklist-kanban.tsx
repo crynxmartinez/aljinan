@@ -1,6 +1,7 @@
 'use client'
 
 import { useState, useEffect } from 'react'
+import Image from 'next/image'
 import { useRouter } from 'next/navigation'
 import { toast } from 'sonner'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
@@ -789,9 +790,8 @@ export function ChecklistKanban({ branchId, readOnly = false, userRole }: Checkl
   }
 
   // Photo upload handler
-  const handleInspectionPhotoUpload = async (e: React.ChangeEvent<HTMLInputElement>, photoType: string) => {
-    const files = e.target.files
-    if (!files || files.length === 0) return
+  const handleInspectionPhotoUpload = async (files: File[], photoType: string) => {
+    if (files.length === 0) return
 
     setUploadingPhoto(true)
     try {
@@ -1823,10 +1823,7 @@ export function ChecklistKanban({ branchId, readOnly = false, userRole }: Checkl
                         <Label>{tk.attachments}</Label>
                         <FileUploadDropzone
                           onFilesSelected={(files) => {
-                            const event = {
-                              target: { files }
-                            } as any
-                            handleInspectionPhotoUpload(event, 'INSPECTION')
+                            handleInspectionPhotoUpload(files, 'INSPECTION')
                           }}
                           accept=".pdf,.doc,.docx,.jpg,.jpeg,.png,.gif,.webp"
                           multiple={true}
@@ -1997,9 +1994,12 @@ export function ChecklistKanban({ branchId, readOnly = false, userRole }: Checkl
                         <div className="flex flex-wrap gap-2">
                           {selectedItem.photos.map((photo) => photo?.url ? (
                             <a key={photo.id} href={photo.url} target="_blank" rel="noopener noreferrer">
-                              <img
+                              <Image
                                 src={photo.url}
                                 alt={photo.caption || tk.inspectionPhotoAlt}
+                                width={80}
+                                height={80}
+                                unoptimized
                                 className="h-20 w-20 object-cover rounded-lg border hover:opacity-80"
                               />
                             </a>

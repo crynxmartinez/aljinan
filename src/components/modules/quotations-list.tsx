@@ -1,6 +1,6 @@
 'use client'
 
-import { useState, useEffect } from 'react'
+import { useCallback, useState, useEffect } from 'react'
 import { useRouter } from 'next/navigation'
 import { useTranslation } from '@/lib/i18n/use-translation'
 import { formatDate } from '@/lib/i18n/format-date'
@@ -88,7 +88,7 @@ export function QuotationsList({ branchId }: QuotationsListProps) {
     items: [{ description: '', quantity: 1, unitPrice: 0, total: 0 }] as QuotationItem[],
   })
 
-  const fetchQuotations = async () => {
+  const fetchQuotations = useCallback(async () => {
     try {
       const response = await fetch(`/api/branches/${branchId}/quotations`)
       if (response.ok) {
@@ -100,11 +100,11 @@ export function QuotationsList({ branchId }: QuotationsListProps) {
     } finally {
       setLoading(false)
     }
-  }
+  }, [branchId])
 
   useEffect(() => {
-    fetchQuotations()
-  }, [branchId])
+    void Promise.resolve().then(fetchQuotations)
+  }, [fetchQuotations])
 
   const calculateTotals = (items: QuotationItem[], taxRate: number) => {
     const subtotal = items.reduce((sum, item) => sum + (item.quantity * item.unitPrice), 0)

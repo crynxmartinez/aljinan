@@ -212,19 +212,19 @@ export function sanitizeJson(input: string): string {
  * Batch sanitize object
  * Sanitizes all string values in an object
  */
-export function sanitizeObject<T extends Record<string, any>>(
+export function sanitizeObject<T extends Record<string, unknown>>(
   obj: T,
   sanitizer: (value: string) => string = sanitizePlainText
 ): T {
-  const sanitized = { ...obj }
+  const sanitized: Record<string, unknown> = { ...obj }
   
   for (const key in sanitized) {
     if (typeof sanitized[key] === 'string') {
-      sanitized[key] = sanitizer(sanitized[key]) as any
+      sanitized[key] = sanitizer(sanitized[key])
     } else if (typeof sanitized[key] === 'object' && sanitized[key] !== null) {
-      sanitized[key] = sanitizeObject(sanitized[key], sanitizer)
+      sanitized[key] = sanitizeObject(sanitized[key] as Record<string, unknown>, sanitizer)
     }
   }
   
-  return sanitized
+  return sanitized as T
 }

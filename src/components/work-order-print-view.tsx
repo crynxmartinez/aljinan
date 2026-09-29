@@ -1,6 +1,7 @@
 'use client'
 
 import { useTranslation } from '@/lib/i18n/use-translation'
+import Image from 'next/image'
 
 // Simple date formatter
 function formatDate(dateStr: string | null | undefined, includeTime = false): string {
@@ -121,7 +122,7 @@ export function WorkOrderPrintView({ data, companyName = 'Tasheel', companyLogo 
         <div className="flex justify-between items-start">
           <div>
             {companyLogo ? (
-              <img src={companyLogo} alt={companyName} className="h-12 mb-2" />
+              <Image src={companyLogo} alt={companyName} width={200} height={48} unoptimized className="h-12 mb-2" />
             ) : (
               <h1 className="text-2xl font-bold text-gray-900">{companyName}</h1>
             )}
@@ -355,9 +356,12 @@ export function WorkOrderPrintView({ data, companyName = 'Tasheel', companyLogo 
           <div className="grid grid-cols-3 gap-2">
             {data.photos.slice(0, 6).map((photo, idx) => (
               <div key={idx} className="aspect-square bg-gray-100 rounded overflow-hidden">
-                <img
+                <Image
                   src={photo.url}
                   alt={photo.caption || `Photo ${idx + 1}`}
+                  width={300}
+                  height={300}
+                  unoptimized
                   className="w-full h-full object-cover"
                 />
               </div>
@@ -374,7 +378,7 @@ export function WorkOrderPrintView({ data, companyName = 'Tasheel', companyLogo 
         <div>
           <p className="text-sm font-medium text-gray-600 mb-2">{tp.technicianSignature}</p>
           {data.technicianSignature ? (
-            <img src={data.technicianSignature} alt={tp.technicianSignature} className="h-16 border-b border-gray-300" />
+            <Image src={data.technicianSignature} alt={tp.technicianSignature} width={240} height={64} unoptimized className="h-16 border-b border-gray-300" />
           ) : (
             <div className="h-16 border-b border-gray-300"></div>
           )}
@@ -383,7 +387,7 @@ export function WorkOrderPrintView({ data, companyName = 'Tasheel', companyLogo 
         <div>
           <p className="text-sm font-medium text-gray-600 mb-2">{tp.clientSignature}</p>
           {data.clientSignature ? (
-            <img src={data.clientSignature} alt={tp.clientSignature} className="h-16 border-b border-gray-300" />
+            <Image src={data.clientSignature} alt={tp.clientSignature} width={240} height={64} unoptimized className="h-16 border-b border-gray-300" />
           ) : (
             <div className="h-16 border-b border-gray-300"></div>
           )}

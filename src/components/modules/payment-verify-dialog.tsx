@@ -1,6 +1,7 @@
 'use client'
 
 import { useState } from 'react'
+import Image from 'next/image'
 import { useTranslation } from '@/lib/i18n/use-translation'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
@@ -195,9 +196,12 @@ export function PaymentVerifyDialog({
 
               {isImageProof && proofWorkOrder?.paymentProofUrl ? (
                 <div className="border rounded-lg overflow-hidden">
-                  <img
+                  <Image
                     src={proofWorkOrder.paymentProofUrl}
                     alt="Payment proof"
+                    width={800}
+                    height={200}
+                    unoptimized
                     className="max-w-full max-h-[200px] object-contain mx-auto"
                   />
                 </div>

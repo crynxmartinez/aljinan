@@ -317,7 +317,7 @@ export default function MessagesPage() {
                             company: selectedInquiry.companyName || '',
                             inquiryId: selectedInquiry.id,
                           })
-                          window.location.href = `/admin/contractors?${params.toString()}`
+                          router.push(`/admin/contractors?${params.toString()}`)
                         }}
                       >
                         <UserPlus className="h-3.5 w-3.5 me-1" />

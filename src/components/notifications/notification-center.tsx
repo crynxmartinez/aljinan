@@ -27,6 +27,22 @@ interface Notification {
   createdAt: Date
 }
 
+interface ApiNotification {
+  id: string
+  type: unknown
+  title: string
+  message: string
+  link?: string
+  isRead?: boolean
+  createdAt?: string
+}
+
+function isApiNotification(value: unknown): value is ApiNotification {
+  if (typeof value !== 'object' || value === null) return false
+  const notification = value as Record<string, unknown>
+  return ['id', 'title', 'message'].every(key => typeof notification[key] === 'string')
+}
+
 const iconMap = {
   quote: Banknote,
   work_order: FileText,
@@ -80,9 +96,9 @@ export function NotificationCenter() {
       if (response.ok) {
         const data = await response.json()
         // Map API notifications to component format with validation
-        const mappedNotifications = (data.notifications || [])
-          .filter((n: any) => n && n.id && n.title && n.message) // Filter out invalid entries
-          .map((n: any) => ({
+        const mappedNotifications = (Array.isArray(data.notifications) ? data.notifications : [])
+          .filter(isApiNotification)
+          .map((n: ApiNotification) => ({
             id: n.id,
             type: iconKeyFor(n.type),
             title: n.title || 'Notification',

@@ -1,6 +1,7 @@
 'use client'
 
 import { useState, useRef, DragEvent, ChangeEvent } from 'react'
+import Image from 'next/image'
 import { Upload, Loader2, X, CheckCircle, Eye } from 'lucide-react'
 import { cn } from '@/lib/utils'
 import { ImageLightbox } from './image-lightbox'
@@ -208,9 +209,12 @@ export function FileUploadDropzone({
                   }}
                 >
                   {isImage ? (
-                    <img
+                    <Image
                       src={file.url}
                       alt={file.name}
+                      width={80}
+                      height={80}
+                      unoptimized
                       className="h-20 w-20 object-cover rounded-lg border hover:opacity-80 transition-opacity"
                     />
                   ) : (

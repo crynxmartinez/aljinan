@@ -3,6 +3,7 @@ import { NextResponse } from 'next/server'
 import { authOptions } from '@/lib/auth'
 import { prisma } from '@/lib/prisma'
 import { verifyBranchAccess } from '@/lib/permissions'
+import { EquipmentStatus, EquipmentType, Prisma } from '@prisma/client'
 
 // GET - Fetch all equipment for a branch
 export async function GET(
@@ -31,14 +32,14 @@ export async function GET(
     const expiringSoon = searchParams.get('expiringSoon') === 'true'
 
     // Build where clause
-    const where: any = { branchId }
+    const where: Prisma.EquipmentWhereInput = { branchId }
 
     if (status) {
-      where.status = status
+      where.status = status as EquipmentStatus
     }
 
     if (type) {
-      where.equipmentType = type
+      where.equipmentType = type as EquipmentType
     }
 
     // Filter for equipment expiring within 30 days

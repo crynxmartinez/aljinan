@@ -11,6 +11,7 @@ import {
   Tooltip,
   Legend,
   Filler,
+  TooltipItem,
 } from 'chart.js'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
 import { useTranslation } from '@/lib/i18n/use-translation'
@@ -77,8 +78,8 @@ export function RevenueChart({ data, title, description }: RevenueChartProps) {
           size: 13,
         },
         callbacks: {
-          label: function (context: any) {
-            return formatCurrency(context.parsed.y, locale)
+          label: function (context: TooltipItem<'line'>) {
+            return formatCurrency(context.parsed.y ?? 0, locale)
           },
         },
       },
@@ -90,8 +91,8 @@ export function RevenueChart({ data, title, description }: RevenueChartProps) {
           color: 'rgba(0, 0, 0, 0.05)',
         },
         ticks: {
-          callback: function (value: any) {
-            return formatCurrency(value, locale)
+          callback: function (value: string | number) {
+            return formatCurrency(Number(value), locale)
           },
         },
       },

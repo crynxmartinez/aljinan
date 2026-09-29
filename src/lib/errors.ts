@@ -248,15 +248,16 @@ export function formatErrorResponse(error: AppError, status: number = 400) {
 /**
  * Parse and enhance Prisma errors
  */
-export function parsePrismaError(error: any): AppError {
+export function parsePrismaError(error: unknown): AppError {
+  const prismaError = error as { code?: string; meta?: { target?: string[] } }
   // Unique constraint violation
-  if (error.code === 'P2002') {
-    const field = error.meta?.target?.[0] || 'field'
+  if (prismaError.code === 'P2002') {
+    const field = prismaError.meta?.target?.[0] || 'field'
     return businessErrors.duplicateEntry(field, 'this value')
   }
   
   // Foreign key constraint violation
-  if (error.code === 'P2003') {
+  if (prismaError.code === 'P2003') {
     return createError(
       'Related record not found',
       ERROR_CODES.DATABASE_ERROR,
@@ -265,7 +266,7 @@ export function parsePrismaError(error: any): AppError {
   }
   
   // Record not found
-  if (error.code === 'P2025') {
+  if (prismaError.code === 'P2025') {
     return businessErrors.notFound('Record')
   }
   

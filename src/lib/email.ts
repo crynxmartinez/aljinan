@@ -1,7 +1,15 @@
 import { Resend } from 'resend'
 import { translations, getDirection, type Locale } from '@/lib/i18n/translations'
 
-const resend = new Resend(process.env.RESEND_API_KEY || '')
+let resend: Resend | undefined
+
+function getResendClient(): Resend | null {
+  const apiKey = process.env.RESEND_API_KEY
+  if (!apiKey) return null
+
+  resend ??= new Resend(apiKey)
+  return resend
+}
 
 /** Wraps templated content in the shared header/footer chrome, honoring the email's direction. */
 function renderEmailShell(locale: Locale, title: string, bodyHtml: string): string {
@@ -39,9 +47,15 @@ export async function sendVerificationEmail(
   const t = translations[locale].email.verification
   const verificationUrl = `${process.env.NEXT_PUBLIC_APP_URL || 'https://www.tasheel.live'}/verify-email?token=${verificationToken}`
   const accountType = userType === 'CONTRACTOR' ? t.accountTypeContractor : t.accountTypeClient
+  const client = getResendClient()
+
+  if (!client) {
+    console.error('Failed to send verification email: RESEND_API_KEY is not configured')
+    return { success: false, error: 'Email service is not configured' }
+  }
 
   try {
-    await resend.emails.send({
+    await client.emails.send({
       from: 'Tasheel <info@tasheel.live>',
       to: email,
       subject: t.subject,
@@ -84,9 +98,15 @@ export async function sendVerificationEmail(
 
 export async function sendTempPasswordEmail(email: string, name: string, tempPassword: string, locale: Locale = 'ar') {
   const t = translations[locale].email.tempPassword
+  const client = getResendClient()
+
+  if (!client) {
+    console.error('Failed to send temporary password email: RESEND_API_KEY is not configured')
+    return { success: false, error: 'Email service is not configured' }
+  }
 
   try {
-    await resend.emails.send({
+    await client.emails.send({
       from: 'Tasheel <info@tasheel.live>',
       to: email,
       subject: t.subject,
@@ -136,9 +156,15 @@ export async function sendTempPasswordEmail(email: string, name: string, tempPas
 export async function sendPasswordResetEmail(email: string, resetToken: string, locale: Locale = 'ar') {
   const t = translations[locale].email.passwordReset
   const resetUrl = `${process.env.NEXT_PUBLIC_APP_URL || 'https://www.tasheel.live'}/reset-password?token=${resetToken}`
+  const client = getResendClient()
+
+  if (!client) {
+    console.error('Failed to send password reset email: RESEND_API_KEY is not configured')
+    return { success: false, error: 'Email service is not configured' }
+  }
 
   try {
-    await resend.emails.send({
+    await client.emails.send({
       from: 'Tasheel <info@tasheel.live>',
       to: email,
       subject: t.subject,

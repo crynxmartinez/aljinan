@@ -23,23 +23,15 @@ git clone https://github.com/crynxmartinez/aljinan.git
 cd aljinan
 ```
 
-### 2. Install Dependencies
-
-```bash
-npm install
-```
-
-This will install all dependencies from `package.json` and run `prisma generate` automatically.
-
-### 3. Environment Variables
+### 2. Environment Variables
 
 Copy the example environment file:
 
 ```bash
-cp .env.local.example .env.local
+cp .env.example .env
 ```
 
-Edit `.env.local` with your credentials:
+Edit `.env` with your credentials:
 
 ```env
 # Database
@@ -62,6 +54,14 @@ UPSTASH_REDIS_REST_TOKEN="your-upstash-token"
 # Sentry (Optional)
 SENTRY_DSN="your-sentry-dsn"
 ```
+
+### 3. Install Dependencies
+
+```bash
+npm install
+```
+
+This installs dependencies and runs `prisma generate` using the database URL in `.env`.
 
 ### 4. Database Setup
 

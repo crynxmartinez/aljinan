@@ -12,6 +12,7 @@ export interface PasswordInputProps extends React.InputHTMLAttributes<HTMLInputE
 
 const PasswordInput = forwardRef<HTMLInputElement, PasswordInputProps>(
   ({ className, error, showStrength, ...props }, ref) => {
+    void showStrength
     const [showPassword, setShowPassword] = useState(false)
 
     const toggleVisibility = () => {

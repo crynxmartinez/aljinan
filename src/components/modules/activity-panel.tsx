@@ -1,6 +1,6 @@
 'use client'
 
-import { useState, useEffect, useRef } from 'react'
+import { useCallback, useState, useEffect, useRef } from 'react'
 import { api } from '@/lib/api-client'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
@@ -56,7 +56,7 @@ export function ActivityPanel({ branchId, isOpen, onClose }: ActivityPanelProps)
   const [loadFailed, setLoadFailed] = useState(false)
   const scrollRef = useRef<HTMLDivElement>(null)
 
-  const fetchActivities = async () => {
+  const fetchActivities = useCallback(async () => {
     setLoading(true)
     setLoadFailed(false)
     try {
@@ -70,13 +70,13 @@ export function ActivityPanel({ branchId, isOpen, onClose }: ActivityPanelProps)
     } finally {
       setLoading(false)
     }
-  }
+  }, [branchId])
 
   useEffect(() => {
     if (isOpen) {
-      fetchActivities()
+      void Promise.resolve().then(fetchActivities)
     }
-  }, [isOpen, branchId])
+  }, [isOpen, fetchActivities])
 
   const handleSendComment = async (e: React.FormEvent) => {
     e.preventDefault()

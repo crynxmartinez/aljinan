@@ -1,6 +1,6 @@
 'use client'
 
-import { useState, useEffect } from 'react'
+import { useCallback, useState, useEffect } from 'react'
 import { useRouter } from 'next/navigation'
 import { useTranslation } from '@/lib/i18n/use-translation'
 import { formatDate } from '@/lib/i18n/format-date'
@@ -146,7 +146,7 @@ export function CertificatesList({ branchId, userRole }: CertificatesListProps) 
   })
   const [uploadedFileUrl, setUploadedFileUrl] = useState('')
 
-  const fetchCertificates = async () => {
+  const fetchCertificates = useCallback(async () => {
     try {
       const response = await fetch(`/api/branches/${branchId}/certificates`)
       if (response.ok) {
@@ -158,19 +158,17 @@ export function CertificatesList({ branchId, userRole }: CertificatesListProps) 
     } finally {
       setLoading(false)
     }
-  }
-
-  useEffect(() => {
-    fetchCertificates()
   }, [branchId])
 
-  const handleFileUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
-    const files = e.target.files
-    if (!files || files.length === 0) return
+  useEffect(() => {
+    void Promise.resolve().then(fetchCertificates)
+  }, [fetchCertificates])
+
+  const handleFileUpload = async (file: File | undefined) => {
+    if (!file) return
 
     setUploading(true)
     try {
-      const file = files[0]
       const formData = new FormData()
       formData.append('file', file)
       formData.append('type', 'document')
@@ -532,10 +530,7 @@ export function CertificatesList({ branchId, userRole }: CertificatesListProps) 
                 <Label>Certificate File</Label>
                 <FileUploadDropzone
                   onFilesSelected={(files) => {
-                    const event = {
-                      target: { files }
-                    } as any
-                    handleFileUpload(event)
+                    handleFileUpload(files[0])
                   }}
                   accept=".pdf,.doc,.docx,.jpg,.jpeg,.png,.gif,.webp"
                   multiple={false}

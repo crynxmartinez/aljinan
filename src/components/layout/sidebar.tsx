@@ -108,7 +108,6 @@ const teamMemberBottomNavItems = [
 
 export function Sidebar({ clients = [], userRole, teamMemberRole }: SidebarProps) {
   const isTeamMember = userRole === 'TEAM_MEMBER'
-  const isTechnician = teamMemberRole === 'TECHNICIAN'
   const pathname = usePathname()
   const router = useRouter()
   const { data: session } = useSession()
@@ -129,7 +128,11 @@ export function Sidebar({ clients = [], userRole, teamMemberRole }: SidebarProps
       const response = await fetch('/api/notifications')
       if (response.ok) {
         const data = await response.json()
-        const unread = (data.notifications || []).filter((n: any) => !n.isRead).length
+        const notifications = Array.isArray(data.notifications) ? data.notifications : []
+        const unread = notifications.filter((notification: unknown) =>
+          typeof notification === 'object' && notification !== null &&
+          (notification as { isRead?: boolean }).isRead !== true
+        ).length
         setUnreadNotifications(unread)
       }
     } catch (error) {

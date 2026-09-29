@@ -38,7 +38,7 @@ export function ImpersonationBanner() {
     try {
       const response = await fetch('/api/admin/impersonate', { method: 'DELETE' })
       if (response.ok) {
-        window.location.href = '/admin'
+        router.push('/admin')
       }
     } catch (err) {
       console.error('Failed to exit impersonation:', err)

@@ -36,7 +36,7 @@ export function CompanyInfoCard({ contractor }: CompanyInfoCardProps) {
           Company Information
         </CardTitle>
         <p className="text-sm text-muted-foreground">
-          View your company's profile details
+          View your company&apos;s profile details
         </p>
       </CardHeader>
       <CardContent className="space-y-6">

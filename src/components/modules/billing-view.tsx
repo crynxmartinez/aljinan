@@ -1,6 +1,6 @@
 'use client'
 
-import { useState, useEffect } from 'react'
+import { useCallback, useState, useEffect } from 'react'
 import { useRouter } from 'next/navigation'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Badge } from '@/components/ui/badge'
@@ -84,7 +84,7 @@ export function BillingView({ branchId, userRole }: BillingViewProps) {
   const [stickerInspectionsExpanded, setStickerInspectionsExpanded] = useState(true)
   const [expandedContracts, setExpandedContracts] = useState<string[]>([])
 
-  const fetchData = async () => {
+  const fetchData = useCallback(async () => {
     try {
       const [woResponse, cpResponse] = await Promise.all([
         fetch(`/api/branches/${branchId}/checklist-items`),
@@ -105,11 +105,11 @@ export function BillingView({ branchId, userRole }: BillingViewProps) {
     } finally {
       setLoading(false)
     }
-  }
+  }, [branchId])
 
   useEffect(() => {
-    fetchData()
-  }, [branchId])
+    void Promise.resolve().then(fetchData)
+  }, [fetchData])
 
   // Initialize expanded contracts when work orders load
   useEffect(() => {

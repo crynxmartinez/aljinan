@@ -5,9 +5,17 @@ import { Button } from '@/components/ui/button'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
 import { Loader2, CheckCircle, AlertCircle } from 'lucide-react'
 
+interface SlugResult {
+  message: string
+  clientsUpdated: number
+  branchesUpdated: number
+  clients: Array<{ name: string; slug: string }>
+  branches: Array<{ name: string; slug: string }>
+}
+
 export default function GenerateSlugsPage() {
   const [loading, setLoading] = useState(false)
-  const [result, setResult] = useState<any>(null)
+  const [result, setResult] = useState<SlugResult | null>(null)
   const [error, setError] = useState<string | null>(null)
 
   const handleGenerateSlugs = async () => {
@@ -26,9 +34,9 @@ export default function GenerateSlugsPage() {
         throw new Error(data.error || 'Failed to generate slugs')
       }
 
-      setResult(data)
-    } catch (err: any) {
-      setError(err.message)
+      setResult(data as SlugResult)
+    } catch (err) {
+      setError(err instanceof Error ? err.message : 'Failed to generate slugs')
     } finally {
       setLoading(false)
     }
@@ -40,7 +48,7 @@ export default function GenerateSlugsPage() {
         <CardHeader>
           <CardTitle>Generate Slugs for Clients & Branches</CardTitle>
           <CardDescription>
-            This will generate URL-friendly slugs for all clients and branches that don't have one yet.
+            This will generate URL-friendly slugs for all clients and branches that don&apos;t have one yet.
           </CardDescription>
         </CardHeader>
         <CardContent className="space-y-4">
@@ -82,7 +90,7 @@ export default function GenerateSlugsPage() {
                   <CardContent>
                     {result.clients.length > 0 ? (
                       <ul className="space-y-2">
-                        {result.clients.map((client: any, i: number) => (
+                        {result.clients.map((client, i) => (
                           <li key={i} className="text-sm">
                             <span className="font-medium">{client.name}</span>
                             <br />
@@ -104,7 +112,7 @@ export default function GenerateSlugsPage() {
                   <CardContent>
                     {result.branches.length > 0 ? (
                       <ul className="space-y-2">
-                        {result.branches.map((branch: any, i: number) => (
+                        {result.branches.map((branch, i) => (
                           <li key={i} className="text-sm">
                             <span className="font-medium">{branch.name}</span>
                             <br />

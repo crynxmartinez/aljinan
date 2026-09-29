@@ -1,6 +1,6 @@
 'use client'
 
-import { useState, useEffect } from 'react'
+import { useCallback, useState, useEffect } from 'react'
 import { api } from '@/lib/api-client'
 import { LoadFailure } from '@/components/ui/load-failure'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
@@ -66,11 +66,7 @@ export function CalendarView({ branchId }: CalendarViewProps) {
   const [selectedTask, setSelectedTask] = useState<ScheduledTask | null>(null)
   const [detailsOpen, setDetailsOpen] = useState(false)
 
-  useEffect(() => {
-    fetchTasks()
-  }, [branchId])
-
-  async function fetchTasks() {
+  const fetchTasks = useCallback(async () => {
     setLoadFailed(false)
     try {
       const data = await api.get<ScheduledTask[]>(
@@ -86,7 +82,11 @@ export function CalendarView({ branchId }: CalendarViewProps) {
     } finally {
       setLoading(false)
     }
-  }
+  }, [branchId])
+
+  useEffect(() => {
+    void Promise.resolve().then(fetchTasks)
+  }, [fetchTasks])
 
   const getDaysInMonth = (date: Date) => {
     const year = date.getFullYear()

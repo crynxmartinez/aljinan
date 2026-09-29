@@ -8,10 +8,26 @@ export async function POST() {
     const auth = await requireAdmin('canManagePlatform')
     if (!auth.ok) return auth.response
 
-    const results = {
+    const results: {
+      contractorsProcessed: number
+      workOrdersUpdated: number
+      details: Array<{
+        contractorName: string | null
+        workOrdersAssigned: number
+        numberRange: string
+        newCounter: number
+        workOrders: Array<{
+          id: string
+          description: string
+          assignedNumber: number
+          clientName: string | null
+          branchName: string
+        }>
+      }>
+    } = {
       contractorsProcessed: 0,
       workOrdersUpdated: 0,
-      details: [] as any[]
+      details: []
     }
 
     // Get all contractors

@@ -9,11 +9,16 @@ export async function POST() {
     const auth = await requireAdmin('canManagePlatform')
     if (!auth.ok) return auth.response
 
-    const results = {
+    const results: {
+      clientsUpdated: number
+      branchesUpdated: number
+      clients: Array<{ name: string; slug: string }>
+      branches: Array<{ name: string; slug: string }>
+    } = {
       clientsUpdated: 0,
       branchesUpdated: 0,
-      clients: [] as any[],
-      branches: [] as any[]
+      clients: [],
+      branches: []
     }
 
     // Generate slugs for clients

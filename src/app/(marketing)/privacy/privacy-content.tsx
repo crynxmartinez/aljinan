@@ -2,6 +2,13 @@
 
 import { useTranslation } from '@/lib/i18n/use-translation'
 
+type PrivacySection = {
+  title: string
+  content: string
+  list?: string[]
+  contact?: { email: string; phone: string; address: string }
+}
+
 export function PrivacyContent() {
   const { t } = useTranslation()
 
@@ -13,25 +20,23 @@ export function PrivacyContent() {
           <p className="text-muted-foreground mb-12">{t.pages.privacy.lastUpdated}</p>
 
           <div className="prose prose-lg max-w-none space-y-8">
-            {t.pages.privacy.sections.map((section, index) => {
-              const sectionWithList = section as any
-              const sectionWithContact = section as any
+            {(t.pages.privacy.sections as unknown as readonly PrivacySection[]).map((section, index) => {
               return (
                 <section key={index}>
                   <h2 className="text-2xl font-bold mb-4">{section.title}</h2>
                   <p className="text-muted-foreground mb-4">{section.content}</p>
-                  {sectionWithList.list && (
+                  {section.list && (
                     <ul className="list-disc ps-6 space-y-2 text-muted-foreground">
-                      {sectionWithList.list.map((item: string, i: number) => (
+                      {section.list.map((item, i) => (
                         <li key={i}>{item}</li>
                       ))}
                     </ul>
                   )}
-                  {sectionWithContact.contact && (
+                  {section.contact && (
                     <p className="text-muted-foreground mt-4">
-                      {sectionWithContact.contact.email}<br />
-                      {sectionWithContact.contact.phone}<br />
-                      {sectionWithContact.contact.address}
+                      {section.contact.email}<br />
+                      {section.contact.phone}<br />
+                      {section.contact.address}
                     </p>
                   )}
                 </section>

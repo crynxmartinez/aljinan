@@ -1,5 +1,6 @@
 import { NextResponse } from 'next/server'
 import { prisma } from '@/lib/prisma'
+import { isAuthorizedCronRequest } from '@/lib/cron-auth'
 
 /**
  * Shared implementation for both entry points below. Vercel Cron only ever issues a GET,
@@ -136,11 +137,7 @@ async function runEquipmentExpiryCheck() {
 }
 
 function isAuthorized(request: Request): boolean {
-  const authHeader = request.headers.get('authorization')
-  const cronSecret = process.env.CRON_SECRET
-  // Optional: if CRON_SECRET isn't configured, allow through (matches this route's
-  // original POST behavior so manual/local calls keep working without one).
-  return !cronSecret || authHeader === `Bearer ${cronSecret}`
+  return isAuthorizedCronRequest(request)
 }
 
 // GET - Invoked by Vercel Cron (cron jobs are always a GET request)

@@ -250,7 +250,7 @@ export function ClientsList({ clients }: ClientsListProps) {
   const handleEditKeyDown = (e: React.KeyboardEvent, id: string, type: 'client' | 'branch') => {
     if (e.key === 'Enter') {
       e.preventDefault()
-      type === 'client' ? saveClientDisplayName(id) : saveBranchDisplayName(id)
+      void (type === 'client' ? saveClientDisplayName(id) : saveBranchDisplayName(id))
     } else if (e.key === 'Escape') {
       cancelEditing()
     }

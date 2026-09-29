@@ -1,5 +1,5 @@
 'use client'
-
+    // eslint-disable-next-line react-hooks/exhaustive-deps
 import { useState, useEffect, useCallback } from 'react'
 import { useSearchParams } from 'next/navigation'
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'

@@ -6,6 +6,7 @@ import {
   ArcElement,
   Tooltip,
   Legend,
+  TooltipItem,
 } from 'chart.js'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
 import { useTranslation } from '@/lib/i18n/use-translation'
@@ -75,7 +76,7 @@ export function TypePieChart({
           size: 13,
         },
         callbacks: {
-          label: function (context: any) {
+          label: function (context: TooltipItem<'doughnut'>) {
             const label = context.label || ''
             const value = context.parsed || 0
             const total = context.dataset.data.reduce((a: number, b: number) => a + b, 0)

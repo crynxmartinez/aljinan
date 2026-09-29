@@ -1,6 +1,6 @@
 'use client'
 
-import { useState, useEffect } from 'react'
+import { useCallback, useState, useEffect } from 'react'
 import { api } from '@/lib/api-client'
 import { LoadFailure } from '@/components/ui/load-failure'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
@@ -147,7 +147,7 @@ export function DocumentsList({ branchId }: DocumentsListProps) {
   const [previewFile, setPreviewFile] = useState<{ url: string; name: string; type: 'image' | 'pdf' } | null>(null)
   const [loadFailed, setLoadFailed] = useState(false)
 
-  const fetchDocuments = async () => {
+  const fetchDocuments = useCallback(async () => {
     setLoadFailed(false)
     try {
       const data = await api.get<UnifiedDocument[]>(`/api/branches/${branchId}/documents`, {
@@ -160,11 +160,11 @@ export function DocumentsList({ branchId }: DocumentsListProps) {
     } finally {
       setLoading(false)
     }
-  }
+  }, [branchId])
 
   useEffect(() => {
-    fetchDocuments()
-  }, [branchId])
+    void Promise.resolve().then(fetchDocuments)
+  }, [fetchDocuments])
 
   const toggleSection = (source: SourceType) => {
     setExpandedSections(prev => {

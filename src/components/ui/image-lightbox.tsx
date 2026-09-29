@@ -1,6 +1,7 @@
 'use client'
 
 import { useState } from 'react'
+import Image from 'next/image'
 import {
   Dialog,
   DialogContent,
@@ -131,9 +132,12 @@ export function ImageLightbox({ images, initialIndex = 0, open, onOpenChange }: 
 
           {/* Image */}
           <div className="overflow-auto max-w-full max-h-full p-8">
-            <img
+            <Image
               src={currentImage.url}
               alt={currentImage.name}
+              width={1920}
+              height={1080}
+              unoptimized
               className="max-w-full max-h-full object-contain transition-transform duration-200"
               style={{ transform: `scale(${zoom})` }}
             />

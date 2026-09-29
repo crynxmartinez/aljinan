@@ -1,6 +1,6 @@
 'use client'
 
-import { useState, useEffect, useRef } from 'react'
+import { useCallback, useState, useEffect, useRef } from 'react'
 import { useRouter } from 'next/navigation'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
@@ -128,7 +128,7 @@ export function ClientBranchContracts({ branchId }: ClientBranchContractsProps) 
   const canvasRef = useRef<HTMLCanvasElement>(null)
   const endCanvasRef = useRef<HTMLCanvasElement>(null)
 
-  const fetchContracts = async () => {
+  const fetchContracts = useCallback(async () => {
     try {
       const response = await fetch(`/api/branches/${branchId}/contracts`)
       if (response.ok) {
@@ -140,11 +140,11 @@ export function ClientBranchContracts({ branchId }: ClientBranchContractsProps) 
     } finally {
       setLoading(false)
     }
-  }
+  }, [branchId])
 
   useEffect(() => {
-    fetchContracts()
-  }, [branchId])
+    void Promise.resolve().then(fetchContracts)
+  }, [fetchContracts])
 
   const [selectedContract, setSelectedContract] = useState<Contract | null>(null)
   const [detailsOpen, setDetailsOpen] = useState(false)

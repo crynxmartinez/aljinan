@@ -1,10 +1,7 @@
 import { PrismaClient } from '@prisma/client'
-import { PrismaPg } from '@prisma/adapter-pg'
-import { Pool } from 'pg'
 
 const globalForPrisma = globalThis as unknown as {
   prisma: PrismaClient | undefined
-  pool: Pool | undefined
 }
 
 function createPrismaClient() {
@@ -16,23 +13,8 @@ function createPrismaClient() {
     throw new Error('DATABASE_URL or DATABASE_URL_POOLED must be set')
   }
 
-  // Optimize connection pool for serverless
-  const pool = globalForPrisma.pool ?? new Pool({
-    connectionString,
-    max: 3,                     // Minimal connections per serverless instance
-    min: 0,                     // No minimum connections
-    idleTimeoutMillis: 10000,   // Close idle connections after 10s (faster cleanup)
-    connectionTimeoutMillis: 3000, // Fail fast if can't connect
-    allowExitOnIdle: true,      // Allow process to exit when idle
-  })
-
-  // Reuse pool globally to avoid connection leaks in both dev and production (serverless)
-  globalForPrisma.pool = pool
-
-  const adapter = new PrismaPg(pool)
-
   return new PrismaClient({
-    adapter,
+    datasources: { db: { url: connectionString } },
     log: process.env.NODE_ENV === 'development'
       ? ['error', 'warn']
       : ['error'],
@@ -44,9 +26,7 @@ export const prisma = globalForPrisma.prisma ?? createPrismaClient()
 // Reuse Prisma instance globally (critical for serverless connection management)
 globalForPrisma.prisma = prisma
 
-// Graceful shutdown. Three signals can fire for one exit, and pg throws
-// "Called end on pool more than once" on a second end() — which surfaced as a crash at the
-// end of otherwise successful scripts. Run at most once, and never let teardown throw.
+// Graceful shutdown. Three signals can fire for one exit, so run disconnect at most once.
 if (typeof window === 'undefined') {
   let shuttingDown = false
 
@@ -58,12 +38,6 @@ if (typeof window === 'undefined') {
       await prisma.$disconnect()
     } catch (error) {
       console.error('Error disconnecting Prisma:', error)
-    }
-
-    try {
-      await globalForPrisma.pool?.end()
-    } catch {
-      // already closed
     }
   }
 

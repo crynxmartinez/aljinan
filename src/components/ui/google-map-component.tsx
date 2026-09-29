@@ -1,7 +1,7 @@
 'use client'
 
 import { useEffect, useState } from 'react'
-import { Map, AdvancedMarker, Pin } from '@vis.gl/react-google-maps'
+import { Map, AdvancedMarker, Pin, type MapMouseEvent } from '@vis.gl/react-google-maps'
 
 interface GoogleMapComponentProps {
   latitude: number | null
@@ -30,7 +30,7 @@ export default function GoogleMapComponent({
     }
   }, [latitude, longitude])
 
-  const handleMapClick = (event: any) => {
+  const handleMapClick = (event: MapMouseEvent) => {
     if (event.detail?.latLng) {
       const lat = event.detail.latLng.lat
       const lng = event.detail.latLng.lng

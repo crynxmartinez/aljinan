@@ -1,6 +1,6 @@
 'use client'
 
-import { useState, useEffect } from 'react'
+import { useCallback, useState, useEffect } from 'react'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
 import { Badge } from '@/components/ui/badge'
 import {
@@ -52,7 +52,7 @@ export function ClientBranchInvoices({ branchId }: ClientBranchInvoicesProps) {
   const [loading, setLoading] = useState(true)
   const [expandedInvoice, setExpandedInvoice] = useState<string | null>(null)
 
-  const fetchInvoices = async () => {
+  const fetchInvoices = useCallback(async () => {
     try {
       const response = await fetch(`/api/branches/${branchId}/invoices`)
       if (response.ok) {
@@ -64,11 +64,11 @@ export function ClientBranchInvoices({ branchId }: ClientBranchInvoicesProps) {
     } finally {
       setLoading(false)
     }
-  }
+  }, [branchId])
 
   useEffect(() => {
-    fetchInvoices()
-  }, [branchId])
+    void Promise.resolve().then(fetchInvoices)
+  }, [fetchInvoices])
 
   const getStatusBadge = (status: Invoice['status']) => {
     const config = {

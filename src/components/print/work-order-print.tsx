@@ -1,6 +1,7 @@
 'use client'
 
 import { useEffect, useState } from 'react'
+import Image from 'next/image'
 import { useTranslation } from '@/lib/i18n/use-translation'
 
 interface Equipment {
@@ -849,7 +850,7 @@ export function WorkOrderPrint({ workOrderId }: WorkOrderPrintProps) {
                         <p className="text-xs text-muted-foreground mb-1">{tp.before}</p>
                         <div className="flex flex-wrap gap-2">
                           {(data.reportData as ServiceReportData).beforePhotos.map((photo, idx) => (
-                            <img key={idx} src={photo} alt={`${tp.before} ${idx + 1}`} className="w-24 h-24 object-cover border rounded" />
+                            <Image key={idx} src={photo} alt={`${tp.before} ${idx + 1}`} width={96} height={96} unoptimized className="w-24 h-24 object-cover border rounded" />
                           ))}
                         </div>
                       </div>
@@ -859,7 +860,7 @@ export function WorkOrderPrint({ workOrderId }: WorkOrderPrintProps) {
                         <p className="text-xs text-muted-foreground mb-1">{tp.after}</p>
                         <div className="flex flex-wrap gap-2">
                           {(data.reportData as ServiceReportData).afterPhotos.map((photo, idx) => (
-                            <img key={idx} src={photo} alt={`${tp.after} ${idx + 1}`} className="w-24 h-24 object-cover border rounded" />
+                            <Image key={idx} src={photo} alt={`${tp.after} ${idx + 1}`} width={96} height={96} unoptimized className="w-24 h-24 object-cover border rounded" />
                           ))}
                         </div>
                       </div>
@@ -1004,9 +1005,12 @@ export function WorkOrderPrint({ workOrderId }: WorkOrderPrintProps) {
                   )}
                   {(data.reportData as InstallationReportData).handoverSignature && (
                     <div className="mt-2">
-                      <img
+                      <Image
                         src={(data.reportData as InstallationReportData).handoverSignature}
                         alt={tp.handover}
+                        width={240}
+                        height={64}
+                        unoptimized
                         className="max-h-16 border rounded"
                       />
                     </div>
@@ -1143,9 +1147,12 @@ export function WorkOrderPrint({ workOrderId }: WorkOrderPrintProps) {
               <p className="text-sm font-semibold mb-4">{tp.supervisorSignature}</p>
               <div className="border-b-2 border-gray-400 h-24 mb-2 flex items-center justify-center bg-white">
                 {data.supervisorSignature && data.supervisorSignature.startsWith('data:image') && (
-                  <img
+                  <Image
                     src={data.supervisorSignature}
                     alt={tp.supervisorSignature}
+                    width={320}
+                    height={80}
+                    unoptimized
                     className="max-h-20 max-w-full object-contain"
                   />
                 )}
@@ -1161,9 +1168,12 @@ export function WorkOrderPrint({ workOrderId }: WorkOrderPrintProps) {
               <p className="text-sm font-semibold mb-4">{tp.clientSignature}</p>
               <div className="border-b-2 border-gray-400 h-24 mb-2 flex items-center justify-center bg-white">
                 {data.clientSignature && data.clientSignature.startsWith('data:image') && (
-                  <img
+                  <Image
                     src={data.clientSignature}
                     alt={tp.clientSignature}
+                    width={320}
+                    height={80}
+                    unoptimized
                     className="max-h-20 max-w-full object-contain"
                   />
                 )}

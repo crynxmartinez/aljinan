@@ -2,6 +2,7 @@ import { getServerSession } from 'next-auth'
 import { NextResponse } from 'next/server'
 import { authOptions } from '@/lib/auth'
 import { prisma } from '@/lib/prisma'
+import { UserRole } from '@prisma/client'
 import { sanitizePlainText, sanitizeEmail, sanitizePhone } from '@/lib/sanitize'
 import { validateEmail, validatePhone, validateRequired } from '@/lib/validation'
 import { logResourceUpdated } from '@/lib/audit-log'
@@ -168,7 +169,7 @@ export async function PATCH(
     // Log the update
     await logResourceUpdated(
       session.user.id,
-      session.user.role as any,
+      session.user.role as UserRole,
       'client',
       clientId,
       updateData

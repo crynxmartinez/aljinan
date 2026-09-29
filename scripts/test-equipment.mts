@@ -35,8 +35,9 @@ await login(CONTRACTOR_EMAIL, CONTRACTOR_PASSWORD)
 
 // Get clients
 const clientsRes = await api('GET', '/api/clients')
-const clients = clientsRes.data as any[]
-console.log('Clients:', clients.map(c => ({ id: c.id, name: c.companyName, branches: c.branches?.map((b: any) => b.id) })))
+type Client = { id: string; companyName: string; branches?: Array<{ id: string }> }
+const clients = clientsRes.data as Client[]
+console.log('Clients:', clients.map(c => ({ id: c.id, name: c.companyName, branches: c.branches?.map(b => b.id) })))
 
 const clientWithBranch = clients.find(c => c.branches?.length > 0)
 if (!clientWithBranch) { console.log('No client with branches'); process.exit(1) }

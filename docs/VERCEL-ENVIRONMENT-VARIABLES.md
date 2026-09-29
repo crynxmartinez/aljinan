@@ -15,7 +15,7 @@ NEXT_PUBLIC_GOOGLE_MAPS_API_KEY
 
 ### **Variable Value:**
 ```
-AIzaSyDIShTgO2ur27oZoDm00gIYGNkrsdR-D8g
+<your-google-maps-browser-api-key>
 ```
 
 ### **Apply to:**
@@ -38,7 +38,7 @@ AIzaSyDIShTgO2ur27oZoDm00gIYGNkrsdR-D8g
 3. **Add New Variable:**
    - Click: **Add New** button
    - **Key:** `NEXT_PUBLIC_GOOGLE_MAPS_API_KEY`
-   - **Value:** `AIzaSyDIShTgO2ur27oZoDm00gIYGNkrsdR-D8g`
+   - **Value:** `<your-google-maps-browser-api-key>`
    - **Environments:** Check all 3 boxes
      - ✅ Production
      - ✅ Preview  

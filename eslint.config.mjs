@@ -21,7 +21,7 @@ import nextTypescript from 'eslint-config-next/typescript'
  *   no-explicit-any covers 55 pre-existing sites. Tracked debt: new code should be typed and
  *   the count should only go down. The --max-warnings ceiling in package.json is the ratchet.
  */
-export default [
+const config = [
   ...nextVitals,
   ...nextTypescript,
 
@@ -72,3 +72,5 @@ export default [
     },
   },
 ]
+
+export default config

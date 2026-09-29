@@ -1,6 +1,6 @@
 'use client'
 
-import { useState, useEffect } from 'react'
+import { useCallback, useState, useEffect } from 'react'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
@@ -162,7 +162,7 @@ export function EquipmentList({ branchId, userRole = 'CONTRACTOR' }: EquipmentLi
   const [certificateExpiry, setCertificateExpiry] = useState('')
   const [uploadingCertificate, setUploadingCertificate] = useState(false)
 
-  const fetchEquipment = async () => {
+  const fetchEquipment = useCallback(async () => {
     try {
       setLoading(true)
       const response = await fetch(`/api/branches/${branchId}/equipment`)
@@ -179,11 +179,11 @@ export function EquipmentList({ branchId, userRole = 'CONTRACTOR' }: EquipmentLi
     } finally {
       setLoading(false)
     }
-  }
+  }, [branchId])
 
   useEffect(() => {
-    fetchEquipment()
-  }, [branchId])
+    void Promise.resolve().then(fetchEquipment)
+  }, [fetchEquipment])
 
   const handleAddEquipment = async () => {
     if (!formData.equipmentNumber || !formData.equipmentType) {

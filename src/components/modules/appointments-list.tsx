@@ -1,6 +1,6 @@
 'use client'
 
-import { useState, useEffect } from 'react'
+import { useCallback, useState, useEffect } from 'react'
 import { useRouter } from 'next/navigation'
 import { Card, CardContent } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
@@ -74,7 +74,7 @@ export function AppointmentsList({ branchId }: AppointmentsListProps) {
     assignedTo: '',
   })
 
-  const fetchAppointments = async () => {
+  const fetchAppointments = useCallback(async () => {
     try {
       const response = await fetch(`/api/branches/${branchId}/appointments`)
       if (response.ok) {
@@ -86,11 +86,11 @@ export function AppointmentsList({ branchId }: AppointmentsListProps) {
     } finally {
       setLoading(false)
     }
-  }
+  }, [branchId])
 
   useEffect(() => {
-    fetchAppointments()
-  }, [branchId])
+    void Promise.resolve().then(fetchAppointments)
+  }, [fetchAppointments])
 
   const handleCreateAppointment = async (e: React.FormEvent, confirmImmediately: boolean = false) => {
     e.preventDefault()

@@ -25,16 +25,13 @@
 
 import 'dotenv/config'
 import { PrismaClient } from '@prisma/client'
-import { PrismaPg } from '@prisma/adapter-pg'
-import { Pool } from 'pg'
 
 const connectionString = process.env.DATABASE_URL_POOLED || process.env.DATABASE_URL
 if (!connectionString) {
   throw new Error('DATABASE_URL or DATABASE_URL_POOLED must be set')
 }
 
-const pool = new Pool({ connectionString })
-const prisma = new PrismaClient({ adapter: new PrismaPg(pool) })
+const prisma = new PrismaClient({ datasources: { db: { url: connectionString } } })
 
 const DRY_RUN = process.argv.includes('--dry-run')
 
@@ -239,5 +236,4 @@ main()
   })
   .finally(async () => {
     await prisma.$disconnect()
-    await pool.end()
   })

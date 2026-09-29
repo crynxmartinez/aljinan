@@ -5,7 +5,9 @@
  */
 
 import { prisma } from '@/lib/prisma'
-import { UserRole } from '@prisma/client'
+import { Prisma, UserRole } from '@prisma/client'
+
+type AuditDetails = Record<string, unknown>
 
 // Audit event types
 export type AuditEventType =
@@ -55,7 +57,7 @@ export interface AuditLogEntry {
   resourceType?: string
   resourceId?: string
   action: string
-  details?: Record<string, any>
+  details?: AuditDetails
   ipAddress?: string
   userAgent?: string
   success: boolean
@@ -93,7 +95,7 @@ export async function logAuditEvent(entry: AuditLogEntry): Promise<void> {
 /**
  * Sanitize audit details to remove sensitive information
  */
-function sanitizeAuditDetails(details: Record<string, any>): Record<string, any> {
+function sanitizeAuditDetails(details: AuditDetails): Prisma.InputJsonObject {
   const sanitized = { ...details }
   
   // Remove sensitive fields
@@ -105,7 +107,7 @@ function sanitizeAuditDetails(details: Record<string, any>): Record<string, any>
     }
   }
   
-  return sanitized
+  return JSON.parse(JSON.stringify(sanitized)) as Prisma.InputJsonObject
 }
 
 /**
@@ -176,7 +178,7 @@ export async function logResourceCreated(
   userRole: UserRole,
   resourceType: string,
   resourceId: string,
-  details?: Record<string, any>
+  details?: AuditDetails
 ): Promise<void> {
   await logAuditEvent({
     eventType: `${resourceType.toUpperCase()}_CREATED` as AuditEventType,
@@ -198,7 +200,7 @@ export async function logResourceUpdated(
   userRole: UserRole,
   resourceType: string,
   resourceId: string,
-  changes?: Record<string, any>
+  changes?: AuditDetails
 ): Promise<void> {
   await logAuditEvent({
     eventType: `${resourceType.toUpperCase()}_UPDATED` as AuditEventType,
@@ -207,7 +209,7 @@ export async function logResourceUpdated(
     resourceType,
     resourceId,
     action: `Updated ${resourceType}`,
-    details: { changes },
+    details: { changes: changes ?? null },
     success: true
   })
 }
@@ -261,7 +263,7 @@ export async function logPermissionDenied(
 export async function logSecurityAlert(
   userId: string | undefined,
   alert: string,
-  details?: Record<string, any>,
+  details?: AuditDetails,
   ipAddress?: string
 ): Promise<void> {
   await logAuditEvent({
@@ -321,7 +323,7 @@ export async function logInvoicePayment(
     action: 'Invoice paid',
     details: {
       amount,
-      paymentMethod
+      paymentMethod: paymentMethod ?? null
     },
     success: true
   })

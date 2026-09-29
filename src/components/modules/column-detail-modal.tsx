@@ -360,7 +360,7 @@ export function ColumnDetailModal({
               />
             </div>
 
-            <Select value={filterType} onValueChange={(value) => setFilterType(value as any)}>
+            <Select value={filterType} onValueChange={(value) => setFilterType(value as 'all' | ChecklistItemType)}>
               <SelectTrigger className="w-[140px]">
                 <SelectValue placeholder="Type" />
               </SelectTrigger>

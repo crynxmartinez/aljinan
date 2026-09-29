@@ -1,6 +1,6 @@
 'use client'
 
-import { useState, useEffect } from 'react'
+import { useCallback, useState, useEffect } from 'react'
 import { useRouter } from 'next/navigation'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
@@ -63,7 +63,7 @@ export function ClientBranchAppointments({ branchId }: ClientBranchAppointmentsP
   const [note, setNote] = useState('')
   const [processing, setProcessing] = useState(false)
 
-  const fetchAppointments = async () => {
+  const fetchAppointments = useCallback(async () => {
     try {
       const response = await fetch(`/api/branches/${branchId}/appointments`)
       if (response.ok) {
@@ -75,11 +75,11 @@ export function ClientBranchAppointments({ branchId }: ClientBranchAppointmentsP
     } finally {
       setLoading(false)
     }
-  }
+  }, [branchId])
 
   useEffect(() => {
-    fetchAppointments()
-  }, [branchId])
+    void Promise.resolve().then(fetchAppointments)
+  }, [fetchAppointments])
 
   const handleAction = async () => {
     if (!selectedAppointment || !actionType) return

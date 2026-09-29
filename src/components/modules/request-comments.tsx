@@ -1,6 +1,6 @@
 'use client'
 
-import { useState, useEffect } from 'react'
+import { useCallback, useState, useEffect } from 'react'
 import { useTranslation } from '@/lib/i18n/use-translation'
 import { formatDate as formatDateUtil } from '@/lib/i18n/format-date'
 import { Button } from '@/components/ui/button'
@@ -48,7 +48,7 @@ export function RequestComments({ branchId, requestId, currentUserId }: RequestC
   const [saving, setSaving] = useState(false)
   const [error, setError] = useState('')
 
-  const fetchComments = async () => {
+  const fetchComments = useCallback(async () => {
     try {
       const response = await fetch(`/api/branches/${branchId}/requests/${requestId}/comments`)
       if (response.ok) {
@@ -60,11 +60,11 @@ export function RequestComments({ branchId, requestId, currentUserId }: RequestC
     } finally {
       setLoading(false)
     }
-  }
+  }, [branchId, requestId])
 
   useEffect(() => {
-    fetchComments()
-  }, [branchId, requestId])
+    void Promise.resolve().then(fetchComments)
+  }, [fetchComments])
 
   const handleSubmitComment = async () => {
     if (!newComment.trim()) return

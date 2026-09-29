@@ -1,12 +1,13 @@
 'use client'
 
 import { useState } from 'react'
+import Image from 'next/image'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
 import { Badge } from '@/components/ui/badge'
 import {
-  Building2, Phone, Mail, MapPin, Globe, FileText, Calendar, Edit,
-  AlertTriangle, Shield, Briefcase, Users, CreditCard, CheckCircle,
+  Building2, Phone, Mail, MapPin, Globe, FileText, Edit,
+  AlertTriangle, Shield, Users, CreditCard, CheckCircle,
   Clock, ExternalLink
 } from 'lucide-react'
 import { ContractorProfileForm } from './contractor-profile-form'
@@ -104,7 +105,7 @@ export function ContractorProfileCard({ contractor }: ContractorProfileCardProps
             <div className="flex items-center gap-4">
               <div className="h-20 w-20 rounded-xl bg-white shadow-sm border flex items-center justify-center">
                 {contractor.logoUrl ? (
-                  <img src={contractor.logoUrl} alt="Logo" className="h-16 w-16 object-contain rounded-lg" />
+                  <Image src={contractor.logoUrl} alt="Logo" width={64} height={64} unoptimized className="h-16 w-16 object-contain rounded-lg" />
                 ) : (
                   <Building2 className="h-10 w-10 text-muted-foreground" />
                 )}

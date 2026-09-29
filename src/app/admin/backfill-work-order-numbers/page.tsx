@@ -5,9 +5,27 @@ import { Button } from '@/components/ui/button'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
 import { Loader2, CheckCircle, AlertCircle, Hash } from 'lucide-react'
 
+interface BackfillResult {
+  message: string
+  contractorsProcessed: number
+  workOrdersUpdated: number
+  details: Array<{
+    contractorName: string
+    workOrdersAssigned: number
+    numberRange: string
+    newCounter: number
+    workOrders: Array<{
+      assignedNumber: number
+      description: string
+      clientName: string
+      branchName: string
+    }>
+  }>
+}
+
 export default function BackfillWorkOrderNumbersPage() {
   const [loading, setLoading] = useState(false)
-  const [result, setResult] = useState<any>(null)
+  const [result, setResult] = useState<BackfillResult | null>(null)
   const [error, setError] = useState<string | null>(null)
 
   const handleBackfill = async () => {
@@ -26,9 +44,9 @@ export default function BackfillWorkOrderNumbersPage() {
         throw new Error(data.error || 'Failed to backfill work order numbers')
       }
 
-      setResult(data)
-    } catch (err: any) {
-      setError(err.message)
+      setResult(data as BackfillResult)
+    } catch (err) {
+      setError(err instanceof Error ? err.message : 'Failed to backfill work order numbers')
     } finally {
       setLoading(false)
     }
@@ -40,7 +58,7 @@ export default function BackfillWorkOrderNumbersPage() {
         <CardHeader>
           <CardTitle>Backfill Work Order Numbers</CardTitle>
           <CardDescription>
-            This will assign work order numbers to all existing work orders that don't have one yet.
+            This will assign work order numbers to all existing work orders that don&apos;t have one yet.
             Numbers will be assigned chronologically per contractor.
           </CardDescription>
         </CardHeader>
@@ -51,8 +69,8 @@ export default function BackfillWorkOrderNumbersPage() {
             </p>
             <ul className="text-sm text-yellow-800 mt-2 ms-4 list-disc space-y-1">
               <li>Find all work orders with <code>workOrderNumber = null</code></li>
-              <li>Assign sequential numbers starting from each contractor's current counter</li>
-              <li>Update the contractor's counter to the next available number</li>
+              <li>Assign sequential numbers starting from each contractor&apos;s current counter</li>
+              <li>Update the contractor&apos;s counter to the next available number</li>
               <li>Process work orders in chronological order (oldest first)</li>
             </ul>
           </div>
@@ -94,7 +112,7 @@ export default function BackfillWorkOrderNumbersPage() {
               {result.details && result.details.length > 0 && (
                 <div className="space-y-4">
                   <h3 className="font-semibold text-lg">Details by Contractor</h3>
-                  {result.details.map((detail: any, i: number) => (
+                  {result.details.map((detail, i) => (
                     <Card key={i}>
                       <CardHeader>
                         <CardTitle className="text-lg">{detail.contractorName}</CardTitle>
@@ -128,7 +146,7 @@ export default function BackfillWorkOrderNumbersPage() {
                                   </tr>
                                 </thead>
                                 <tbody>
-                                  {detail.workOrders.map((wo: any, j: number) => (
+                                  {detail.workOrders.map((wo, j) => (
                                     <tr key={j} className="border-t">
                                       <td className="p-2 font-mono">{wo.assignedNumber}</td>
                                       <td className="p-2">{wo.description}</td>

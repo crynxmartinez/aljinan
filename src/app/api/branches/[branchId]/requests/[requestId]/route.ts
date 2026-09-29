@@ -105,7 +105,7 @@ export async function PATCH(
     // Handle specific actions
     let workOrderCreated = false
     let workOrderId: string | null = null
-    let checklist: any = null
+    let checklist: Awaited<ReturnType<typeof prisma.checklist.findFirst>> = null
 
     // ACTION: Contractor sends quote
     if (action === 'quote') {
@@ -260,13 +260,16 @@ export async function PATCH(
         workOrderCreated = true
         workOrderId = createdWorkOrders[0] // First work order ID
         updateData.workOrderId = createdWorkOrders[0]
-      } catch (woError: any) {
+      } catch (woError) {
+        const workOrderError = typeof woError === 'object' && woError !== null
+          ? woError as { message?: string; code?: string; meta?: unknown }
+          : {}
         // Return error in debug instead of failing the whole request
         return NextResponse.json({
           error: 'Failed to create work order',
-          details: woError.message,
-          code: woError.code,
-          meta: woError.meta
+          details: workOrderError.message,
+          code: workOrderError.code,
+          meta: workOrderError.meta
         }, { status: 500 })
       }
     }

@@ -143,23 +143,23 @@ git clone https://github.com/crynxmartinez/aljinan.git
 cd aljinan
 ```
 
-2. **Install dependencies:**
+2. **Set up environment variables:**
 ```bash
-npm install
+cp .env.example .env
 ```
 
-3. **Set up environment variables:**
-```bash
-cp .env.local.example .env.local
-```
-
-Edit `.env.local` with your credentials:
+Edit `.env` with your credentials:
 ```env
 DATABASE_URL="postgresql://..."
 NEXTAUTH_SECRET="your-secret-key"
 NEXTAUTH_URL="http://localhost:3000"
 BLOB_READ_WRITE_TOKEN="your-vercel-blob-token"
 GOOGLE_MAPS_API_KEY="your-google-maps-key"
+```
+
+3. **Install dependencies:**
+```bash
+npm install
 ```
 
 4. **Set up database:**

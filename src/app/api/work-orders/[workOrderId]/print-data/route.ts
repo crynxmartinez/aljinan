@@ -176,7 +176,16 @@ export async function GET(
 }
 
 async function verifyWorkOrderAccess(
-  workOrder: any,
+  workOrder: {
+    checklist: {
+      branch: {
+        client: {
+          contractorId: string
+        }
+        clientId: string
+      }
+    }
+  },
   userId: string,
   userRole: string
 ): Promise<boolean> {

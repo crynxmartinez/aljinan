@@ -11,6 +11,7 @@ interface ClientHeaderProps {
 }
 
 export function ClientHeader({ userName }: ClientHeaderProps) {
+  void userName
   return (
     <header className="h-16 border-b bg-background px-4 md:px-6 flex items-center justify-between gap-2 md:gap-4">
       <MobileMenuButton />

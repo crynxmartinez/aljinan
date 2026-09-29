@@ -118,7 +118,7 @@ export function AddressPicker({ value, onChange, showManualFields = true }: Addr
         setSuggestions([])
         setShowSuggestions(true)
       }
-    } catch (error: any) {
+    } catch (error) {
       console.error('Error searching address:', error)
       setSuggestions([])
       setShowSuggestions(true)
@@ -231,7 +231,7 @@ export function AddressPicker({ value, onChange, showManualFields = true }: Addr
             const lng = place.geometry.location.lng()
             const addressComponents = place.address_components || []
             const getComponent = (type: string) =>
-              addressComponents.find((c: any) => c.types.includes(type))?.long_name || ''
+              addressComponents.find((c: google.maps.GeocoderAddressComponent) => c.types.includes(type))?.long_name || ''
 
             const streetNumber = getComponent('street_number')
             const route = getComponent('route')
@@ -269,7 +269,7 @@ export function AddressPicker({ value, onChange, showManualFields = true }: Addr
           const result = response.results[0]
           const addressComponents = result.address_components
           const getComponent = (type: string) =>
-            addressComponents.find((c: any) => c.types.includes(type))?.long_name || ''
+            addressComponents.find((c: google.maps.GeocoderAddressComponent) => c.types.includes(type))?.long_name || ''
 
           const streetNumber = getComponent('street_number')
           const route = getComponent('route')

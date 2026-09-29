@@ -22,6 +22,7 @@ interface PopupNotification {
 }
 
 export function NotificationPopup({ userRole }: NotificationPopupProps) {
+  void userRole
   const [notification, setNotification] = useState<PopupNotification | null>(null)
   const [open, setOpen] = useState(false)
   const [shownNotifications, setShownNotifications] = useState<Set<string>>(new Set())

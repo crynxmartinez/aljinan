@@ -1,5 +1,5 @@
 import React from 'react'
-import { Document, Page, Text, View, StyleSheet, Image } from '@react-pdf/renderer'
+import { Document, Page, Text, View, StyleSheet, Image as PdfImage } from '@react-pdf/renderer'
 
 const styles = StyleSheet.create({
   page: {
@@ -331,7 +331,7 @@ export function InspectionReportDocument({ data }: { data: InspectionReportData 
             <View style={styles.photoGrid}>
               {data.photos.slice(0, 6).map((photo, index) => photo?.url ? (
                 <View key={index} style={styles.photoItem}>
-                  <Image src={photo.url} style={styles.photo} />
+                  <PdfImage src={photo.url} style={styles.photo} />
                   {photo.caption && <Text style={styles.photoCaption}>{photo.caption}</Text>}
                 </View>
               ) : null)}

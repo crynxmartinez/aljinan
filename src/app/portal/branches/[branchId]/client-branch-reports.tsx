@@ -1,6 +1,6 @@
 'use client'
 
-import { useState, useEffect } from 'react'
+import { useCallback, useState, useEffect } from 'react'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
 import { Badge } from '@/components/ui/badge'
@@ -52,7 +52,7 @@ export function ClientBranchReports({ branchId }: ClientBranchReportsProps) {
   const [selectedReport, setSelectedReport] = useState<Checklist | null>(null)
   const [viewDialogOpen, setViewDialogOpen] = useState(false)
 
-  const fetchReports = async () => {
+  const fetchReports = useCallback(async () => {
     try {
       const response = await fetch(`/api/branches/${branchId}/checklists`)
       if (response.ok) {
@@ -66,11 +66,11 @@ export function ClientBranchReports({ branchId }: ClientBranchReportsProps) {
     } finally {
       setLoading(false)
     }
-  }
+  }, [branchId])
 
   useEffect(() => {
-    fetchReports()
-  }, [branchId])
+    void Promise.resolve().then(fetchReports)
+  }, [fetchReports])
 
   const handleViewReport = (report: Checklist) => {
     setSelectedReport(report)
